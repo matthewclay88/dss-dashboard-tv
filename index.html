@@ -8,24 +8,6 @@
 
 <style>
 
-<script>
-
-async function loadData(){
-
-  const response =
-    await fetch("./data.json");
-
-  const data =
-    await response.json();
-
-  console.log(data);
-
-}
-
-loadData();
-
-</script>
-  
 body{
   font-family:Arial,sans-serif;
   background:#111;
@@ -58,6 +40,43 @@ body{
 
 </style>
 
+<script>
+
+async function loadData(){
+
+  const response =
+    await fetch("./data.json");
+
+  const data =
+    await response.json();
+
+  console.log(data);
+
+  let html = "";
+
+  data.events.forEach(event => {
+
+    html += `
+      <div>
+        <b>${event.name}</b><br>
+        ${event.date}<br>
+        ${event.type}
+      </div>
+      <hr>
+    `;
+
+  });
+
+  document.getElementById(
+    "dssList"
+  ).innerHTML = html;
+
+}
+
+loadData();
+
+</script>
+
 </head>
 
 <body>
@@ -72,7 +91,11 @@ body{
 
 <div class="section">
   <h2>Upcoming DSS</h2>
-  Data will go here...
+
+  <div id="dssList">
+    Loading...
+  </div>
+
 </div>
 
 <div class="section">
