@@ -37,13 +37,8 @@ table {
   border-collapse: collapse;
 }
 
-th {
-  background: #222;
-}
-
-td {
-  background: #111;
-}
+th { background: #222; }
+td { background: #111; }
 
 th, td {
   padding: 4px 8px;
@@ -89,67 +84,41 @@ th, td {
 
 <body>
 
-<div class="header">
-  NWS Burlington DSS Dashboard
-</div>
+<div class="header">NWS Burlington DSS Dashboard V2.1</div>
 
-<div id="statusBanner">
-  Loading DSS Status...
-</div>
+<div id="statusBanner">Loading DSS Status...</div>
 
 <div id="callsBanner" style="
-  text-align: center;
-  padding: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  border-bottom: 1px solid #333;
-  background: #006400;
-">
-  Loading Coordination Calls...
-</div>
+  text-align: center; padding: 8px; font-size: 16px;
+  font-weight: bold; border-bottom: 1px solid #333; background: #006400;
+">Loading Coordination Calls...</div>
 
 <div id="lastRefresh" style="
-  text-align: center;
-  font-size: 11px;
-  color: #aaa;
-  padding: 4px;
-  background: #111;
-">
-  Last Updated: --
-</div>
+  text-align: center; font-size: 11px; color: #aaa; padding: 4px; background: #111;
+">Last Updated: --</div>
 
-<div style="
-  text-align: center;
-  padding: 8px;
-  background: #111;
-">
+<div style="text-align: center; padding: 8px; background: #111;">
   <button id="todayView">Today</button>
   <button id="tomorrowView">Tomorrow</button>
   <button id="weekView">Next 7 Days</button>
   <button id="monthView">Next 30 Days</button>
   <button id="calendarView">Calendar</button>
 
-  <div id="mapModeLabel" style="
-    margin-top: 8px;
-    font-size: 12px;
-    color: #aaa;
-  ">
+  <br><br>
+
+  <button id="lightningView">⚡ LightningCast UVM</button>
+  <button id="airportDashboardView">Super Dashboard - Airports</button>
+
+  <div id="mapModeLabel" style="margin-top: 8px; font-size: 12px; color: #aaa;">
     Current View: Today
   </div>
 </div>
 
 <div id="dssWrapper">
   <h3 id="dssTableTitle" style="
-    text-align: center;
-    margin: 8px 0 0 0;
-    color: white;
-    background: #111;
-    padding: 6px;
-    border-bottom: 1px solid #333;
-  ">
-    Today's DSS Operations
-  </h3>
-
+    text-align: center; margin: 8px 0 0 0; color: white;
+    background: #111; padding: 6px; border-bottom: 1px solid #333;
+  ">Today's DSS Operations</h3>
   <div id="tableContainer">
     <table>
       <thead>
@@ -168,16 +137,9 @@ th, td {
 
 <div id="callsWrapper">
   <h3 id="callsTableTitle" style="
-    text-align: center;
-    margin: 8px 0 0 0;
-    color: white;
-    background: #111;
-    padding: 6px;
-    border-bottom: 1px solid #333;
-  ">
-    Today's Coordination Calls
-  </h3>
-
+    text-align: center; margin: 8px 0 0 0; color: white;
+    background: #111; padding: 6px; border-bottom: 1px solid #333;
+  ">Today's Coordination Calls</h3>
   <div id="callsTableContainer">
     <table>
       <thead>
@@ -194,11 +156,26 @@ th, td {
   </div>
 </div>
 
-<div id="calendarContainer" style="
-  display: none;
-  padding: 10px;
-  background: #111;
-"></div>
+<div id="calendarContainer" style="display: none; padding: 10px; background: #111;"></div>
+
+<div id="lightningContainer" style="
+  display: none; width: 100%; height: calc(100vh - 180px); background: #111;
+">
+  <iframe
+    id="lightningFrame"
+    src="https://grafana-public.ssec.wisc.edu/grafana/d/cca85e59-9e80-4fd0-bde4-e0cc0cec31ae/dss-and-stadiums?orgId=1&var-Location=University%20of%20Vermont&refresh=1m&from=now-1h&to=now&timezone=browser"
+    style="width: 100%; height: 100%; border: none;">
+  </iframe>
+</div>
+
+<div id="airportDashboardContainer" style="
+  display: none; width: 100%; height: calc(100vh - 180px); background: #111;
+">
+  <iframe
+    src="https://cimss.ssec.wisc.edu/probsevere/lc/dashboard/#/?layout=N4IgbgpgTgzglgewHYgFwEYA0IDmU4AmAwggK5IAuaAHNggGb1wDGEAkgWiAEIAqAaiGw4EEGBy7ohIZggC2AB2QRKMNAG1QhNAFYALHoDM2AB5oADNgCeF7AHdCFABZpDOyyCcQ4OJ1VQATOYeeIRsSAQQZqjmAL6YWpyo+nq0INEeNjH2ji6obh5ePn5oQSH4BOGR0ejxiboGeqa2IFkeDgTOru7YRb7+ZcIVVVGldSDayQY6zdmtLR1d+T2e3v2lwUNhEaP545MpAGyzmQu53YVrJYGbuMM70Xr7SSkA7CfWZ515Bb1XA7dQpUHrpng09ABOD7zOaLH4rPrXQZ3bbVNCHMFTFYZT6w87LS7FAHlVG7V6xAC62AANhAcCoCLwEDgcLS0BQoKQINgKHA5BAAEoAQyQ9K4SAQdgAtOgXLEgA"
+    style="width: 100%; height: 100%; border: none;">
+  </iframe>
+</div>
 
 <div class="main">
 
@@ -218,15 +195,9 @@ th, td {
         <div style="flex: 1;">
           <h3>Upcoming DSS</h3>
           <div id="upcomingEvents" style="
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 16px;
-            border: 1px solid #333;
-            padding: 5px;
-            background: #111;
-          ">
-            Loading...
-          </div>
+            max-height: 200px; overflow-y: auto; font-size: 16px;
+            border: 1px solid #333; padding: 5px; background: #111;
+          ">Loading...</div>
         </div>
 
       </div>
@@ -238,15 +209,9 @@ th, td {
 
       <h3>Upcoming Calls</h3>
       <div id="upcomingCalls" style="
-        max-height: 120px;
-        overflow-y: auto;
-        font-size: 16px;
-        border: 1px solid #333;
-        padding: 5px;
-        background: #111;
-      ">
-        Loading...
-      </div>
+        max-height: 120px; overflow-y: auto; font-size: 16px;
+        border: 1px solid #333; padding: 5px; background: #111;
+      ">Loading...</div>
 
       <hr>
 
@@ -259,25 +224,14 @@ th, td {
 
 </div>
 
+<!-- Calendar Modal -->
 <div id="calendarModal" style="
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  z-index: 9999;
+  display: none; position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999;
 ">
   <div style="
-    background: #111;
-    color: white;
-    width: 500px;
-    max-width: 90%;
-    margin: 80px auto;
-    padding: 20px;
-    border: 1px solid #444;
-    border-radius: 8px;
+    background: #111; color: white; width: 500px; max-width: 90%;
+    margin: 80px auto; padding: 20px; border: 1px solid #444; border-radius: 8px;
   ">
     <div id="calendarModalContent"></div>
     <button onclick="closeCalendarModal()" style="margin-top: 10px; padding: 6px 12px;">Close</button>
@@ -288,18 +242,23 @@ th, td {
 
 <script>
 
-// ── GitHub raw URLs ──────────────────────────────────────────────
+// ── GitHub raw URLs ───────────────────────────────────────────────
 const EVENTS_URL = "https://raw.githubusercontent.com/matthewclay88/dss-dashboard-tv/main/events.json";
 const CALLS_URL  = "https://raw.githubusercontent.com/matthewclay88/dss-dashboard-tv/main/calls.json";
 const ZONES_URL  = "https://raw.githubusercontent.com/matthewclay88/dss-dashboard-tv/main/zones.json";
-// ────────────────────────────────────────────────────────────────
 
-let mapMode = "today";
+const GRAFANA_URL = "https://grafana-public.ssec.wisc.edu/grafana/api/ds/query";
+// ─────────────────────────────────────────────────────────────────
+
+// ── State ─────────────────────────────────────────────────────────
+let mapMode    = "today";
 let eventDates = {};
-let dssRows = [];
-let callRows = [];
+let dssRows    = [];
+let callRows   = [];
 
-// Set today's date
+const MARKER_RADIUS = 8;
+
+// ── Date init ─────────────────────────────────────────────────────
 const today = new Date();
 const localDate =
   today.getFullYear() + "-" +
@@ -307,25 +266,19 @@ const localDate =
   String(today.getDate()).padStart(2, "0");
 document.getElementById("selectedDate").value = localDate;
 
-// ── Map setup ───────────────────────────────────────────────────
-const map = L.map('map').setView([44.0, -73.5], 8);
+// ── Map setup ─────────────────────────────────────────────────────
+const map = L.map("map").setView([44.0, -73.5], 8);
 const markerLayer = L.layerGroup().addTo(map);
 
 L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-  { attribution: 'Esri' }
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+  { attribution: "Esri" }
 ).addTo(map);
 
 const legend = L.control({ position: "bottomright" });
 legend.onAdd = function () {
   const div = L.DomUtil.create("div");
-  div.style.background = "rgba(0,0,0,0.85)";
-  div.style.color = "white";
-  div.style.padding = "10px";
-  div.style.border = "1px solid #666";
-  div.style.borderRadius = "5px";
-  div.style.fontSize = "12px";
-  div.style.lineHeight = "20px";
+  div.style.cssText = "background:rgba(0,0,0,0.85);color:white;padding:10px;border:1px solid #666;border-radius:5px;font-size:12px;line-height:20px;";
   div.innerHTML = `
     <b>DSS Legend</b><br>
     <span style="display:inline-block;width:12px;height:12px;background:red;border-radius:50%;border:1px solid white;"></span> Active Radar Watch<br>
@@ -337,57 +290,118 @@ legend.onAdd = function () {
 };
 legend.addTo(map);
 
-// ── View buttons ─────────────────────────────────────────────────
-document.getElementById("todayView").addEventListener("click", function () {
-  document.querySelector(".main").style.display = "flex";
-  document.getElementById("calendarContainer").style.display = "none";
-  mapMode = "today";
-  document.getElementById("mapModeLabel").innerHTML = "Current View: Today";
-  refreshDashboard();
-});
+// ── View switching ────────────────────────────────────────────────
+function hideAllContainers() {
+  document.querySelector(".main").style.display          = "none";
+  document.getElementById("calendarContainer").style.display     = "none";
+  document.getElementById("lightningContainer").style.display    = "none";
+  document.getElementById("airportDashboardContainer").style.display = "none";
+}
 
-document.getElementById("tomorrowView").addEventListener("click", function () {
+function setView(mode, label) {
+  hideAllContainers();
   document.querySelector(".main").style.display = "flex";
-  document.getElementById("calendarContainer").style.display = "none";
-  mapMode = "tomorrow";
-  document.getElementById("mapModeLabel").innerHTML = "Current View: Tomorrow";
+  mapMode = mode;
+  document.getElementById("mapModeLabel").innerHTML = "Current View: " + label;
   refreshDashboard();
-});
+}
 
-document.getElementById("weekView").addEventListener("click", function () {
-  document.querySelector(".main").style.display = "flex";
-  document.getElementById("calendarContainer").style.display = "none";
-  mapMode = "week";
-  document.getElementById("mapModeLabel").innerHTML = "Current View: Next 7 Days";
-  refreshDashboard();
-});
-
-document.getElementById("monthView").addEventListener("click", function () {
-  document.querySelector(".main").style.display = "flex";
-  document.getElementById("calendarContainer").style.display = "none";
-  mapMode = "month";
-  document.getElementById("mapModeLabel").innerHTML = "Current View: Next 30 Days";
-  refreshDashboard();
-});
+document.getElementById("todayView").addEventListener("click",    () => setView("today",    "Today"));
+document.getElementById("tomorrowView").addEventListener("click", () => setView("tomorrow", "Tomorrow"));
+document.getElementById("weekView").addEventListener("click",     () => setView("week",     "Next 7 Days"));
+document.getElementById("monthView").addEventListener("click",    () => setView("month",    "Next 30 Days"));
 
 document.getElementById("calendarView").addEventListener("click", function () {
-  document.querySelector(".main").style.display = "none";
+  hideAllContainers();
   document.getElementById("calendarContainer").style.display = "block";
   buildCalendar();
 });
 
-// ── Helpers ──────────────────────────────────────────────────────
+document.getElementById("lightningView").addEventListener("click", function () {
+  hideAllContainers();
+  document.getElementById("lightningContainer").style.display = "block";
+});
+
+document.getElementById("airportDashboardView").addEventListener("click", function () {
+  hideAllContainers();
+  document.getElementById("airportDashboardContainer").style.display = "block";
+});
+
+// ── Lightning risk (direct Grafana fetch) ─────────────────────────
+async function updateLightningButton() {
+  try {
+    const payload = {
+      queries: [{
+        refId: "A",
+        datasource: {
+          type: "mysql",
+          uid: "cca98bab-5d31-44b9-8d44-f0b5eb3da471"
+        },
+        rawSql: `
+          SELECT utctime as time_sec, pltg_1fl_60min_max16km
+          FROM \`University of Vermont\`
+          ORDER BY utctime DESC
+          LIMIT 1
+        `,
+        format: "table"
+      }]
+    };
+
+    const res = await fetch(GRAFANA_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) return;
+
+    const data        = await res.json();
+    const probability = data.results.A.frames[0].data.values[1][0];
+
+    let level, color;
+    if      (probability <= 10) { level = "LOW";      color = "#00aa00"; }
+    else if (probability <= 30) { level = "MODERATE"; color = "#ffd700"; }
+    else if (probability <= 60) { level = "HIGH";     color = "#ff8800"; }
+    else                        { level = "CRITICAL"; color = "#cc0000"; }
+
+    const btn = document.getElementById("lightningView");
+    btn.style.backgroundColor = color;
+    btn.style.color            = "white";
+    btn.innerHTML = `⚡ UVM Prob Lightning: ${level} (${probability}%)`;
+
+  } catch (err) {
+    console.error("Lightning fetch error:", err);
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
 function formatDate(dateString) {
   const parts = dateString.split("-");
   return Number(parts[1]) + "/" + Number(parts[2]) + "/" + parts[0];
 }
 
 function getMarkerColor(dssType) {
-  if (dssType.includes("On-Site DSS")) return "green";
+  if (dssType.includes("On-Site DSS"))                    return "green";
   if (dssType.includes("Heads-up email and radar watch")) return "purple";
-  if (dssType.includes("Active radar watch")) return "red";
-  if (dssType.includes("Heads-up email")) return "blue";
+  if (dssType.includes("Active radar watch"))             return "red";
+  if (dssType.includes("Heads-up email"))                 return "blue";
   return "gray";
+}
+
+function getRowColor(dssType) {
+  if (dssType.includes("On-Site DSS"))                    return "#0f2f0f";
+  if (dssType.includes("Heads-up email and radar watch")) return "#2b1245";
+  if (dssType.includes("Active radar watch"))             return "#3a1010";
+  if (dssType.includes("Heads-up email"))                 return "#0d2340";
+  return "#111";
+}
+
+function getCalendarColor(dssType) {
+  if (dssType.includes("On-Site DSS"))                    return "#006400";
+  if (dssType.includes("Heads-up email and radar watch")) return "#4B0082";
+  if (dssType.includes("Active radar watch"))             return "#8B0000";
+  if (dssType.includes("Heads-up email"))                 return "#003366";
+  return "#333";
 }
 
 function closeCalendarModal() {
@@ -404,67 +418,78 @@ function zoomToEvent(lat, lon) {
 }
 
 function showDssDetails(eventName) {
-  const headers = dssRows[0];
-  const eventCol = headers.indexOf("Event Name");
-  const typeCol = headers.indexOf("DSS Type");
-  const contactCol = headers.indexOf("Contact Name");
+  const headers        = dssRows[0];
+  const eventCol       = headers.indexOf("Event Name");
+  const typeCol        = headers.indexOf("DSS Type");
+  const contactCol     = headers.indexOf("Contact Name");
   const contactInfoCol = headers.indexOf("Contact Info");
-  const radarCol = headers.indexOf("Radar Watch Time");
-  const emailCol = headers.indexOf("Email Due By");
+  const radarCol       = headers.indexOf("Radar Watch Time");
+  const emailCol       = headers.indexOf("Email Due By");
 
-  let html = "";
   for (let i = 1; i < dssRows.length; i++) {
     const row = dssRows[i];
     if (row[eventCol] !== eventName) continue;
-    html = `
+    showCalendarModal(`
       <h2>${row[eventCol]}</h2>
       <b>DSS Type:</b><br>${row[typeCol]}<br><br>
       <b>Contact:</b><br>${row[contactCol]}<br><br>
       <b>Contact Info:</b><br>${row[contactInfoCol]}<br><br>
       ${row[emailCol] ? `<b>Email Due:</b><br>${row[emailCol]}<br><br>` : ""}
       ${row[radarCol] ? `<b>Radar Watch:</b><br>${row[radarCol]}` : ""}
-    `;
+    `);
     break;
   }
-  showCalendarModal(html);
 }
 
 function showCallDetails(rowIndex) {
   const call = callRows[rowIndex];
   if (!call) return;
-  const contactInfo = call[3];
+  const contactInfo    = call[3];
   const additionalInfo = call[4];
+  const urlMatch       = String(contactInfo || "").match(/https?:\/\/\S+/);
 
   let html = `
     <h2>${call[2]}</h2>
     <b>Date:</b><br>${call[0]}<br><br>
     <b>Time:</b><br>${call[1]}<br><br>
     <b>Contact Info:</b><br>${contactInfo}<br><br>
+    ${additionalInfo ? `<b>Additional Info:</b><br>${additionalInfo}<br><br>` : ""}
   `;
-  if (additionalInfo) html += `<b>Additional Info:</b><br>${additionalInfo}<br><br>`;
-
-  const urlMatch = String(contactInfo || "").match(/https?:\/\/\S+/);
   if (urlMatch) {
-    html += `
-      <br><br>
-      <a href="${urlMatch[0]}" target="_blank" style="
-        display: inline-block;
-        background: #1E90FF;
-        color: white;
-        padding: 8px 12px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-weight: bold;
-      ">🔗 Join Meeting</a>
-    `;
+    html += `<br><a href="${urlMatch[0]}" target="_blank" style="
+      display:inline-block;background:#1E90FF;color:white;
+      padding:8px 12px;border-radius:4px;text-decoration:none;font-weight:bold;
+    ">🔗 Join Meeting</a>`;
   }
   showCalendarModal(html);
 }
 
-// ── Data fetch ───────────────────────────────────────────────────
+// ── Date filter ───────────────────────────────────────────────────
+function isDateInView(dateString, selectedDateString) {
+  if (mapMode === "today") return dateString === selectedDateString;
+  if (mapMode === "tomorrow") {
+    const tomorrow = new Date(selectedDateString);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return dateString === tomorrow.toISOString().split("T")[0];
+  }
+  if (mapMode === "week") {
+    const start = new Date(selectedDateString); start.setDate(start.getDate() + 1);
+    const end   = new Date(start);              end.setDate(end.getDate() + 6);
+    const d     = new Date(dateString);
+    return d >= start && d <= end;
+  }
+  if (mapMode === "month") {
+    const start = new Date(selectedDateString); start.setDate(start.getDate() + 1);
+    const end   = new Date(start);              end.setDate(end.getDate() + 29);
+    const d     = new Date(dateString);
+    return d >= start && d <= end;
+  }
+  return false;
+}
+
+// ── Data fetch ────────────────────────────────────────────────────
 async function refreshDashboard() {
   try {
-    // Cache-bust so GitHub serves fresh data
     const ts = Date.now();
     const [eventsRes, callsRes] = await Promise.all([
       fetch(EVENTS_URL + "?t=" + ts),
@@ -484,6 +509,8 @@ async function refreshDashboard() {
     console.error("Fetch error:", err);
     document.getElementById("statusBanner").innerHTML = "⚠️ Error loading data";
   }
+
+  updateLightningButton();
 }
 
 async function loadZones() {
@@ -500,106 +527,70 @@ async function loadZones() {
   }
 }
 
-// ── Main render ──────────────────────────────────────────────────
+// ── Main render ───────────────────────────────────────────────────
 function loadData(rows, calls) {
-  dssRows = rows;
+  dssRows  = rows;
   callRows = calls;
-
   if (!calls) calls = [];
 
-  let visibleCallCount = 0;
-  let callsTableHtml = "";
-
-  document.getElementById("callsBanner").style.background = "#006400";
-  document.getElementById("callsBanner").innerHTML = "0 COORDINATION CALLS";
+  const selectedDateString = document.getElementById("selectedDate").value;
 
   markerLayer.clearLayers();
-
-  const eventNames = new Set();
+  const eventNames      = new Set();
+  const cancelledEvents = new Set();
   eventDates = {};
 
-  const headers = rows[0];
-  const bounds = [];
-  const upcoming = [];
-
-  const eventCol      = headers.indexOf("Event Name");
-  const typeCol       = headers.indexOf("DSS Type");
-  const eventDateCol  = headers.indexOf("Event Date");
-  const contactInfoCol= headers.indexOf("Contact Info");
-  const radarWatchCol = headers.indexOf("Radar Watch Time");
-  const headsUpCol    = headers.indexOf("Email Due By");
-  const contactCol    = headers.indexOf("Contact Name");
-  const latCol        = headers.indexOf("Latitude");
-  const lonCol        = headers.indexOf("Longitude");
-  const cancelledCol  = headers.indexOf("Cancelled");
+  const headers        = rows[0];
+  const eventCol       = headers.indexOf("Event Name");
+  const typeCol        = headers.indexOf("DSS Type");
+  const eventDateCol   = headers.indexOf("Event Date");
+  const contactInfoCol = headers.indexOf("Contact Info");
+  const radarWatchCol  = headers.indexOf("Radar Watch Time");
+  const headsUpCol     = headers.indexOf("Email Due By");
+  const contactCol     = headers.indexOf("Contact Name");
+  const latCol         = headers.indexOf("Latitude");
+  const lonCol         = headers.indexOf("Longitude");
+  const cancelledCol   = headers.indexOf("Cancelled");
 
   const table = document.getElementById("eventTable");
   table.innerHTML = "";
 
+  const bounds   = [];
+  const upcoming = [];
   let activeCount = 0, radarCount = 0, headsUpCount = 0, bothCount = 0, onsiteCount = 0;
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-
     const parts = String(row[eventDateCol] || "").split("/");
     if (parts.length !== 3) continue;
-
     const eventDateString = parts[2] + "-" + parts[0].padStart(2, "0") + "-" + parts[1].padStart(2, "0");
-    const todayString = document.getElementById("selectedDate").value;
 
-    if (String(row[cancelledCol]).trim().toUpperCase() === "TRUE") continue;
+    if (String(row[cancelledCol]).trim().toUpperCase() === "TRUE") {
+      if (eventDateString >= selectedDateString) cancelledEvents.add(row[eventCol]);
+      continue;
+    }
 
-    if (eventDateString >= todayString) {
+    if (eventDateString >= selectedDateString) {
       eventNames.add(row[eventCol]);
       if (!eventDates[row[eventCol]]) eventDates[row[eventCol]] = [];
       eventDates[row[eventCol]].push(row[eventDateCol]);
     }
 
-    if (eventDateString > todayString) {
-      upcoming.push({
-        date: eventDateString,
-        name: row[eventCol],
-        type: row[typeCol],
-        lat: row[latCol],
-        lon: row[lonCol]
-      });
+    if (eventDateString > selectedDateString) {
+      upcoming.push({ date: eventDateString, name: row[eventCol], type: row[typeCol], lat: row[latCol], lon: row[lonCol] });
     }
 
-    const selectedDateString = document.getElementById("selectedDate").value;
-
-    if (mapMode === "today") {
-      if (eventDateString !== selectedDateString) continue;
-    } else if (mapMode === "tomorrow") {
-      const tomorrow = new Date(selectedDateString);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      if (eventDateString !== tomorrow.toISOString().split("T")[0]) continue;
-    } else if (mapMode === "week") {
-      const startDate = new Date(selectedDateString);
-      startDate.setDate(startDate.getDate() + 1);
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 6);
-      const filterDate = new Date(eventDateString);
-      if (filterDate < startDate || filterDate > endDate) continue;
-    } else if (mapMode === "month") {
-      const startDate = new Date(selectedDateString);
-      startDate.setDate(startDate.getDate() + 1);
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 29);
-      const filterDate = new Date(eventDateString);
-      if (filterDate < startDate || filterDate > endDate) continue;
-    }
+    if (!isDateInView(eventDateString, selectedDateString)) continue;
 
     activeCount++;
-    if (row[typeCol].includes("Heads-up email and radar watch")) bothCount++;
-    else if (row[typeCol].includes("Heads-up email")) headsUpCount++;
-    else if (row[typeCol].includes("Active radar watch")) radarCount++;
-    else if (row[typeCol].includes("On-Site DSS")) onsiteCount++;
+    if      (row[typeCol].includes("Heads-up email and radar watch")) bothCount++;
+    else if (row[typeCol].includes("Heads-up email"))                 headsUpCount++;
+    else if (row[typeCol].includes("Active radar watch"))             radarCount++;
+    else if (row[typeCol].includes("On-Site DSS"))                    onsiteCount++;
 
-    let rowColor = "#111";
-    if (row[typeCol].includes("On-Site DSS")) rowColor = "#0f2f0f";
-    else if (row[typeCol].includes("Heads-up email and radar watch")) rowColor = "#2b1245";
-    else if (row[typeCol].includes("Active radar watch")) rowColor = "#3a1010";
-    else if (row[typeCol].includes("Heads-up email")) rowColor = "#0d2340";
+    const rowColor = getRowColor(row[typeCol]);
+    const headsUp  = String(row[headsUpCol]   || "").trim();
+    const radar    = String(row[radarWatchCol] || "").trim();
 
     table.innerHTML += `
       <tr>
@@ -607,12 +598,11 @@ function loadData(rows, calls) {
         <td>${row[eventCol]}</td>
         <td style="background:${rowColor};font-weight:bold;">
           ${row[typeCol]}
-          ${String(row[headsUpCol] || "").trim() || String(row[radarWatchCol] || "").trim() ? `
-            <br><span style="font-size:14px;font-weight:bold;">
-              ${String(row[headsUpCol] || "").trim() ? `<span style="color:#66B2FF;">📧 ${row[headsUpCol]}</span>` : ""}
-              ${String(row[headsUpCol] || "").trim() && String(row[radarWatchCol] || "").trim() ? " | " : ""}
-              ${String(row[radarWatchCol] || "").trim() ? `<span style="color:#FFD700;">⏰ ${row[radarWatchCol]}</span>` : ""}
-            </span>` : ""}
+          ${headsUp || radar ? `<br><span style="font-size:14px;font-weight:bold;">
+            ${headsUp ? `<span style="color:#66B2FF;">📧 ${row[headsUpCol]}</span>` : ""}
+            ${headsUp && radar ? " | " : ""}
+            ${radar   ? `<span style="color:#FFD700;">⏰ ${row[radarWatchCol]}</span>` : ""}
+          </span>` : ""}
         </td>
         <td>${row[contactCol]}</td>
         <td>${row[contactInfoCol]}</td>
@@ -623,14 +613,14 @@ function loadData(rows, calls) {
     const lon = parseFloat(row[lonCol]);
     if (!isNaN(lat) && !isNaN(lon)) {
       bounds.push([lat, lon]);
-      const color = getMarkerColor(row[typeCol]);
       L.circleMarker([lat, lon], {
-        radius: 8, color: "#FFFFFF", weight: 2, fillColor: color, fillOpacity: 0.9
+        radius: MARKER_RADIUS, color: "#FFFFFF", weight: 2,
+        fillColor: getMarkerColor(row[typeCol]), fillOpacity: 0.9
       }).addTo(markerLayer).bindPopup(`
         <b>${row[eventCol]}</b><br><br>
         <b>DSS Type:</b><br>${row[typeCol]}<br><br>
-        ${row[headsUpCol] ? `<b>Heads-Up Due:</b><br>${row[headsUpCol]}<br><br>` : ""}
-        ${row[radarWatchCol] ? `<b>Radar Watch:</b><br>${row[radarWatchCol]}<br><br>` : ""}
+        ${headsUp ? `<b>Heads-Up Due:</b><br>${row[headsUpCol]}<br><br>` : ""}
+        ${radar   ? `<b>Radar Watch:</b><br>${row[radarWatchCol]}<br><br>` : ""}
         <b>Date:</b><br>${row[eventDateCol]}<br><br>
         <b>Contact:</b><br>${row[contactCol]}<br><br>
         <b>Contact Info:</b><br>${row[contactInfoCol]}
@@ -639,11 +629,20 @@ function loadData(rows, calls) {
   }
 
   // Map bounds
-  if (bounds.length > 1) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
+  if      (bounds.length > 1)  map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
   else if (bounds.length === 1) map.setView(bounds[0], 10);
-  else map.setView([44.0, -73.5], 8);
+  else                          map.setView([44.0, -73.5], 8);
 
-  // Event count summary
+  // Table / banner labels
+  const tableLabels = { today: "Today", tomorrow: "Tomorrow", week: "Next 7 Days", month: "Next 30 Days" };
+  const viewLabels  = { today: "TODAY'S DSS STATUS", tomorrow: "TOMORROW'S DSS STATUS", week: "7-DAY DSS OUTLOOK", month: "30-DAY DSS OUTLOOK" };
+  const label    = tableLabels[mapMode];
+  const viewLabel = viewLabels[mapMode];
+
+  document.getElementById("dssTableTitle").innerHTML   = label + "'s DSS Operations";
+  document.getElementById("callsTableTitle").innerHTML = label + "'s Coordination Calls";
+
+  // Event count
   document.getElementById("eventCount").innerHTML = `
     <div style="background:#400;padding:6px;margin-bottom:4px;border-radius:4px;">🔴 Radar Watch: ${radarCount}</div>
     <div style="background:#003366;padding:6px;margin-bottom:4px;border-radius:4px;">🔵 Heads-Up Email: ${headsUpCount}</div>
@@ -653,26 +652,13 @@ function loadData(rows, calls) {
 
   // Status banner
   const eventText = `${activeCount} EVENT${activeCount === 1 ? "" : "S"}`;
-  let bannerColor = "#2d2dd2", bannerText = "";
-  let viewLabel = mapMode === "today" ? "TODAY'S DSS STATUS" : mapMode === "tomorrow" ? "TOMORROW'S DSS STATUS" : mapMode === "week" ? "7-DAY DSS OUTLOOK" : "30-DAY DSS OUTLOOK";
-
-  if (mapMode === "today") document.getElementById("dssTableTitle").innerHTML = "Today's DSS Operations";
-  else if (mapMode === "tomorrow") document.getElementById("dssTableTitle").innerHTML = "Tomorrow's DSS Operations";
-  else if (mapMode === "week") document.getElementById("dssTableTitle").innerHTML = "Next 7 Days DSS Operations";
-  else document.getElementById("dssTableTitle").innerHTML = "Next 30 Days DSS Operations";
-
-  if (mapMode === "today") document.getElementById("callsTableTitle").innerHTML = "Today's Coordination Calls";
-  else if (mapMode === "tomorrow") document.getElementById("callsTableTitle").innerHTML = "Tomorrow's Coordination Calls";
-  else if (mapMode === "week") document.getElementById("callsTableTitle").innerHTML = "Next 7 Days Coordination Calls";
-  else document.getElementById("callsTableTitle").innerHTML = "Next 30 Days Coordination Calls";
-
-  if (activeCount === 0) { bannerColor = "#006400"; bannerText = `${viewLabel}: NO DSS EVENTS`; }
-  else if (onsiteCount > 0) { bannerColor = "#8B0000"; bannerText = `${viewLabel}: ${eventText} | ${onsiteCount} ON-SITE DSS`; }
+  let bannerColor, bannerText;
+  if      (activeCount === 0)          { bannerColor = "#006400"; bannerText = `${viewLabel}: NO DSS EVENTS`; }
+  else if (onsiteCount > 0)            { bannerColor = "#8B0000"; bannerText = `${viewLabel}: ${eventText} | ${onsiteCount} ON-SITE DSS`; }
   else if (radarCount + bothCount > 0) { bannerColor = "#B8860B"; bannerText = `${viewLabel}: ${eventText} | RADAR WATCH IN EFFECT`; }
-  else { bannerColor = "#1E90FF"; bannerText = `${viewLabel}: ${eventText}`; }
-
+  else                                 { bannerColor = "#1E90FF"; bannerText = `${viewLabel}: ${eventText}`; }
   document.getElementById("statusBanner").style.background = bannerColor;
-  document.getElementById("statusBanner").innerHTML = bannerText;
+  document.getElementById("statusBanner").innerHTML        = bannerText;
 
   // Upcoming DSS
   upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -681,17 +667,16 @@ function loadData(rows, calls) {
     if (!groupedEvents[event.name]) groupedEvents[event.name] = { dates: [], type: event.type, lat: event.lat, lon: event.lon };
     groupedEvents[event.name].dates.push(event.date);
   });
-
   let upcomingHtml = "";
   for (const name in groupedEvents) {
-    const dates = groupedEvents[name].dates.sort((a, b) => a - b);
-    const startText = formatDate(dates[0]);
-    const endText = formatDate(dates[dates.length - 1]);
+    const g = groupedEvents[name];
+    g.dates.sort();
+    const startText = formatDate(g.dates[0]);
+    const endText   = formatDate(g.dates[g.dates.length - 1]);
     upcomingHtml += `
-      <div onclick="zoomToEvent(${groupedEvents[name].lat},${groupedEvents[name].lon})"
-        style="cursor:pointer;padding:4px;border-radius:4px;"
+      <div onclick="zoomToEvent(${g.lat},${g.lon})" style="cursor:pointer;padding:4px;border-radius:4px;"
         onmouseover="this.style.background='#222'" onmouseout="this.style.background='transparent'">
-        <b>${name}</b> - ${groupedEvents[name].type}<br>
+        <b>${name}</b> - ${g.type}<br>
         ${startText === endText ? startText : startText + " - " + endText}
       </div><br>
     `;
@@ -699,82 +684,64 @@ function loadData(rows, calls) {
   document.getElementById("upcomingEvents").innerHTML = upcomingHtml || "No upcoming DSS events";
 
   // Calls
-  const sortedCalls = calls.slice(1)
-    .filter(c => String(c[5]).trim().toUpperCase() !== "TRUE")
-    .sort((a, b) => new Date(a[0] + " " + a[1]) - new Date(b[0] + " " + b[1]));
+  const activeCalls = calls.slice(1).filter(c => String(c[5]).trim().toUpperCase() !== "TRUE");
 
+  document.getElementById("callCount").innerHTML = `
+    <div style="background:#003366;padding:6px;margin-bottom:4px;border-radius:4px;">
+      📞 Number of Planned Coordination Calls: ${activeCalls.length}
+    </div>
+  `;
+
+  const sortedCalls = [...activeCalls].sort((a, b) => new Date(a[0] + " " + a[1]) - new Date(b[0] + " " + b[1]));
   let upcomingCallsHtml = "";
   sortedCalls.forEach(c => {
     upcomingCallsHtml += `<div style="padding:4px;margin-bottom:4px;"><b>${c[2]}</b><br>${c[0]} ${c[1]}</div>`;
   });
   document.getElementById("upcomingCalls").innerHTML = upcomingCallsHtml || "No upcoming calls";
 
-  const totalCalls = sortedCalls.length;
-  document.getElementById("callCount").innerHTML = `
-    <div style="background:#003366;padding:6px;margin-bottom:4px;border-radius:4px;">
-      📞 Number of Planned Coordination Calls: ${totalCalls}
-    </div>
-  `;
-
-  // Calls table
-  const selectedDate = document.getElementById("selectedDate").value;
+  // Calls table (filtered by view)
+  let callsTableHtml   = "";
+  let visibleCallCount = 0;
   for (let i = 1; i < calls.length; i++) {
-    const callDate = calls[i][0], callTime = calls[i][1], eventInfo = calls[i][2];
-    const contactInfo = calls[i][3], additionalInfo = calls[i][4], cancelled = calls[i][5];
-
-    if (String(cancelled).trim().toUpperCase() === "TRUE") continue;
-
-    const parts = String(callDate || "").split("/");
+    const c = calls[i];
+    if (String(c[5]).trim().toUpperCase() === "TRUE") continue;
+    const parts = String(c[0] || "").split("/");
     if (parts.length !== 3) continue;
     const callDateString = parts[2] + "-" + parts[0].padStart(2, "0") + "-" + parts[1].padStart(2, "0");
-
-    if (mapMode === "today") { if (callDateString !== selectedDate) continue; }
-    else if (mapMode === "tomorrow") {
-      const tomorrow = new Date(selectedDate);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      if (callDateString !== tomorrow.toISOString().split("T")[0]) continue;
-    } else if (mapMode === "week") {
-      const s = new Date(selectedDate), e = new Date(selectedDate);
-      e.setDate(e.getDate() + 7);
-      const d = new Date(callDateString);
-      if (d < s || d > e) continue;
-    } else if (mapMode === "month") {
-      const s = new Date(selectedDate); s.setDate(s.getDate() + 1);
-      const e = new Date(s); e.setDate(e.getDate() + 29);
-      const d = new Date(callDateString);
-      if (d < s || d > e) continue;
-    }
+    if (!isDateInView(callDateString, selectedDateString)) continue;
 
     visibleCallCount++;
-    const urlMatch = String(contactInfo || "").match(/https?:\/\/\S+/);
-    const joinButton = urlMatch ? `<a href="${urlMatch[0]}" target="_blank" title="Join Meeting" style="text-decoration:none;font-size:16px;">🔗</a>` : "";
-
+    const urlMatch   = String(c[3] || "").match(/https?:\/\/\S+/);
+    const joinButton = urlMatch
+      ? `<a href="${urlMatch[0]}" target="_blank" style="text-decoration:none;font-size:16px;">🔗</a>`
+      : "";
     callsTableHtml += `
       <tr>
-        <td>${callDate}</td>
-        <td>${callTime}</td>
-        <td>${eventInfo}</td>
-        <td>${contactInfo}</td>
+        <td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3]}</td>
         <td style="text-align:center;">${joinButton}</td>
       </tr>
     `;
   }
-
   document.getElementById("callsTable").innerHTML = callsTableHtml;
-  document.getElementById("dssWrapper").style.display = activeCount > 0 ? "block" : "none";
-  document.getElementById("callsWrapper").style.display = visibleCallCount > 0 ? "block" : "none";
 
-  let callsBannerColor = visibleCallCount === 0 ? "#006400" : "#B8860B";
-  let callsBannerText = visibleCallCount === 0 ? "0 COORDINATION CALLS" : `${visibleCallCount} COORDINATION CALL${visibleCallCount === 1 ? "" : "S"}`;
+  // Calls banner
+  const callsBannerColor = visibleCallCount === 0 ? "#006400" : "#B8860B";
+  const callsBannerText  = visibleCallCount === 0
+    ? "0 COORDINATION CALLS"
+    : `${visibleCallCount} COORDINATION CALL${visibleCallCount === 1 ? "" : "S"}`;
   document.getElementById("callsBanner").style.background = callsBannerColor;
-  document.getElementById("callsBanner").innerHTML = callsBannerText;
+  document.getElementById("callsBanner").innerHTML        = callsBannerText;
+
+  // Show/hide wrappers
+  document.getElementById("dssWrapper").style.display   = activeCount      > 0 ? "block" : "none";
+  document.getElementById("callsWrapper").style.display = visibleCallCount > 0 ? "block" : "none";
 
   document.getElementById("lastRefresh").innerHTML = "Last Updated: " + new Date().toLocaleTimeString();
 }
 
-// ── Calendar ─────────────────────────────────────────────────────
+// ── Calendar ──────────────────────────────────────────────────────
 function buildCalendar() {
-  const headers = dssRows[0];
+  const headers      = dssRows[0];
   const eventCol     = headers.indexOf("Event Name");
   const eventDateCol = headers.indexOf("Event Date");
   const typeCol      = headers.indexOf("DSS Type");
@@ -782,20 +749,20 @@ function buildCalendar() {
   const emailTimeCol = headers.indexOf("Email Due By");
   const cancelledCol = headers.indexOf("Cancelled");
 
-  const parts = document.getElementById("selectedDate").value.split("-");
+  const parts      = document.getElementById("selectedDate").value.split("-");
   const startOfWeek = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
   startOfWeek.setHours(0, 0, 0, 0);
 
-  let dayBuckets  = Array(14).fill().map(() => []);
-  let callBuckets = Array(14).fill().map(() => []);
+  const dayBuckets  = Array(14).fill(null).map(() => []);
+  const callBuckets = Array(14).fill(null).map(() => []);
 
   for (let i = 1; i < callRows.length; i++) {
     const call = callRows[i];
     if (String(call[5]).trim().toUpperCase() === "TRUE") continue;
     const cp = call[0].split("/");
     const callDate = new Date(cp[2], cp[0] - 1, cp[1]);
-    const daysFromStart = Math.floor((callDate - startOfWeek) / (1000 * 60 * 60 * 24));
-    if (daysFromStart >= 0 && daysFromStart < 14) callBuckets[daysFromStart].push({ event: call[2], time: call[1], rowIndex: i });
+    const diff = Math.floor((callDate - startOfWeek) / 86400000);
+    if (diff >= 0 && diff < 14) callBuckets[diff].push({ event: call[2], time: call[1], rowIndex: i });
   }
 
   for (let i = 1; i < dssRows.length; i++) {
@@ -803,9 +770,9 @@ function buildCalendar() {
     if (String(row[cancelledCol]).trim().toUpperCase() === "TRUE") continue;
     const dp = row[eventDateCol].split("/");
     const eventDate = new Date(Number(dp[2]), Number(dp[0]) - 1, Number(dp[1]));
-    const daysFromStart = Math.floor((eventDate - startOfWeek) / (1000 * 60 * 60 * 24));
-    if (daysFromStart >= 0 && daysFromStart < 14) {
-      dayBuckets[daysFromStart].push({ name: row[eventCol], type: row[typeCol], watchTime: row[watchTimeCol], emailTime: row[emailTimeCol] });
+    const diff = Math.floor((eventDate - startOfWeek) / 86400000);
+    if (diff >= 0 && diff < 14) {
+      dayBuckets[diff].push({ name: row[eventCol], type: row[typeCol], watchTime: row[watchTimeCol], emailTime: row[emailTimeCol] });
     }
   }
 
@@ -819,23 +786,36 @@ function buildCalendar() {
     html += "</tr><tr>";
     for (let day = startDay; day < startDay + 7; day++) {
       html += `<td style="vertical-align:top;height:250px;background:#111;">`;
+
+      // Weekly Brief Due banner on Mondays
+      const currentDate = new Date(startOfWeek);
+      currentDate.setDate(startOfWeek.getDate() + day);
+      if (currentDate.getDay() === 1) {
+        html += `<div style="
+          background:#0066cc;color:white;margin:4px;padding:6px;
+          border-radius:4px;font-size:16px;font-weight:bold;
+          text-align:center;border:2px solid white;
+        ">Weekly Brief Due</div>`;
+      }
+
       dayBuckets[day].forEach(event => {
-        let color = "#333";
-        if (event.type.includes("On-Site DSS")) color = "#006400";
-        else if (event.type.includes("Heads-up email and radar watch")) color = "#4B0082";
-        else if (event.type.includes("Active radar watch")) color = "#8B0000";
-        else if (event.type.includes("Heads-up email")) color = "#003366";
-        html += `<div onclick="showDssDetails('${event.name}')" style="background:${color};cursor:pointer;margin:4px;padding:4px;border-radius:4px;font-size:12px;">
+        html += `<div onclick="showDssDetails('${event.name}')" style="
+          background:${getCalendarColor(event.type)};cursor:pointer;
+          margin:4px;padding:4px;border-radius:4px;font-size:16px;
+        ">
           <b>${event.name}</b>
           ${event.emailTime ? `<br>📧 ${event.emailTime}` : ""}
           ${event.watchTime ? `<br>⏰ ${event.watchTime}` : ""}
         </div>`;
       });
+
       callBuckets[day].forEach(call => {
-        html += `<div onclick="showCallDetails(${call.rowIndex})" style="background:#B8860B;margin:4px;padding:4px;border-radius:4px;font-size:11px;color:black;font-weight:bold;cursor:pointer;">
-          ☎ ${call.time}<br>${call.event}
-        </div>`;
+        html += `<div onclick="showCallDetails(${call.rowIndex})" style="
+          background:#B8860B;margin:4px;padding:4px;border-radius:4px;
+          font-size:16px;color:black;font-weight:bold;cursor:pointer;
+        ">☎ ${call.time}<br>${call.event}</div>`;
       });
+
       html += "</td>";
     }
     return html + "</tr>";
@@ -850,10 +830,10 @@ function buildCalendar() {
   `;
 }
 
-// ── Init ─────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────
 loadZones();
 refreshDashboard();
-setInterval(refreshDashboard, 300000); // refresh every 5 minutes
+setInterval(refreshDashboard, 60000); // 1-minute refresh matching dashboard
 
 </script>
 </body>
