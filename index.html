@@ -55,7 +55,7 @@
 
   /* ── STATUS BAR ── */
   .status-bar {
-    display: grid; grid-template-columns: repeat(5, 1fr);
+    display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 0; border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
   .status-card {
@@ -336,10 +336,10 @@
     font-size: 14px; font-weight: 700;
   }
 
-  /* ── LIGHTNING / AIRPORT FULL-SCREEN ── */
-  #lightningContainer, #airportDashboardContainer { display: none; width: 100%; }
-  #lightningContainer, #airportDashboardContainer { background: var(--surface); }
-  #lightningContainer iframe, #airportDashboardContainer iframe { width: 100%; height: 100%; border: none; }
+  /* ── AIRPORT FULL-SCREEN ── */
+  #airportDashboardContainer { display: none; width: 100%; }
+  #airportDashboardContainer { background: var(--surface); }
+  #airportDashboardContainer iframe { width: 100%; height: 100%; border: none; }
 
   /* ── MODAL ── */
   #calendarModal {
@@ -354,17 +354,6 @@
   .modal-row { margin-bottom: 10px; font-size: 13px; }
   .modal-row strong { display: block; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
   .modal-close { margin-top: 16px; padding: 8px 20px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 600; }
-
-  /* ── OUTAGE MODAL ── */
-  #outageModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; }
-  .outage-modal-total { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-  .outage-county-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 6px; margin-bottom: 4px; background: var(--surface2); border: 1px solid var(--border); font-size: 12px; }
-  .outage-county-name  { font-weight: 700; }
-  .outage-county-state { color: var(--muted); font-size: 10px; margin-left: 4px; }
-  .outage-county-count { font-weight: 800; font-size: 13px; }
-  .outage-trend-up   { color: #f87171; }
-  .outage-trend-down { color: #4ade80; }
-  .outage-trend-flat { color: var(--muted); }
 
   /* ── FOOTER ── */
   .footer { background: var(--surface); border-top: 1px solid var(--border); padding: 6px 20px; display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 11px; color: var(--muted); flex-shrink: 0; }
@@ -419,22 +408,6 @@
       <div class="status-label">Next DSS Event Today</div>
       <div class="status-value" id="nextObligationValue" style="color:#2dd4bf;">--</div>
       <div class="status-sub"   id="nextObligationSub">No upcoming tasks</div>
-    </div>
-  </div>
-  <div class="status-card lightning-card" onclick="showLightningDashboard()">
-    <div class="status-icon blue" id="lightningCardIcon">⚡</div>
-    <div style="min-width:0;">
-      <div class="status-label">UVM LIGHTNING</div>
-      <div class="status-value" id="lightningCardValue" style="color:#60a5fa;">Loading…</div>
-      <div class="status-sub">Click to Open Dashboard</div>
-    </div>
-  </div>
-  <div class="status-card outage-card" onclick="showOutageDetails()">
-    <div class="status-icon outage-none" id="outageCardIcon">🗼</div>
-    <div style="min-width:0;">
-      <div class="status-label">BTV Power Outages</div>
-      <div class="status-value" id="outageCardValue" style="color:#4ade80;">Loading…</div>
-      <div class="status-sub">Click for county breakdown</div>
     </div>
   </div>
 </div>
@@ -564,11 +537,6 @@
   <div id="calendarScrollWrapper"></div>
 </div>
 
-<!-- LIGHTNING FULL-SCREEN -->
-<div id="lightningContainer">
-  <iframe src="https://grafana-public.ssec.wisc.edu/grafana/d/cca85e59-9e80-4fd0-bde4-e0cc0cec31ae/dss-and-stadiums?orgId=1&var-Location=University%20of%20Vermont&refresh=1m&from=now-1h&to=now&timezone=browser" style="width:100%;height:100%;border:none;display:block;"></iframe>
-</div>
-
 <!-- AIRPORT FULL-SCREEN -->
 <div id="airportDashboardContainer">
   <iframe src="https://cimss.ssec.wisc.edu/probsevere/lc/dashboard/#/?layout=N4IgbgpgTgzglgewHYgFwEYA0IDmU4AmAwggK5IAuaAHNggGb1wDGEAkgWiAEIAqAaiGw4EEGBy7ohIZggC2AB2QRKMNAG1QhNAFYALHoDM2AB5oADNgCeF7AHdCFABZpDOyyCcQ4OJ1VQATOYeeIRsSAQQZqjmAL6YWpyo+nq0INEeNjH2ji6obh5ePn5oQSH4BOGR0ejxiboGeqa2IFkeDgTOru7YRb7+ZcIVVVGldSDayQY6zdmtLR1d+T2e3v2lwUNhEaP545MpAGyzmQu53YVrJYGbuMM70Xr7SSkA7CfWZ515Bb1XA7dQpUHrpng09ABOD7zOaLH4rPrXQZ3bbVNCHMFTFYZT6w87LS7FAHlVG7V6xAC62AANhAcCoCLwEDgcLS0BQoKQINgKHA5BAAEoAQyQ9K4SAQdgAtOgXLEgA" style="width:100%;height:100%;border:none;display:block;"></iframe>
@@ -579,16 +547,6 @@
   <div class="modal-box">
     <div id="calendarModalContent"></div>
     <button class="modal-close" onclick="document.getElementById('calendarModal').style.display='none'">Close</button>
-  </div>
-</div>
-
-<!-- OUTAGE MODAL -->
-<div id="outageModal">
-  <div class="modal-box" style="width:420px;">
-    <h2>🗼 BTV Power Outages — County Breakdown</h2>
-    <div id="outageModalTotal" class="outage-modal-total"></div>
-    <div id="outageModalList" style="max-height:380px; overflow-y:auto;"></div>
-    <button class="modal-close" onclick="document.getElementById('outageModal').style.display='none'">Close</button>
   </div>
 </div>
 
@@ -613,7 +571,6 @@ var GITHUB_BRANCH = 'main';
 var EVENTS_URL    = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/events.json';
 var CALLS_URL     = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/calls.json';
 var ZONES_URL     = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/zones.json';
-var GRAFANA_URL   = 'https://grafana-public.ssec.wisc.edu/grafana/api/ds/query';
 
 // ══════════════════════════════════════════════════════════════
 //  STATE
@@ -624,7 +581,6 @@ var callRows         = [];
 var showAllDss       = false;
 var showAllCalls     = false;
 var MAX_VISIBLE_ROWS = 8;
-var _outageDataCache = null;
 var tickerAnimFrame  = null;
 var tickerPos        = 0;
 var tickerSpeed      = 0.6;
@@ -721,7 +677,6 @@ function setNavActive(id) {
 function showMainLayout() {
   document.getElementById('mainLayout').style.display               = 'grid';
   document.getElementById('calendarContainer').style.display         = 'none';
-  document.getElementById('lightningContainer').style.display        = 'none';
   document.getElementById('airportDashboardContainer').style.display  = 'none';
 }
 
@@ -855,89 +810,6 @@ function showCallDetails(rowIndex) {
     (call[4] ? '<div class="modal-row"><strong>Additional</strong>' + call[4] + '</div>' : '') +
     (urlMatch ? '<br><a href="' + urlMatch[0] + '" target="_blank" class="join-btn" style="padding:8px 14px;font-size:13px;">🔗 Join Meeting</a>' : '')
   );
-}
-
-// ══════════════════════════════════════════════════════════════
-//  LIGHTNING
-// ══════════════════════════════════════════════════════════════
-function updateLightningCard() {
-  var payload = {
-    queries: [{
-      refId: 'A',
-      datasource: { type: 'mysql', uid: 'cca98bab-5d31-44b9-8d44-f0b5eb3da471' },
-      rawSql: 'SELECT utctime as time_sec, pltg_1fl_60min_max16km FROM `University of Vermont` ORDER BY utctime DESC LIMIT 1',
-      format: 'table'
-    }]
-  };
-  fetch(GRAFANA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var prob = data.results.A.frames[0].data.values[1][0];
-      var level, color;
-      if      (prob <= 10) { level = 'LOW';      color = '#4ade80'; }
-      else if (prob <= 30) { level = 'MODERATE'; color = '#e3b341'; }
-      else if (prob <= 60) { level = 'HIGH';     color = '#f0883e'; }
-      else                 { level = 'CRITICAL'; color = '#f85149'; }
-      document.getElementById('lightningCardValue').textContent  = level + ' (' + prob + '%)';
-      document.getElementById('lightningCardValue').style.color  = color;
-      document.getElementById('lightningCardIcon').style.color   = color;
-    })
-    .catch(function() {
-      document.getElementById('lightningCardValue').textContent = 'Unavailable';
-    });
-}
-
-function showLightningDashboard() {
-  document.getElementById('mainLayout').style.display               = 'none';
-  document.getElementById('calendarContainer').style.display         = 'none';
-  document.getElementById('airportDashboardContainer').style.display  = 'none';
-  var lc = document.getElementById('lightningContainer');
-  lc.style.display = 'flex'; lc.style.flex = '1'; lc.style.flexDirection = 'column';
-}
-
-// ══════════════════════════════════════════════════════════════
-//  OUTAGE MODAL
-// ══════════════════════════════════════════════════════════════
-function _outageTierClass(level) {
-  var map = { NONE: 'outage-none', MINOR: 'outage-minor', MODERATE: 'outage-moderate', MAJOR: 'outage-major', SEVERE: 'outage-severe' };
-  return map[level] || 'outage-none';
-}
-
-function showOutageDetails() {
-  // The TV display can't call Apps Script, so we just show a placeholder or
-  // use any cached outage data that was embedded in the last push.
-  // For now we show the cached data if available.
-  if (_outageDataCache) { renderOutageModal(_outageDataCache); return; }
-  var listEl = document.getElementById('outageModalList');
-  listEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--muted);">Outage data is fetched server-side. Check vtoutages.com for live data.</div>';
-  document.getElementById('outageModalTotal').textContent = '';
-  document.getElementById('outageModal').style.display = 'block';
-}
-
-function renderOutageModal(data) {
-  var totalEl = document.getElementById('outageModalTotal');
-  var listEl  = document.getElementById('outageModalList');
-  totalEl.innerHTML =
-    data.emoji + ' <span style="font-size:16px;">' + data.total.toLocaleString() +
-    '</span> total customers out across VT + Northern NY';
-  listEl.innerHTML = '';
-  if (data.total === 0) {
-    listEl.innerHTML = '<div style="text-align:center;padding:16px;color:#4ade80;font-weight:700;">✓ No reported outages across the region</div>';
-  } else {
-    (data.counties || []).forEach(function(c) {
-      if (c.count === 0) return;
-      var trendIcon = '➡️', trendClass = 'outage-trend-flat';
-      if (c.trend === 'up')   { trendIcon = '⬆️'; trendClass = 'outage-trend-up'; }
-      if (c.trend === 'down') { trendIcon = '⬇️'; trendClass = 'outage-trend-down'; }
-      var row = document.createElement('div');
-      row.className = 'outage-county-row';
-      row.innerHTML =
-        '<div><span class="outage-county-name">' + c.name + '</span><span class="outage-county-state"> ' + c.state + '</span></div>' +
-        '<div><span class="outage-county-count">' + c.count.toLocaleString() + '</span> <span class="' + trendClass + '">' + trendIcon + '</span></div>';
-      listEl.appendChild(row);
-    });
-  }
-  document.getElementById('outageModal').style.display = 'block';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1167,7 +1039,6 @@ async function refreshDashboard() {
   } catch(err) {
     document.getElementById('dssStatusValue').textContent = 'Load Error';
   }
-  updateLightningCard();
   updateRiskButtons();
   updateAlertTicker();
 }
@@ -1524,7 +1395,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('calendarView').addEventListener('click', function() {
     setNavActive('calendarView');
     document.getElementById('mainLayout').style.display               = 'none';
-    document.getElementById('lightningContainer').style.display        = 'none';
     document.getElementById('airportDashboardContainer').style.display  = 'none';
     document.getElementById('calendarContainer').style.display          = 'flex';
     buildCalendar();
@@ -1533,7 +1403,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setNavActive('airportDashboardView');
     document.getElementById('mainLayout').style.display               = 'none';
     document.getElementById('calendarContainer').style.display         = 'none';
-    document.getElementById('lightningContainer').style.display        = 'none';
     document.getElementById('airportDashboardContainer').style.display  = 'block';
   });
 
