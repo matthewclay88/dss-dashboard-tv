@@ -62,22 +62,7 @@
   .ticker-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
   .ticker-sep { display:inline-flex; align-items:center; padding:0 10px; color:#1e2d3d; font-size:16px; height:100%; }
 
-  .threat-row { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:5px; margin:6px 0; }
-  .threat-card { background:#111827; border-left:3px solid var(--tc-border,#374151); border-radius:0 6px 6px 0; padding:9px 11px; display:flex; align-items:center; gap:10px; }
-  .threat-dial { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:2px solid var(--tc-border); font-size:13px; font-weight:800; flex-shrink:0; }
-  .threat-meta { display:flex; flex-direction:column; justify-content:center; min-width:0; flex:1; }
-  .threat-type { font-size:9px; color:#9ca3af; font-weight:600; }
-  .threat-label { font-size:11px; font-weight:800; color:var(--tc-color,#4b5563); margin-top:2px; line-height:1.05; }
-  .threat-bar-track { height:3px; border-radius:2px; background:linear-gradient(to right,#16a34a,#ca8a04,#ea580c,#dc2626,#7c3aed); width:100%; position:relative; margin-top:3px; }
-  .threat-bar-marker { position:absolute; top:-4px; width:2px; height:11px; background:var(--tc-color,#fff); border-radius:1px; transform:translateX(-50%); }
-  .tc-gray   { --tc-border:#374151; --tc-color:#9ca3af; }
-  .tc-green  { --tc-border:#16a34a; --tc-color:#86efac; }
-  .tc-yellow { --tc-border:#ca8a04; --tc-color:#facc15; }
-  .tc-orange { --tc-border:#ea580c; --tc-color:#fb923c; }
-  .tc-red    { --tc-border:#dc2626; --tc-color:#f87171; }
-  .tc-purple { --tc-border:#7c3aed; --tc-color:#c084fc; }
-
-  .nav-toolbar { background:var(--surface); border-bottom:1px solid var(--border); padding:5px 14px; display:flex; align-items:center; justify-content:space-between; gap:12px; overflow-x:auto; }
+  .nav-toolbar { background:var(--surface); border-bottom:1px solid var(--border); padding:5px 14px; display:flex; align-items:center; justify-content:center; gap:12px; overflow-x:auto; }
   .nav-group { display:flex; align-items:center; gap:3px; padding:3px 6px; flex:0 0 auto; }
   .nav-group-label { font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; white-space:nowrap; margin-right:5px; }
   .nav-group.group-date .nav-group-label { color:#60a5fa; }
@@ -242,12 +227,6 @@
   <div style="flex:1; overflow:hidden; position:relative; height:100%;">
     <div id="tickerTrack"></div>
   </div>
-</div>
-
-<div class="threat-row" id="threat-gauge-row">
-  <div class="threat-card tc-gray"><div class="threat-dial">—</div><div class="threat-meta"><div class="threat-type">⚡ Severe</div><div class="threat-label">N/A in lite mode</div><div class="threat-bar-track"><div class="threat-bar-marker" style="left:0%"></div></div></div></div>
-  <div class="threat-card tc-gray"><div class="threat-dial">—</div><div class="threat-meta"><div class="threat-type">🌪 Tornado</div><div class="threat-label">N/A in lite mode</div><div class="threat-bar-track"><div class="threat-bar-marker" style="left:0%"></div></div></div></div>
-  <div class="threat-card tc-gray"><div class="threat-dial">—</div><div class="threat-meta"><div class="threat-type">💧 Hydrology</div><div class="threat-label">N/A in lite mode</div><div class="threat-bar-track"><div class="threat-bar-marker" style="left:0%"></div></div></div></div>
 </div>
 
 <div class="nav-toolbar">
