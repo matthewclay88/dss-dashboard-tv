@@ -1,1424 +1,3571 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>NWS Burlington DSS Dashboard</title>
+
+<base target="_top">
+
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg:        #06090f;
-    --surface:   #0d1117;
-    --surface2:  #131920;
-    --border:    #1e2d3d;
-    --border2:   #243447;
-    --text:      #e2e8f0;
-    --muted:     #8899a6;
-    --accent:    #1d6fa4;
-    --green:     #16a34a;
-    --green-bg:  #052e16;
-    --red:       #dc2626;
-    --red-bg:    #3b0a0a;
-    --amber:     #d97706;
-    --amber-bg:  #451a03;
-    --blue:      #2563eb;
-    --blue-bg:   #172554;
-    --purple:    #7c3aed;
-    --purple-bg: #2e1065;
-  }
-  html, body { height: 100%; overflow: hidden; }
-  body {
-    display: flex; flex-direction: column;
-    background: var(--bg); color: var(--text);
-    font-family: 'Inter', Arial, sans-serif; font-size: 14px; line-height: 1.5;
-  }
 
-  /* ── TOP HEADER ── */
-  .top-header {
-    background: #0f1b2de0; border-bottom: 1px solid var(--border);
-    padding: 10px 16px; display: flex; align-items: center; gap: 12px;
-    flex-shrink: 0;
-  }
-  .header-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .header-brand .nws-logo { width: 160px; height: auto; display: block; object-fit: contain; }
-  .header-brand h1 { font-size: 17px; font-weight: 600; color: #fff; line-height: 1.1; white-space: nowrap; }
-  .header-sep { width: 1px; background: var(--border); align-self: stretch; margin: 0 4px; flex-shrink: 0; }
-  .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
-  .refresh-btn {
-    background: #112233; border: 1px solid #1d6fa4; color: #64b5f6;
-    width: 30px; height: 30px; border-radius: 6px; cursor: pointer;
-    font-size: 15px; display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-  }
-  .refresh-btn:hover { background: #1a3a55; }
-  .last-updated { font-size: 11px; color: var(--muted); }
+body{
+    margin:0;
+    background:#000;
+    color:white;
+    font-family:Arial,sans-serif;
+}
 
-  /* ── STATUS BAR ── */
-  .status-bar {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 0; border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .status-card {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 14px; background: var(--surface);
-    border-right: 1px solid var(--border); min-width: 0;
-  }
-  .status-card:last-child { border-right: none; }
-  .status-icon {
-    width: 46px; height: 46px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0;
-  }
-  .status-icon.green  { background: #052e16; border: 2px solid #16a34a; }
-  .status-icon.amber  { background: #451a03; border: 2px solid #d97706; }
-  .status-icon.red    { background: #3b0a0a; border: 2px solid #dc2626; }
-  .status-icon.blue   { background: #172554; border: 2px solid #2563eb; }
-  .status-icon.purple { background: #2e1065; border: 2px solid #7c3aed; }
-  .status-icon.teal   { background: #042f2e; border: 2px solid #0d9488; }
-  .status-icon.outage-none     { background: #052e16; border: 2px solid #16a34a; }
-  .status-icon.outage-minor    { background: #422006; border: 2px solid #facc15; }
-  .status-icon.outage-moderate { background: #431407; border: 2px solid #f97316; }
-  .status-icon.outage-major    { background: #3b0a0a; border: 2px solid #dc2626; }
-  .status-icon.outage-severe   { background: #2e1065; border: 2px solid #a855f7; }
-  .status-label { font-size: 11px; font-weight: 700; letter-spacing:1px; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
-  .status-value { font-size: 20px; font-weight: 700; line-height: 1.2; }
-  .status-sub   { font-size: 12px; line-height: 1.3; color: var(--muted); }
-  .lightning-card { cursor: pointer; transition: all .2s ease; }
-  .lightning-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(37,99,235,.25); }
-  .outage-card { cursor: pointer; transition: all .2s ease; }
-  .outage-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,.25); }
+.header{
+    background:#111;
+    padding:10px 15px;
+    font-size:22px;
+    font-weight:bold;
+    border-bottom:1px solid #333;
+}
 
-  /* ── ALERT TICKER ── */
-  #alertTicker {
-    background: #050d18; border-bottom: 1px solid var(--border);
-    height: 28px; display: flex; align-items: center; overflow: hidden;
-    position: relative; flex-shrink: 0;
-  }
-  .ticker-label {
-    flex-shrink: 0; background: #0f1b2d; border-right: 1px solid var(--border);
-    padding: 0 10px; height: 100%; display: flex; align-items: center;
-    font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
-    color: #64b5f6; text-transform: uppercase; white-space: nowrap;
-  }
-  #tickerTrack {
-    display: flex; align-items: center; height: 100%;
-    position: absolute; white-space: nowrap; will-change: transform;
-    left: 80px;
-  }
-  .ticker-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 0 14px; height: 100%; font-size: 11px; font-weight: 600;
-    white-space: nowrap; cursor: pointer; border-right: 1px solid #1e2d3d;
-    transition: filter 0.15s; text-decoration: none;
-  }
-  .ticker-chip:hover { filter: brightness(1.2); }
-  .ticker-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .ticker-sep { display: inline-flex; align-items: center; padding: 0 10px; color: #1e2d3d; font-size: 16px; height: 100%; }
+#tableContainer{
+    height:100px;
+    overflow-y:auto;
+    padding:5px 10px;
+}
 
-  /* ── WEEKLY REMINDER ── */
-  #weeklyReminderBanner {
-    display: none; background: #3157D5; border-top: 1px solid #fff;
-    border-bottom: 1px solid #fff; padding: 10px 18px; color: white;
-    font-weight: 700; font-size: 15px; text-align: center;
-    letter-spacing: .02em; flex-shrink: 0;
-  }
+#callsTableContainer{
+    height:80px;
+    overflow-y:auto;
+    padding:5px 10px;
+}
 
-  /* ── NAV TOOLBAR ── */
-  .nav-toolbar {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 5px 14px; display: flex; align-items: center;
-    justify-content: space-between; gap: 12px; overflow-x: auto; flex-shrink: 0;
-  }
-  .nav-group { display: flex; align-items: center; gap: 3px; padding: 3px 6px; flex: 0 0 auto; }
-  .nav-group-label {
-    font-size: 9px; font-weight: 800; letter-spacing: 0.12em;
-    text-transform: uppercase; white-space: nowrap; margin-right: 5px; flex-shrink: 0;
-  }
-  .nav-group.group-date .nav-group-label { color: #60a5fa; }
-  .nav-group.group-risk .nav-group-label { color: #fbbf24; }
-  .nav-group.group-dash .nav-group-label { color: #a78bfa; }
-  .nav-btn {
-    flex-shrink: 0; display: flex; align-items: center; gap: 5px;
-    padding: 5px 10px; border: 1px solid var(--border2);
-    border-radius: 6px; background: var(--surface2); color: var(--muted);
-    font-size: 11px; font-weight: 600; cursor: pointer;
-    transition: all 0.15s; white-space: nowrap; font-family: inherit;
-  }
-  .nav-btn:hover  { background: #1a2535; color: var(--text); border-color: #2d4a6a; }
-  .nav-btn.active { background: #112233; color: #64b5f6; border-color: #1d6fa4; }
-  .nav-btn .icon  { font-size: 13px; }
-  .nav-sep { width: 1px; background: var(--border); margin: 0 4px; align-self: stretch; }
+table{
+    width:100%;
+    border-collapse:collapse;
+}
 
-  /* Risk button colors */
-  .risk-none    { color: #8899a6 !important; border-color: #1e2d3d !important; }
-  .risk-marginal{ color: #86efac !important; border-color: #166534 !important; background: #052e16 !important; }
-  .risk-slight  { color: #fde68a !important; border-color: #854d0e !important; background: #422006 !important; }
-  .risk-enhanced{ color: #fdba74 !important; border-color: #9a3412 !important; background: #431407 !important; }
-  .risk-moderate{ color: #f87171 !important; border-color: #991b1b !important; background: #3b0a0a !important; }
-  .risk-high    { color: #c084fc !important; border-color: #7e22ce !important; background: #2e1065 !important; }
-  .risk-heat-low      { color: #86efac !important; border-color: #166534 !important; background: #052e16 !important; }
-  .risk-heat-minor    { color: #fef08a !important; border-color: #854d0e !important; background: #422006 !important; }
-  .risk-heat-moderate { color: #fdba74 !important; border-color: #9a3412 !important; background: #431407 !important; }
-  .risk-heat-high     { color: #f87171 !important; border-color: #991b1b !important; background: #3b0a0a !important; }
-  .risk-heat-extreme  { color: #c084fc !important; border-color: #7e22ce !important; background: #2e1065 !important; }
+th{
+    background:#222;
+}
 
-  /* ── MAIN LAYOUT ── */
-  .main-layout {
-    flex: 1; display: grid;
-    grid-template-columns: 260px minmax(600px,1fr) minmax(480px,32vw);
-    min-height: 0;
-  }
+td{
+    background:#111;
+}
 
-  /* ── LEFT PANEL ── */
-  .left-panel {
-    background: var(--surface); border-right: 1px solid var(--border);
-    overflow-y: auto; display: flex; flex-direction: column;
-  }
-  .panel-section { padding: 12px 12px 8px; border-bottom: 1px solid var(--border); }
-  .panel-section-title {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .panel-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-  .summary-tile {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 7px; padding: 8px; display: flex; align-items: center; gap: 7px;
-  }
-  .tile-icon  { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; }
-  .tile-num   { font-size: 20px; font-weight: 900; line-height: 1; }
-  .tile-label { font-size: 9px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.2; }
-  .tile-red    { border-left: 3px solid var(--red); }
-  .tile-blue   { border-left: 3px solid var(--blue); }
-  .tile-purple { border-left: 3px solid var(--purple); }
-  .upcoming-list { display: flex; flex-direction: column; gap: 3px; max-height: 230px; overflow-y: auto; }
-  .upcoming-item {
-    border-radius: 7px; padding: 8px 10px; margin-bottom: 5px;
-    transition: transform 0.2s; cursor: pointer;
-    background: rgba(217,119,6,.08); border-left: 4px solid #d97706;
-  }
-  .upcoming-item:hover         { transform: translateX(3px); }
-  .upcoming-item-name          { font-size: 11px; font-weight: 700; line-height: 1.2; }
-  .upcoming-item-meta          { font-size: 10px; color: var(--muted); margin-top: 1px; }
-  .upcoming-radar   { background: rgba(239,68,68,.12);  border-left: 4px solid #ef4444; }
-  .upcoming-headsup { background: rgba(59,130,246,.12); border-left: 4px solid #3b82f6; }
-  .upcoming-onsite  { background: rgba(124,58,237,.12); border-left: 4px solid #7c3aed; }
+th,td{
+    padding:4px 8px;
+    border:1px solid #333;
+    font-size:16px;
+}
 
-  /* ── CENTER PANEL ── */
-  .center-panel { background: var(--bg); overflow-y: auto; display: flex; flex-direction: column; }
-  .data-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-  .data-section-header { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
-  .data-section-header h2 { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-  .data-section-header .section-icon { font-size: 14px; }
-  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .data-table th {
-    background: #1b2d3c; color: #ffffff; font-size: 10px;
-    font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
-    padding: 6px 10px; text-align: left;
-    border-bottom: 2px solid #3b82f6;
-    position: sticky; top: 0; z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,.25); white-space: nowrap;
-  }
-  .data-table td {
-    padding: 7px 10px; border-bottom: 1px solid var(--border);
-    vertical-align: middle; background: var(--surface);
-  }
-  .data-table tr:hover td { background: #0f1b2a; }
-  .data-table tr.row-radar   td:first-child { border-left: 4px solid #dc2626; }
-  .data-table tr.row-headsup td:first-child { border-left: 4px solid #2563eb; }
-  .data-table tr.row-onsite  td:first-child { border-left: 4px solid #7c3aed; }
-  .dss-type-badge {
-    display: inline-block; padding: 2px 7px; border-radius: 4px;
-    font-size: 10px; font-weight: 700; white-space: nowrap;
-  }
-  .badge-radar   { background: #3b0a0a; color: #f87171; border: 1px solid #7f1d1d; }
-  .badge-email   { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; }
-  .badge-onsite  { background: #2e1065; color: #c4b5fd; border: 1px solid #7c3aed; }
-  .badge-default { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-  .join-btn {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 9px; background: #112233; border: 1px solid #1d6fa4;
-    color: #64b5f6; border-radius: 5px; text-decoration: none;
-    font-size: 11px; font-weight: 600; transition: background 0.15s;
-  }
-  .join-btn:hover { background: #1a3a55; }
-  .table-scroll { overflow-x: auto; }
-  .time-chip    { font-size: 11px; color: var(--muted); font-weight: 600; }
-  .view-more-row { background: #223344; cursor: pointer; }
-  .view-more-row:hover { background: #30465c; }
+.main{
+    display:flex;
+    height:calc(100vh - 300px);
+}
 
-  /* ── TODAY GLANCE TIMELINE ── */
-  .glance-section {
-    padding: 10px 14px 12px; border-bottom: 1px solid var(--border); background: #080d14;
-  }
-  .glance-title {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .glance-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .timeline-track {
-    position: relative; display: flex; align-items: flex-start;
-    gap: 0; overflow-x: auto; padding-bottom: 4px;
-  }
-  .timeline-track::-webkit-scrollbar { height: 3px; }
-  .timeline-track::-webkit-scrollbar-thumb { background: #243447; border-radius: 2px; }
-  .timeline-spine { position: absolute; top: 10px; left: 0; right: 0; height: 2px; background: var(--border); z-index: 0; }
-  .timeline-empty { font-size: 12px; color: var(--muted); font-style: italic; padding: 4px 0; }
-  .tl-item {
-    display: flex; flex-direction: column; align-items: center;
-    position: relative; z-index: 1;
-    min-width: 90px; max-width: 130px; padding: 0 6px; text-align: center;
-  }
-  .tl-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid; flex-shrink: 0; margin-bottom: 5px; background: var(--bg); }
-  .tl-dot.radar   { border-color: #dc2626; box-shadow: 0 0 6px rgba(220,38,38,.5); }
-  .tl-dot.headsup { border-color: #2563eb; box-shadow: 0 0 6px rgba(37,99,235,.5); }
-  .tl-dot.onsite  { border-color: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,.5); }
-  .tl-dot.call    { border-color: #d97706; box-shadow: 0 0 6px rgba(217,119,6,.5); }
-  .tl-time  { font-size: 10px; font-weight: 800; color: var(--text); white-space: nowrap; }
-  .tl-label { font-size: 10px; color: var(--muted); line-height: 1.2; margin-top: 1px; }
+.leftPanel{
+    width:50%;
+    background:#111;
+    border-right:1px solid #333;
+}
 
-  /* ── RIGHT PANEL / MAP ── */
-  .right-panel {
-    background: var(--surface); border-left: 1px solid var(--border);
-    display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; position: relative;
-  }
-  .map-header {
-    flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface); z-index: 5;
-  }
-  .map-title {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 5px;
-  }
-  #map { flex: 1; width: 100%; min-height: 0; }
-  .map-legend {
-    background: rgba(15,25,35,.88); color: white; border-radius: 8px;
-    padding: 6px 8px; font-size: 11px; line-height: 1.3;
-    box-shadow: 0 2px 8px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08);
-  }
-  .legend-title { font-size: 10px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .08em; color: #d8e6f5; }
-  .legend-row   { display: flex; align-items: center; gap: 5px; margin: 2px 0; }
-  .legend-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .legend-dot.radar   { background: #ef4444; }
-  .legend-dot.headsup { background: #2563eb; }
-  .legend-dot.onsite  { background: #7c3aed; }
+.rightPanel{
+    width:50%;
+    padding:10px;
+    background:#000;
+    box-sizing:border-box;
+}
 
-  /* ── CALENDAR ── */
-  #calendarContainer {
-    display: none; flex: 1; min-height: 0; width: 100%;
-    overflow: hidden; flex-direction: column; background: var(--bg);
-  }
-  #calendarScrollWrapper { flex: 1; overflow-y: auto; overflow-x: auto; min-height: 0; }
-  .cal-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  .cal-table th {
-    background: var(--surface); color: var(--muted); border: 1px solid var(--border);
-    padding: 0; position: sticky; top: 0; z-index: 10;
-  }
-  .cal-day-header { display: block; padding: 8px; cursor: pointer; }
-  .cal-day-header:hover { background: #1a3a55; }
-  .cal-day-header .day-name { font-size: 10px; color: var(--muted); }
-  .cal-table td {
-    height: 240px; max-height: 240px; padding: 0; vertical-align: top;
-    border: 1px solid var(--border); background: var(--surface);
-    overflow: hidden; position: relative;
-  }
-  .cal-cell { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
-  .cal-date { flex: 0 0 auto; padding: 5px 6px; font-size: 12px; font-weight: 700; border-bottom: 1px solid var(--border); background: #101720; }
-  .cal-events { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px; min-height: 0; }
-  .cal-events::-webkit-scrollbar { width: 4px; }
-  .cal-events::-webkit-scrollbar-thumb { background: #34495e; border-radius: 4px; }
-  .cal-event-chip { padding: 2px 4px; margin-bottom: 2px; font-size: 11px; line-height: 1.1; border-radius: 3px; }
-  .cal-weekly-chip {
-    background: #4169E1 !important; color: #fff !important;
-    border: 1px solid #fff; border-radius: 5px; padding: 3px; margin-bottom: 3px;
-    font-size: 14px; font-weight: 700;
-  }
+#map{
+    width:100%;
+    height:96%;
+    border:1px solid #333;
+}
 
-  /* ── AIRPORT FULL-SCREEN ── */
-  #airportDashboardContainer { display: none; width: 100%; }
-  #airportDashboardContainer { background: var(--surface); }
-  #airportDashboardContainer iframe { width: 100%; height: 100%; border: none; }
+#statusBanner{
+    text-align:center;
+    padding:8px;
+    font-size:16px;
+    font-weight:bold;
+    border-bottom:1px solid #333;
+}
 
-  /* ── MODAL ── */
-  #calendarModal {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75); z-index: 9999;
-  }
-  .modal-box {
-    background: var(--surface); border: 1px solid var(--border2); border-radius: 12px;
-    width: 480px; max-width: 90%; padding: 24px; color: var(--text); margin: 80px auto;
-  }
-  .modal-box h2 { font-size: 18px; font-weight: 800; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-  .modal-row { margin-bottom: 10px; font-size: 13px; }
-  .modal-row strong { display: block; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
-  .modal-close { margin-top: 16px; padding: 8px 20px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 600; }
-
-  /* ── FOOTER ── */
-  .footer { background: var(--surface); border-top: 1px solid var(--border); padding: 6px 20px; display: flex; align-items: center; justify-content: center; gap: 20px; font-size: 11px; color: var(--muted); flex-shrink: 0; }
-  .footer-dot { color: #1d6fa4; }
-
-  /* ── MISC ── */
-  .empty-state { padding: 12px; text-align: center; color: var(--muted); font-size: 12px; }
-  ::-webkit-scrollbar       { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: #243447; border-radius: 3px; }
-  .leaflet-popup-content-wrapper { background: #0d1117 !important; color: #e2e8f0 !important; border: 1px solid #1e2d3d !important; border-radius: 8px !important; }
-  .leaflet-popup-tip { background: #0d1117 !important; }
 </style>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 </head>
+
 <body>
 
-<!-- TOP HEADER -->
-<div class="top-header">
-  <div class="header-brand">
-    <img class="nws-logo" src="https://lh3.googleusercontent.com/d/1GT37aCk0jaEtRToJ_afhTcBJAbCFybXt" alt="NWS Burlington">
-    <div><h1>NWS Burlington DSS Dashboard</h1></div>
-  </div>
-  <div class="header-sep"></div>
-  <div class="header-right">
-    <span class="last-updated" id="lastUpdated">Updating…</span>
-    <button class="refresh-btn" onclick="refreshDashboard()" title="Refresh">↻</button>
-  </div>
+<div class="header">
+NWS Burlington DSS Dashboard
 </div>
 
-<!-- STATUS BAR -->
-<div class="status-bar">
-  <div class="status-card" id="dssStatusCard">
-    <div class="status-icon green" id="dssStatusIcon">✓</div>
-    <div style="min-width:0;">
-      <div class="status-label">DSS Status</div>
-      <div class="status-value" id="dssStatusValue" style="color:#4ade80;">Loading…</div>
-      <div class="status-sub"   id="dssStatusSub">--</div>
-    </div>
-  </div>
-  <div class="status-card">
-    <div class="status-icon blue" id="callStatusIcon">☎</div>
-    <div style="min-width:0;">
-      <div class="status-label">Coord. Calls</div>
-      <div class="status-value" id="callStatusValue" style="color:#60a5fa;">Loading…</div>
-      <div class="status-sub"   id="callStatusSub">--</div>
-    </div>
-  </div>
-  <div class="status-card">
-    <div class="status-icon teal" id="nextObligationIcon">⏱</div>
-    <div style="min-width:0;">
-      <div class="status-label">Next DSS Event Today</div>
-      <div class="status-value" id="nextObligationValue" style="color:#2dd4bf;">--</div>
-      <div class="status-sub"   id="nextObligationSub">No upcoming tasks</div>
-    </div>
-  </div>
+<div id="statusBanner">
+Loading DSS Status...
 </div>
 
-<!-- ALERT TICKER -->
-<div id="alertTicker">
-  <div class="ticker-label">⚠ BTV Alerts</div>
-  <div style="flex:1; overflow:hidden; position:relative; height:100%;">
-    <div id="tickerTrack"></div>
-  </div>
+<div id="callsBanner"
+     style="
+       text-align:center;
+       padding:8px;
+       font-size:16px;
+       font-weight:bold;
+       border-bottom:1px solid #333;
+       background:#006400;
+     ">
+  Loading Coordination Calls...
 </div>
 
-<!-- WEEKLY REMINDER -->
-<div id="weeklyReminderBanner">📋 Weekly Brief Due Today — Don't forget to prepare and distribute this week's DSS Weekly Brief.</div>
-
-<!-- NAV TOOLBAR -->
-<div class="nav-toolbar">
-  <div class="nav-group group-date">
-    <span class="nav-group-label">Date range</span>
-    <button class="nav-btn active" id="todayView">Today</button>
-    <button class="nav-btn" id="tomorrowView">Tomorrow</button>
-    <button class="nav-btn" id="weekView">7 days</button>
-    <button class="nav-btn" id="monthView">30 days</button>
-    <button class="nav-btn" id="calendarView"><span class="icon">🗓</span>Calendar</button>
-  </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group group-risk">
-    <span class="nav-group-label">Environmental risks</span>
-    <button class="nav-btn risk-none" id="spcBtn"  onclick="window.open('https://www.spc.noaa.gov/products/outlook/','_blank')"><span class="icon">⛈</span><span id="spcLabel">SPC: Loading…</span></button>
-    <button class="nav-btn risk-none" id="wpcBtn"  onclick="window.open('https://www.wpc.ncep.noaa.gov/qpf/excessive_rainfall_outlook_ero.php','_blank')"><span class="icon">🌧</span><span id="wpcLabel">WPC ERO: Loading…</span></button>
-    <button class="nav-btn risk-none" id="heatBtn" onclick="window.open('https://www.wpc.ncep.noaa.gov/heatrisk/','_blank')"><span class="icon">🌡</span><span id="heatLabel">Heat Risk: Loading…</span></button>
-    <button class="nav-btn risk-none" id="wssiBtn" onclick="window.open('https://www.wpc.ncep.noaa.gov/wwd/wssi/wssi.php','_blank')"><span class="icon">❄</span><span id="wssiLabel">WSSI: Loading…</span></button>
-  </div>
-  <div class="nav-sep"></div>
-  <div class="nav-group group-dash">
-    <span class="nav-group-label">Quick dashboards</span>
-    <button class="nav-btn" id="airportDashboardView"><span class="icon">✈</span>Airport dashboard</button>
-    <button class="nav-btn" onclick="window.open('https://cimss.ssec.wisc.edu/probsevere/lc/dashboard/','_blank')"><span class="icon">🌪</span>Severe dashboard</button>
-  </div>
+<div
+  id="lastRefresh"
+  style="
+    text-align:center;
+    font-size:11px;
+    color:#aaa;
+    padding:4px;
+    background:#111;
+  ">
+  Last Updated: --
 </div>
 
-<!-- MAIN LAYOUT -->
-<div id="mainLayout" class="main-layout">
+<div style="
+  text-align:center;
+  padding:8px;
+  background:#111;
+">
 
-  <!-- LEFT PANEL -->
-  <div class="left-panel">
-    <div class="panel-section">
-      <div class="panel-section-title">DSS Summary</div>
-      <div class="summary-grid">
-        <div class="summary-tile tile-red">
-          <div class="tile-icon">🔴</div>
-          <div><div class="tile-num" id="tileRadar">–</div><div class="tile-label">Radar Watch</div></div>
-        </div>
-        <div class="summary-tile tile-blue">
-          <div class="tile-icon">🔵</div>
-          <div><div class="tile-num" id="tileEmail">–</div><div class="tile-label">Heads Up Email</div></div>
-        </div>
-        <div class="summary-tile tile-purple">
-          <div class="tile-icon">🟣</div>
-          <div><div class="tile-num" id="tileOnsite">–</div><div class="tile-label">On Site DSS</div></div>
-        </div>
-      </div>
+ <button id="todayView">
+  Today
+</button>
+
+<button id="tomorrowView">
+  Tomorrow
+</button>
+
+<button id="weekView">
+  Next 7 Days
+</button>
+
+<button id="monthView">
+  Next 30 Days
+</button>
+
+<button id="calendarView">
+  Calendar
+</button>
+
+  <div
+    id="mapModeLabel"
+    style="
+      margin-top:8px;
+      font-size:12px;
+      color:#aaa;
+    ">
+    Current View: Today
+  </div>
+
+</div>
+
+<div id="dssWrapper">
+
+<h3
+  id="dssTableTitle"
+  style="
+    text-align:center;
+    margin:8px 0 0 0;
+    color:white;
+    background:#111;
+    padding:6px;
+    border-bottom:1px solid #333;
+  ">
+  Today's DSS Operations
+</h3>
+
+<div id="tableContainer">
+
+<table>
+
+<thead>
+<tr>
+<th>Event Date</th>
+<th>Event Name</th>
+<th>DSS Type</th>
+<th>Contact Name</th>
+<th>Contact Info</th>
+</tr>
+</thead>
+
+<tbody id="eventTable">
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<div id="callsWrapper">
+
+  <h3
+  id="callsTableTitle"
+  style="
+    text-align:center;
+    margin:8px 0 0 0;
+    color:white;
+    background:#111;
+    padding:6px;
+    border-bottom:1px solid #333;
+  ">
+  Today's Coordination Calls
+</h3>
+
+  <div id="callsTableContainer">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Call Date</th>
+          <th>Call Time</th>
+          <th>Event</th>
+          <th>Contact Info</th>
+          <th>Join</th>
+        </tr>
+      </thead>
+
+      <tbody id="callsTable">
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<div
+  id="calendarContainer"
+  style="
+    display:none;
+    padding:10px;
+    background:#111;
+  ">
+</div>
+
+<div class="main">
+
+<div class="leftPanel">
+
+<div id="summaryPanel" style="padding:10px;">
+
+<div
+  id="cancelPanel"
+  style="
+    display:none;
+    margin-top:10px;
+  ">
+
+<div style="margin-bottom:8px;">
+
+  <label>
+    <input
+      type="radio"
+      name="cancelMode"
+      value="all"
+      checked
+      onchange="toggleCancelMode()"
+    >
+    Entire Event
+  </label>
+
+  <br>
+
+  <label>
+    <input
+      type="radio"
+      name="cancelMode"
+      value="single"
+      onchange="toggleCancelMode()"
+    >
+    Single Date
+  </label>
+
+</div>
+
+  <select
+  id="cancelEventSelect"
+  onchange="populateDateDropdown()"
+  style="
+    width:100%;
+    padding:5px;
+  ">
+</select>
+
+<select
+  id="cancelDateSelect"
+  style="
+    width:100%;
+    padding:5px;
+    margin-top:5px;
+    display:none;
+  ">
+</select>
+
+  <button
+    onclick="cancelSelectedEvent()"
+    style="
+      margin-top:5px;
+      background:#8b1e1e;
+      color:white;
+      border:none;
+      padding:6px 10px;
+      cursor:pointer;
+    ">
+    Confirm Cancellation
+  </button>
+
+</div>
+
+<div
+  id="restorePanel"
+  style="
+    display:none;
+    margin-top:10px;
+  ">
+
+  <select
+    id="restoreEventSelect"
+    style="
+      width:100%;
+      padding:5px;
+    ">
+  </select>
+
+  <button
+    onclick="restoreSelectedEvent()"
+    style="
+      margin-top:5px;
+      background:#B8860B;
+      color:black;
+      border:none;
+      padding:6px 10px;
+      cursor:pointer;
+    ">
+    Restore Event
+  </button>
+
+</div>
+
+<div
+  id="editPanel"
+  style="
+    display:none;
+    margin-top:10px;
+  ">
+
+  <select
+    id="editEventSelect"
+    style="
+      width:100%;
+      padding:5px;
+    ">
+  </select>
+
+  <button
+    onclick="loadEventForEditing()"
+    style="
+      margin-top:5px;
+      background:#1E90FF;
+      color:white;
+      border:none;
+      padding:6px 10px;
+      cursor:pointer;
+    ">
+    Load Event
+  </button>
+
+  <div
+  id="editForm"
+  style="
+    display:none;
+    margin-top:10px;
+  ">
+
+  <input
+    id="editEventName"
+    placeholder="Event Name"
+    style="
+      width:100%;
+      margin-bottom:5px;
+    ">
+
+  <select
+  id="editDssType"
+  style="
+    width:100%;
+    margin-bottom:5px;
+  ">
+
+  <option value="On-Site DSS">On-Site DSS</option>
+
+  <option value="Heads-up email">
+    Heads-up email
+  </option>
+
+  <option value="Active radar watch">
+    Active radar watch
+  </option>
+
+  <option value="Heads-up email and radar watch">
+    Heads-up email and radar watch
+  </option>
+
+</select>
+
+  <input
+    id="editContactName"
+    placeholder="Contact Name"
+    style="
+      width:100%;
+      margin-bottom:5px;
+    ">
+
+    <input
+  id="editRadarWatchTime"
+  placeholder="Radar Watch Time"
+  style="
+    width:100%;
+    margin-bottom:5px;
+  ">
+
+  <input
+  id="editHeadsUpTime"
+  placeholder="Email Due By"
+  style="
+    width:100%;
+    margin-bottom:5px;
+  ">
+
+  <input
+    id="editContactInfo"
+    placeholder="Contact Info"
+    style="
+      width:100%;
+      margin-bottom:5px;
+    ">
+
+  <input
+    id="editLatitude"
+    placeholder="Latitude"
+    style="
+      width:100%;
+      margin-bottom:5px;
+    ">
+
+  <input
+    id="editLongitude"
+    placeholder="Longitude"
+    style="
+      width:100%;
+      margin-bottom:5px;
+    ">
+
+  <button
+    onclick="saveEventChanges()"
+    style="
+      background:#1E90FF;
+      color:white;
+      border:none;
+      padding:6px 10px;
+      cursor:pointer;
+    ">
+    Save Changes
+  </button>
+
+</div>
+
+</div>
+
+<input
+  type="date"
+  id="selectedDate"
+  style="display:none;"
+>
+
+<div style="display:flex; gap:15px;">
+
+  <div style="flex:1;">
+
+<hr>
+
+<h3>DSS Activity Summary</h3>
+
+<div style="
+  margin-bottom:8px;
+  display:flex;
+  gap:5px;
+">
+
+<button
+  id="newDssButton"
+  onclick="openDssForm()"
+  style="
+  width:190px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:bold;
+  background:#2c7a2c;
+  color:white;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+  margin-left:5px;
+">
+  ✛ Add DSS Event From Form
+</button>
+
+<button
+  id="mapDssButton"
+  onclick="enableAddDssMode()"
+  style="
+  width:170px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:bold;
+    background:#0066cc;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    margin-left:5px;
+  ">
+  📍 Add DSS From Map
+</button>
+
+<button
+  id="cancelDssButton"
+  onclick="showCancelSelector()"
+  style="
+  width:170px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:bold;
+    background:#8b1e1e;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    margin-left:5px;
+  ">
+  ❌ Cancel Event
+</button>
+
+<button
+  id="restoreDssButton"
+  onclick="showRestoreSelector()"
+  style="
+  width:170px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:bold;
+    background:#B8860B;
+    color:black;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    margin-left:5px;
+  ">
+  ⚠️ Restore Event
+</button>
+
+<button
+  id="editDssButton"
+  onclick="showEditPanel()"
+  style="
+  width:170px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:bold;
+    background:#1E90FF;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    margin-left:5px;
+  ">
+  ✏ Edit DSS Event
+</button>
+
+</div>
+
+<div
+  id="eventCount"
+  style="margin-top:12px;">
+  Loading...
+</div>
+</div>
+
+</div>
+
+<div style="flex:1;">
+
+  <h3>Upcoming DSS</h3>
+
+  <div
+    id="upcomingEvents"
+    style="
+      max-height:200px;
+      overflow-y:auto;
+      font-size:16px;
+      border:1px solid #333;
+      padding:5px;
+      background:#111;
+    ">
+    Loading...
+  </div>
+
+</div>
+
+<hr>
+
+<h3>Coordination Call Summary</h3>
+
+<div style="
+  margin-bottom:8px;
+">
+
+<button
+  id="newCallButton"
+  onclick="openCallForm()"
+  style="
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:bold;
+    background:#2c7a2c;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    margin-bottom:5px;
+  ">
+  ☎ Add Coordination Call
+</button>
+
+<button
+  id="editCallButton"
+  onclick="showEditCallPanel()"
+  style="
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:bold;
+    background:#1E90FF;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    margin-left:5px;
+  ">
+  ✏ Edit Coordination Call
+</button>
+
+<button
+  id="cancelCallButton"
+  onclick="showCancelCallPanel()"
+  style="
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:bold;
+    background:#8b1e1e;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    margin-left:5px;
+  ">
+  ❌ Cancel Coordination Call
+</button>
+
+<div
+  id="editCallPanel"
+  style="
+    display:none;
+    margin-top:10px;
+  ">
+
+  <select
+    id="editCallSelect"
+    style="
+      width:100%;
+      padding:5px;
+    ">
+  </select>
+
+  <button
+    onclick="loadCallForEditing()"
+    style="
+      margin-top:5px;
+      background:#1E90FF;
+      color:white;
+      border:none;
+      padding:6px 10px;
+      cursor:pointer;
+    ">
+    Load Call
+  </button>
+
+  <div
+    id="editCallForm"
+    style="
+      display:none;
+      margin-top:10px;
+    ">
+
+    <input
+      id="editCallDate"
+      placeholder="Call Date"
+      style="
+        width:100%;
+        margin-bottom:5px;
+      ">
+
+    <input
+      id="editCallTime"
+      placeholder="Call Time"
+      style="
+        width:100%;
+        margin-bottom:5px;
+      ">
+
+    <input
+      id="editCallEvent"
+      placeholder="Event"
+      style="
+        width:100%;
+        margin-bottom:5px;
+      ">
+
+    <input
+      id="editCallContact"
+      placeholder="Contact Info"
+      style="
+        width:100%;
+        margin-bottom:5px;
+      ">
+
+        <button
+      onclick="saveCallChanges()">
+      Save Changes
+    </button>
+
+  </div>
+
+</div>
+
+<div
+  id="cancelCallPanel"
+  style="
+    display:none;
+    margin-top:10px;
+  ">
+
+  <select
+    id="cancelCallSelect"
+    style="
+      width:100%;
+      padding:5px;
+    ">
+  </select>
+
+  <button
+    onclick="cancelSelectedCall()"
+    style="
+      margin-top:5px;
+      background:#8b1e1e;
+      color:white;
+      border:none;
+      padding:6px 10px;
+      cursor:pointer;
+    ">
+    Confirm Cancellation
+  </button>
+
+</div>
+
+</div>
+
+<div id="callCount">
+  Loading...
+</div>
+
+<h3>Upcoming Calls</h3>
+
+<div
+  id="upcomingCalls"
+  style="
+    max-height:120px;
+    overflow-y:auto;
+    font-size:16px;
+    border:1px solid #333;
+    padding:5px;
+    background:#111;
+  ">
+  Loading...
+</div>
+
+</div>
+
+<hr>
+
+</div>
+
+<div class="rightPanel">
+
+<div id="map"></div>
+
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<div
+  id="calendarModal"
+  style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.7);
+    z-index:9999;
+  "
+>
+
+  <div
+    style="
+      background:#111;
+      color:white;
+      width:500px;
+      max-width:90%;
+      margin:80px auto;
+      padding:20px;
+      border:1px solid #444;
+      border-radius:8px;
+    "
+  >
+
+    <div
+      id="calendarModalContent">
     </div>
-    <div class="panel-section" style="flex:1;">
-      <div class="panel-section-title">Upcoming DSS</div>
-      <div class="upcoming-list" id="upcomingEvents"><div class="empty-state">Loading…</div></div>
-      <div class="panel-section-title" style="margin-top:10px;">Upcoming Calls</div>
-      <div class="upcoming-list" id="upcomingCalls"><div class="empty-state">Loading…</div></div>
-    </div>
+
+    <button
+      onclick="closeCalendarModal()"
+      style="
+        margin-top:10px;
+        padding:6px 12px;
+      "
+    >
+      Close
+    </button>
+
   </div>
 
-  <!-- CENTER PANEL -->
-  <div class="center-panel">
-    <div id="glanceSection" class="glance-section" style="display:none;">
-      <div class="glance-title">Today at a Glance</div>
-      <div class="timeline-track" id="timelineTrack">
-        <div class="timeline-spine"></div>
-        <div class="timeline-empty">No obligations today</div>
-      </div>
-    </div>
-    <div id="dssWrapper">
-      <div class="data-section">
-        <div class="data-section-header">
-          <span class="section-icon">📋</span>
-          <h2 id="dssTableTitle">Today's DSS Operations</h2>
-        </div>
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead><tr>
-              <th>Date</th><th>Event Name</th><th>DSS Type</th><th>Contact</th><th>Contact Info</th><th style="width:50px;text-align:center;">Slides</th>
-            </tr></thead>
-            <tbody id="eventTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div id="callsWrapper">
-      <div class="data-section">
-        <div class="data-section-header">
-          <span class="section-icon">☎</span>
-          <h2 id="callsTableTitle">Today's Coordination Calls</h2>
-        </div>
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead><tr>
-              <th>Date</th><th>Time</th><th>Event</th><th>Contact Info</th><th>Join</th>
-            </tr></thead>
-            <tbody id="callsTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL: MAP -->
-  <div class="right-panel">
-    <div class="map-header">
-      <div class="map-title"><span>🗺</span> DSS Event Map</div>
-      <div style="font-size:11px;color:#64b5f6;" id="mapViewBadge">Today</div>
-    </div>
-    <div id="map"></div>
-  </div>
 </div>
 
-<!-- CALENDAR FULL-SCREEN -->
-<div id="calendarContainer">
-  <div id="calendarScrollWrapper"></div>
-</div>
-
-<!-- AIRPORT FULL-SCREEN -->
-<div id="airportDashboardContainer">
-  <iframe src="https://cimss.ssec.wisc.edu/probsevere/lc/dashboard/#/?layout=N4IgbgpgTgzglgewHYgFwEYA0IDmU4AmAwggK5IAuaAHNggGb1wDGEAkgWiAEIAqAaiGw4EEGBy7ohIZggC2AB2QRKMNAG1QhNAFYALHoDM2AB5oADNgCeF7AHdCFABZpDOyyCcQ4OJ1VQATOYeeIRsSAQQZqjmAL6YWpyo+nq0INEeNjH2ji6obh5ePn5oQSH4BOGR0ejxiboGeqa2IFkeDgTOru7YRb7+ZcIVVVGldSDayQY6zdmtLR1d+T2e3v2lwUNhEaP545MpAGyzmQu53YVrJYGbuMM70Xr7SSkA7CfWZ515Bb1XA7dQpUHrpng09ABOD7zOaLH4rPrXQZ3bbVNCHMFTFYZT6w87LS7FAHlVG7V6xAC62AANhAcCoCLwEDgcLS0BQoKQINgKHA5BAAEoAQyQ9K4SAQdgAtOgXLEgA" style="width:100%;height:100%;border:none;display:block;"></iframe>
-</div>
-
-<!-- CALENDAR DETAIL MODAL -->
-<div id="calendarModal">
-  <div class="modal-box">
-    <div id="calendarModalContent"></div>
-    <button class="modal-close" onclick="document.getElementById('calendarModal').style.display='none'">Close</button>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<div class="footer">
-  <span class="footer-dot">●</span>
-  <span>NWS Burlington</span>
-  <span class="footer-dot">●</span>
-  <span>Supporting Decision Support Services Across Vermont and Northern NY</span>
-  <span class="footer-dot">●</span>
-  <span id="footerTime"></span>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ══════════════════════════════════════════════════════════════
-//  CONFIG — update these if your GitHub repo changes
-// ══════════════════════════════════════════════════════════════
-var GITHUB_OWNER  = 'matthewclay88';
-var GITHUB_REPO   = 'dss-dashboard-tv';
-var GITHUB_BRANCH = 'main';
-var EVENTS_URL    = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/events.json';
-var CALLS_URL     = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/calls.json';
-var ZONES_URL     = 'https://raw.githubusercontent.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/' + GITHUB_BRANCH + '/zones.json';
 
-// ══════════════════════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════════════════════
-var mapMode          = 'today';
-var dssRows          = [];
-var callRows         = [];
-var showAllDss       = false;
-var showAllCalls     = false;
-var MAX_VISIBLE_ROWS = 8;
-var tickerAnimFrame  = null;
-var tickerPos        = 0;
-var tickerSpeed      = 0.6;
-var tickerContentWidth = 0;
+document
+  .getElementById("selectedDate")
+  .addEventListener(
+    "change",
+    function(){
 
-// ── DATE INIT ──────────────────────────────────────────────────
-var todayDate  = new Date();
-var localDate  =
-  todayDate.getFullYear() + '-' +
-  String(todayDate.getMonth() + 1).padStart(2, '0') + '-' +
-  String(todayDate.getDate()).padStart(2, '0');
+      refreshDashboard();
 
-// Weekly reminder on Mondays
-if (todayDate.getDay() === 1) {
-  document.getElementById('weeklyReminderBanner').style.display = 'block';
+      resetDetailsPanel();
+
+    }
+  );
+
+const map =
+  L.map('map')
+   .setView([44.0,-73.5],8);
+
+  const markerLayer =
+    L.layerGroup().addTo(map);
+
+let mapMode = "today";
+
+let eventDates = {};
+
+let newDssMarker = null;
+
+let addDssMode = false;
+
+let dssRows = [];
+
+let callRows = [];
+
+document
+  .getElementById("todayView")
+  .addEventListener("click", function(){
+
+    document.querySelector(".main")
+  .style.display = "flex";
+
+document.getElementById(
+  "calendarContainer"
+).style.display = "none";
+
+    mapMode = "today";
+
+document.getElementById(
+  "mapModeLabel"
+).innerHTML =
+  "Current View: Today";
+
+    refreshDashboard();
+
+  });
+
+document
+  .getElementById("tomorrowView")
+  .addEventListener("click", function(){
+
+document.querySelector(".main")
+  .style.display = "flex";
+
+document.getElementById(
+  "calendarContainer"
+).style.display = "none";
+
+    mapMode = "tomorrow";
+
+    document.getElementById(
+      "mapModeLabel"
+    ).innerHTML =
+      "Current View: Tomorrow";
+
+    refreshDashboard();
+
+  });
+
+document
+  .getElementById("weekView")
+  .addEventListener("click", function(){
+
+document.querySelector(".main")
+  .style.display = "flex";
+
+document.getElementById(
+  "calendarContainer"
+).style.display = "none";
+
+    mapMode = "week";
+
+document.getElementById(
+  "mapModeLabel"
+).innerHTML =
+  "Current View: Next 7 Days";
+
+    refreshDashboard();
+
+  });
+
+document
+  .getElementById("monthView")
+  .addEventListener("click", function(){
+
+document.querySelector(".main")
+  .style.display = "flex";
+
+document.getElementById(
+  "calendarContainer"
+).style.display = "none";
+
+    mapMode = "month";
+
+    document.getElementById(
+      "mapModeLabel"
+    ).innerHTML =
+      "Current View: Next 30 Days";
+
+    refreshDashboard();
+
+  });
+
+document
+  .getElementById("calendarView")
+  .addEventListener("click", function(){
+
+    document.querySelector(".main")
+      .style.display = "none";
+
+    document.getElementById(
+      "calendarContainer"
+    ).style.display = "block";
+
+    buildCalendar();
+
+  });
+
+function openDssForm(){
+
+  window.open(
+    "https://docs.google.com/forms/d/e/1FAIpQLScDNtTmoAUn9nzwbDurRriid3N3XBEfBF7xsmlNfduHLXjNOQ/viewform?usp=sharing&ouid=114928333309254291656",
+    "_blank"
+  );
+
 }
 
-// Footer clock
-function updateFooterTime() {
-  document.getElementById('footerTime').textContent = new Date().toLocaleTimeString();
-}
-setInterval(updateFooterTime, 1000);
-updateFooterTime();
+function openCallForm(){
 
-// ══════════════════════════════════════════════════════════════
-//  MAP SETUP
-// ══════════════════════════════════════════════════════════════
-var map         = L.map('map').setView([44.0, -73.5], 8);
-var markerLayer = L.layerGroup().addTo(map);
+  window.open(
+    "https://docs.google.com/forms/d/e/1FAIpQLSdk3y8pVkFL41c1WM3DSjurygh18RHwXGczI9iwVV9RfnfrZQ/viewform?usp=sharing",
+    "_blank"
+  );
+
+}
+
+function closeCalendarModal(){
+
+  document.getElementById(
+    "calendarModal"
+  ).style.display = "none";
+
+}
+
+function showCalendarModal(html){
+
+  document.getElementById(
+    "calendarModalContent"
+  ).innerHTML = html;
+
+  document.getElementById(
+    "calendarModal"
+  ).style.display = "block";
+
+}
+
+function showDssDetails(eventName){
+
+  const headers = dssRows[0];
+
+  const eventCol =
+    headers.indexOf("Event Name");
+
+  const typeCol =
+    headers.indexOf("DSS Type");
+
+  const contactCol =
+    headers.indexOf("Contact Name");
+
+  const contactInfoCol =
+    headers.indexOf("Contact Info");
+
+  const radarCol =
+    headers.indexOf("Radar Watch Time");
+
+  const emailCol =
+    headers.indexOf("Email Due By");
+
+  let html = "";
+
+  for(let i=1;i<dssRows.length;i++){
+
+    const row = dssRows[i];
+
+    if(row[eventCol] !== eventName){
+      continue;
+    }
+
+    html = `
+      <h2>${row[eventCol]}</h2>
+
+      <b>DSS Type:</b><br>
+      ${row[typeCol]}<br><br>
+
+      <b>Contact:</b><br>
+      ${row[contactCol]}<br><br>
+
+      <b>Contact Info:</b><br>
+      ${row[contactInfoCol]}<br><br>
+
+      ${
+        row[emailCol]
+          ? `<b>Email Due:</b><br>
+             ${row[emailCol]}<br><br>`
+          : ""
+      }
+
+      ${
+        row[radarCol]
+          ? `<b>Radar Watch:</b><br>
+             ${row[radarCol]}`
+          : ""
+      }
+    `;
+
+    break;
+
+  }
+
+  showCalendarModal(html);
+
+}
+
+function showCallDetails(rowIndex){
+
+  const call = callRows[rowIndex];
+
+  if(!call){
+    return;
+  }
+
+  const eventName = call[2];
+  const callDate = call[0];
+  const callTime = call[1];
+  const contactInfo = call[3];
+  const additionalInfo = call[4];
+
+let html = `
+    <h2>${eventName}</h2>
+
+    <b>Date:</b><br>
+    ${callDate}<br><br>
+
+    <b>Time:</b><br>
+    ${callTime}<br><br>
+
+    <b>Contact Info:</b><br>
+    ${contactInfo}<br><br>
+  `;
+
+  if(additionalInfo){
+
+    html += `
+      <b>Additional Info:</b><br>
+      ${additionalInfo}<br><br>
+    `;
+
+  }
+
+  let meetingLink = "";
+
+const urlMatch =
+  String(contactInfo || "")
+    .match(/https?:\/\/\S+/);
+
+if(urlMatch){
+  meetingLink = urlMatch[0];
+}
+
+if(urlMatch){
+  meetingLink = urlMatch[0];
+}
+
+  if(meetingLink){
+
+    html += `
+      <br><br>
+
+      <a
+        href="${meetingLink}"
+        target="_blank"
+        style="
+          display:inline-block;
+          background:#1E90FF;
+          color:white;
+          padding:8px 12px;
+          border-radius:4px;
+          text-decoration:none;
+          font-weight:bold;
+        "
+      >
+        🔗 Join Meeting
+      </a>
+    `;
+  }
+
+  showCalendarModal(html);
+
+}
+
+function editEventFromPopup(eventName){
+
+  showEditPanel();
+
+  const select =
+    document.getElementById(
+      "editEventSelect"
+    );
+
+  select.value = eventName;
+
+  loadEventForEditing();
+
+}
+
+function showEditCallPanel(){
+
+  const panel =
+    document.getElementById(
+      "editCallPanel"
+    );
+
+  panel.style.display =
+    panel.style.display === "none"
+      ? "block"
+      : "none";
+
+}
+
+function showCancelCallPanel(){
+
+  const panel =
+    document.getElementById(
+      "cancelCallPanel"
+    );
+
+  panel.style.display =
+    panel.style.display === "none"
+      ? "block"
+      : "none";
+
+}
+
+
+function loadCallForEditing(){
+
+  const eventInfo =
+    document.getElementById(
+      "editCallSelect"
+    ).value;
+
+   console.log(
+  "Loading call:",
+  eventInfo
+); 
+
+  google.script.run
+    .withSuccessHandler(function(call){
+
+console.log(
+  "Returned call:",
+  call
+);
+
+      if(!call){
+        return;
+      }
+
+      document.getElementById(
+        "editCallForm"
+      ).style.display = "block";
+
+      document.getElementById(
+        "editCallDate"
+      ).value =
+        call.callDate;
+
+      document.getElementById(
+        "editCallTime"
+      ).value =
+        call.callTime;
+
+      document.getElementById(
+        "editCallEvent"
+      ).value =
+        call.eventInfo;
+
+      document.getElementById(
+        "editCallContact"
+      ).value =
+        call.contactInfo;
+
+    })
+    .getCallDetails(eventInfo);
+
+}
+
+function saveCallChanges(){
+
+  const originalEventInfo =
+    document.getElementById(
+      "editCallSelect"
+    ).value;
+
+  const updatedData = {
+
+    callDate:
+      document.getElementById(
+        "editCallDate"
+      ).value,
+
+    callTime:
+      document.getElementById(
+        "editCallTime"
+      ).value,
+
+    eventInfo:
+      document.getElementById(
+        "editCallEvent"
+      ).value,
+
+    contactInfo:
+      document.getElementById(
+        "editCallContact"
+      ).value,
+
+  };
+
+  google.script.run
+    .withSuccessHandler(function(){
+
+      alert(
+        "Coordination Call Updated"
+      );
+
+      refreshDashboard();
+
+    })
+    .updateCall(
+      originalEventInfo,
+      updatedData
+    );
+
+}
+
+function enableAddDssMode(){
+
+  addDssMode = true;
+
+  alert(
+    "Click a location on the map to create a DSS event."
+  );
+
+}
+
+function showCancelSelector(){
+
+  const cancelPanel =
+    document.getElementById(
+      "cancelPanel"
+    );
+
+  const restorePanel =
+    document.getElementById(
+      "restorePanel"
+    );
+
+  restorePanel.style.display =
+    "none";
+
+  cancelPanel.style.display =
+    cancelPanel.style.display === "none"
+      ? "block"
+      : "none";
+
+}
+
+function loadEventForEditing(){
+
+  const eventName =
+    document.getElementById(
+      "editEventSelect"
+    ).value;
+
+  google.script.run
+    .withSuccessHandler(function(event){
+
+    console.log("Returned event:");
+    console.log(event);
+
+      if(!event){
+        return;
+      }
+
+      document.getElementById(
+        "editForm"
+      ).style.display = "block";
+
+      document.getElementById(
+        "editEventName"
+      ).value =
+        event.eventName;
+
+      document.getElementById(
+        "editDssType"
+      ).value =
+        event.dssType;
+
+      document.getElementById(
+        "editLatitude"
+      ).value =
+        event.latitude;
+
+      document.getElementById(
+        "editLongitude"
+      ).value =
+        event.longitude;
+
+      document.getElementById(
+        "editContactName"
+      ).value =
+        event.contactName;
+
+      document.getElementById(
+        "editContactInfo"
+      ).value =
+        event.contactInfo;
+
+      document.getElementById(
+        "editRadarWatchTime"
+      ).value =
+        event.radarWatchTime || "";
+      document.getElementById(
+      "editHeadsUpTime"
+      ).value =
+  event.headsUpTime || "";
+
+    })
+    .getEventDetails(eventName);
+}
+
+function saveEventChanges(){
+
+if(
+  !confirm(
+    "This will update all occurrences of this event. Continue?"
+  )
+){
+  return;
+}
+
+  const originalEventName =
+    document.getElementById(
+      "editEventSelect"
+    ).value;
+
+  const updatedData = {
+
+    eventName:
+      document.getElementById(
+        "editEventName"
+      ).value,
+
+    dssType:
+      document.getElementById(
+        "editDssType"
+      ).value,
+
+    contactName:
+      document.getElementById(
+        "editContactName"
+      ).value,
+
+    contactInfo:
+      document.getElementById(
+        "editContactInfo"
+      ).value,
+
+    radarWatchTime:
+      document.getElementById(
+        "editRadarWatchTime"
+      ).value,
+
+     headsUpTime:
+      document.getElementById(
+        "editHeadsUpTime"
+      ).value,
+
+    latitude:
+      document.getElementById(
+        "editLatitude"
+      ).value,
+
+    longitude:
+      document.getElementById(
+        "editLongitude"
+      ).value
+
+  };
+
+  google.script.run
+    .withSuccessHandler(function(){
+
+      alert(
+        "Event updated successfully."
+      );
+
+      refreshDashboard();
+
+      document.getElementById(
+        "editPanel"
+      ).style.display = "none";
+
+    })
+    .updateEvent(
+      originalEventName,
+      updatedData
+    );
+
+}
+
+function cancelSelectedCall(){
+
+  const eventInfo =
+    document.getElementById(
+      "cancelCallSelect"
+    ).value;
+
+  if(
+    !confirm(
+      "Cancel coordination call?\n\n" +
+      eventInfo
+    )
+  ){
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(){
+
+      refreshDashboard();
+
+      document.getElementById(
+        "cancelCallPanel"
+      ).style.display = "none";
+
+      alert(
+        "Coordination Call Cancelled"
+      );
+
+    })
+    .cancelCall(eventInfo);
+
+}
+
+function formatDate(dateString){
+
+  const parts = dateString.split("-");
+
+  return (
+    Number(parts[1]) + "/" +
+    Number(parts[2]) + "/" +
+    parts[0]
+  );
+
+}
+
+function showEditPanel(){
+
+  document.getElementById(
+    "cancelPanel"
+  ).style.display = "none";
+
+  document.getElementById(
+    "restorePanel"
+  ).style.display = "none";
+
+  document.getElementById(
+    "editForm"
+  ).style.display = "none";
+
+  const editPanel =
+    document.getElementById(
+      "editPanel"
+    );
+
+  editPanel.style.display =
+    editPanel.style.display === "none"
+      ? "block"
+      : "none";
+
+}
+
+function getMarkerColor(dssType){
+
+  if(dssType.includes("On-Site DSS")){
+    return "green";
+  }
+
+  if(dssType.includes("Heads-up email and radar watch")){
+    return "purple";
+  }
+
+  if(dssType.includes("Active radar watch")){
+    return "red";
+  }
+
+  if(dssType.includes("Heads-up email")){
+    return "blue";
+  }
+
+  return "gray";
+
+}
+
+function cancelEvent(eventName){
+
+  if(
+    !confirm(
+      "Are you sure you want to cancel:\n\n" +
+      eventName
+    )
+  ){
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(){
+
+      resetDetailsPanel();
+
+      alert(
+        eventName +
+        " has been cancelled."
+      );
+
+    })
+    .cancelEvent(eventName);
+
+}
+
+const today = new Date();
+
+const localDate =
+  today.getFullYear() + "-" +
+  String(today.getMonth() + 1).padStart(2,"0") + "-" +
+  String(today.getDate()).padStart(2,"0");
+
+document.getElementById("selectedDate").value =
+  localDate;
 
 L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-  { attribution: 'Esri' }
+  {
+    attribution:'Esri'
+  }
 ).addTo(map);
 
-setTimeout(function() { map.invalidateSize(true); }, 200);
+const legend = L.control({
+  position: "bottomright"
+});
 
-var legend = L.control({ position: 'bottomright' });
-legend.onAdd = function() {
-  var div = L.DomUtil.create('div', 'map-legend');
-  div.innerHTML =
-    '<div class="legend-title">Legend</div>' +
-    '<div class="legend-row"><span class="legend-dot radar"></span>Radar Watch</div>' +
-    '<div class="legend-row"><span class="legend-dot headsup"></span>Heads-Up</div>' +
-    '<div class="legend-row"><span class="legend-dot onsite"></span>On-Site</div>';
+legend.onAdd = function () {
+
+  const div = L.DomUtil.create("div");
+
+  div.style.background = "rgba(0,0,0,0.85)";
+  div.style.color = "white";
+  div.style.padding = "10px";
+  div.style.border = "1px solid #666";
+  div.style.borderRadius = "5px";
+  div.style.fontSize = "12px";
+  div.style.lineHeight = "20px";
+
+  div.innerHTML = `
+    <b>DSS Legend</b><br>
+
+    <span style="
+      display:inline-block;
+      width:12px;
+      height:12px;
+      background:red;
+      border-radius:50%;
+      border:1px solid white;
+    "></span>
+    Active Radar Watch<br>
+
+    <span style="
+      display:inline-block;
+      width:12px;
+      height:12px;
+      background:blue;
+      border-radius:50%;
+      border:1px solid white;
+    "></span>
+    Heads-Up Email<br>
+
+    <span style="
+      display:inline-block;
+      width:12px;
+      height:12px;
+      background:purple;
+      border-radius:50%;
+      border:1px solid white;
+    "></span>
+    Heads-Up Email and Radar Watch<br>
+
+    <span style="
+      display:inline-block;
+      width:12px;
+      height:12px;
+      background:green;
+      border-radius:50%;
+      border:1px solid white;
+    "></span>
+    On-Site DSS
+  `;
+
   return div;
 };
+
 legend.addTo(map);
 
-// ══════════════════════════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════════════════════════
-function formatDate(ds) {
-  var p = ds.split('-');
-  return Number(p[1]) + '/' + Number(p[2]) + '/' + p[0];
-}
+map.on("click", function(e){
 
-function makeCircleIcon(color) {
-  var svg =
-    '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">' +
-    '<circle cx="11" cy="11" r="9" fill="' + color + '" stroke="#FFFFFF" stroke-width="2.5"/></svg>';
-  return L.divIcon({ className: '', html: svg, iconSize: [22,22], iconAnchor: [11,11], popupAnchor: [0,-13] });
-}
-
-function getDssTypeBadge(dssType) {
-  if (dssType.indexOf('On-Site DSS') !== -1)        return '<span class="dss-type-badge badge-onsite">On Site</span>';
-  if (dssType.indexOf('Active radar watch') !== -1)  return '<span class="dss-type-badge badge-radar">Radar Watch</span>';
-  if (dssType.indexOf('Heads-up') !== -1)            return '<span class="dss-type-badge badge-email">Heads Up Email</span>';
-  return '<span class="dss-type-badge badge-default">' + dssType + '</span>';
-}
-
-function getDssRowClass(dssType) {
-  if (dssType.indexOf('On-Site DSS') !== -1)        return 'row-onsite';
-  if (dssType.indexOf('Active radar watch') !== -1)  return 'row-radar';
-  if (dssType.indexOf('Heads-up') !== -1)            return 'row-headsup';
-  return '';
-}
-
-function getMarkerColor(dssType) {
-  if (dssType.indexOf('On-Site DSS') !== -1)        return '#7c3aed';
-  if (dssType.indexOf('Active radar watch') !== -1)  return '#dc2626';
-  if (dssType.indexOf('Heads-up') !== -1)            return '#2563eb';
-  return '#64748b';
-}
-
-function zoomToEvent(lat, lon) { map.setView([parseFloat(lat), parseFloat(lon)], 11); }
-
-function setNavActive(id) {
-  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
-  var el = document.getElementById(id);
-  if (el) el.classList.add('active');
-}
-
-function showMainLayout() {
-  document.getElementById('mainLayout').style.display               = 'grid';
-  document.getElementById('calendarContainer').style.display         = 'none';
-  document.getElementById('airportDashboardContainer').style.display  = 'none';
-}
-
-function parseTimeToMinutes(timeStr) {
-  if (!timeStr) return 9999;
-  var m = String(timeStr).match(/(\d+):(\d+)\s*(AM|PM)/i);
-  if (!m) return 9999;
-  var h = parseInt(m[1], 10), min = parseInt(m[2], 10);
-  if (m[3].toUpperCase() === 'PM' && h < 12) h += 12;
-  if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
-  return h * 60 + min;
-}
-
-function closeCalendarModal() { document.getElementById('calendarModal').style.display = 'none'; }
-function showCalendarModal(html) {
-  document.getElementById('calendarModalContent').innerHTML = html;
-  document.getElementById('calendarModal').style.display   = 'block';
-}
-
-// ══════════════════════════════════════════════════════════════
-//  TODAY AT A GLANCE TIMELINE
-// ══════════════════════════════════════════════════════════════
-function buildGlanceTimeline(todayDssEvents, todayCalls) {
-  var glanceSection = document.getElementById('glanceSection');
-  var track         = document.getElementById('timelineTrack');
-  if (!track) return;
-
-  if (mapMode !== 'today') { glanceSection.style.display = 'none'; return; }
-  glanceSection.style.display = 'block';
-
-  var items = [];
-  todayDssEvents.forEach(function(ev) {
-    var type = ev.type || '';
-    var timeStr = '', label = ev.name, dotClass = 'headsup';
-    if (type.indexOf('Heads-up') !== -1 && ev.emailTime) { timeStr = ev.emailTime; label = '📧 ' + ev.name; dotClass = 'headsup'; }
-    else if (type.indexOf('Active radar watch') !== -1 && ev.radarTime) { timeStr = ev.radarTime; label = '⏰ ' + ev.name; dotClass = 'radar'; }
-    else if (type.indexOf('On-Site DSS') !== -1) { timeStr = ev.radarTime || ev.emailTime || 'All Day'; label = '🟣 ' + ev.name; dotClass = 'onsite'; }
-    if (timeStr) items.push({ time: timeStr, label: label, dotClass: dotClass, sortKey: parseTimeToMinutes(timeStr) });
-  });
-  todayCalls.forEach(function(call) {
-    if (call[1]) items.push({ time: call[1], label: '☎ ' + call[2], dotClass: 'call', sortKey: parseTimeToMinutes(call[1]) });
-  });
-  items.sort(function(a, b) { return a.sortKey - b.sortKey; });
-
-  track.innerHTML = '';
-  if (items.length === 0) { track.innerHTML = '<div class="timeline-empty">No DSS Events Scheduled Today</div>'; return; }
-  var spine = document.createElement('div'); spine.className = 'timeline-spine'; track.appendChild(spine);
-  items.forEach(function(item) {
-    var div = document.createElement('div');
-    div.className = 'tl-item';
-    div.innerHTML = '<div class="tl-dot ' + item.dotClass + '"></div><div class="tl-time">' + item.time + '</div><div class="tl-label">' + item.label + '</div>';
-    track.appendChild(div);
-  });
-}
-
-// ══════════════════════════════════════════════════════════════
-//  NEXT OBLIGATION COUNTDOWN
-// ══════════════════════════════════════════════════════════════
-function updateNextObligation(todayDssEvents, todayCalls) {
-  var now = new Date();
-  var nowMins = now.getHours() * 60 + now.getMinutes();
-  var soonestMins = Infinity, soonestLabel = '';
-
-  todayDssEvents.forEach(function(ev) {
-    var times = [];
-    if (ev.emailTime) times.push({ t: ev.emailTime, label: '📧 ' + ev.name });
-    if (ev.radarTime) times.push({ t: ev.radarTime, label: '⏰ ' + ev.name });
-    times.forEach(function(ti) {
-      var m = parseTimeToMinutes(ti.t);
-      if (m > nowMins && m < soonestMins) { soonestMins = m; soonestLabel = ti.label; }
-    });
-  });
-  todayCalls.forEach(function(call) {
-    if (call[1]) {
-      var m = parseTimeToMinutes(call[1]);
-      if (m > nowMins && m < soonestMins) { soonestMins = m; soonestLabel = '☎ ' + call[2]; }
-    }
-  });
-
-  var valEl  = document.getElementById('nextObligationValue');
-  var subEl  = document.getElementById('nextObligationSub');
-  var iconEl = document.getElementById('nextObligationIcon');
-
-  if (soonestMins === Infinity) {
-    valEl.textContent = 'None Today'; subEl.textContent = '--';
-    valEl.style.color = '#4ade80'; iconEl.className = 'status-icon green'; iconEl.textContent = '✓'; return;
+  if(!addDssMode){
+    return;
   }
-  var diffMins = soonestMins - nowMins;
-  var h = Math.floor(diffMins / 60), m = diffMins % 60;
-  valEl.textContent = h > 0 ? 'In ' + h + 'h ' + m + 'm' : 'In ' + m + 'm';
-  subEl.textContent = soonestLabel.replace(/[📧⏰☎🟣]/gu, '').trim().substring(0, 28);
-  valEl.style.color = diffMins <= 60 ? '#f87171' : '#2dd4bf';
-  iconEl.className  = diffMins <= 60 ? 'status-icon red' : 'status-icon teal';
-  iconEl.textContent = diffMins <= 60 ? '⚠' : '⏱';
-}
 
-// ══════════════════════════════════════════════════════════════
-//  DSS DETAIL MODAL
-// ══════════════════════════════════════════════════════════════
-function showDssDetails(eventName) {
-  var headers = dssRows[0];
-  var eC = headers.indexOf('Event Name'), tC = headers.indexOf('DSS Type');
-  var cC = headers.indexOf('Contact Name'), ciC = headers.indexOf('Contact Info');
-  var rC = headers.indexOf('Radar Watch Time'), emC = headers.indexOf('Email Due By');
-  var slC = headers.indexOf('Slides Link');
-  for (var i = 1; i < dssRows.length; i++) {
-    var row = dssRows[i];
-    if (row[eC] !== eventName) continue;
-    showCalendarModal(
-      '<h2>' + row[eC] + '</h2>' +
-      '<div class="modal-row"><strong>DSS Type</strong>'     + getDssTypeBadge(row[tC])  + '</div>' +
-      '<div class="modal-row"><strong>Contact</strong>'      + row[cC]  + '</div>' +
-      '<div class="modal-row"><strong>Contact Info</strong>' + row[ciC] + '</div>' +
-      (row[emC] ? '<div class="modal-row"><strong>Email Due</strong>'   + row[emC] + '</div>' : '') +
-      (row[rC]  ? '<div class="modal-row"><strong>Radar Watch</strong>' + row[rC]  + '</div>' : '') +
-      (row[slC] ? '<div class="modal-row"><strong>Slides</strong><a href="' + row[slC] + '" target="_blank" style="color:#64b5f6;">Open Slides ↗</a></div>' : '')
-    );
-    break;
-  }
-}
+  addDssMode = false;
 
-function showCallDetails(rowIndex) {
-  var call = callRows[rowIndex];
-  if (!call) return;
-  var urlMatch = String(call[3] || '').match(/https?:\/\/\S+/);
-  showCalendarModal(
-    '<h2>' + call[2] + '</h2>' +
-    '<div class="modal-row"><strong>Date</strong>'         + call[0] + '</div>' +
-    '<div class="modal-row"><strong>Time</strong>'         + call[1] + '</div>' +
-    '<div class="modal-row"><strong>Contact Info</strong>' + call[3] + '</div>' +
-    (call[4] ? '<div class="modal-row"><strong>Additional</strong>' + call[4] + '</div>' : '') +
-    (urlMatch ? '<br><a href="' + urlMatch[0] + '" target="_blank" class="join-btn" style="padding:8px 14px;font-size:13px;">🔗 Join Meeting</a>' : '')
+  const lat =
+    e.latlng.lat.toFixed(4);
+
+  const lon =
+    e.latlng.lng.toFixed(4);
+
+    if(newDssMarker){
+
+  map.removeLayer(
+    newDssMarker
   );
+
 }
 
-// ══════════════════════════════════════════════════════════════
-//  ALERT TICKER
-// ══════════════════════════════════════════════════════════════
-function getAlertColor(event, severity) {
-  var e = (event || '').toLowerCase(), s = (severity || '').toLowerCase();
-  if (s === 'extreme' || s === 'severe' || e.indexOf('warning') !== -1 || e.indexOf('emergency') !== -1)
-    return { dot: '#ef4444', text: '#fca5a5', bg: 'rgba(239,68,68,0.08)' };
-  if (e.indexOf('watch') !== -1)
-    return { dot: '#f97316', text: '#fdba74', bg: 'rgba(249,115,22,0.08)' };
-  if (e.indexOf('advisory') !== -1 || e.indexOf('statement') !== -1)
-    return { dot: '#facc15', text: '#fde68a', bg: 'rgba(250,204,21,0.08)' };
-  return { dot: '#60a5fa', text: '#93c5fd', bg: 'rgba(96,165,250,0.08)' };
-}
+newDssMarker =
+  L.marker([
+    parseFloat(lat),
+    parseFloat(lon)
+  ])
+    .addTo(map)
+    .bindPopup(
+      "📍 New DSS Location"
+    )
+    .openPopup();
 
-function formatAlertExpiry(expiresStr) {
-  if (!expiresStr) return '';
-  var d = new Date(expiresStr);
-  if (isNaN(d)) return '';
-  var mo = d.getMonth()+1, day = d.getDate(), h = d.getHours(), min = d.getMinutes();
-  var ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
-  return 'Until ' + mo + '/' + day + ' ' + h + ':' + String(min).padStart(2,'0') + ' ' + ampm;
-}
+  const formUrl =
+  "https://docs.google.com/forms/d/e/1FAIpQLScDNtTmoAUn9nzwbDurRriid3N3XBEfBF7xsmlNfduHLXjNOQ/viewform" +
+  "?usp=pp_url" +
+  "&entry.556568321=" + lat +
+  "&entry.1641149427=" + lon;
 
-function runTickerAnimation() {
-  var track = document.getElementById('tickerTrack');
-  if (!track) return;
-  tickerPos -= tickerSpeed;
-  if (tickerContentWidth > 0 && tickerPos <= -tickerContentWidth) tickerPos = 0;
-  track.style.transform = 'translateX(' + tickerPos + 'px)';
-  tickerAnimFrame = requestAnimationFrame(runTickerAnimation);
-}
+window.open(
+  formUrl,
+  "_blank"
+);
 
-function updateAlertTicker() {
-  fetch('https://api.weather.gov/alerts/active?office=BTV', { headers: { 'User-Agent': 'NWSBurlingtonDashboard/1.0' } })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var track = document.getElementById('tickerTrack');
-      if (!track) return;
-      if (tickerAnimFrame) { cancelAnimationFrame(tickerAnimFrame); tickerAnimFrame = null; }
-      track.innerHTML = ''; tickerPos = 0;
-      var alerts = (data.features || []).filter(function(a) {
-        var s = (a.properties || {}).status || ''; return s !== 'Test' && s !== 'Exercise';
-      });
-      if (alerts.length === 0) {
-        var noAlert = '<span style="display:inline-flex;align-items:center;gap:7px;padding:0 16px;font-size:11px;font-weight:700;color:#4ade80;white-space:nowrap;"><span style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span>No active watches, warnings, or advisories are in effect at this time.</span>';
-        track.innerHTML = noAlert + noAlert + noAlert;
-        setTimeout(function() { tickerContentWidth = track.scrollWidth / 3; runTickerAnimation(); }, 50);
-        return;
-      }
-      function appendChips() {
-        alerts.forEach(function(alert, i) {
-          var props = alert.properties || {};
-          var colors = getAlertColor(props.event, props.severity);
-          var expStr = formatAlertExpiry(props.expires || props.ends || '');
-          var chip = document.createElement('a');
-          chip.className = 'ticker-chip';
-          chip.href = 'https://www.weather.gov/btv/'; chip.target = '_blank';
-          chip.style.cssText = 'background:' + colors.bg + ';color:' + colors.text + ';';
-          chip.innerHTML = '<span class="ticker-dot" style="background:' + colors.dot + ';"></span><span>' + (props.event || 'Alert') + (expStr ? ' — ' + expStr : '') + '</span>';
-          track.appendChild(chip);
-          if (i < alerts.length - 1) {
-            var sep = document.createElement('span'); sep.className = 'ticker-sep'; sep.textContent = '·'; track.appendChild(sep);
-          }
-        });
-      }
-      appendChips();
-      setTimeout(function() { tickerContentWidth = track.scrollWidth; appendChips(); runTickerAnimation(); }, 50);
-    })
-    .catch(function() {
-      var track = document.getElementById('tickerTrack');
-      if (track) track.innerHTML = '<span style="padding:0 16px;font-size:11px;color:#8899a6;white-space:nowrap;">Unable to load alert data</span>';
-    });
-}
-
-// ══════════════════════════════════════════════════════════════
-//  RISK BUTTONS — fetch from NWS APIs directly
-// ══════════════════════════════════════════════════════════════
-var RISK_CLASSES = ['risk-none','risk-marginal','risk-slight','risk-enhanced','risk-moderate','risk-high',
-  'risk-heat-low','risk-heat-minor','risk-heat-moderate','risk-heat-high','risk-heat-extreme'];
-
-function setRiskBtn(btnId, labelId, prefix, level) {
-  var btn = document.getElementById(btnId), lbl = document.getElementById(labelId);
-  if (!btn || !lbl) return;
-  RISK_CLASSES.forEach(function(c) { btn.classList.remove(c); });
-  var levelLower = (level || 'none').toLowerCase(), cls = 'risk-none';
-  if (prefix === 'Heat Risk') {
-    if (levelLower === 'none' || levelLower === 'n/a') cls = 'risk-none';
-    else if (levelLower.indexOf('minor') !== -1)    cls = 'risk-heat-minor';
-    else if (levelLower.indexOf('moderate') !== -1) cls = 'risk-heat-moderate';
-    else if (levelLower.indexOf('major') !== -1 || levelLower.indexOf('high') !== -1) cls = 'risk-heat-high';
-    else if (levelLower.indexOf('extreme') !== -1)  cls = 'risk-heat-extreme';
-    else cls = 'risk-heat-low';
-  } else {
-    if      (levelLower.indexOf('marginal') !== -1) cls = 'risk-marginal';
-    else if (levelLower.indexOf('slight') !== -1)   cls = 'risk-slight';
-    else if (levelLower.indexOf('enhanced') !== -1) cls = 'risk-enhanced';
-    else if (levelLower.indexOf('moderate') !== -1) cls = 'risk-moderate';
-    else if (levelLower.indexOf('high') !== -1 || levelLower.indexOf('extreme') !== -1) cls = 'risk-high';
-    else if (levelLower.indexOf('general') !== -1 || levelLower.indexOf('limited') !== -1) cls = 'risk-marginal';
-  }
-  btn.classList.add(cls);
-  lbl.textContent = prefix + ': ' + (level || 'None');
-}
-
-var BTV_LAT = 44.4759, BTV_LON = -73.2121;
-
-function updateRiskButtons() {
-  var month = new Date().getMonth();
-  // WSSI: N/A in summer
-  if (month >= 5 && month <= 8) setRiskBtn('wssiBtn', 'wssiLabel', 'WSSI', 'N/A');
-
-  // SPC — GeoJSON point-in-polygon
-  fetch('https://www.spc.noaa.gov/products/outlook/day1otlk_cat.nolyr.geojson')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var result = 'None';
-      (data.features || []).forEach(function(f) {
-        if (pointInGeometryLatLon([BTV_LAT, BTV_LON], f.geometry)) {
-          result = f.properties.LABEL || result;
-        }
-      });
-      var spcMap = { TSTM: 'General Tstm', MRGL: 'Marginal', SLGT: 'Slight', ENH: 'Enhanced', MDT: 'Moderate', HIGH: 'High' };
-      setRiskBtn('spcBtn', 'spcLabel', 'SPC', spcMap[result] || 'None');
-    })
-    .catch(function() { setRiskBtn('spcBtn', 'spcLabel', 'SPC', 'View'); });
-
-  // WPC ERO — ArcGIS REST
-  var x = BTV_LON * 20037508.34 / 180;
-  var y = Math.log(Math.tan((90 + BTV_LAT) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
-  fetch('https://mapservices.weather.noaa.gov/vector/rest/services/hazards/wpc_precip_hazards/MapServer/0/query?geometry=' + x + ',' + y + '&geometryType=esriGeometryPoint&inSR=3857&spatialRel=esriSpatialRelIntersects&outFields=outlook&returnGeometry=false&f=json')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var features = data.features || [], best = 'None', bestRank = 0;
-      features.forEach(function(f) {
-        var o = String(f.attributes.outlook || '').toLowerCase(), rank = 0;
-        if      (o.indexOf('marginal')  !== -1) rank = 1;
-        else if (o.indexOf('slight')    !== -1) rank = 2;
-        else if (o.indexOf('moderate')  !== -1) rank = 3;
-        else if (o.indexOf('high')      !== -1) rank = 4;
-        if (rank > bestRank) { bestRank = rank; best = ['Marginal','Slight','Moderate','High'][rank-1]; }
-      });
-      setRiskBtn('wpcBtn', 'wpcLabel', 'WPC ERO', best);
-    })
-    .catch(function() { setRiskBtn('wpcBtn', 'wpcLabel', 'WPC ERO', 'View'); });
-
-  // Heat Risk — ArcGIS ImageServer
-  fetch('https://mapservices.weather.noaa.gov/experimental/rest/services/NWS_HeatRisk/ImageServer/identify?geometry=' + x + ',' + y + '&geometryType=esriGeometryPoint&sr=3857&f=json')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var val = data.value;
-      if (!val || val === 'NoData') { setRiskBtn('heatBtn', 'heatLabel', 'Heat Risk', 'None'); return; }
-      var levels = ['None','Minor','Moderate','Major','Extreme'];
-      setRiskBtn('heatBtn', 'heatLabel', 'Heat Risk', levels[parseInt(val)] || 'None');
-    })
-    .catch(function() { setRiskBtn('heatBtn', 'heatLabel', 'Heat Risk', 'View'); });
-
-  // WSSI — GeoJSON (only if not summer)
-  if (month < 5 || month > 8) {
-    fetch('https://www.wpc.ncep.noaa.gov/wwd/wssi/data/wssi.geojson')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var result = 'None';
-        (data.features || []).forEach(function(f) {
-          if (pointInGeometryLatLon([BTV_LAT, BTV_LON], f.geometry)) result = f.properties.WSSI_Category || result;
-        });
-        setRiskBtn('wssiBtn', 'wssiLabel', 'WSSI', result);
-      })
-      .catch(function() { setRiskBtn('wssiBtn', 'wssiLabel', 'WSSI', 'View'); });
-  }
-}
-
-// Simple point-in-polygon for lat/lon [lat, lon] against GeoJSON geometry
-function pointInRing(point, ring) {
-  var x = point[1], y = point[0], inside = false; // [lat,lon] → x=lon, y=lat
-  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    var xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
-    var intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-function pointInGeometryLatLon(point, geom) {
-  if (!geom) return false;
-  var polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
-  for (var p = 0; p < polys.length; p++) { if (pointInRing(point, polys[p][0])) return true; }
-  return false;
-}
-
-// ══════════════════════════════════════════════════════════════
-//  DATE RANGE FILTER
-// ══════════════════════════════════════════════════════════════
-function isDateInView(ds) {
-  var sel = localDate;
-  if (mapMode === 'today')    return ds === sel;
-  if (mapMode === 'tomorrow') {
-    var t = new Date(sel + 'T00:00:00'); t.setDate(t.getDate() + 1);
-    return ds === t.toISOString().split('T')[0];
-  }
-  if (mapMode === 'week') {
-    var ws = new Date(sel + 'T00:00:00'); ws.setDate(ws.getDate() + 1);
-    var we = new Date(ws); we.setDate(we.getDate() + 6);
-    var wd = new Date(ds + 'T00:00:00'); return wd >= ws && wd <= we;
-  }
-  if (mapMode === 'month') {
-    var ms = new Date(sel + 'T00:00:00'); ms.setDate(ms.getDate() + 1);
-    var me = new Date(ms); me.setDate(me.getDate() + 29);
-    var md = new Date(ds + 'T00:00:00'); return md >= ms && md <= me;
-  }
-  return false;
-}
-
-// ══════════════════════════════════════════════════════════════
-//  MAIN DATA REFRESH
-// ══════════════════════════════════════════════════════════════
-async function refreshDashboard() {
-  try {
-    var ts = Date.now();
-    var eventsRes = await fetch(EVENTS_URL + '?t=' + ts);
-    var callsRes  = await fetch(CALLS_URL  + '?t=' + ts);
-    if (!eventsRes.ok || !callsRes.ok) { document.getElementById('dssStatusValue').textContent = 'Fetch Error'; return; }
-    var events = await eventsRes.json();
-    var calls  = await callsRes.json();
-    loadData(events, calls);
-    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
-  } catch(err) {
-    document.getElementById('dssStatusValue').textContent = 'Load Error';
-  }
-  updateRiskButtons();
-  updateAlertTicker();
-}
-
-// ══════════════════════════════════════════════════════════════
-//  LOAD DATA INTO UI
-// ══════════════════════════════════════════════════════════════
-function loadData(rows, calls) {
-  dssRows  = rows;
-  callRows = calls || [];
-
-  var headers = rows[0];
-  var eventCol       = headers.indexOf('Event Name');
-  var typeCol        = headers.indexOf('DSS Type');
-  var eventDateCol   = headers.indexOf('Event Date');
-  var contactInfoCol = headers.indexOf('Contact Info');
-  var slidesLinkCol  = headers.indexOf('Slides Link');
-  var radarWatchCol  = headers.indexOf('Radar Watch Time');
-  var headsUpCol     = headers.indexOf('Email Due By');
-  var contactCol     = headers.indexOf('Contact Name');
-  var latCol         = headers.indexOf('Latitude');
-  var lonCol         = headers.indexOf('Longitude');
-  var cancelledCol   = headers.indexOf('Cancelled');
-
-  // Sort by date
-  var sortedRows = rows.slice(1).sort(function(a, b) {
-    var da = String(a[eventDateCol] || '').split('/');
-    var db = String(b[eventDateCol] || '').split('/');
-    if (da.length !== 3 || db.length !== 3) return 0;
-    return new Date(da[2], da[0]-1, da[1]) - new Date(db[2], db[0]-1, db[1]);
-  });
-
-  markerLayer.clearLayers();
-  var bounds = [], upcoming = [], markerGroups = {};
-  var activeCount = 0, radarCount = 0, headsUpCount = 0, onsiteCount = 0;
-  var todayDssItems = [], todayEventCount = 0;
-  var table = document.getElementById('eventTable');
-  table.innerHTML = '';
-
-  sortedRows.forEach(function(row) {
-    var parts = String(row[eventDateCol] || '').split('/');
-    if (parts.length !== 3) return;
-    var ds = parts[2] + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
-    if (String(row[cancelledCol]).trim().toUpperCase() === 'TRUE') return;
-
-    if (ds > localDate) {
-      upcoming.push({ date: ds, name: row[eventCol], type: row[typeCol], lat: row[latCol], lon: row[lonCol] });
-    }
-    if (ds === localDate) {
-      todayDssItems.push({ name: row[eventCol], type: row[typeCol], emailTime: row[headsUpCol], radarTime: row[radarWatchCol] });
-      todayEventCount++;
-    }
-
-    if (!isDateInView(ds)) return;
-
-    activeCount++;
-    if      (row[typeCol].indexOf('Heads-up email') !== -1)       headsUpCount++;
-    else if (row[typeCol].indexOf('Active radar watch') !== -1) radarCount++;
-    else if (row[typeCol].indexOf('On-Site DSS') !== -1)           onsiteCount++;
-
-    var lat = parseFloat(row[latCol]), lon = parseFloat(row[lonCol]);
-    if (!isNaN(lat) && !isNaN(lon)) {
-      bounds.push([lat, lon]);
-      var key = lat.toFixed(5) + ',' + lon.toFixed(5);
-      if (!markerGroups[key]) markerGroups[key] = { lat: lat, lon: lon, events: [] };
-      markerGroups[key].events.push({ name: row[eventCol], type: row[typeCol], date: row[eventDateCol], contact: row[contactCol], contactInfo: row[contactInfoCol], emailTime: row[headsUpCol], radarTime: row[radarWatchCol] });
-    }
-
-    if (!showAllDss && activeCount > MAX_VISIBLE_ROWS) return;
-
-    var timeBits = '';
-    if (row[typeCol].indexOf('Heads-up email') !== -1 && String(row[headsUpCol] || '').trim())
-      timeBits = '<span style="color:#60a5fa;font-size:11px;">📧 Due: ' + row[headsUpCol] + '</span>';
-    else if (row[typeCol].indexOf('Active radar watch') !== -1 && String(row[radarWatchCol] || '').trim())
-      timeBits = '<span style="color:#fcd34d;font-size:11px;">⏰ Watch: ' + row[radarWatchCol] + '</span>';
-
-    var linkCell = row[slidesLinkCol]
-      ? '<a href="' + row[slidesLinkCol] + '" target="_blank" style="color:#64b5f6;font-size:15px;text-decoration:none;">🔗</a>'
-      : '<span style="color:var(--muted);">—</span>';
-
-    var tr = document.createElement('tr');
-    var rowClass = getDssRowClass(row[typeCol]);
-    if (rowClass) tr.className = rowClass;
-    tr.innerHTML =
-      '<td style="white-space:nowrap;">' + row[eventDateCol] + '</td>' +
-      '<td style="font-weight:600;">'    + row[eventCol]     + '</td>' +
-      '<td>' + getDssTypeBadge(row[typeCol]) + (timeBits ? '<br>' + timeBits : '') + '</td>' +
-      '<td>' + row[contactCol]     + '</td>' +
-      '<td style="font-size:12px;color:var(--muted);">' + row[contactInfoCol] + '</td>' +
-      '<td style="text-align:center;">' + linkCell + '</td>';
-    table.appendChild(tr);
-  });
-
-  if (activeCount > MAX_VISIBLE_ROWS) {
-    var vmTr = document.createElement('tr');
-    vmTr.className = 'view-more-row';
-    vmTr.innerHTML = '<td colspan="6" style="text-align:center;font-weight:600;color:#60a5fa;">' + (showAllDss ? '▲ Show Less' : '▼ View ' + (activeCount - MAX_VISIBLE_ROWS) + ' More Events') + '</td>';
-    vmTr.onclick = function() { showAllDss = !showAllDss; loadData(dssRows, callRows); };
-    table.appendChild(vmTr);
-  }
-
-  // Map markers
-  Object.keys(markerGroups).forEach(function(key) {
-    var group = markerGroups[key], color = '#2563eb';
-    group.events.forEach(function(ev) {
-      if (ev.type.indexOf('On-Site DSS') !== -1) color = '#7c3aed';
-      else if (ev.type.indexOf('Active radar watch') !== -1 && color !== '#7c3aed') color = '#dc2626';
-    });
-    var popup = '<b>' + group.events[0].name + '</b><br><br>';
-    group.events.forEach(function(ev) {
-      popup += '<b>' + ev.date + '</b><br>' + ev.type + '<br>';
-      if (ev.type.indexOf('Heads-up') !== -1 && ev.emailTime) popup += '<span style="color:#60a5fa;">📧 Email Due: ' + ev.emailTime + '</span><br>';
-      if (ev.type.indexOf('Active radar watch') !== -1 && ev.radarTime) popup += '<span style="color:#fbbf24;">⏰ Radar Watch: ' + ev.radarTime + '</span><br>';
-      popup += '<br>';
-    });
-    L.marker([group.lat, group.lon], { icon: makeCircleIcon(color) }).bindPopup(popup).addTo(markerLayer);
-  });
-
-  if (bounds.length > 1)        map.fitBounds(bounds, { padding: [40,40], maxZoom: 10 });
-  else if (bounds.length === 1) map.setView(bounds[0], 10);
-  else                           map.setView([44.0, -73.5], 8);
-
-  // Summary tiles
-  document.getElementById('tileRadar').textContent  = radarCount;
-  document.getElementById('tileEmail').textContent  = headsUpCount;
-  document.getElementById('tileOnsite').textContent = onsiteCount;
-
-  // DSS status card
-  var dssColor = '#4ade80', dssIconClass = 'green', dssIcon = '✓', dssValue = 'No Active Events', dssSub = 'No DSS operations today.';
-  if (activeCount > 0) {
-    if      (onsiteCount > 0)   { dssColor = '#c4b5fd'; dssIconClass = 'purple'; dssIcon = '🟣'; }
-    else if (radarCount > 0)    { dssColor = '#f87171'; dssIconClass = 'red';    dssIcon = '🔴'; }
-    else                        { dssColor = '#93c5fd'; dssIconClass = 'blue';   dssIcon = '🔵'; }
-    dssValue = activeCount + ' Event' + (activeCount !== 1 ? 's' : '');
-    dssSub   = 'See table for details';
-  }
-  document.getElementById('dssStatusValue').style.color  = dssColor;
-  document.getElementById('dssStatusValue').textContent   = dssValue;
-  document.getElementById('dssStatusSub').textContent     = dssSub;
-  document.getElementById('dssStatusIcon').className      = 'status-icon ' + dssIconClass;
-  document.getElementById('dssStatusIcon').textContent    = dssIcon;
-
-  var labels = { today: "Today's", tomorrow: "Tomorrow's", week: 'Next 7 Days', month: 'Next 30 Days' };
-  var lbl    = labels[mapMode] || "Today's";
-  document.getElementById('dssTableTitle').textContent   = lbl + ' DSS Operations';
-  document.getElementById('callsTableTitle').textContent = lbl + ' Coordination Calls';
-  document.getElementById('dssWrapper').style.display    = activeCount > 0 ? 'block' : 'none';
-
-  // Upcoming DSS
-  upcoming.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
-  var grouped = {};
-  upcoming.forEach(function(ev) {
-    var k = ev.name + '|' + ev.type;
-    if (!grouped[k]) grouped[k] = { name: ev.name, dates: [], type: ev.type, lat: ev.lat, lon: ev.lon };
-    grouped[k].dates.push(ev.date);
-  });
-  var upcomingEl = document.getElementById('upcomingEvents');
-  upcomingEl.innerHTML = '';
-  var gKeys = Object.keys(grouped);
-  if (gKeys.length === 0) { upcomingEl.innerHTML = '<div class="empty-state">No upcoming DSS events</div>'; }
-  else {
-    gKeys.forEach(function(k) {
-      var g = grouped[k];
-      var cls = g.type.indexOf('Heads-up email') !== -1 ? 'upcoming-headsup' : g.type.indexOf('Active radar watch') !== -1 ? 'upcoming-radar' : g.type.indexOf('On-Site DSS') !== -1 ? 'upcoming-onsite' : '';
-      g.dates.sort();
-      var start = formatDate(g.dates[0]), end = formatDate(g.dates[g.dates.length-1]);
-      var div = document.createElement('div');
-      div.className = 'upcoming-item ' + cls;
-      div.innerHTML = '<div class="upcoming-item-name">' + g.name + '</div><div class="upcoming-item-meta">' + g.type + ' · ' + (start === end ? start : start + ' – ' + end) + '</div>';
-      div.addEventListener('click', (function(la, lo) { return function() { zoomToEvent(la, lo); }; })(g.lat, g.lon));
-      upcomingEl.appendChild(div);
-    });
-  }
-
-  // ── CALLS ──────────────────────────────────────────────────
-  var callsTable = document.getElementById('callsTable');
-  callsTable.innerHTML = '';
-  var visibleCallCount = 0;
-  var callIndex = 0;
-  var sortedCalls = (callRows.slice(1) || []).filter(function(c) {
-    return String(c[5] || '').trim().toUpperCase() !== 'TRUE';
-  });
-
-  var todayCalls = sortedCalls.filter(function(c) {
-    var cp = String(c[0] || '').split('/');
-    if (cp.length !== 3) return false;
-    return cp[2] + '-' + cp[0].padStart(2,'0') + '-' + cp[1].padStart(2,'0') === localDate;
-  });
-
-  buildGlanceTimeline(todayDssItems, todayCalls);
-  updateNextObligation(todayDssItems, todayCalls);
-
-  var upcomingCallsEl = document.getElementById('upcomingCalls');
-  upcomingCallsEl.innerHTML = '';
-  if (sortedCalls.length === 0) {
-    upcomingCallsEl.innerHTML = '<div class="empty-state">No upcoming calls</div>';
-  } else {
-    sortedCalls.forEach(function(call) {
-      var div = document.createElement('div');
-      div.className = 'upcoming-item';
-      div.innerHTML = '<div class="upcoming-item-name">' + call[2] + '</div><div class="upcoming-item-meta">' + call[0] + ' ' + call[1] + '</div>';
-      upcomingCallsEl.appendChild(div);
-    });
-  }
-
-  sortedCalls.forEach(function(call, idx) {
-    var cparts = String(call[0] || '').split('/');
-    if (cparts.length !== 3) return;
-    var ds = cparts[2] + '-' + cparts[0].padStart(2,'0') + '-' + cparts[1].padStart(2,'0');
-    if (!isDateInView(ds)) return;
-    visibleCallCount++;
-    if (!showAllCalls && visibleCallCount > MAX_VISIBLE_ROWS) return;
-    var urlMatch = String(call[3] || '').match(/https?:\/\/\S+/);
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td style="white-space:nowrap;">' + call[0] + '</td>' +
-      '<td class="time-chip">'           + call[1] + '</td>' +
-      '<td style="font-weight:600;">'    + call[2] + '</td>' +
-      '<td style="font-size:12px;color:var(--muted);">' + call[3] + '</td>' +
-      '<td>' + (urlMatch ? '<a href="' + urlMatch[0] + '" target="_blank" class="join-btn">🔗 Join</a>' : '') + '</td>';
-    callsTable.appendChild(tr);
-  });
-
-  if (visibleCallCount > MAX_VISIBLE_ROWS) {
-    var vcTr = document.createElement('tr');
-    vcTr.className = 'view-more-row';
-    vcTr.innerHTML = '<td colspan="5" style="text-align:center;font-weight:600;color:#60a5fa;">' + (showAllCalls ? '▲ Show Less' : '▼ View ' + (visibleCallCount - MAX_VISIBLE_ROWS) + ' More Calls') + '</td>';
-    vcTr.onclick = function() { showAllCalls = !showAllCalls; loadData(dssRows, callRows); };
-    callsTable.appendChild(vcTr);
-  }
-
-  document.getElementById('callsWrapper').style.display = visibleCallCount > 0 ? 'block' : 'none';
-
-  if (visibleCallCount === 0) {
-    document.getElementById('callStatusValue').style.color = '#4ade80';
-    document.getElementById('callStatusValue').textContent  = 'No Calls';
-    document.getElementById('callStatusSub').textContent    = '--';
-    document.getElementById('callStatusIcon').className     = 'status-icon green';
-    document.getElementById('callStatusIcon').textContent   = '✓';
-  } else {
-    document.getElementById('callStatusValue').style.color = '#fbbf24';
-    document.getElementById('callStatusValue').textContent  = visibleCallCount + ' Call' + (visibleCallCount > 1 ? 's' : '');
-    document.getElementById('callStatusSub').textContent    = 'See table for details';
-    document.getElementById('callStatusIcon').className     = 'status-icon amber';
-    document.getElementById('callStatusIcon').textContent   = '☎';
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-//  CALENDAR
-// ══════════════════════════════════════════════════════════════
-function buildCalendar() {
-  var headers = dssRows[0];
-  var eventCol     = headers.indexOf('Event Name');
-  var eventDateCol = headers.indexOf('Event Date');
-  var typeCol      = headers.indexOf('DSS Type');
-  var watchTimeCol = headers.indexOf('Radar Watch Time');
-  var emailTimeCol = headers.indexOf('Email Due By');
-  var cancelledCol = headers.indexOf('Cancelled');
-
-  var parts = localDate.split('-');
-  var startOfWeek = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
-  startOfWeek.setHours(0,0,0,0);
-
-  var dayBuckets  = Array(14).fill(null).map(function() { return []; });
-  var callBuckets = Array(14).fill(null).map(function() { return []; });
-
-  (callRows.slice(1) || []).forEach(function(call, origIdx) {
-    if (String(call[5] || '').trim().toUpperCase() === 'TRUE') return;
-    var cp = String(call[0] || '').split('/');
-    if (cp.length !== 3) return;
-    var cd = new Date(cp[2], cp[0]-1, cp[1]);
-    var diff = Math.floor((cd - startOfWeek) / 86400000);
-    if (diff >= 0 && diff < 14) callBuckets[diff].push({ event: call[2], time: call[1], rowIndex: origIdx + 1 });
-  });
-
-  dssRows.slice(1).forEach(function(row) {
-    if (String(row[cancelledCol] || '').trim().toUpperCase() === 'TRUE') return;
-    var p = String(row[eventDateCol] || '').split('/');
-    if (p.length !== 3) return;
-    var eDate = new Date(Number(p[2]), Number(p[0])-1, Number(p[1]));
-    var diff = Math.floor((eDate - startOfWeek) / 86400000);
-    if (diff >= 0 && diff < 14) dayBuckets[diff].push({ name: row[eventCol], type: row[typeCol], watchTime: row[watchTimeCol], emailTime: row[emailTimeCol] });
-  });
-
-  window.calJumpToDate = function(isoDate) {
-    localDate = isoDate;
-    showMainLayout(); setNavActive('todayView'); mapMode = 'today';
-    document.getElementById('mapViewBadge').textContent = 'Today';
-    loadData(dssRows, callRows);
-    setTimeout(function() { map.invalidateSize(); }, 300);
-  };
-
-  function renderWeek(startDay) {
-    var html = '<tr>';
-    for (var d = startDay; d < startDay + 7; d++) {
-      var dd = new Date(startOfWeek); dd.setDate(startOfWeek.getDate() + d);
-      var iso = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
-      html += '<th><span class="cal-day-header" onclick="calJumpToDate(\'' + iso + '\')"><span class="cal-date">' + dd.toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}) + '</span></span></th>';
-    }
-    html += '</tr><tr>';
-    for (var day = startDay; day < startDay + 7; day++) {
-      html += '<td><div class="cal-cell"><div class="cal-events">';
-      var cdd = new Date(startOfWeek); cdd.setDate(startOfWeek.getDate() + day);
-      if (cdd.getDay() === 1) html += '<div class="cal-weekly-chip">📋 Weekly Brief Due</div>';
-      dayBuckets[day].forEach(function(ev) {
-        var bg = ev.type === 'On-Site DSS' ? '#2e1065' : ev.type.indexOf('Active radar watch') !== -1 ? '#3b0a0a' : '#172554';
-        html += '<div class="cal-event-chip" style="background:' + bg + ';" data-dss-event="' + ev.name.replace(/"/g,'&quot;') + '"><b>' + ev.name + '</b>' + (ev.emailTime ? '<br>📧 ' + ev.emailTime : '') + (ev.watchTime ? '<br>⏰ ' + ev.watchTime : '') + '</div>';
-      });
-      callBuckets[day].forEach(function(c) {
-        html += '<div class="cal-event-chip" style="background:#3d2800;color:#fbbf24;" data-call-index="' + c.rowIndex + '">☎ ' + c.time + '<br>' + c.event + '</div>';
-      });
-      html += '</div></div></td>';
-    }
-    return html + '</tr>';
-  }
-
-  var wrapper = document.getElementById('calendarScrollWrapper');
-  wrapper.innerHTML = '<table class="cal-table">' + renderWeek(0) + renderWeek(7) + '</table>';
-
-  wrapper.addEventListener('click', function(e) {
-    var chip = e.target.closest('[data-dss-event]');
-    if (chip) { showDssDetails(chip.getAttribute('data-dss-event')); return; }
-    var callChip = e.target.closest('[data-call-index]');
-    if (callChip) showCallDetails(parseInt(callChip.getAttribute('data-call-index'), 10));
-  });
-}
-
-// ══════════════════════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', function() {
-  // Nav view buttons
-  document.getElementById('todayView').addEventListener('click', function() {
-    showMainLayout(); setNavActive('todayView'); mapMode = 'today';
-    document.getElementById('mapViewBadge').textContent = 'Today';
-    loadData(dssRows, callRows); setTimeout(function() { map.invalidateSize(); }, 200);
-  });
-  document.getElementById('tomorrowView').addEventListener('click', function() {
-    showMainLayout(); setNavActive('tomorrowView'); mapMode = 'tomorrow';
-    document.getElementById('mapViewBadge').textContent = 'Tomorrow';
-    loadData(dssRows, callRows); setTimeout(function() { map.invalidateSize(); }, 200);
-  });
-  document.getElementById('weekView').addEventListener('click', function() {
-    showMainLayout(); setNavActive('weekView'); mapMode = 'week';
-    document.getElementById('mapViewBadge').textContent = 'Next 7 Days';
-    loadData(dssRows, callRows); setTimeout(function() { map.invalidateSize(); }, 200);
-  });
-  document.getElementById('monthView').addEventListener('click', function() {
-    showMainLayout(); setNavActive('monthView'); mapMode = 'month';
-    document.getElementById('mapViewBadge').textContent = 'Next 30 Days';
-    loadData(dssRows, callRows); setTimeout(function() { map.invalidateSize(); }, 200);
-  });
-  document.getElementById('calendarView').addEventListener('click', function() {
-    setNavActive('calendarView');
-    document.getElementById('mainLayout').style.display               = 'none';
-    document.getElementById('airportDashboardContainer').style.display  = 'none';
-    document.getElementById('calendarContainer').style.display          = 'flex';
-    buildCalendar();
-  });
-  document.getElementById('airportDashboardView').addEventListener('click', function() {
-    setNavActive('airportDashboardView');
-    document.getElementById('mainLayout').style.display               = 'none';
-    document.getElementById('calendarContainer').style.display         = 'none';
-    document.getElementById('airportDashboardContainer').style.display  = 'block';
-  });
-
-  // Load GeoJSON zone overlays
-  fetch(ZONES_URL)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      L.geoJSON(data, { interactive: false, style: { color: '#1e2d3d', weight: 1, fillOpacity: 0 } }).addTo(map);
-    })
-    .catch(function() {});
-
-  // Initial load
-  refreshDashboard();
-  setInterval(refreshDashboard, 60000);
-  setInterval(updateAlertTicker, 300000);
 });
+
+google.script.run
+  .withSuccessHandler(loadZones)
+  .withFailureHandler(function(error){
+
+    console.log("Zone Error:", error);
+
+  })
+  .getZones();
+
+  setInterval(function(){
+
+  refreshDashboard();
+
+}, 300000);
+
+function showRestoreSelector(){
+
+  const cancelPanel =
+    document.getElementById(
+      "cancelPanel"
+    );
+
+  const restorePanel =
+    document.getElementById(
+      "restorePanel"
+    );
+
+  cancelPanel.style.display =
+    "none";
+
+  restorePanel.style.display =
+    restorePanel.style.display === "none"
+      ? "block"
+      : "none";
+
+}
+
+document.addEventListener("click", function(e){
+
+  const cancelPanel =
+    document.getElementById("cancelPanel");
+
+  const restorePanel =
+    document.getElementById("restorePanel");
+
+  const cancelButton =
+    document.getElementById("cancelDssButton");
+
+  const restoreButton =
+    document.getElementById("restoreDssButton");
+
+  const editPanel =
+    document.getElementById("editPanel");
+
+  const editButton =
+    document.getElementById("editDssButton");
+
+  if(
+    !cancelPanel.contains(e.target) &&
+    !cancelButton.contains(e.target)
+  ){
+    cancelPanel.style.display = "none";
+  }
+
+  if(
+    !restorePanel.contains(e.target) &&
+    !restoreButton.contains(e.target)
+  ){
+    restorePanel.style.display = "none";
+  }
+
+    if(
+  !editPanel.contains(e.target) &&
+  !editButton.contains(e.target) &&
+  !e.target.closest(".leaflet-popup")
+){
+  editPanel.style.display = "none";
+}
+
+});
+
+function restoreSelectedEvent(){
+
+  const eventName =
+    document.getElementById(
+      "restoreEventSelect"
+    ).value;
+
+  if(
+    !confirm(
+      "Restore " +
+      eventName +
+      "?"
+    )
+  ){
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(){
+
+      refreshDashboard();
+
+      alert(
+        eventName +
+        " restored."
+      );
+
+      document.getElementById(
+        "restorePanel"
+      ).style.display = "none";
+
+    })
+    .restoreEvent(eventName);
+
+}
+
+function loadZones(data){
+
+  console.log("GeoJSON Loaded");
+
+  const zones =
+    JSON.parse(data);
+
+  L.geoJSON(zones,{
+  interactive:false,
+  style:{
+    color:"#000000",
+    weight:1,
+    fillOpacity:0
+  }
+}).addTo(map);
+
+}
+
+function toggleCancelMode(){
+
+  const mode =
+    document.querySelector(
+      'input[name="cancelMode"]:checked'
+    ).value;
+
+  const dateSelect =
+    document.getElementById(
+      "cancelDateSelect"
+    );
+
+  if(mode === "single"){
+
+    dateSelect.style.display =
+      "block";
+
+    populateDateDropdown();
+
+  }
+  else{
+
+    dateSelect.style.display =
+      "none";
+
+  }
+
+}
+
+function populateDateDropdown(){
+
+  const eventName =
+    document.getElementById(
+      "cancelEventSelect"
+    ).value;
+
+  const dateSelect =
+    document.getElementById(
+      "cancelDateSelect"
+    );
+
+  dateSelect.innerHTML = "";
+
+  if(!eventDates[eventName]){
+    return;
+  }
+
+  eventDates[eventName]
+    .sort()
+    .forEach(date => {
+
+      dateSelect.innerHTML += `
+        <option value="${date}">
+          ${date}
+        </option>
+      `;
+
+    });
+
+}
+
+refreshDashboard();
+
+function zoomToEvent(lat, lon){
+
+  map.setView(
+    [parseFloat(lat), parseFloat(lon)],
+    11
+  );
+
+}
+
+function refreshDashboard(){
+
+  google.script.run
+    .withSuccessHandler(function(events){
+
+      google.script.run
+        .withSuccessHandler(function(calls){
+
+          loadData(events, calls);
+
+        })
+        .getDailyCalls();
+
+    })
+    .getData();
+
+}
+
+function loadData(rows, calls){
+
+dssRows = rows;
+callRows = calls;
+
+console.log("DSS Events:", rows.length);
+
+if(!calls){
+  calls = [];
+}
+
+let visibleCallCount = 0;
+
+console.log(calls);
+
+let callsTableHtml = "";
+
+console.log(calls);
+
+document.getElementById(
+  "callsBanner"
+).style.background = "#006400";
+
+document.getElementById(
+  "callsBanner"
+).innerHTML =
+  "0 COORDINATION CALLS";
+
+markerLayer.clearLayers();
+
+  const eventNames = new Set();
+
+  eventDates = {};
+
+  const headers = rows[0];
+
+  const bounds = [];
+
+  const upcoming = [];
+
+  const eventCol =
+    headers.indexOf("Event Name");
+
+  const cancelledEvents =
+    new Set();
+
+  const typeCol =
+    headers.indexOf("DSS Type");
+
+  const eventDateCol =
+  headers.indexOf("Event Date");
+
+const contactInfoCol =
+  headers.indexOf("Contact Info");
+
+const radarWatchCol =
+  headers.indexOf(
+    "Radar Watch Time"
+  );
+
+  const headsUpCol =
+  headers.indexOf(
+    "Email Due By"
+  );
+
+  console.log(
+  "HeadsUpCol:",
+  headsUpCol
+);
+
+console.log(
+  "Header Name:",
+  headers[headsUpCol]
+);
+
+const contactCol =
+  headers.indexOf("Contact Name");
+
+  const latCol =
+    headers.indexOf("Latitude");
+
+  const lonCol =
+    headers.indexOf("Longitude");
+
+  const cancelledCol =
+  headers.indexOf("Cancelled");
+
+console.log(headers);
+console.log("Cancelled Col =", cancelledCol);
+
+  const table =
+    document.getElementById("eventTable");
+
+  table.innerHTML = "";
+
+let activeCount = 0;
+let radarCount = 0;
+let headsUpCount = 0;
+let bothCount = 0;
+let onsiteCount = 0;
+
+  for(let i=1;i<rows.length;i++){
+
+  const row = rows[i];
+
+const parts =
+  String(row[eventDateCol] || "")
+    .split("/");
+
+if(parts.length !== 3){
+  console.log(
+    "Bad DSS date:",
+    row[eventDateCol]
+  );
+  continue;
+}
+
+const eventDateString =
+  parts[2] + "-" +
+  parts[0].padStart(2,"0") + "-" +
+  parts[1].padStart(2,"0");
+const todayString =
+  document.getElementById(
+    "selectedDate"
+  ).value;
+
+  console.log(
+  row[eventCol],
+  "Cancelled:",
+  row[cancelledCol]
+);
+
+if(
+  String(row[cancelledCol])
+    .trim()
+    .toUpperCase() === "TRUE"
+){
+
+  if(eventDateString >= todayString){
+
+  cancelledEvents.add(
+    row[eventCol]
+  );
+
+}
+
+  console.log(
+    "Cancelled:",
+    row[eventCol]
+  );
+
+  continue;
+
+}
+
+if(eventDateString >= todayString){
+
+  eventNames.add(
+    row[eventCol]
+  );
+
+  if(!eventDates[row[eventCol]]){
+
+    eventDates[row[eventCol]] = [];
+
+  }
+
+  eventDates[row[eventCol]].push(
+    row[eventDateCol]
+  );
+
+}
+
+const eventDate = new Date(row[eventDateCol]);
+
+if(eventDateString > todayString){
+
+  upcoming.push({
+  date: eventDateString,
+  name: row[eventCol],
+  type: row[typeCol],
+  lat: row[latCol],
+  lon: row[lonCol]
+});
+
+}
+
+const selectedDateString =
+  document.getElementById("selectedDate").value;
+
+if(mapMode === "today"){
+
+  if(eventDateString !== selectedDateString){
+    continue;
+  }
+
+}
+else if(mapMode === "tomorrow"){
+
+  const tomorrow =
+    new Date(selectedDateString);
+
+  tomorrow.setDate(
+    tomorrow.getDate() + 1
+  );
+
+  const tomorrowString =
+    tomorrow.toISOString().split("T")[0];
+
+  if(eventDateString !== tomorrowString){
+    continue;
+  }
+
+}
+else if(mapMode === "week"){
+
+  const startDate =
+    new Date(selectedDateString);
+
+  startDate.setDate(
+    startDate.getDate() + 1
+  );
+
+  const sevenDaysLater =
+    new Date(startDate);
+
+  sevenDaysLater.setDate(
+    sevenDaysLater.getDate() + 6
+  );
+
+  const filterEventDate =
+    new Date(eventDateString);
+
+  if(
+    filterEventDate < startDate ||
+    filterEventDate > sevenDaysLater
+  ){
+    continue;
+  }
+
+}
+else if(mapMode === "month"){
+
+  const startDate =
+    new Date(selectedDateString);
+
+  startDate.setDate(
+    startDate.getDate() + 1
+  );
+
+  const thirtyDaysLater =
+    new Date(startDate);
+
+  thirtyDaysLater.setDate(
+    thirtyDaysLater.getDate() + 29
+  );
+
+  const filterEventDate =
+    new Date(eventDateString);
+
+  if(
+    filterEventDate < startDate ||
+    filterEventDate > thirtyDaysLater
+  ){
+    continue;
+  }
+
+}
+
+console.log(
+  "COUNTING:",
+  row[eventCol],
+  eventDateString,
+  mapMode
+);
+
+activeCount++;
+
+if(row[typeCol].includes("Heads-up email and radar watch")){
+  bothCount++;
+}
+else if(row[typeCol].includes("Heads-up email")){
+  headsUpCount++;
+}
+else if(row[typeCol].includes("Active radar watch")){
+  radarCount++;
+}
+else if(row[typeCol].includes("On-Site DSS")){
+  onsiteCount++;
+}
+
+console.log(
+  row[eventCol],
+  "HeadsUp:",
+  row[headsUpCol]
+);
+
+console.log(
+  "TABLE:",
+  row[eventCol],
+  "EMAIL=",
+  row[headsUpCol],
+  "RADAR=",
+  row[radarWatchCol]
+);
+
+let rowColor = "#111";
+
+if(row[typeCol].includes("On-Site DSS")){
+  rowColor = "#0f2f0f";
+}
+else if(
+  row[typeCol].includes(
+    "Heads-up email and radar watch"
+  )
+){
+  rowColor = "#2b1245";
+}
+else if(
+  row[typeCol].includes(
+    "Active radar watch"
+  )
+){
+  rowColor = "#3a1010";
+}
+else if(
+  row[typeCol].includes(
+    "Heads-up email"
+  )
+){
+  rowColor = "#0d2340";
+}
+
+  table.innerHTML += `
+    <tr>
+      <td>${row[eventDateCol]}</td>
+      <td>${row[eventCol]}</td>
+      <td style="
+  background:${rowColor};
+  font-weight:bold;
+">
+  ${row[typeCol]}
+
+${
+  String(row[headsUpCol] || "").trim() ||
+  String(row[radarWatchCol] || "").trim()
+    ? `
+      <br>
+      <span style="
+        font-size:14px;
+        font-weight:bold;
+      ">
+        ${
+          String(row[headsUpCol] || "").trim()
+            ? `<span style="color:#66B2FF;">📧 ${row[headsUpCol]}</span>`
+            : ""
+        }
+
+        ${
+          String(row[headsUpCol] || "").trim() &&
+          String(row[radarWatchCol] || "").trim()
+            ? " | "
+            : ""
+        }
+
+        ${
+          String(row[radarWatchCol] || "").trim()
+            ? `<span style="color:#FFD700;">⏰ ${row[radarWatchCol]}</span>`
+            : ""
+        }
+      </span>
+    `
+    : ""
+}
+
+</td>
+      <td>${row[contactCol]}</td>
+      <td>${row[contactInfoCol]}</td>
+    </tr>
+  `;
+    // Add marker to map
+   
+    const lat =
+  parseFloat(row[latCol]);
+
+const radius = 8
+const lon =
+  parseFloat(row[lonCol]);
+
+if(!isNaN(lat) && !isNaN(lon)){
+
+  bounds.push([lat, lon]);
+
+  const color =
+    getMarkerColor(row[typeCol]);
+
+  const marker =
+    L.circleMarker([lat,lon],{
+      radius: radius,
+      color: "#FFFFFF",
+      weight: 2,
+      fillColor: color,
+      fillOpacity: 0.9
+    })
+      .addTo(markerLayer)
+      .bindPopup(`
+  <b>${row[eventCol]}</b><br><br>
+
+  <b>DSS Type:</b><br>
+  ${row[typeCol]}<br><br>
+
+${
+  row[headsUpCol]
+    ? `<b>Heads-Up Due:</b><br>
+       ${row[headsUpCol]}<br><br>`
+    : ""
+}
+
+  ${
+    row[radarWatchCol]
+      ? `<b>Radar Watch:</b><br>
+         ${row[radarWatchCol]}<br><br>`
+      : ""
+  }
+
+  <b>Date:</b><br>
+  ${row[eventDateCol]}<br><br>
+
+  <b>Contact:</b><br>
+  ${row[contactCol]}<br><br>
+
+  <b>Contact Info:</b><br>
+  ${row[contactInfoCol]}
+
+<br><br>
+
+<button
+  data-event="${row[eventCol]}"
+  onclick="editEventFromPopup(this.dataset.event)"
+  style="
+    background:#1E90FF;
+    color:white;
+    border:none;
+    padding:6px 10px;
+    border-radius:4px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-right:5px;
+  ">
+  ✏ Edit
+</button>
+
+<button
+  data-event="${row[eventCol]}"
+  onclick="cancelEvent(this.dataset.event)"
+  style="
+    background:#8b1e1e;
+    color:white;
+    border:none;
+    padding:6px 10px;
+    border-radius:4px;
+    cursor:pointer;
+    font-weight:bold;
+  ">
+  ❌ Cancel
+</button>
+
+`)
+
+  }
+  }
+
+if(bounds.length > 1){
+
+  map.fitBounds(bounds,{
+    padding:[40,40],
+    maxZoom:10
+  });
+
+}
+else if(bounds.length === 1){
+
+  map.setView(bounds[0],10);
+
+}
+else{
+
+  map.setView(
+    [44.0, -73.5],
+    8
+  );
+
+}
+document.getElementById("eventCount").innerHTML = `
+  <div style="
+    background:#400;
+    padding:6px;
+    margin-bottom:4px;
+    border-radius:4px;
+  ">
+    🔴 Radar Watch: ${radarCount}
+  </div>
+
+  <div style="
+    background:#003366;
+    padding:6px;
+    margin-bottom:4px;
+    border-radius:4px;
+  ">
+    🔵 Heads-Up Email: ${headsUpCount}
+  </div>
+
+  <div style="
+    background:#4B0082;
+    padding:6px;
+    margin-bottom:4px;
+    border-radius:4px;
+  ">
+    🟣 Email + Radar Watch: ${bothCount}
+  </div>
+
+  <div style="
+    background:#006400;
+    padding:6px;
+    margin-bottom:4px;
+    border-radius:4px;
+  ">
+    🟢 On-Site DSS: ${onsiteCount}
+  </div>
+`;
+
+const eventText =
+  `${activeCount} EVENT${activeCount === 1 ? "" : "S"}`;
+
+let bannerColor = "#2d2dd2";
+let bannerText = "";
+
+let viewLabel = "";
+
+if(mapMode === "today"){
+  viewLabel = "TODAY'S DSS STATUS";
+}
+else if(mapMode === "tomorrow"){
+  viewLabel = "TOMORROW'S DSS STATUS";
+}
+else if(mapMode === "week"){
+  viewLabel = "7-DAY DSS OUTLOOK";
+}
+else if(mapMode === "month"){
+  viewLabel = "30-DAY DSS OUTLOOK";
+}
+
+if(mapMode === "today"){
+
+  document.getElementById(
+    "dssTableTitle"
+  ).innerHTML =
+    "Today's DSS Operations";
+
+  document.getElementById(
+    "callsTableTitle"
+  ).innerHTML =
+    "Today's Coordination Calls";
+
+}
+else if(mapMode === "tomorrow"){
+
+  document.getElementById(
+    "dssTableTitle"
+  ).innerHTML =
+    "Tomorrow's DSS Operations";
+
+  document.getElementById(
+    "callsTableTitle"
+  ).innerHTML =
+    "Tomorrow's Coordination Calls";
+
+}
+else if(mapMode === "week"){
+
+  document.getElementById(
+    "dssTableTitle"
+  ).innerHTML =
+    "Next 7 Days DSS Operations";
+
+  document.getElementById(
+    "callsTableTitle"
+  ).innerHTML =
+    "Next 7 Days Coordination Calls";
+
+}
+else if(mapMode === "month"){
+
+  document.getElementById(
+    "dssTableTitle"
+  ).innerHTML =
+    "Next 30 Days DSS Operations";
+
+  document.getElementById(
+    "callsTableTitle"
+  ).innerHTML =
+    "Next 30 Days Coordination Calls";
+
+}
+
+if(activeCount === 0){
+
+  bannerColor = "#006400";
+
+  bannerText =
+    `${viewLabel}: NO DSS EVENTS`;
+
+}
+else if(onsiteCount > 0){
+
+  bannerColor = "#8B0000";
+
+  bannerText =
+    `${viewLabel}: ${eventText} | ${onsiteCount} ON-SITE DSS`;
+
+}
+else if(radarCount + bothCount > 0){
+
+  bannerColor = "#B8860B";
+
+  bannerText =
+    `${viewLabel}: ${eventText} | RADAR WATCH IN EFFECT`;
+
+}
+else{
+
+  bannerColor = "#1E90FF";
+
+  bannerText =
+    `${viewLabel}: ${eventText}`;
+
+}
+
+document.getElementById("statusBanner").style.background =
+  bannerColor;
+
+document.getElementById("statusBanner").innerHTML =
+  bannerText;
+
+upcoming.sort((a,b) =>
+  new Date(a.date) - new Date(b.date)
+);
+
+const groupedEvents = {};
+
+upcoming.forEach(event => {
+
+  if(!groupedEvents[event.name]){
+
+  groupedEvents[event.name] = {
+  dates: [],
+  type: event.type,
+  lat: event.lat,
+  lon: event.lon
+};
+
+}
+
+groupedEvents[event.name].dates.push(
+  event.date
+);
+
+});
+
+let upcomingHtml = "";
+
+for(const name in groupedEvents){
+
+  const dates =
+    groupedEvents[name].dates;
+
+  const dssType =
+    groupedEvents[name].type;
+
+  dates.sort((a,b)=>a-b);
+
+  const startText =
+  formatDate(dates[0]);
+
+const endText =
+  formatDate(
+    dates[dates.length - 1]
+  );
+
+  if(startText === endText){
+
+  upcomingHtml += `
+<div
+  onclick="zoomToEvent(
+    ${groupedEvents[name].lat},
+    ${groupedEvents[name].lon}
+  )"
+  style="
+    cursor:pointer;
+    padding:4px;
+    border-radius:4px;
+  "
+  onmouseover="this.style.background='#222'"
+  onmouseout="this.style.background='transparent'"
+>
+  <b>${name}</b> - ${dssType}<br>
+  ${startText}
+</div>
+<br>
+`;
+
+}
+  else{
+
+    upcomingHtml += `
+<div
+  onclick="zoomToEvent(
+    ${groupedEvents[name].lat},
+    ${groupedEvents[name].lon}
+  )"
+  style="
+    cursor:pointer;
+    padding:4px;
+    border-radius:4px;
+  "
+>
+  <b>${name}</b> - ${dssType}<br>
+  ${startText} - ${endText}
+</div>
+<br>
+`;
+
+  }
+
+}
+if(upcomingHtml === ""){
+
+  upcomingHtml =
+    "No upcoming DSS events";
+
+}
+
+document.getElementById("upcomingEvents").innerHTML =
+  upcomingHtml;
+
+const cancelSelect =
+  document.getElementById(
+    "cancelEventSelect"
+  );
+
+cancelSelect.innerHTML = "";
+
+Array.from(eventNames)
+  .sort()
+  .forEach(name => {
+
+    cancelSelect.innerHTML += `
+      <option value="${name}">
+        ${name}
+      </option>
+    `;
+
+});
+
+populateDateDropdown();
+
+const restoreSelect =
+  document.getElementById(
+    "restoreEventSelect"
+  );
+
+restoreSelect.innerHTML = "";
+
+Array.from(cancelledEvents)
+  .sort()
+  .forEach(name => {
+
+    restoreSelect.innerHTML += `
+      <option value="${name}">
+        ${name}
+      </option>
+    `;
+
+});
+
+const editSelect =
+  document.getElementById(
+    "editEventSelect"
+  );
+
+editSelect.innerHTML = "";
+
+Array.from(eventNames)
+  .sort()
+  .forEach(name => {
+
+    editSelect.innerHTML += `
+      <option value="${name}">
+        ${name}
+      </option>
+    `;
+
+});
+
+const editCallSelect =
+  document.getElementById(
+    "editCallSelect"
+  );
+
+if(editCallSelect){
+
+  editCallSelect.innerHTML = "";
+
+  for(let i=1; i<calls.length; i++){
+
+    editCallSelect.innerHTML += `
+      <option value="${calls[i][2]}">
+        ${calls[i][2]}
+      </option>
+    `;
+
+  }
+
+}
+
+const cancelCallSelect =
+  document.getElementById(
+    "cancelCallSelect"
+  );
+
+if(cancelCallSelect){
+
+  cancelCallSelect.innerHTML = "";
+
+  for(let i=1; i<calls.length; i++){
+
+    cancelCallSelect.innerHTML += `
+      <option value="${calls[i][2]}">
+        ${calls[i][2]}
+      </option>
+    `;
+
+  }
+
+}
+
+if(calls.length > 1){
+
+let totalCalls = 0;
+
+for(let i=1; i<calls.length; i++){
+
+  totalCalls++;
+
+}
+
+document.getElementById(
+  "callCount"
+).innerHTML = `
+  <div style="
+    background:#003366;
+    padding:6px;
+    margin-bottom:4px;
+    border-radius:4px;
+  ">
+    📞 Number of Planned Coodination Calls: ${totalCalls}
+  </div>
+`;
+
+const sortedCalls =
+  calls
+    .slice(1)
+    .filter(call =>
+      String(call[5])
+        .trim()
+        .toUpperCase() !== "TRUE"
+    )
+    .sort((a,b) => {
+
+      const aDate =
+        new Date(a[0] + " " + a[1]);
+
+      const bDate =
+        new Date(b[0] + " " + b[1]);
+
+      return aDate - bDate;
+
+    });
+
+let upcomingCallsHtml = "";
+
+if(calls.length > 1){
+
+  for(let i=0; i<sortedCalls.length; i++){
+if(
+  String(calls[i][5])
+    .trim()
+    .toUpperCase() === "TRUE"
+){
+  continue;
+}
+
+    upcomingCallsHtml += `
+      <div style="
+        padding:4px;
+        margin-bottom:4px;
+      ">
+        <b>${sortedCalls[i][2]}</b><br>
+        ${sortedCalls[i][0]} ${sortedCalls[i][1]}
+      </div>
+    `;
+
+  }
+
+}
+else{
+
+  upcomingCallsHtml =
+    "No upcoming calls";
+
+}
+
+document.getElementById(
+  "upcomingCalls"
+).innerHTML = upcomingCallsHtml;
+
+  for(let i=1; i<calls.length; i++){
+
+  const callDate =
+    calls[i][0];
+
+  const callTime =
+    calls[i][1];
+
+  const eventInfo =
+    calls[i][2];
+
+  const contactInfo =
+    calls[i][3];
+
+  const additionalInfo =
+    calls[i][4];
+
+  const cancelled =
+  calls[i][5];
+
+if(
+  String(cancelled)
+    .trim()
+    .toUpperCase() === "TRUE"
+){
+  continue;
+}
+
+const selectedDate =
+  document.getElementById(
+    "selectedDate"
+  ).value;
+
+const parts =
+  String(callDate || "")
+    .split("/");
+
+if(parts.length !== 3){
+  console.log(
+    "Bad call date:",
+    callDate
+  );
+  continue;
+}
+
+const callDateString =
+  parts[2] + "-" +
+  parts[0].padStart(2,"0") + "-" +
+  parts[1].padStart(2,"0");
+
+  if(mapMode === "today"){
+
+  if(callDateString !== selectedDate){
+    continue;
+  }
+
+}
+else if(mapMode === "tomorrow"){
+
+  const tomorrow =
+    new Date(selectedDate);
+
+  tomorrow.setDate(
+    tomorrow.getDate() + 1
+  );
+
+  const tomorrowString =
+    tomorrow.toISOString()
+      .split("T")[0];
+
+  if(callDateString !== tomorrowString){
+    continue;
+  }
+
+}
+else if(mapMode === "week"){
+
+  const startDate =
+    new Date(selectedDate);
+
+  const endDate =
+    new Date(selectedDate);
+
+  endDate.setDate(
+    endDate.getDate() + 7
+  );
+
+  const currentCallDate =
+    new Date(callDateString);
+
+  if(
+    currentCallDate < startDate ||
+    currentCallDate > endDate
+  ){
+    continue;
+  }
+
+}
+else if(mapMode === "month"){
+
+  const startDate =
+    new Date(selectedDate);
+
+  startDate.setDate(
+    startDate.getDate() + 1
+  );
+
+  const endDate =
+    new Date(startDate);
+
+  endDate.setDate(
+    endDate.getDate() + 29
+  );
+
+  const currentCallDate =
+    new Date(callDateString);
+
+  if(
+    currentCallDate < startDate ||
+    currentCallDate > endDate
+  ){
+    continue;
+  }
+
+}
+
+  visibleCallCount++;
+
+const tooltip =
+  `☎ Contact: ${contactInfo}` +
+  (
+    additionalInfo
+      ? `\n\nℹ Additional Info: ${additionalInfo}`
+      : ""
+  );
+
+ const urlMatch =
+  String(contactInfo || "")
+    .match(/https?:\/\/\S+/);
+
+const joinButton =
+  urlMatch
+    ? `
+      <a
+        href="${urlMatch[0]}"
+        target="_blank"
+        title="Join Meeting"
+        style="
+          text-decoration:none;
+          font-size:16px;
+        "
+      >
+        🔗
+      </a>
+    `
+    : "";
+
+callsTableHtml += `
+  <tr>
+    <td>${callDate}</td>
+    <td>${callTime}</td>
+    <td>${eventInfo}</td>
+    <td>${contactInfo}</td>
+    <td style="text-align:center;">
+      ${joinButton}
+    </td>
+  </tr>
+`;
+
+}
+
+}
+
+document.getElementById(
+  "statusBanner"
+).innerHTML =
+  bannerText;
+
+let callsBannerColor = "";
+let callsBannerText = "";
+
+console.log("activeCount =", activeCount);
+console.log("visibleCallCount =", visibleCallCount);
+
+if(activeCount > 0){
+
+  document.getElementById(
+    "dssWrapper"
+  ).style.display = "block";
+
+}
+else{
+
+  document.getElementById(
+    "dssWrapper"
+  ).style.display = "none";
+
+}
+
+if(visibleCallCount > 0){
+
+  document.getElementById(
+    "callsWrapper"
+  ).style.display = "block";
+
+}
+else{
+
+  document.getElementById(
+    "callsWrapper"
+  ).style.display = "none";
+
+}
+
+if(visibleCallCount === 0){
+
+  callsBannerColor = "#006400";
+
+  callsBannerText =
+    "0 COORDINATION CALLS";
+
+}
+else{
+
+  callsBannerColor = "#B8860B";
+
+  callsBannerText =
+    `${visibleCallCount} COORDINATION CALL${visibleCallCount === 1 ? "" : "S"}`;
+
+}
+
+document.getElementById(
+  "callsBanner"
+).style.background =
+  callsBannerColor;
+
+document.getElementById(
+  "callsBanner"
+).innerHTML =
+  callsBannerText;
+
+document.getElementById(
+  "callsBanner"
+).style.background =
+  callsBannerColor;
+
+document.getElementById(
+  "callsBanner"
+).innerHTML =
+  callsBannerText;
+
+document.getElementById(
+  "callsTable"
+).innerHTML = callsTableHtml;
+
+if(visibleCallCount > 0){
+
+  document.getElementById(
+    "callsWrapper"
+  ).style.display = "block";
+
+}
+else{
+
+  document.getElementById(
+    "callsWrapper"
+  ).style.display = "none";
+
+}
+
+document.getElementById(
+  "lastRefresh"
+).innerHTML =
+  "Last Updated: " +
+  new Date().toLocaleTimeString();
+}
+
+function buildCalendar(){
+
+  const headers = dssRows[0];
+
+ const eventCol =
+  headers.indexOf("Event Name");
+
+const eventDateCol =
+  headers.indexOf("Event Date");
+
+const typeCol =
+  headers.indexOf("DSS Type");
+
+const watchTimeCol =
+  headers.indexOf("Radar Watch Time");
+
+const emailTimeCol =
+  headers.indexOf("Email Due By");
+
+ let html = `
+  <h2 style="text-align:center;">
+    DSS Activity Calendar
+  </h2>
+
+  <table style="
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+  ">
+`;
+
+html += `<tr>`;
+
+const parts =
+  document.getElementById(
+    "selectedDate"
+  ).value.split("-");
+
+const startOfWeek =
+  new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
+
+startOfWeek.setHours(0,0,0,0);
+
+startOfWeek.setHours(0,0,0,0);
+
+for(let i=0; i<7; i++){
+
+  const d =
+    new Date(startOfWeek);
+
+  d.setDate(
+    startOfWeek.getDate() + i
+  );
+
+  html += `
+    <th>
+      ${d.toLocaleDateString(
+        "en-US",
+        {
+          weekday:"short",
+          month:"numeric",
+          day:"numeric"
+        }
+      )}
+    </th>
+  `;
+}
+
+html += `</tr><tr>`;
+
+  let dayBuckets = Array(14)
+  .fill()
+  .map(() => []);
+
+let callBuckets = Array(14)
+  .fill()
+  .map(() => []);
+
+for(let i=1; i<callRows.length; i++){
+
+  const call = callRows[i];
+
+  if(
+    String(call[5])
+      .trim()
+      .toUpperCase() === "TRUE"
+  ){
+    continue;
+  }
+
+  const parts =
+    call[0].split("/");
+
+  const callDate =
+    new Date(
+      parts[2],
+      parts[0]-1,
+      parts[1]
+    );
+
+  const daysFromStart =
+    Math.floor(
+      (callDate - startOfWeek) /
+      (1000 * 60 * 60 * 24)
+    );
+
+  if(
+    daysFromStart >= 0 &&
+    daysFromStart < 14
+  ){
+
+    callBuckets[daysFromStart].push({
+  event: call[2],
+  time: call[1],
+  rowIndex: i
+});
+
+  }
+
+}
+
+const cancelledCol =
+  headers.indexOf("Cancelled");
+
+for(let i=1; i<dssRows.length; i++){
+
+  const row = dssRows[i];
+
+  if(
+    String(row[cancelledCol])
+      .trim()
+      .toUpperCase() === "TRUE"
+  ){
+    continue;
+  }
+
+    const parts =
+  row[eventDateCol].split("/");
+
+const eventDate =
+  new Date(
+    Number(parts[2]),
+    Number(parts[0]) - 1,
+    Number(parts[1])
+  );
+
+const daysFromStart =
+  Math.floor(
+    (eventDate - startOfWeek) /
+    (1000 * 60 * 60 * 24)
+  );
+
+if(
+  daysFromStart >= 0 &&
+  daysFromStart < 14
+){
+
+  dayBuckets[daysFromStart].push({
+  name: row[eventCol],
+  type: row[typeCol],
+  watchTime: row[watchTimeCol],
+  emailTime: row[emailTimeCol]
+});
+
+}
+
+  }
+
+  // Week 1
+for(let day=0; day<7; day++){
+
+  html += `
+    <td style="
+      vertical-align:top;
+      height:250px;
+      background:#111;
+    ">
+  `;
+
+  dayBuckets[day].forEach(event => {
+
+    let color = "#333";
+
+    if(event.type.includes("On-Site DSS")){
+  color = "#006400";
+}
+else if(event.type.includes("Heads-up email and radar watch")){
+  color = "#4B0082";
+}
+else if(event.type.includes("Active radar watch")){
+  color = "#8B0000";
+}
+else if(event.type.includes("Heads-up email")){
+  color = "#003366";
+}
+
+    html += `
+  <div
+    onclick="showDssDetails('${event.name}')"
+    style="
+      background:${color};
+      cursor:pointer;
+      margin:4px;
+      padding:4px;
+      border-radius:4px;
+      font-size:12px;
+    "
+  >
+    <b>${event.name}</b>
+
+    ${
+      event.emailTime
+        ? `<br>📧 ${event.emailTime}`
+        : ""
+    }
+
+    ${
+      event.watchTime
+        ? `<br>⏰ ${event.watchTime}`
+        : ""
+    }
+
+  </div>
+`;
+
+  });
+
+callBuckets[day].forEach(call => {
+
+  html += `
+    <div
+      onclick="showCallDetails(${call.rowIndex})"
+      style="
+        background:#B8860B;
+        margin:4px;
+        padding:4px;
+        border-radius:4px;
+        font-size:11px;
+        color:black;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ☎ ${call.time}<br>
+      ${call.event}
+    </div>
+  `;
+
+});
+
+  html += `</td>`;
+}
+
+html += `</tr><tr>`;
+
+for(let i=7; i<14; i++){
+
+  const d =
+    new Date(startOfWeek);
+
+  d.setDate(
+    startOfWeek.getDate() + i
+  );
+
+  html += `
+    <th>
+      ${d.toLocaleDateString(
+        "en-US",
+        {
+          weekday:"short",
+          month:"numeric",
+          day:"numeric"
+        }
+      )}
+    </th>
+  `;
+
+}
+
+html += `</tr><tr>`;
+
+// Week 2
+for(let day=7; day<14; day++){
+
+  html += `
+    <td style="
+      vertical-align:top;
+      height:250px;
+      background:#111;
+    ">
+  `;
+
+  dayBuckets[day].forEach(event => {
+
+    let color = "#333";
+
+    if(event.type.includes("On-Site DSS")){
+  color = "#006400";
+}
+else if(event.type.includes("Heads-up email and radar watch")){
+  color = "#4B0082";
+}
+else if(event.type.includes("Active radar watch")){
+  color = "#8B0000";
+}
+else if(event.type.includes("Heads-up email")){
+  color = "#003366";
+}
+
+    html += `
+  <div
+    onclick="showDssDetails('${event.name}')"
+    style="
+      background:${color};
+      cursor:pointer;
+      margin:4px;
+      padding:4px;
+      border-radius:4px;
+      font-size:12px;
+    "
+  >
+    <b>${event.name}</b>
+
+    ${
+      event.emailTime
+        ? `<br>📧 ${event.emailTime}`
+        : ""
+    }
+
+    ${
+      event.watchTime
+        ? `<br>⏰ ${event.watchTime}`
+        : ""
+    }
+
+  </div>
+`;
+
+  });
+
+callBuckets[day].forEach(call => {
+
+  html += `
+    <div
+      onclick="showCallDetails(${call.rowIndex})"
+      style="
+        background:#B8860B;
+        margin:4px;
+        padding:4px;
+        border-radius:4px;
+        font-size:11px;
+        color:black;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ☎ ${call.time}<br>
+      ${call.event}
+    </div>
+  `;
+
+});
+
+  html += `</td>`;
+}
+
+html += `
+  </tr>
+</table>
+`;
+
+  document.getElementById(
+    "calendarContainer"
+  ).innerHTML = html;
+
+}
+
 </script>
+
 </body>
 </html>
