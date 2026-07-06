@@ -59,23 +59,6 @@ body{
   .header-brand h1 { font-size: 17px; font-weight: 600; color: #fff; line-height: 1.1; white-space: nowrap; }
   .header-sep { width: 1px; background: var(--border); align-self: stretch; margin: 0 4px; flex-shrink: 0; }
 
-  /* ── HEADER QUICK ACTIONS (persistent toolbar) ── */
-  .header-actions {
-    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-  }
-  .hdr-btn {
-    display: flex; align-items: center; gap: 5px;
-    padding: 6px 11px; border-radius: 6px; font-size: 11px; font-weight: 700;
-    border: 1px solid var(--border2); background: var(--surface2); color: var(--muted);
-    cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap;
-  }
-  .hdr-btn:hover { background: #1a2535; border-color: #2d4a6a; color: var(--text); }
-  .hdr-btn.green { border-color: #0a3520; color: #4ade80; }
-  .hdr-btn.green:hover { background: #052e16; }
-  .hdr-btn.blue  { border-color: #1a3060; color: #60a5fa; }
-  .hdr-btn.blue:hover  { background: #172554; }
-  .hdr-btn .hdr-icon { font-size: 13px; }
-
   .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
   .refresh-btn {
     background: #112233; border: 1px solid #1d6fa4; color: #64b5f6;
@@ -754,27 +737,6 @@ body{
     color:#60a5fa !important;
 }
 
-  /* ── INLINE PANELS (kept for legacy, hidden by default) ── */
-  .inline-panel {
-    display: none; background: #0a1628; border: 1px solid var(--border2);
-    border-radius: 8px; padding: 12px; margin-top: 8px;
-  }
-  .inline-panel select, .inline-panel input {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border2);
-    color: var(--text); padding: 6px 8px; border-radius: 6px;
-    font-size: 12px; font-family: inherit; margin-bottom: 6px;
-  }
-  .inline-panel label {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--muted); margin-bottom: 5px; cursor: pointer;
-  }
-  .action-btn { padding: 5px 12px; border-radius: 5px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: filter 0.15s; }
-  .action-btn:hover  { filter: brightness(1.15); }
-  .action-btn.blue   { background: #1d6fa4; color: white; }
-  .action-btn.red    { background: #8b1e1e; color: white; }
-  .action-btn.green  { background: #14532d; color: #4ade80; }
-  .action-btn.amber  { background: #451a03; color: #fbbf24; }
-
   /* ── FULL-SCREEN VIEWS ── */
   #lightningContainer,
   #airportDashboardContainer { display: none; width: 100%; }
@@ -922,77 +884,6 @@ body{
   .modal-row strong { display: block; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
   .modal-close { margin-top: 16px; padding: 8px 20px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 600; }
 
-  /* ── NEW DSS WIZARD MODAL ── */
-  #newDssModal {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.80); z-index: 10000;
-    align-items: center; justify-content: center;
-  }
-  .wizard-box {
-    background: var(--surface); border: 1px solid var(--border2); border-radius: 14px;
-    width: 560px; max-width: 95vw; max-height: 90vh;
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .wizard-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0;
-  }
-  .wizard-header h2 { font-size: 15px; font-weight: 800; color: var(--text); margin: 0; }
-  .wizard-close-btn { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1; }
-  .wizard-close-btn:hover { color: var(--text); }
-  .wizard-steps { display: flex; gap: 0; padding: 10px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .wizard-step { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--muted); }
-  .wizard-step.active { color: #64b5f6; }
-  .wizard-step.done   { color: #4ade80; }
-  .wizard-circle {
-    width: 20px; height: 20px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 800;
-    background: var(--surface2); border: 2px solid var(--border2);
-  }
-  .wizard-step.active .wizard-circle { border-color: #64b5f6; color: #64b5f6; }
-  .wizard-step.done   .wizard-circle { border-color: #4ade80; color: #4ade80; }
-  .wizard-step-sep { flex: 1; height: 1px; background: var(--border); margin: 0 10px; align-self: center; }
-  .wizard-body { flex: 1; overflow-y: auto; padding: 14px 18px; }
-  .wizard-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 18px; border-top: 1px solid var(--border); flex-shrink: 0; }
-  .wizard-field { margin-bottom: 10px; }
-  .wizard-field label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 3px; }
-  .wizard-field input, .wizard-field select {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border2);
-    color: var(--text); padding: 7px 9px; border-radius: 6px;
-    font-size: 13px; font-family: inherit;
-  }
-  .wizard-field input:focus, .wizard-field select:focus { outline: none; border-color: #1d6fa4; }
-  .wizard-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-  .wizard-btn { padding: 7px 16px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: filter 0.15s; }
-  .wizard-btn:hover { filter: brightness(1.15); }
-  .wizard-btn.primary   { background: #1d6fa4; color: white; }
-  .wizard-btn.secondary { background: var(--surface2); border: 1px solid var(--border2); color: var(--muted); }
-  .wizard-btn.success   { background: #14532d; color: #4ade80; }
-  .wizard-btn.map-pick  { background: #172554; border: 1px solid #2563eb; color: #60a5fa; }
-  .wizard-btn.map-pick.picking { background: #7c2d12; border-color: #f97316; color: #fdba74; }
-
-  /* ── MANAGE MODALS ── */
-  .manage-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.80); z-index: 10001;
-    justify-content: center; align-items: center;
-  }
-  .manage-modal { background: #0d1117; border: 1px solid #243447; border-radius: 14px; overflow: hidden; }
-  .manage-header { padding: 14px 18px; border-bottom: 1px solid #243447; display: flex; justify-content: space-between; align-items: center; }
-  .manage-body { padding: 18px; }
-
-  /* schedule grid */
-  .schedule-day { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; margin-bottom: 7px; }
-  .day-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 7px; }
-  .dss-toggle-group { display: flex; gap: 5px; flex-wrap: wrap; }
-  .dss-toggle { padding: 4px 11px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border2); background: var(--surface); color: var(--muted); font-family: inherit; transition: all 0.15s; }
-  .dss-toggle:hover { filter: brightness(1.2); }
-  .dss-toggle.radar.sel   { background: #3b0a0a; color: #f87171; border-color: #7f1d1d; }
-  .dss-toggle.headsup.sel { background: #172554; color: #93c5fd; border-color: #1e3a8a; }
-  .dss-toggle.onsite.sel  { background: #2e1065; color: #c4b5fd; border-color: #7c3aed; }
-  #dssPreviewCount { font-size: 12px; color: #4ade80; font-weight: 600; margin-top: 8px; min-height: 18px; }
-
   /* ── LEAFLET DARK THEME ── */
   .leaflet-popup-content-wrapper { background: #0d1117 !important; color: #e2e8f0 !important; border: 1px solid #1e2d3d !important; border-radius: 8px !important; }
   .leaflet-popup-tip { background: #0d1117 !important; }
@@ -1065,7 +956,7 @@ body{
 </head>
 <body>
 
-<!-- ── TOP HEADER (with persistent Quick Actions) ── -->
+<!-- ── TOP HEADER ── -->
 <div class="top-header">
   <div class="header-brand">
     <img class="nws-logo"
@@ -1076,21 +967,6 @@ body{
     </div>
   </div>
   <div class="header-sep"></div>
-  <!-- Quick Actions moved into header -->
-  <div class="header-actions">
-    <button class="hdr-btn green" onclick="openNewDssModal()">
-      <span class="hdr-icon">➕</span>Add DSS
-    </button>
-    <button class="hdr-btn blue" onclick="openManageDssModal()">
-      <span class="hdr-icon">📋</span>Manage DSS
-    </button>
-    <button class="hdr-btn green" onclick="openNewCallModal()">
-      <span class="hdr-icon">☎</span>Add Call
-    </button>
-    <button class="hdr-btn blue" onclick="openManageCallModal()">
-      <span class="hdr-icon">✏</span>Manage Call
-    </button>
-  </div>
   <div class="header-right">
 
   <div class="last-updated-box">
@@ -1550,218 +1426,12 @@ letter-spacing:.02em;
   </div>
 </div>
 
-<!-- ── NEW DSS WIZARD MODAL ── -->
-<div id="newDssModal">
-  <div class="wizard-box">
-    <div class="wizard-header">
-      <h2>Add New DSS Event</h2>
-      <button class="wizard-close-btn" onclick="closeNewDssModal()">✕</button>
-    </div>
-    <div class="wizard-steps">
-      <div class="wizard-step active" id="step1ind">
-        <div class="wizard-circle">1</div><span>Event Details</span>
-      </div>
-      <div class="wizard-step-sep"></div>
-      <div class="wizard-step" id="step2ind">
-        <div class="wizard-circle">2</div><span>Schedule</span>
-      </div>
-    </div>
-    <div class="wizard-body" id="wizardPage1">
-      <div class="wizard-field"><label>Event Name *</label><input id="newEventName" placeholder="e.g. Burlington Marathon"></div>
-      <div class="wizard-field-row">
-        <div class="wizard-field"><label>Start Date *</label><input id="newStartDate" type="date"></div>
-        <div class="wizard-field"><label>End Date *</label><input id="newEndDate" type="date"></div>
-      </div>
-      <div class="wizard-field"><label>Contact Name</label><input id="newContactName" placeholder="e.g. Jane Smith"></div>
-      <div class="wizard-field"><label>Contact Info</label><input id="newContactInfo" placeholder="e.g. jane@example.com / 555-1234"></div>
-     <div class="wizard-field">
-    <label>Slides Link <span style="color:var(--muted);font-weight:400;text-transform:none;">(used for Heads-Up Email days only)</span></label>
-    <input
-        id="newSlidesLink"
-        type="url"
-        placeholder="https://docs.google.com/presentation/d/..."
-        autocomplete="off">
-</div>
-      <div class="wizard-field-row">
-  <div class="wizard-field">
-    <label>Radar Watch Start Time</label>
-    <input id="newRadarTime" type="time">
-  </div>
-
-  <div class="wizard-field">
-    <label>Radar Watch End Time</label>
-    <input id="newRadarEndTime" type="time">
-  </div>
-</div>
-
-<div class="wizard-field">
-  <label>Email Due By</label>
-  <input id="newEmailTime" type="time">
-</div>
-
-<div class="wizard-field-row">
-  <div class="wizard-field">
-    <label>On-Site DSS Start Time</label>
-    <input id="newDssTime" type="time">
-  </div>
-
-  <div class="wizard-field">
-    <label>On-Site DSS End Time</label>
-    <input id="newDssEndTime" type="time">
-  </div>
-</div>
-      <div class="wizard-field-row">
-        <div class="wizard-field"><label>Latitude</label><input id="newLatitude" placeholder="e.g. 44.4759"></div>
-        <div class="wizard-field"><label>Longitude</label><input id="newLongitude" placeholder="e.g. -73.2121"></div>
-      </div>
-      <div style="margin-top:4px;">
-        <button class="wizard-btn map-pick" id="mapPickBtn" onclick="startMapLocationPick()">📍 Pick Location from Map</button>
-        <div id="mapPickHint" style="display:none;font-size:11px;color:#fdba74;margin-top:6px;">
-          Click anywhere on the map to set this event's location…
-        </div>
-      </div>
-    </div>
-    <div class="wizard-body" id="wizardPage2" style="display:none;">
-      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Select one or more DSS types for each day. Days with no selection will be skipped.</p>
-      <div id="dssScheduleGrid"></div>
-      <div id="dssPreviewCount"></div>
-    </div>
-    <div class="wizard-footer">
-      <div id="wizardFooter1" style="display:flex;gap:8px;">
-        <button class="wizard-btn secondary" onclick="closeNewDssModal()">Cancel</button>
-        <button class="wizard-btn primary"   onclick="dssWizardNext()">Next →</button>
-      </div>
-      <div id="wizardFooter2" style="display:none;gap:8px;">
-        <button class="wizard-btn secondary" onclick="dssWizardBack()">← Back</button>
-        <button class="wizard-btn success"   onclick="dssWizardSubmit()">✓ Save DSS Events - Press Once!</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ── FOOTER ── -->
 <div class="footer">
   <span class="footer-dot">●</span>
   <span>NWS Burlington</span>
   <span class="footer-dot">●</span>
   <span>Supporting Decision Support Services Across Vermont and Northern NY</span>
-</div>
-
-<!-- ── MANAGE DSS MODAL ── -->
-<!-- ── MANAGE DSS MODAL ── -->
-<div id="manageDssModal" class="manage-modal-overlay">
-  <div class="manage-modal" style="width:620px;">
-    <div class="manage-header">
-      <h2>📋 Manage DSS Event</h2>
-      <button class="wizard-close-btn" onclick="closeManageDssModal()">✕</button>
-    </div>
-    <div class="manage-body">
-      <div class="wizard-field"><label>Select Event</label><select id="manageEventSelect"></select></div>
-      <div style="margin-top:10px;"><button class="wizard-btn primary" onclick="loadManageEvent()">Load Event</button></div>
-
-      <!-- Status now lives OUTSIDE the hidden container, so "not found" / errors are always visible -->
-      <div id="manageEventStatus" style="margin-top:10px;font-size:12px;min-height:18px;"></div>
-
-      <div id="manageEventContainer" style="display:none; margin-top:10px;">
-        <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:12px;">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;">Edit Event Details</div>
-          <div class="wizard-field-row">
-            <div class="wizard-field"><label>Event Name</label><input id="manageEditName" placeholder="Event Name"></div>
-            <div class="wizard-field"><label>DSS Type</label>
-              <select id="manageEditType">
-                <option value="On-Site DSS">On-Site DSS</option>
-                <option value="Heads-up email">Heads-up email</option>
-                <option value="Active radar watch">Active radar watch</option>
-              </select>
-            </div>
-          </div>
-          <div class="wizard-field-row">
-            <div class="wizard-field"><label>Contact Name</label><input id="manageEditContact" placeholder="Contact Name"></div>
-            <div class="wizard-field"><label>Contact Info</label><input id="manageEditContactInfo" placeholder="Email / Phone"></div>
-          </div>
-          <div class="wizard-field">
-            <label>Slides Link</label>
-            <input id="manageEditSlidesLink" type="url" placeholder="https://docs.google.com/presentation/d/...">
-          </div>
-         <div class="wizard-field-row">
-  <div class="wizard-field"><label>Radar Watch Start</label><input id="manageEditRadarTime" type="time"></div>
-  <div class="wizard-field"><label>Radar Watch End</label><input id="manageEditRadarEndTime" type="time"></div>
-</div>
-<div class="wizard-field">
-  <label>Email Due By</label>
-  <input id="manageEditEmailTime" type="time">
-</div>
-<div class="wizard-field-row">
-  <div class="wizard-field"><label>On-Site DSS Start</label><input id="manageEditDssTime" type="time"></div>
-  <div class="wizard-field"><label>On-Site DSS End</label><input id="manageEditDssEndTime" type="time"></div>
-</div>
-          <div class="wizard-field-row">
-            <div class="wizard-field"><label>Latitude</label><input id="manageEditLat" placeholder="e.g. 44.4759"></div>
-            <div class="wizard-field"><label>Longitude</label><input id="manageEditLon" placeholder="e.g. -73.2121"></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px;">
-          <button class="wizard-btn primary" onclick="saveManageEventChanges()">💾 Save Changes - Press once!</button>
-          <button class="wizard-btn" style="background:#3b0a0a;color:#f87171;border:1px solid #7f1d1d;" onclick="cancelManageEvent()">🚫 Cancel Event - Press once!</button>
-          <button class="wizard-btn secondary" onclick="closeManageDssModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ── ADD CALL MODAL ── -->
-<div id="newCallModal" class="manage-modal-overlay">
-  <div class="manage-modal" style="width:540px;">
-    <div class="manage-header">
-      <h2>☎ Add Coordination Call</h2>
-      <button class="wizard-close-btn" onclick="closeNewCallModal()">✕</button>
-    </div>
-    <div class="manage-body">
-      <div class="wizard-field-row">
-        <div class="wizard-field"><label>Call Date *</label><input id="newCallDate" type="date"></div>
-        <div class="wizard-field"><label>Call Time *</label><input id="newCallTime" type="time"></div>
-      </div>
-      <div class="wizard-field"><label>Event / Description *</label><input id="newCallEvent" placeholder="e.g. Burlington Marathon Pre-Event Briefing"></div>
-      <div class="wizard-field"><label>Contact Info / Join Link</label><input id="newCallContact" placeholder="e.g. https://meet.google.com/abc-defg or 555-1234"></div>
-      <div style="display:flex;gap:8px;margin-top:16px;">
-        <button class="wizard-btn success" onclick="submitNewCall()">✓ Save Call - Press once!</button>
-        <button class="wizard-btn secondary" onclick="closeNewCallModal()">Cancel</button>
-      </div>
-      <div id="newCallStatus" style="margin-top:10px;font-size:12px;min-height:18px;"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ── MANAGE CALL MODAL ── -->
-<div id="manageCallModal" class="manage-modal-overlay">
-  <div class="manage-modal" style="width:560px;">
-    <div class="manage-header">
-      <h2>✏ Manage Coordination Call</h2>
-      <button class="wizard-close-btn" onclick="closeManageCallModal()">✕</button>
-    </div>
-    <div class="manage-body">
-      <div class="wizard-field"><label>Select Call</label><select id="manageCallSelect"></select></div>
-      <div style="margin-top:10px;"><button class="wizard-btn primary" onclick="loadManageCall()">Load Call</button></div>
-      <div id="manageCallContainer" style="display:none;margin-top:20px;">
-        <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:12px;">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px;">Edit Call Details</div>
-          <div class="wizard-field-row">
-            <div class="wizard-field"><label>Call Date</label><input id="manageCallDate" type="date"></div>
-            <div class="wizard-field"><label>Call Time</label><input id="manageCallTime" type="time"></div>
-          </div>
-          <div class="wizard-field"><label>Event / Description</label><input id="manageCallEvent" placeholder="Event description"></div>
-          <div class="wizard-field"><label>Contact Info / Join Link</label><input id="manageCallContact" placeholder="URL or phone number"></div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px;">
-          <button class="wizard-btn primary" onclick="saveManageCallChanges()">💾 Save Changes - Press once!</button>
-          <button class="wizard-btn" style="background:#3b0a0a;color:#f87171;border:1px solid #7f1d1d;" onclick="cancelManageCall()">🚫 Cancel Call - Press once!</button>
-          <button class="wizard-btn secondary" onclick="closeManageCallModal()">Close</button>
-        </div>
-        <div id="manageCallStatus" style="margin-top:10px;font-size:12px;min-height:18px;"></div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1776,9 +1446,7 @@ var eventDates       = {};
 var dssRows          = [];
 var callRows         = [];
 var nextObligationTimer = null;
-var newDssMarker     = null;
-var addDssMode       = false;
-var showAllDss       = false;
+var showAllDss        = false;
 var BTV_ZONE_SET = new Set();
 var showAllCalls     = false;
 var analytics = {
@@ -2657,97 +2325,6 @@ function buildAnalyticsMap(dssRowsInput) {
   setTimeout(function () { window.analyticsMap && window.analyticsMap.invalidateSize(); }, 500);
 }
 
-function aggregateDssByLocation(rows) {
-  var headers      = rows[0];
-  var eventCol     = headers.indexOf('Event Name');
-  var typeCol      = headers.indexOf('DSS Type');
-  var latCol       = headers.indexOf('Latitude');
-  var lonCol       = headers.indexOf('Longitude');
-  var cancelledCol = headers.indexOf('Cancelled');
-
-  var groups = {};
-
-  for (var i = 1; i < rows.length; i++) {
-    var row = rows[i];
-    if (!row) continue;
-    if (String(row[cancelledCol]).trim().toUpperCase() === 'TRUE') continue;
-
-    var lat = parseFloat(row[latCol]);
-    var lon = parseFloat(row[lonCol]);
-    if (isNaN(lat) || isNaN(lon)) continue;
-
-    // Round so events at "the same place" group together despite tiny
-    // floating point differences in how lat/lon were entered.
-    var key = lat.toFixed(4) + ',' + lon.toFixed(4);
-
-    if (!groups[key]) {
-      groups[key] = { lat: lat, lon: lon, total: 0, radar: 0, onsite: 0, email: 0, events: {} };
-    }
-
-    var g = groups[key];
-    g.total++;
-
-    var type = String(row[typeCol] || '').toLowerCase();
-    if (type.indexOf('radar') !== -1) g.radar++;
-    else if (type.indexOf('on-site') !== -1 || type.indexOf('onsite') !== -1) g.onsite++;
-    else if (type.indexOf('head') !== -1 || type.indexOf('email') !== -1) g.email++;
-
-    var name = row[eventCol] || 'Unnamed Event';
-    g.events[name] = (g.events[name] || 0) + 1;
-  }
-
-  return Object.keys(groups).map(function(k) { return groups[k]; });
-}
-
-function makeAggregateIcon(g) {
-  var dominant = '#2563eb'; // email-leaning default
-  if (g.onsite > 0 && g.onsite >= g.radar) dominant = '#7c3aed';
-  else if (g.radar > 0) dominant = '#dc2626';
-
-  var size = Math.max(26, Math.min(56, 22 + Math.sqrt(g.total) * 8));
-
-  var html =
-    '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;' +
-    'background:' + dominant + 'cc;border:2px solid #fff;display:flex;' +
-    'align-items:center;justify-content:center;color:#fff;font-weight:800;' +
-    'font-size:' + Math.max(11, size * 0.34) + 'px;box-shadow:0 2px 8px rgba(0,0,0,.4);">' +
-    g.total + '</div>';
-
-  return L.divIcon({ html: html, className: '', iconSize: [size, size], iconAnchor: [size/2, size/2] });
-}
-
-function buildLocationPopupHtml(g) {
-  var eventNames = Object.keys(g.events).sort();
-  var listHtml = eventNames.slice(0, 8).map(function(name) {
-    return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:11px;padding:2px 0;">' +
-      '<span>' + escapeHtml(name) + '</span><span style="color:#8899a6;">' + g.events[name] + '</span></div>';
-  }).join('');
-  if (eventNames.length > 8) {
-    listHtml += '<div style="font-size:10px;color:#8899a6;margin-top:4px;">+ ' + (eventNames.length - 8) + ' more…</div>';
-  }
-
-  return (
-    '<div style="min-width:200px;">' +
-      '<div style="font-weight:800;font-size:13px;margin-bottom:6px;">' + g.total + ' DSS Operations Here</div>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">' +
-        '<div style="background:#3b0a0a;border:1px solid #7f1d1d;border-radius:6px;padding:5px 7px;">' +
-          '<div style="font-size:9px;color:#f87171;font-weight:700;">RADAR WATCH</div>' +
-          '<div style="font-size:16px;font-weight:800;color:#f87171;">' + g.radar + '</div></div>' +
-        '<div style="background:#172554;border:1px solid #1e3a8a;border-radius:6px;padding:5px 7px;">' +
-          '<div style="font-size:9px;color:#93c5fd;font-weight:700;">HEADS-UP EMAIL</div>' +
-          '<div style="font-size:16px;font-weight:800;color:#93c5fd;">' + g.email + '</div></div>' +
-        '<div style="background:#2e1065;border:1px solid #7c3aed;border-radius:6px;padding:5px 7px;grid-column:1 / -1;">' +
-          '<div style="font-size:9px;color:#c4b5fd;font-weight:700;">ON-SITE DSS</div>' +
-          '<div style="font-size:16px;font-weight:800;color:#c4b5fd;">' + g.onsite + '</div></div>' +
-      '</div>' +
-      '<div style="border-top:1px solid #243447;padding-top:6px;">' +
-        '<div style="font-size:9px;font-weight:700;color:#8899a6;text-transform:uppercase;margin-bottom:4px;">Events at this location</div>' +
-        listHtml +
-      '</div>' +
-    '</div>'
-  );
-}
-
 var analyticsFilters = { year: 'all', types: new Set(['radar','email','onsite','calls']) };
 
 // Pulls distinct years out of the Event Date column and populates the dropdown.
@@ -2849,9 +2426,7 @@ function safeHref(url) {
 }
 
 // Returns true if a stored date (M/D/YYYY, as saved in the sheet) is
-// today or in the future. Used to keep past DSS events/calls out of
-// the "Manage" dropdowns so they can only be edited/cancelled while
-// current or upcoming.
+// today or in the future.
 function isDateOnOrAfterToday(dateStr) {
   var parts = String(dateStr || '').split('/');
   if (parts.length !== 3) return false;
@@ -2874,71 +2449,63 @@ function formatDate(dateString) {
 var _threatDataCache = null;
 var nextDssCountdownTime = null;
 
-async function refreshThreatGauges() {
-
-  try {
-
-    const response = await fetch("threats.json?_=" + Date.now());
-
-    if (!response.ok) throw new Error("Unable to load threats.json");
-
-    const data = await response.json();
-
-    if (!data) return;
-
-    _threatDataCache = data;
-
-    function scoreToColor(score) {
-      if (score === null || score === undefined) return 'tc-gray';
-      if (score < 25) return 'tc-green';
-      if (score < 45) return 'tc-yellow';
-      if (score < 60) return 'tc-orange';
-      if (score < 80) return 'tc-red';
-      return 'tc-purple';
-    }
-
-    const row = document.getElementById('threat-gauge-row');
-    if (!row) return;
-
-    const cardEls = row.querySelectorAll('.threat-card');
-    const keys = ['severe','tornado','hydro'];
-
-    keys.forEach(function(key, i){
-
-      const el = cardEls[i];
-      if (!el) return;
-
-      const d = data[key] || {};
-
-      const score = d.score ?? null;
-      const lbl   = d.label || "N/A";
-      const pct   = score !== null ? Math.min(100, Math.max(0, score)) : 0;
-
-      el.className = "threat-card " + scoreToColor(score);
-
-      const dial = el.querySelector(".threat-dial");
-      if (dial) dial.textContent = score ?? "—";
-
-      const label = el.querySelector(".threat-label");
-      if (label) label.textContent = lbl;
-
-      const marker = el.querySelector(".threat-bar-marker");
-      if (marker) marker.style.left = pct + "%";
-
-    });
-
-  }
-  catch(err){
-
-    console.error(err);
-
-  }
-
+function refreshThreatGauges() {
+  google.script.run
+    .withSuccessHandler(function(data) {
+      if (!data) return;
+      _threatDataCache = data;
+ 
+      function scoreToColor(score) {
+        if (score === null || score === undefined) return 'tc-gray';
+        if (score < 25) return 'tc-green';
+        if (score < 45) return 'tc-yellow';
+        if (score < 60) return 'tc-orange';
+        if (score < 80) return 'tc-red';
+        return 'tc-purple';
+      }
+ 
+      var row = document.getElementById('threat-gauge-row');
+      if (!row) return;
+ 
+      var cardEls = row.querySelectorAll('.threat-card');
+      var keys    = ['severe','tornado','hydro'];
+ 
+      keys.forEach(function(key, i) {
+        var el     = cardEls[i];
+        if (!el) return;
+        var d      = data[key] || {};
+        var score  = d.score !== null && d.score !== undefined ? d.score : null;
+        var lbl    = d.label || 'N/A';
+        var pct    = score !== null ? Math.min(100, Math.max(0, score)) : 0;
+        var cls    = scoreToColor(score);
+ 
+        // Update colour class
+        el.className = 'threat-card ' + cls;
+ 
+        // Update dial
+        var dial = el.querySelector('.threat-dial');
+        if (dial) dial.textContent = score !== null ? score : '—';
+ 
+        // Update label
+        var labelEl = el.querySelector('.threat-label');
+        if (labelEl) labelEl.textContent = lbl;
+ 
+        // Update marker
+        var marker = el.querySelector('.threat-bar-marker');
+        if (marker) marker.style.left = pct + '%';
+      });
+    })
+    .withFailureHandler(function(err) {
+      console.error('getThreatScores failed:', err);
+      var row = document.getElementById('threat-gauge-row');
+      if (!row) return;
+      row.querySelectorAll('.threat-label').forEach(function(el) { el.textContent = 'Unavailable'; });
+      row.querySelectorAll('.threat-dial').forEach(function(el) { el.textContent = '!'; });
+    })
+    .getThreatScores();
 }
 
-// Friendly labels + units for known parameter keys. Add to this map as you
-// add fields to the getThreatScores() response on the Apps Script side —
-// any field not listed here will still show up, just with its raw key name.
+// Friendly labels + units for known parameter keys.
 var THREAT_PARAM_LABELS = {
   cape:        'CAPE (J/kg)',
   mucape:      'MUCAPE (J/kg)',
@@ -2966,7 +2533,6 @@ var THREAT_PARAM_LABELS = {
 
 function formatThreatParamLabel(key) {
   if (THREAT_PARAM_LABELS[key]) return THREAT_PARAM_LABELS[key];
-  // Fallback: turn camelCase / snake_case into Title Case
   return key
     .replace(/([A-Z])/g, ' $1')
     .replace(/_/g, ' ')
@@ -3015,9 +2581,7 @@ function showThreatDetail(key) {
     html +=
       '<div class="threat-detail-empty">' +
       'Detailed parameters (CAPE, shear, PWAT, etc.) aren\'t included in the current ' +
-      '<code>getThreatScores()</code> response yet. Add extra fields to each threat ' +
-      'object server-side (e.g. <code>{ score, label, cape, shear, srh }</code>) and ' +
-      'they\'ll automatically show up here.' +
+      '<code>getThreatScores()</code> response yet.' +
       '</div>';
   }
 
@@ -3052,7 +2616,7 @@ function getMarkerColor(dssType) {
   return '#64748b';
 }
 
-async function refreshHazards() {
+function refreshHazards() {
 
   if (!warningZoneLayer) {
     console.log("Hazard layer not loaded yet.");
@@ -3063,68 +2627,58 @@ async function refreshHazards() {
   var affectedRanks = {};
   var affectedZoneInfo = {};
 
-  try {
+  google.script.run
+    .withSuccessHandler(function(data) {
 
-    const response = await fetch("hazards.json?_=" + Date.now());
+      const alerts = JSON.parse(data);
 
-    if (!response.ok) {
-      throw new Error("Unable to load hazards.json");
-    }
+      // Keep only Burlington-issued products
+      const btvAlerts = alerts.features.filter(alert =>
+        alert.properties.senderName &&
+        (alert.properties.senderName.includes("Burlington") ||
+         alert.properties.senderName.includes("Albany"))
+      );
 
-    const alerts = await response.json();
+      // Clear old warning polygons
+      warningPolygonLayer.clearLayers();
 
-    // Keep only Burlington-issued products
-    const btvAlerts = alerts.features.filter(alert =>
-      alert.properties.senderName &&
-      (
-        alert.properties.senderName.includes("Burlington") ||
-        alert.properties.senderName.includes("Albany")
-      )
-    );
+      var legendMap = {};
 
-    // Clear old warning polygons
-    warningPolygonLayer.clearLayers();
+      // Build a lookup of affected zones
+      btvAlerts.forEach(function(alert) {
 
-    var legendMap = {};
+        // Get the VTEC code (SV.W, TO.W, FF.W, etc.)
+let vtec = null;
 
-    // ------------------------------------------------------------------
-    // EVERYTHING BELOW THIS STAYS EXACTLY THE SAME
-    // ------------------------------------------------------------------
+const vtecArray = alert.properties.parameters?.VTEC;
 
-    btvAlerts.forEach(function(alert) {
+if (vtecArray && vtecArray.length) {
 
-      let vtec = null;
+  const parts = vtecArray[0].split(".");
 
-      const vtecArray = alert.properties.parameters?.VTEC;
+  if (parts.length >= 5) {
+    vtec = parts[3] + "." + parts[4];
+  }
 
-      if (vtecArray && vtecArray.length) {
+} else {
 
-        const parts = vtecArray[0].split(".");
+  // Fallback for products without VTEC
+  const event = (alert.properties.event || "").toLowerCase();
 
-        if (parts.length >= 5) {
-          vtec = parts[3] + "." + parts[4];
-        }
+  if (event.includes("warning")) {
+    vtec = "XX.W";
+  } else if (event.includes("watch")) {
+    vtec = "XX.A";
+  } else if (event.includes("advisory")) {
+    vtec = "XX.Y";
+  } else if (event.includes("statement")) {
+    vtec = "XX.S";
+  } else if (event.includes("air quality")) {
+    vtec = "AQ.Y";
+}
+  
 
-      } else {
-
-        const event = (alert.properties.event || "").toLowerCase();
-
-        if (event.includes("warning")) {
-          vtec = "XX.W";
-        } else if (event.includes("watch")) {
-          vtec = "XX.A";
-        } else if (event.includes("advisory")) {
-          vtec = "XX.Y";
-        } else if (event.includes("statement")) {
-          vtec = "XX.S";
-        } else if (event.includes("air quality")) {
-          vtec = "AQ.Y";
-        }
-
-      }
-
-      // <<< EVERYTHING AFTER THIS REMAINS IDENTICAL >>>
-
+}
 
         // Draw warning polygon if one exists
         if (
@@ -3466,7 +3020,6 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
     // Split items in this time-group between above/below the dot,
     // alternating item-by-item so a group of 3-4 (or up to ~6) spreads
     // evenly across both sides instead of stacking on just one.
-    // Alternate which side starts first from group to group for rhythm.
     var startAbove = (idx % 2 === 0);
     var aboveItems = [];
     var belowItems = [];
@@ -3477,14 +3030,10 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
 
     var timeHtml = '<div class="tl-time">' + escapeHtml(group.time) + '</div>';
 
-    // tl-above hugs the dot from the bottom (justify-content: flex-end),
-    // so labels come first, time sits closest to the dot.
     var aboveHtml = aboveItems.length
       ? (buildTlLabelsHtml(aboveItems) + timeHtml)
       : "";
 
-    // tl-below hugs the dot from the top (justify-content: flex-start),
-    // so time sits closest to the dot, labels follow.
     var belowHtml = belowItems.length
       ? (timeHtml + buildTlLabelsHtml(belowItems))
       : "";
@@ -3654,30 +3203,6 @@ function showCalendarModal(html) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  CANCEL / RESTORE
-// ══════════════════════════════════════════════════════════════
-function cancelEvent(eventName) {
-  if (!confirm('Are you sure you want to cancel:\n\n' + eventName)) return;
-  google.script.run.withSuccessHandler(function() {
-    refreshDashboard(); alert(eventName + ' has been cancelled.');
-  }).cancelEvent(eventName);
-}
-
-function restoreSelectedEvent() {
-  var eventName = document.getElementById('restoreEventSelect') && document.getElementById('restoreEventSelect').value;
-  if (!eventName) return;
-  if (!confirm('Restore ' + eventName + '?')) return;
-  google.script.run.withSuccessHandler(function() { refreshDashboard(); alert(eventName + ' restored.'); }).restoreEvent(eventName);
-}
-
-function cancelSelectedCall() {
-  var eventInfo = document.getElementById('cancelCallSelect') && document.getElementById('cancelCallSelect').value;
-  if (!eventInfo) return;
-  if (!confirm('Cancel coordination call?\n\n' + eventInfo)) return;
-  google.script.run.withSuccessHandler(function() { refreshDashboard(); alert('Coordination Call Cancelled'); }).cancelCall(eventInfo);
-}
-
-// ══════════════════════════════════════════════════════════════
 //  DSS / CALL DETAIL MODALS
 // ══════════════════════════════════════════════════════════════
 function showDssDetails(eventName) {
@@ -3719,254 +3244,6 @@ function showCallDetails(rowIndex) {
     (call[4] ? '<div class="modal-row"><strong>Additional</strong>' + escapeHtml(call[4]) + '</div>' : '') +
     (joinHref ? '<br><a href="' + joinHref + '" target="_blank" style="display:inline-block;background:#1d6fa4;color:white;padding:8px 14px;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">Join Meeting</a>' : '');
   showCalendarModal(html);
-}
-
-// ── ADD CALL MODAL ────────────────────────────────────────────
-function openNewCallModal() {
-  ['newCallDate','newCallTime','newCallEvent','newCallContact'].forEach(function(id) {
-    var el = document.getElementById(id); if (el) el.value = '';
-  });
-  var dateEl = document.getElementById('newCallDate');
-  if (dateEl) dateEl.min = getTodayIsoString();
-  document.getElementById('newCallStatus').textContent = '';
-  document.getElementById('newCallModal').style.display = 'flex';
-}
-function closeNewCallModal() { document.getElementById('newCallModal').style.display = 'none'; }
-
-function submitNewCall() {
-  var dateVal    = document.getElementById('newCallDate').value;
-  var timeVal    = formatTimeForDisplay(document.getElementById('newCallTime').value.trim());
-  var eventVal   = document.getElementById('newCallEvent').value.trim();
-  var contactVal = document.getElementById('newCallContact').value.trim();
-  if (!dateVal)  { alert('Call date is required.');         return; }
-  if (dateVal < getTodayIsoString()) { alert('Call date cannot be in the past.'); return; }
-  if (!timeVal)  { alert('Call time is required.');         return; }
-  if (!eventVal) { alert('Event description is required.');  return; }
-  var parts = dateVal.split('-');
-  var formattedDate = Number(parts[1]) + '/' + Number(parts[2]) + '/' + parts[0];
-  var payload = { callDate: formattedDate, callTime: timeVal, eventInfo: eventVal, contactInfo: contactVal };
-  google.script.run
-    .withSuccessHandler(function() {
-      document.getElementById('newCallStatus').style.color = '#4ade80';
-      document.getElementById('newCallStatus').textContent = '✓ Call added.';
-      refreshDashboard(); setTimeout(closeNewCallModal, 1200);
-    })
-    .withFailureHandler(function(err) {
-      document.getElementById('newCallStatus').style.color = '#f87171';
-      document.getElementById('newCallStatus').textContent = 'Error: ' + (err.message || JSON.stringify(err));
-    })
-    .addCall(payload);
-}
-
-// ── MANAGE DSS MODAL ──────────────────────────────────────────
-function openManageDssModal() {
-  document.getElementById('manageDssModal').style.display = 'flex';
-  document.getElementById('manageEventContainer').style.display = 'none';
-  var statusEl = document.getElementById('manageEventStatus');
-  statusEl.style.color = '';
-  statusEl.textContent = '';
-}
-function closeManageDssModal() { document.getElementById('manageDssModal').style.display = 'none'; }
-
-function loadManageEvent() {
-  var rowKey    = document.getElementById('manageEventSelect').value;
-  var statusEl  = document.getElementById('manageEventStatus');
-  var container = document.getElementById('manageEventContainer');
-
-  if (!rowKey) {
-    statusEl.style.color = '#fbbf24';
-    statusEl.textContent = 'Please select an event first.';
-    container.style.display = 'none';
-    return;
-  }
-
-  var parts = rowKey.split('|');
-  var eventName = parts[0], eventDate = parts[1], dssType = parts[2];
-
-  statusEl.style.color = '#8899a6';
-  statusEl.textContent = 'Loading…';
-  container.style.display = 'none';
-
-  google.script.run
-    .withSuccessHandler(function(event) {
-      console.log('RAW RESPONSE FROM SERVER:', event);
-      if (!event) {
-        statusEl.style.color = '#f87171';
-        statusEl.textContent = 'Row not found. It may have been edited/removed — try reopening this dialog.';
-        container.style.display = 'none';
-        return;
-      }
-      document.getElementById('manageEditName').value        = event.eventName      || '';
-document.getElementById('manageEditType').value        = event.dssType        || '';
-document.getElementById('manageEditContact').value     = event.contactName    || '';
-document.getElementById('manageEditContactInfo').value = event.contactInfo    || '';
-document.getElementById('manageEditSlidesLink').value  = event.slidesLink     || '';
-document.getElementById('manageEditRadarTime').value    = event.radarWatchTime || '';
-document.getElementById('manageEditEmailTime').value   = event.headsUpTime    || '';
-document.getElementById('manageEditDssTime').value      = event.dssTime        || '';
-document.getElementById('manageEditRadarEndTime').value = event.radarEndTime  || '';
-document.getElementById('manageEditDssEndTime').value   = event.dssEndTime    || '';
-document.getElementById('manageEditLat').value         = event.latitude       || '';
-document.getElementById('manageEditLon').value         = event.longitude      || '';
-container.style.display = 'block';
-statusEl.textContent = '';
-    })
-    .withFailureHandler(function(err) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = 'Error loading row: ' + (err.message || JSON.stringify(err));
-      container.style.display = 'none';
-    })
-    .getEventRowDetails(eventName, eventDate, dssType);
-}
-
-function saveManageEventChanges() {
-  var rowKey = document.getElementById('manageEventSelect').value;
-  var parts  = rowKey.split('|');
-  var originalName = parts[0], originalDate = parts[1], originalType = parts[2];
-  var statusEl = document.getElementById('manageEventStatus');
-
-  var updatedData = {
-  eventName:      document.getElementById('manageEditName').value,
-  dssType:        document.getElementById('manageEditType').value,
-  contactName:    document.getElementById('manageEditContact').value,
-  contactInfo:    document.getElementById('manageEditContactInfo').value,
-  slidesLink:     document.getElementById('manageEditSlidesLink').value,
-  radarWatchTime: document.getElementById('manageEditRadarTime').value,
-  radarEndTime:   document.getElementById('manageEditRadarEndTime').value,
-  headsUpTime:    document.getElementById('manageEditEmailTime').value,
-  dssTime:        document.getElementById('manageEditDssTime').value,
-  dssEndTime:     document.getElementById('manageEditDssEndTime').value,
-  latitude:       document.getElementById('manageEditLat').value,
-  longitude:      document.getElementById('manageEditLon').value
-};
-
-  if (!confirm('Update this row: "' + originalName + '" on ' + originalDate + '?')) return;
-
-  statusEl.style.color = '#8899a6';
-  statusEl.textContent = 'Saving…';
-
-  google.script.run
-    .withSuccessHandler(function() {
-      statusEl.style.color = '#4ade80';
-      statusEl.textContent = '✓ Row updated.';
-      refreshDashboard();
-    })
-    .withFailureHandler(function(err) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = 'Error: ' + (err.message || JSON.stringify(err));
-    })
-    .updateEventRow(originalName, originalDate, originalType, updatedData);
-}
-
-function cancelManageEvent() {
-  var rowKey = document.getElementById('manageEventSelect').value;
-  if (!rowKey) return;
-  var parts = rowKey.split('|');
-  var eventName = parts[0], eventDate = parts[1], dssType = parts[2];
-  var statusEl = document.getElementById('manageEventStatus');
-
-  if (!confirm('Cancel this row?\n\n"' + eventName + '" on ' + eventDate + ' (' + dssType + ')')) return;
-
-  statusEl.style.color = '#8899a6';
-  statusEl.textContent = 'Cancelling…';
-
-  google.script.run
-    .withSuccessHandler(function() {
-      statusEl.style.color = '#fbbf24';
-      statusEl.textContent = '✓ Row cancelled.';
-      document.getElementById('manageEventContainer').style.display = 'none';
-      refreshDashboard();
-    })
-    .withFailureHandler(function(err) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = 'Error: ' + (err.message || JSON.stringify(err));
-    })
-    .cancelEventRow(eventName, eventDate, dssType);
-}
-
-// ── MANAGE CALL MODAL ─────────────────────────────────────────
-function openManageCallModal() {
-  document.getElementById('manageCallContainer').style.display = 'none';
-  document.getElementById('manageCallStatus').textContent = '';
-  var sel = document.getElementById('manageCallSelect');
-  sel.innerHTML = '';
-  if (callRows && callRows.length > 1) {
-    for (var i = 1; i < callRows.length; i++) {
-      var call = callRows[i];
-      if (String(call[5] || '').trim().toUpperCase() === 'TRUE') continue;
-      if (!isDateOnOrAfterToday(call[0])) continue; // skip past calls
-      var opt = document.createElement('option');
-      opt.value = call[2];
-      opt.textContent = call[0] + ' ' + call[1] + ' — ' + call[2];
-      sel.appendChild(opt);
-    }
-  }
-  document.getElementById('manageCallModal').style.display = 'flex';
-}
-function closeManageCallModal() { document.getElementById('manageCallModal').style.display = 'none'; }
-
-function loadManageCall() {
-  var eventInfo = document.getElementById('manageCallSelect').value;
-  if (!eventInfo) return;
-  google.script.run
-    .withSuccessHandler(function(call) {
-      if (!call) { document.getElementById('manageCallStatus').textContent = 'Could not load call.'; return; }
-      var dp = String(call.callDate || '').split('/');
-      var isoDate = dp.length === 3 ? dp[2] + '-' + dp[0].padStart(2,'0') + '-' + dp[1].padStart(2,'0') : '';
-      document.getElementById('manageCallDate').value    = isoDate;
-      document.getElementById('manageCallTime').value    = call.callTime    || '';
-      document.getElementById('manageCallEvent').value   = call.eventInfo   || '';
-      document.getElementById('manageCallContact').value = call.contactInfo || '';
-      document.getElementById('manageCallContainer').style.display = 'block';
-      document.getElementById('manageCallStatus').textContent = '';
-    })
-    .withFailureHandler(function(err) {
-      document.getElementById('manageCallStatus').style.color = '#f87171';
-      document.getElementById('manageCallStatus').textContent = 'Error loading call: ' + (err.message || JSON.stringify(err));
-    })
-    .getCallDetails(eventInfo);
-}
-
-function saveManageCallChanges() {
-  var originalEvent = document.getElementById('manageCallSelect').value;
-  var rawDate = document.getElementById('manageCallDate').value;
-  var parts = rawDate ? rawDate.split('-') : [];
-  var formattedDate = parts.length === 3 ? Number(parts[1]) + '/' + Number(parts[2]) + '/' + parts[0] : rawDate;
-  var updatedData = {
-    callDate:    formattedDate,
-    callTime:    formatTimeForDisplay(document.getElementById('manageCallTime').value),
-    eventInfo:   document.getElementById('manageCallEvent').value,
-    contactInfo: document.getElementById('manageCallContact').value
-  };
-  google.script.run
-    .withSuccessHandler(function() {
-      document.getElementById('manageCallStatus').style.color = '#4ade80';
-      document.getElementById('manageCallStatus').textContent = '✓ Call updated.';
-      refreshDashboard();
-    })
-    .withFailureHandler(function(err) {
-      document.getElementById('manageCallStatus').style.color = '#f87171';
-      document.getElementById('manageCallStatus').textContent = 'Error: ' + (err.message || JSON.stringify(err));
-    })
-    .updateCall(originalEvent, updatedData);
-}
-
-function cancelManageCall() {
-  var eventInfo = document.getElementById('manageCallSelect').value;
-  if (!eventInfo) return;
-  if (!confirm('Cancel this call?\n\n' + eventInfo)) return;
-  google.script.run
-    .withSuccessHandler(function() {
-      document.getElementById('manageCallStatus').style.color = '#fbbf24';
-      document.getElementById('manageCallStatus').textContent = '✓ Call cancelled.';
-      document.getElementById('manageCallContainer').style.display = 'none';
-      refreshDashboard();
-    })
-    .withFailureHandler(function(err) {
-      document.getElementById('manageCallStatus').style.color = '#f87171';
-      document.getElementById('manageCallStatus').textContent = 'Error: ' + (err.message || JSON.stringify(err));
-    })
-    .cancelCall(eventInfo);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -4471,21 +3748,6 @@ tr.innerHTML =
     });
   }
 
-  var manageSel = document.getElementById('manageEventSelect');
-  if (manageSel) {
-    manageSel.innerHTML = '';
-    for (var mi = 0; mi < sortedRows.length; mi++) {
-      var mrow = sortedRows[mi];
-      if (String(mrow[cancelledCol]).trim().toUpperCase() === 'TRUE') continue;
-      var mDateStr = String(mrow[eventDateCol] || '');
-      if (!isDateOnOrAfterToday(mDateStr)) continue; // skip past events
-      var opt = document.createElement('option');
-      opt.value = mrow[eventCol] + '|' + mDateStr + '|' + mrow[typeCol];
-      opt.textContent = mrow[eventCol] + '  ·  ' + mDateStr + '  ·  ' + mrow[typeCol];
-      manageSel.appendChild(opt);
-    }
-  }
-
   // ── CALLS ──────────────────────────────────────────────────
   var visibleCallCount = 0;
   var callsTableEl = document.getElementById('callsTable');
@@ -4538,8 +3800,7 @@ function computeCallDateTime(call) {
 // ALL non-cancelled calls, sorted by date/time. This feeds the main
 // coordination calls table AND the "today at a glance" timeline, so
 // calls stay visible there even after their time has passed — they're
-// only removed by cancelling them or by falling outside the selected
-// date range (today/tomorrow/week/month).
+// only removed by falling outside the selected date range.
 var sortedCalls = calls.slice(1)
   .filter(function(call) {
     // Ignore cancelled calls
@@ -4709,7 +3970,6 @@ function buildCalendar() {
   }
 
   // Jump from calendar day header to that date in the main Today view
-  // (defined here so it's in scope when the table HTML is injected)
   window.calJumpToDate = function(isoDate) {
     document.getElementById('selectedDate').value = isoDate;
     showMainLayout();
@@ -4747,7 +4007,6 @@ function buildCalendar() {
 
     // Calendar cells — each uses .cal-cell with internal scroll
     for (var day = startDay; day < startDay + 7; day++) {
-      // Wrap cell content in .cal-cell so flex + overflow work correctly
       html += '<td><div class="cal-cell"><div class="cal-events">';
 
       var cdd = new Date(startOfWeek);
@@ -4808,210 +4067,6 @@ function buildCalendar() {
 
 enforceCalendarCellScroll();
 
-}
-
-// ══════════════════════════════════════════════════════════════
-//  NEW DSS WIZARD
-// ══════════════════════════════════════════════════════════════
-function openNewDssModal() { dssWizardReset(); document.getElementById('newDssModal').style.display = 'flex'; }
-function closeNewDssModal() {
-  document.getElementById('newDssModal').style.display = 'none';
-  cancelMapLocationPick();
-}
-
-function dssWizardReset() {
-  ['newEventName',
- 'newContactName',
- 'newContactInfo',
- 'newSlidesLink',
- 'newLatitude',
- 'newLongitude',
- 'newRadarTime',
- 'newRadarEndTime',
- 'newEmailTime',
- 'newDssTime',
- 'newDssEndTime'].forEach(function(id) {
-    var el = document.getElementById(id); if (el) el.value = '';
-  });
-  var todayIsoStr = getTodayIsoString();
-  var sd = document.getElementById('newStartDate'); if (sd) { sd.value = ''; sd.min = todayIsoStr; }
-  var ed = document.getElementById('newEndDate');   if (ed) { ed.value = ''; ed.min = todayIsoStr; }
-  var ed = document.getElementById('newEndDate');   if (ed) ed.value = '';
-  var grid = document.getElementById('dssScheduleGrid'); if (grid) grid.innerHTML = '';
-  var cnt  = document.getElementById('dssPreviewCount'); if (cnt)  cnt.textContent = '';
-  document.getElementById('wizardPage1').style.display = 'block';
-  document.getElementById('wizardPage2').style.display = 'none';
-  document.getElementById('wizardFooter1').style.display = 'flex';
-  document.getElementById('wizardFooter2').style.display = 'none';
-  var s1 = document.getElementById('step1ind');
-  var s2 = document.getElementById('step2ind');
-  if (s1) { s1.classList.add('active'); s1.classList.remove('done'); var c1 = s1.querySelector('.wizard-circle'); if (c1) c1.textContent = '1'; }
-  if (s2) s2.classList.remove('active');
-  cancelMapLocationPick();
-}
-
-function dssWizardNext() {
-  var nameVal  = document.getElementById('newEventName').value.trim();
-  var startVal = document.getElementById('newStartDate').value;
-  var endVal   = document.getElementById('newEndDate').value;
-  if (!nameVal)  { alert('Event name is required.');  return; }
-  if (!startVal) { alert('Start date is required.');   return; }
-  if (!endVal)   { alert('End date is required.');     return; }
-  if (startVal < getTodayIsoString()) { alert('Start date cannot be in the past.'); return; }
-  if (endVal < startVal) { alert('End date must be on or after start date.'); return; }
-  buildDssScheduleGrid();
-  document.getElementById('wizardPage1').style.display  = 'none';
-  document.getElementById('wizardPage2').style.display  = 'block';
-  document.getElementById('wizardFooter1').style.display = 'none';
-  document.getElementById('wizardFooter2').style.display = 'flex';
-  var s1 = document.getElementById('step1ind');
-  var s2 = document.getElementById('step2ind');
-  if (s1) { s1.classList.remove('active'); s1.classList.add('done'); var c1 = s1.querySelector('.wizard-circle'); if (c1) c1.textContent = '✓'; }
-  if (s2) s2.classList.add('active');
-}
-
-function dssWizardBack() {
-  document.getElementById('wizardPage2').style.display   = 'none';
-  document.getElementById('wizardPage1').style.display   = 'block';
-  document.getElementById('wizardFooter2').style.display = 'none';
-  document.getElementById('wizardFooter1').style.display = 'flex';
-  var s1 = document.getElementById('step1ind');
-  var s2 = document.getElementById('step2ind');
-  if (s1) { s1.classList.add('active'); s1.classList.remove('done'); var c1 = s1.querySelector('.wizard-circle'); if (c1) c1.textContent = '1'; }
-  if (s2) s2.classList.remove('active');
-}
-
-function buildDssScheduleGrid() {
-  var start = document.getElementById('newStartDate').value;
-  var end   = document.getElementById('newEndDate').value;
-  var dates = [];
-  var cur = new Date(start + 'T00:00:00');
-  var last = new Date(end + 'T00:00:00');
-  while (cur <= last) { dates.push(new Date(cur)); cur.setDate(cur.getDate() + 1); }
-  var grid = document.getElementById('dssScheduleGrid');
-  grid.innerHTML = '';
-  dates.forEach(function(d) {
-    var iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    var label = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
-    var row = document.createElement('div');
-    row.className = 'schedule-day';
-    row.innerHTML =
-      '<div class="day-label">' + label + '</div>' +
-      '<div class="dss-toggle-group">' +
-        '<button class="dss-toggle radar"   data-date="' + iso + '" data-type="Active radar watch" onclick="dssDayToggle(this)">🔴 Radar Watch</button>' +
-        '<button class="dss-toggle headsup" data-date="' + iso + '" data-type="Heads-up email"    onclick="dssDayToggle(this)">🔵 Heads-Up Email</button>' +
-        '<button class="dss-toggle onsite"  data-date="' + iso + '" data-type="On-Site DSS"       onclick="dssDayToggle(this)">🟣 On-Site DSS</button>' +
-      '</div>';
-    grid.appendChild(row);
-  });
-  dssUpdateCount();
-}
-
-function dssDayToggle(btn) { btn.classList.toggle('sel'); dssUpdateCount(); }
-
-function dssUpdateCount() {
-  var count = document.querySelectorAll('#dssScheduleGrid .dss-toggle.sel').length;
-  var cnt = document.getElementById('dssPreviewCount');
-  if (cnt) cnt.textContent = count > 0 ? count + ' row' + (count !== 1 ? 's' : '') + ' will be created' : '';
-}
-
-// ── MAP LOCATION PICKER ─────────────────────────────────────────
-// Closes the wizard, arms "pick mode", and lets the user click anywhere
-// on the map to set the new event's Latitude/Longitude. A temporary
-// marker shows the chosen spot, and the wizard reopens automatically
-// once a location is picked (or the user can cancel via Escape/close).
-var pickOverlay = null;
-
-function startMapLocationPick() {
-  closeNewDssModalKeepState();
-  addDssMode = true;
-
-  if (!pickOverlay) {
-    pickOverlay = document.createElement('div');
-    pickOverlay.id = 'mapPickOverlay';
-    pickOverlay.style.cssText =
-      'position:absolute; inset:0; z-index:1000; cursor:crosshair; background:transparent;';
-    map.getContainer().appendChild(pickOverlay);
-
-    pickOverlay.addEventListener('click', function(e) {
-      var rect = pickOverlay.getBoundingClientRect();
-      var point = L.point(e.clientX - rect.left, e.clientY - rect.top);
-      var latlng = map.containerPointToLatLng(point);
-      handleMapLocationPick(latlng);
-    });
-  }
-
-  var hint = document.getElementById('mapPickHint');
-  if (hint) hint.style.display = 'block';
-  var btn = document.getElementById('mapPickBtn');
-  if (btn) { btn.classList.add('picking'); btn.textContent = '📍 Click the map to set location…'; }
-}
-
-function cancelMapLocationPick() {
-  addDssMode = false;
-  if (pickOverlay) {
-    pickOverlay.remove();
-    pickOverlay = null;
-  }
-  var hint = document.getElementById('mapPickHint');
-  if (hint) hint.style.display = 'none';
-  var btn = document.getElementById('mapPickBtn');
-  if (btn) { btn.classList.remove('picking'); btn.textContent = '📍 Pick Location from Map'; }
-}
-
-// Like closeNewDssModal() but does NOT reset the form fields, since
-// we're about to reopen the same wizard once a map point is picked.
-function closeNewDssModalKeepState() {
-  document.getElementById('newDssModal').style.display = 'none';
-}
-
-function handleMapLocationPick(latlng) {
-  var lat = latlng.lat.toFixed(5);
-  var lon = latlng.lng.toFixed(5);
-
-  if (newDssMarker) { map.removeLayer(newDssMarker); }
-  newDssMarker = L.marker([lat, lon], { icon: makeCircleIcon('#22c55e') }).addTo(map);
-  newDssMarker.bindPopup('New DSS event location<br>' + lat + ', ' + lon).openPopup();
-
-  cancelMapLocationPick();
-
-  document.getElementById('newDssModal').style.display = 'flex';
-  document.getElementById('newLatitude').value  = lat;
-  document.getElementById('newLongitude').value = lon;
-}
-
-function dssWizardSubmit() {
-  var selections = [];
-  document.querySelectorAll('#dssScheduleGrid .dss-toggle.sel').forEach(function(btn) {
-    selections.push({ date: btn.getAttribute('data-date'), type: btn.getAttribute('data-type') });
-  });
-  if (selections.length === 0) { alert('Please select at least one DSS type for at least one day.'); return; }
-  var payload = {
-  eventName:     document.getElementById('newEventName').value.trim(),
-  contactName:   document.getElementById('newContactName').value.trim(),
-  contactInfo:   document.getElementById('newContactInfo').value.trim(),
-  slidesLink:    document.getElementById('newSlidesLink').value.trim(),
-  latitude:      document.getElementById('newLatitude').value.trim(),
-  longitude:     document.getElementById('newLongitude').value.trim(),
-
-  radarTime:     formatTimeForDisplay(document.getElementById('newRadarTime').value.trim()),
-  radarEndTime:  formatTimeForDisplay(document.getElementById('newRadarEndTime').value.trim()),
-
-  emailTime:     formatTimeForDisplay(document.getElementById('newEmailTime').value.trim()),
-
-  dssTime:       formatTimeForDisplay(document.getElementById('newDssTime').value.trim()),
-  dssEndTime:    formatTimeForDisplay(document.getElementById('newDssEndTime').value.trim()),
-
-  selections:    selections
-};
-  google.script.run
-    .withSuccessHandler(function() {
-      if (newDssMarker) { map.removeLayer(newDssMarker); newDssMarker = null; }
-      closeNewDssModal(); refreshDashboard();
-      alert(selections.length + ' DSS row' + (selections.length !== 1 ? 's' : '') + ' added successfully.');
-    })
-    .withFailureHandler(function(err) { alert('Error saving: ' + (err.message || JSON.stringify(err))); })
-    .addDssEvents(payload);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -5367,6 +4422,7 @@ setInterval(function () {
     refreshDashboard();
 }, 300000);
 });
+
 </script>
 </body>
 </html>
