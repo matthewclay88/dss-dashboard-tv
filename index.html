@@ -3052,7 +3052,7 @@ function getMarkerColor(dssType) {
   return '#64748b';
 }
 
-function refreshHazards() {
+async function refreshHazards() {
 
   if (!warningZoneLayer) {
     console.log("Hazard layer not loaded yet.");
@@ -3063,59 +3063,68 @@ function refreshHazards() {
   var affectedRanks = {};
   var affectedZoneInfo = {};
 
-  google.script.run
-    .withSuccessHandler(function(data) {
+  try {
 
-      const alerts = JSON.parse(data);
+    const response = await fetch("hazards.json?_=" + Date.now());
 
-      // Keep only Burlington-issued products
-      const btvAlerts = alerts.features.filter(alert =>
-        alert.properties.senderName &&
-        (alert.properties.senderName.includes("Burlington") ||
-         alert.properties.senderName.includes("Albany"))
-      );
+    if (!response.ok) {
+      throw new Error("Unable to load hazards.json");
+    }
 
-      // Clear old warning polygons
-      warningPolygonLayer.clearLayers();
+    const alerts = await response.json();
 
-      var legendMap = {};
+    // Keep only Burlington-issued products
+    const btvAlerts = alerts.features.filter(alert =>
+      alert.properties.senderName &&
+      (
+        alert.properties.senderName.includes("Burlington") ||
+        alert.properties.senderName.includes("Albany")
+      )
+    );
 
-      // Build a lookup of affected zones
-      btvAlerts.forEach(function(alert) {
+    // Clear old warning polygons
+    warningPolygonLayer.clearLayers();
 
-        // Get the VTEC code (SV.W, TO.W, FF.W, etc.)
-        // Get the VTEC code (SV.W, TO.W, FF.W, etc.)
-let vtec = null;
+    var legendMap = {};
 
-const vtecArray = alert.properties.parameters?.VTEC;
+    // ------------------------------------------------------------------
+    // EVERYTHING BELOW THIS STAYS EXACTLY THE SAME
+    // ------------------------------------------------------------------
 
-if (vtecArray && vtecArray.length) {
+    btvAlerts.forEach(function(alert) {
 
-  const parts = vtecArray[0].split(".");
+      let vtec = null;
 
-  if (parts.length >= 5) {
-    vtec = parts[3] + "." + parts[4];
-  }
+      const vtecArray = alert.properties.parameters?.VTEC;
 
-} else {
+      if (vtecArray && vtecArray.length) {
 
-  // Fallback for products without VTEC
-  const event = (alert.properties.event || "").toLowerCase();
+        const parts = vtecArray[0].split(".");
 
-  if (event.includes("warning")) {
-    vtec = "XX.W";
-  } else if (event.includes("watch")) {
-    vtec = "XX.A";
-  } else if (event.includes("advisory")) {
-    vtec = "XX.Y";
-  } else if (event.includes("statement")) {
-    vtec = "XX.S";
-  } else if (event.includes("air quality")) {
-    vtec = "AQ.Y";
-}
-  
+        if (parts.length >= 5) {
+          vtec = parts[3] + "." + parts[4];
+        }
 
-}
+      } else {
+
+        const event = (alert.properties.event || "").toLowerCase();
+
+        if (event.includes("warning")) {
+          vtec = "XX.W";
+        } else if (event.includes("watch")) {
+          vtec = "XX.A";
+        } else if (event.includes("advisory")) {
+          vtec = "XX.Y";
+        } else if (event.includes("statement")) {
+          vtec = "XX.S";
+        } else if (event.includes("air quality")) {
+          vtec = "AQ.Y";
+        }
+
+      }
+
+      // <<< EVERYTHING AFTER THIS REMAINS IDENTICAL >>>
+
 
         // Draw warning polygon if one exists
         if (
