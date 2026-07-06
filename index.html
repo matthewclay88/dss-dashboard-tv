@@ -2449,87 +2449,97 @@ function formatDate(dateString) {
 var _threatDataCache = null;
 var nextDssCountdownTime = null;
 
-function refreshThreatGauges() {
-  google.script.run
-    .withSuccessHandler(function(data) {
-      if (!data) return;
-      _threatDataCache = data;
- 
-      function scoreToColor(score) {
-        if (score === null || score === undefined) return 'tc-gray';
-        if (score < 25) return 'tc-green';
-        if (score < 45) return 'tc-yellow';
-        if (score < 60) return 'tc-orange';
-        if (score < 80) return 'tc-red';
-        return 'tc-purple';
-      }
- 
-      var row = document.getElementById('threat-gauge-row');
-      if (!row) return;
- 
-      var cardEls = row.querySelectorAll('.threat-card');
-      var keys    = ['severe','tornado','hydro'];
- 
-      keys.forEach(function(key, i) {
-        var el     = cardEls[i];
-        if (!el) return;
-        var d      = data[key] || {};
-        var score  = d.score !== null && d.score !== undefined ? d.score : null;
-        var lbl    = d.label || 'N/A';
-        var pct    = score !== null ? Math.min(100, Math.max(0, score)) : 0;
-        var cls    = scoreToColor(score);
- 
-        // Update colour class
-        el.className = 'threat-card ' + cls;
- 
-        // Update dial
-        var dial = el.querySelector('.threat-dial');
-        if (dial) dial.textContent = score !== null ? score : '—';
- 
-        // Update label
-        var labelEl = el.querySelector('.threat-label');
-        if (labelEl) labelEl.textContent = lbl;
- 
-        // Update marker
-        var marker = el.querySelector('.threat-bar-marker');
-        if (marker) marker.style.left = pct + '%';
-      });
-    })
-    .withFailureHandler(function(err) {
-      console.error('getThreatScores failed:', err);
-      var row = document.getElementById('threat-gauge-row');
-      if (!row) return;
-      row.querySelectorAll('.threat-label').forEach(function(el) { el.textContent = 'Unavailable'; });
-      row.querySelectorAll('.threat-dial').forEach(function(el) { el.textContent = '!'; });
-    })
-    .getThreatScores();
-}
+async function refreshThreatGauges() {
 
-// Friendly labels + units for known parameter keys.
-var THREAT_PARAM_LABELS = {
-  cape:        'CAPE (J/kg)',
-  mucape:      'MUCAPE (J/kg)',
-  sbcape:      'SBCAPE (J/kg)',
-  mlcape:      'MLCAPE (J/kg)',
-  cin:         'CIN (J/kg)',
-  shear:       'Bulk Shear (kt)',
-  shear06:     '0-6km Shear (kt)',
-  shear01:     '0-1km Shear (kt)',
-  srh:         'Storm Rel. Helicity',
-  srh1km:      '0-1km SRH (m²/s²)',
-  srh3km:      '0-3km SRH (m²/s²)',
-  stp:         'Sig. Tornado Param.',
-  scp:         'Supercell Composite',
-  lclHeight:   'LCL Height (m)',
-  lapseRate:   'Lapse Rate (°C/km)',
-  pwat:        'Precipitable Water (in)',
-  qpf:         'QPF (in)',
-  ffg:         'Flash Flood Guidance (in)',
-  soilMoisture:'Soil Moisture (%)',
-  streamflow:  'Streamflow (% normal)',
-  dewpoint:    'Surface Dewpoint (°F)',
-  windSpeed:   'Wind Speed (mph)'
-};
+  function scoreToColor(score) {
+    if (score === null || score === undefined) return 'tc-gray';
+    if (score < 25) return 'tc-green';
+    if (score < 45) return 'tc-yellow';
+    if (score < 60) return 'tc-orange';
+    if (score < 80) return 'tc-red';
+    return 'tc-purple';
+  }
+
+  try {
+
+    const response = await fetch("threats.json?_=" + Date.now());
+
+    if (!response.ok) {
+      throw new Error("Unable to load threats.json");
+    }
+
+    const data = await response.json();
+
+    if (!data) return;
+
+    _threatDataCache = data;
+
+    var row = document.getElementById('threat-gauge-row');
+    if (!row) return;
+
+    var cardEls = row.querySelectorAll('.threat-card');
+    var keys = ['severe', 'tornado', 'hydro'];
+
+    keys.forEach(function(key, i) {
+
+      var el = cardEls[i];
+      if (!el) return;
+
+      var d = data[key] || {};
+
+      var score = (d.score !== null && d.score !== undefined)
+        ? Number(d.score)
+        : null;
+
+      var lbl = d.label || 'N/A';
+
+      var pct = score !== null
+        ? Math.max(0, Math.min(100, score))
+        : 0;
+
+      var cls = scoreToColor(score);
+
+      // Update card colour
+      el.className = 'threat-card ' + cls;
+
+      // Update dial
+      var dial = el.querySelector('.threat-dial');
+      if (dial) {
+        dial.textContent = score !== null ? Math.round(score) : '—';
+      }
+
+      // Update label
+      var labelEl = el.querySelector('.threat-label');
+      if (labelEl) {
+        labelEl.textContent = lbl;
+      }
+
+      // Update marker
+      var marker = el.querySelector('.threat-bar-marker');
+      if (marker) {
+        marker.style.left = pct + '%';
+      }
+
+    });
+
+  } catch (err) {
+
+    console.error("Unable to load threat data:", err);
+
+    var row = document.getElementById('threat-gauge-row');
+    if (!row) return;
+
+    row.querySelectorAll('.threat-label').forEach(function(el) {
+      el.textContent = 'Unavailable';
+    });
+
+    row.querySelectorAll('.threat-dial').forEach(function(el) {
+      el.textContent = '!';
+    });
+
+  }
+
+}
 
 function formatThreatParamLabel(key) {
   if (THREAT_PARAM_LABELS[key]) return THREAT_PARAM_LABELS[key];
@@ -2616,7 +2626,7 @@ function getMarkerColor(dssType) {
   return '#64748b';
 }
 
-function refreshHazards() {
+async function refreshHazards() {
 
   if (!warningZoneLayer) {
     console.log("Hazard layer not loaded yet.");
@@ -2627,13 +2637,18 @@ function refreshHazards() {
   var affectedRanks = {};
   var affectedZoneInfo = {};
 
-  google.script.run
-    .withSuccessHandler(function(data) {
+  try {
 
-      const alerts = JSON.parse(data);
+    const response = await fetch("hazards.json?_=" + Date.now());
+
+    if (!response.ok) {
+      throw new Error("Unable to load hazards.json");
+    }
+
+    const alerts = await response.json();
 
       // Keep only Burlington-issued products
-      const btvAlerts = alerts.features.filter(alert =>
+      const btvAlerts = (alerts.features || []).filter(alert =>
         alert.properties.senderName &&
         (alert.properties.senderName.includes("Burlington") ||
          alert.properties.senderName.includes("Albany"))
@@ -2809,18 +2824,17 @@ if (!color) {
         }
 
       });
-
       renderMapLegend(
         Object.keys(legendMap).map(function(name){
           return { label: name, color: legendMap[name] };
         })
       );
 
-    })
-    .withFailureHandler(function(err) {
-      console.error("Hazard refresh failed:", err);
-    })
-    .getActiveAlerts();
+  } catch (err) {
+
+    console.error("Hazard refresh failed:", err);
+
+  }
 
 }
 
@@ -3249,37 +3263,73 @@ function showCallDetails(rowIndex) {
 // ══════════════════════════════════════════════════════════════
 //  LIGHTNING BUTTON
 // ══════════════════════════════════════════════════════════════
-function updateLightningCard() {
-  google.script.run
-    .withSuccessHandler(function(data) {
-      const card  = document.querySelector('.lightning-card');
-      if (!card) return;
-      card.style.background = `linear-gradient(
-  135deg,
-  ${data.color}22 0%,
-  #111827 45%,
-  #111827 100%
-)`;
-      const icon  = document.getElementById('lightningCardIcon');
-      const value = document.getElementById('lightningCardValue');
-      const sub   = document.getElementById('lightningCardSub');
-      card.style.backgroundColor = "";
-      card.style.borderColor = "";
+async function updateLightningCard() {
+
+  try {
+
+    const response = await fetch("lightning.json?_=" + Date.now());
+
+    if (!response.ok) {
+      throw new Error("Unable to load lightning.json");
+    }
+
+    const data = await response.json();
+
+    const card  = document.querySelector('.lightning-card');
+    if (!card) return;
+
+    card.style.background = `linear-gradient(
+      135deg,
+      ${data.color}22 0%,
+      #111827 45%,
+      #111827 100%
+    )`;
+
+    card.style.backgroundColor = "";
+    card.style.borderColor = "";
+
+    const icon  = document.getElementById('lightningCardIcon');
+    const value = document.getElementById('lightningCardValue');
+    const sub   = document.getElementById('lightningCardSub');
+
+    if (icon) {
       icon.textContent = "⚡";
       icon.style.color = data.color;
-      value.textContent = data.level.toUpperCase() + ' (' + data.probability + '%)';
+    }
+
+    if (value) {
+      value.textContent =
+        (data.level || "Unknown").toUpperCase() +
+        " (" +
+        (data.probability ?? 0) +
+        "%)";
       value.style.color = "white";
+    }
+
+    if (sub) {
       sub.textContent = "Click to Open Dashboard";
       sub.style.color = "rgba(255,255,255,.9)";
-    })
-    .withFailureHandler(function(err) {
-      console.error('getLightningRisk failed:', err);
-      const value = document.getElementById('lightningCardValue');
-      const sub   = document.getElementById('lightningCardSub');
-      if (value) { value.textContent = 'Unavailable'; value.style.color = '#8899a6'; }
-      if (sub)   sub.textContent = 'Error fetching lightning data';
-    })
-    .getLightningRisk();
+    }
+
+  } catch (err) {
+
+    console.error("updateLightningCard failed:", err);
+
+    const value = document.getElementById("lightningCardValue");
+    const sub   = document.getElementById("lightningCardSub");
+
+    if (value) {
+      value.textContent = "Unavailable";
+      value.style.color = "#8899a6";
+    }
+
+    if (sub) {
+      sub.textContent = "Error fetching lightning data";
+      sub.style.color = "#8899a6";
+    }
+
+  }
+
 }
 
 var _outageDataCache = null;
@@ -3295,19 +3345,29 @@ function _outageTierClass(level) {
   }
 }
 
-function updateOutageCard() {
-  google.script.run
-    .withSuccessHandler(function(data) {
-      _outageDataCache = data;
-      var icon = document.getElementById('outageCardIcon');
-      var value = document.getElementById('outageCardValue');
-      var sub = document.getElementById('outageCardSub');
+async function updateOutageCard() {
 
-      var card = document.querySelector('.outage-card');
-      var iconCircle = document.querySelector('.outage-card .status-icon');
+  try {
 
-      if (card) {
-        card.style.background = `linear-gradient(
+    const response = await fetch("outages.json?_=" + Date.now());
+
+    if (!response.ok) {
+      throw new Error("Unable to load outages.json");
+    }
+
+    const data = await response.json();
+
+    _outageDataCache = data;
+
+    var icon = document.getElementById('outageCardIcon');
+    var value = document.getElementById('outageCardValue');
+    var sub = document.getElementById('outageCardSub');
+
+    var card = document.querySelector('.outage-card');
+    var iconCircle = document.querySelector('.outage-card .status-icon');
+
+    if (card) {
+      card.style.background = `linear-gradient(
         135deg,
         ${data.color}22 0%,
         #111827 45%,
@@ -3315,39 +3375,77 @@ function updateOutageCard() {
       )`;
     }
 
+    if (icon) {
       icon.textContent = "🗼";
-      value.textContent = data.total.toLocaleString() + ' Customers Out';
+    }
+
+    if (value) {
+      value.textContent = Number(data.total || 0).toLocaleString() + " Customers Out";
       value.style.color = data.color;
-      sub.textContent   = 'Click for county breakdown';
+    }
 
-      if (iconCircle) {
-    iconCircle.className = 'status-icon ' + _outageTierClass(data.level);
-}
-    })
-    .withFailureHandler(function(err) {
-      console.error('getPowerOutageData failed:', err);
-      var value = document.getElementById('outageCardValue');
-      var sub   = document.getElementById('outageCardSub');
-      if (value) { value.textContent = 'Unavailable'; value.style.color = '#8899a6'; }
-      if (sub)   sub.textContent = 'Error fetching outage data';
-    })
-    .getPowerOutageData();
+    if (sub) {
+      sub.textContent = "Click for county breakdown";
+    }
+
+    if (iconCircle) {
+      iconCircle.className = "status-icon " + _outageTierClass(data.level);
+    }
+
+  } catch (err) {
+
+    console.error("updateOutageCard failed:", err);
+
+    var value = document.getElementById("outageCardValue");
+    var sub = document.getElementById("outageCardSub");
+
+    if (value) {
+      value.textContent = "Unavailable";
+      value.style.color = "#8899a6";
+    }
+
+    if (sub) {
+      sub.textContent = "Error fetching outage data";
+    }
+
+  }
+
 }
 
-function showOutageDetails() {
+async function showOutageDetails() {
+
   if (!_outageDataCache) {
-    google.script.run
-      .withSuccessHandler(function(data) {
-        _outageDataCache = data;
-        renderOutageModal(data);
-      })
-      .withFailureHandler(function(err) {
-        alert('Could not load outage data: ' + (err.message || JSON.stringify(err)));
-      })
-      .getPowerOutageData();
+
+    try {
+
+      const response = await fetch("outages.json?_=" + Date.now());
+
+      if (!response.ok) {
+        throw new Error("Unable to load outages.json");
+      }
+
+      const data = await response.json();
+
+      _outageDataCache = data;
+
+      renderOutageModal(data);
+
+    } catch (err) {
+
+      console.error("showOutageDetails failed:", err);
+
+      alert(
+        "Could not load outage data:\n\n" +
+        (err.message || "Unknown error")
+      );
+
+    }
+
     return;
   }
+
   renderOutageModal(_outageDataCache);
+
 }
 
 function renderOutageModal(data) {
@@ -3441,29 +3539,56 @@ function checkWeeklyReminder() {
 // ══════════════════════════════════════════════════════════════
 //  REFRESH
 // ══════════════════════════════════════════════════════════════
-function refreshDashboard() {
-  google.script.run
-    .withSuccessHandler(function(events) {
-      google.script.run
-        .withSuccessHandler(function(calls) {
-          try { loadData(events, calls); }
-          catch(e) {
-            console.error('loadData error:', e);
-            document.getElementById('dssStatusSub').textContent = 'Render error';
-          }
-        })
-        .withFailureHandler(function(err) {
-          console.error('getDailyCalls failed:', err);
-          document.getElementById('dssStatusSub').textContent = 'Failed: ' + (err.message || JSON.stringify(err));
-        })
-        .getDailyCalls();
-    })
-    .withFailureHandler(function(err) {
-      console.error('getData failed:', err);
-      document.getElementById('dssStatusSub').textContent = 'Failed: ' + (err.message || JSON.stringify(err));
-    })
-    .getData();
-  updateLightningCard();  
+async function refreshDashboard() {
+
+  try {
+
+    const [eventsResponse, callsResponse] = await Promise.all([
+      fetch("events.json?_=" + Date.now()),
+      fetch("calls.json?_=" + Date.now())
+    ]);
+
+    if (!eventsResponse.ok) {
+      throw new Error("Unable to load events.json");
+    }
+
+    if (!callsResponse.ok) {
+      throw new Error("Unable to load calls.json");
+    }
+
+    const events = await eventsResponse.json();
+    const calls  = await callsResponse.json();
+
+    try {
+
+      loadData(events, calls);
+
+    } catch (e) {
+
+      console.error("loadData error:", e);
+
+      const status = document.getElementById("dssStatusSub");
+      if (status) {
+        status.textContent = "Render error";
+      }
+
+    }
+
+  } catch (err) {
+
+    console.error("refreshDashboard failed:", err);
+
+    const status = document.getElementById("dssStatusSub");
+
+    if (status) {
+      status.textContent =
+        "Failed: " + (err.message || "Unable to load dashboard data");
+    }
+
+  }
+
+  // Refresh all dashboard widgets
+  updateLightningCard();
   updateRiskButtons();
   updateOutageCard();
   refreshThreatGauges();
@@ -3471,6 +3596,7 @@ function refreshDashboard() {
   updateAlertTicker();
   checkWeeklyReminder();
   updateLastUpdated();
+
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -4111,22 +4237,36 @@ function setRiskBtn(btnId, labelId, prefix, level) {
   lbl.textContent = prefix + ': ' + (level || 'None');
 }
 
-function updateRiskButtons() {
-  google.script.run
-    .withSuccessHandler(function(data) {
-      if (!data) return;
-      setRiskBtn('spcBtn',  'spcLabel',  'SPC',  data.spc  || 'None');
-      setRiskBtn('wpcBtn',  'wpcLabel',  'WPC ERO',  data.wpc  || 'None');
-      setRiskBtn('heatBtn', 'heatLabel', 'Heat Risk', data.heat || 'None');
-      setRiskBtn('wssiBtn', 'wssiLabel', 'WSSI', data.wssi || 'None');
-    })
-    .withFailureHandler(function() {
-      setRiskBtn('spcBtn',  'spcLabel',  'SPC',  'View');
-      setRiskBtn('wpcBtn',  'wpcLabel',  'WPC ERO',  'View');
-      setRiskBtn('heatBtn', 'heatLabel', 'Heat Risk', 'View');
-      setRiskBtn('wssiBtn', 'wssiLabel', 'WSSI', 'View');
-    })
-    .getRiskLevels();
+async function updateRiskButtons() {
+
+  try {
+
+    const response = await fetch("riskLevels.json?_=" + Date.now());
+
+    if (!response.ok) {
+      throw new Error("Unable to load riskLevels.json");
+    }
+
+    const data = await response.json();
+
+    if (!data) return;
+
+    setRiskBtn('spcBtn',  'spcLabel',  'SPC',       data.spc  || 'None');
+    setRiskBtn('wpcBtn',  'wpcLabel',  'WPC ERO',   data.wpc  || 'None');
+    setRiskBtn('heatBtn', 'heatLabel', 'Heat Risk', data.heat || 'None');
+    setRiskBtn('wssiBtn', 'wssiLabel', 'WSSI',      data.wssi || 'None');
+
+  } catch (err) {
+
+    console.error("updateRiskButtons failed:", err);
+
+    setRiskBtn('spcBtn',  'spcLabel',  'SPC',       'View');
+    setRiskBtn('wpcBtn',  'wpcLabel',  'WPC ERO',   'View');
+    setRiskBtn('heatBtn', 'heatLabel', 'Heat Risk', 'View');
+    setRiskBtn('wssiBtn', 'wssiLabel', 'WSSI',      'View');
+
+  }
+
 }
 
 // ══════════════════════════════════════════════════════════════
