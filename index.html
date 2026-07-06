@@ -1461,6 +1461,23 @@ var analytics = {
 };
 var MAX_VISIBLE_ROWS = 5;
 
+// Human-friendly labels for the extra threat parameters returned by
+// threats.json (anything beyond "score" and "label"). Used by
+// formatThreatParamLabel() so the threat-detail modal doesn't just
+// show raw camelCase/snake_case keys. Any key not listed here falls
+// back to an auto-formatted version of the key itself.
+var THREAT_PARAM_LABELS = {
+  cape: 'CAPE',
+  shear: 'Shear',
+  helicity: 'Helicity',
+  pwat: 'PWAT',
+  lapseRate: 'Lapse Rate',
+  freezingLevel: 'Freezing Level',
+  soilMoisture: 'Soil Moisture',
+  qpf: 'QPF',
+  flashFloodGuidance: 'Flash Flood Guidance'
+};
+
 const HAZARD_COLORS = {
   "TO.W":"#FF0000",
   "TO.A":"#FFFF00",
@@ -3225,21 +3242,31 @@ function showDssDetails(eventName) {
   var typeCol        = headers.indexOf('DSS Type');
   var contactCol     = headers.indexOf('Contact Name');
   var contactInfoCol = headers.indexOf('Contact Info');
-  var radarCol       = headers.indexOf('Radar Watch Time');
+  var radarStartCol  = headers.indexOf('Radar Start');
+  var radarEndCol    = headers.indexOf('Radar End');
   var emailCol       = headers.indexOf('Email Due By');
-  var dssTimeCol     = headers.indexOf('DSS Time');
+  var dssStartCol    = headers.indexOf('DSS Start');
+  var dssEndCol      = headers.indexOf('DSS End');
   var html = '';
   for (var i = 1; i < dssRows.length; i++) {
     var row = dssRows[i];
     if (row[eventCol] !== eventName) continue;
+
+    var radarRange = row[radarStartCol]
+      ? row[radarStartCol] + (row[radarEndCol] ? ' – ' + row[radarEndCol] : '')
+      : '';
+    var dssRange = (dssStartCol !== -1 && row[dssStartCol])
+      ? row[dssStartCol] + (dssEndCol !== -1 && row[dssEndCol] ? ' – ' + row[dssEndCol] : '')
+      : '';
+
     html =
       '<h2>' + escapeHtml(row[eventCol]) + '</h2>' +
       '<div class="modal-row"><strong>DSS Type</strong>'     + escapeHtml(row[typeCol])        + '</div>' +
       '<div class="modal-row"><strong>Contact</strong>'      + escapeHtml(row[contactCol])     + '</div>' +
       '<div class="modal-row"><strong>Contact Info</strong>' + escapeHtml(row[contactInfoCol]) + '</div>' +
       (row[emailCol] ? '<div class="modal-row"><strong>Email Due</strong>'   + escapeHtml(row[emailCol]) + '</div>' : '') +
-      (row[radarCol] ? '<div class="modal-row"><strong>Radar Watch</strong>' + escapeHtml(row[radarCol]) + '</div>' : '') +
-      (dssTimeCol !== -1 && row[dssTimeCol] ? '<div class="modal-row"><strong>On-Site DSS Time</strong>' + escapeHtml(row[dssTimeCol]) + '</div>' : '');
+      (radarRange ? '<div class="modal-row"><strong>Radar Watch</strong>' + escapeHtml(radarRange) + '</div>' : '') +
+      (dssRange ? '<div class="modal-row"><strong>On-Site DSS Time</strong>' + escapeHtml(dssRange) + '</div>' : '');
     break;
   }
   showCalendarModal(html);
@@ -3737,15 +3764,6 @@ function loadData(rows, calls) {
 
     if (!showAllDss && activeCount > MAX_VISIBLE_ROWS) continue;
 
-    var timeBits = '';
-    if (row[typeCol].indexOf('Heads-up email') !== -1 && String(row[headsUpCol] || '').trim()) {
-      timeBits = '<span style="color:#60a5fa;font-size:11px;">📧 Due: ' + escapeHtml(row[headsUpCol]) + '</span>';
-    } else if (row[typeCol].indexOf('Active radar watch') !== -1 && String(row[radarWatchCol] || '').trim()) {
-      timeBits = '<span style="color:#fcd34d;font-size:11px;">⏰ Watch: ' + escapeHtml(row[radarWatchCol]) + '</span>';
-    } else if (row[typeCol].indexOf('On-Site DSS') !== -1 && dssTimeCol !== -1 && String(row[dssTimeCol] || '').trim()) {
-      timeBits = '<span style="color:#c4b5fd;font-size:11px;">🟣 On-Site: ' + escapeHtml(row[dssTimeCol]) + '</span>';
-    }
-
     var slidesHref = row[slidesLinkCol] ? safeHref(row[slidesLinkCol]) : '';
     var linkCell = slidesHref
       ? '<a href="' + slidesHref + '" target="_blank" title="Open Slides" style="color:#64b5f6;font-size:15px;text-decoration:none;">🔗</a>'
@@ -4045,7 +4063,7 @@ var todayCalls = sortedCalls.filter(function(call) {
    buildAnalyticsData(rows, calls);
     var analyticsEl = document.getElementById('analyticsContainer');
     if (analyticsEl && analyticsEl.style.display !== 'none') {
-      buildAnalytics();
+      applyAnalyticsFilters();
     }
 }
 
@@ -4057,9 +4075,9 @@ function buildCalendar() {
   var eventCol     = headers.indexOf('Event Name');
   var eventDateCol = headers.indexOf('Event Date');
   var typeCol      = headers.indexOf('DSS Type');
-  var watchTimeCol = headers.indexOf('Radar Watch Time');
+  var watchTimeCol = headers.indexOf('Radar Start');
   var emailTimeCol = headers.indexOf('Email Due By');
-  var dssTimeCol   = headers.indexOf('DSS Time');
+  var dssTimeCol   = headers.indexOf('DSS Start');
   var cancelledCol = headers.indexOf('Cancelled');
 
   var parts       = document.getElementById('selectedDate').value.split('-');
