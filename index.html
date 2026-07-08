@@ -4612,6 +4612,9 @@ document.getElementById('analyticsFilterReset').addEventListener('click', functi
   applyAnalyticsFilters();
 });
 
+var _btvBoundsFitted = false;
+var _btvZoneBoundsCache = null;
+
 fetch("https://raw.githubusercontent.com/matthewclay88/severe-climatology/refs/heads/main/allzones.geojson")
   .then(response => response.json())
   .then(data => {
@@ -4634,11 +4637,44 @@ fetch("https://raw.githubusercontent.com/matthewclay88/severe-climatology/refs/h
       style: { color: "#1e2d3d", weight: 1, fillOpacity: 0 }
     }).addTo(map);
 
-    var zoneBounds = warningZoneLayer.getBounds();
-    if (zoneBounds.isValid()) {
-      map.invalidateSize();
-      map.fitBounds(zoneBounds, { padding: [20, 20] });
+    _btvZoneBoundsCache = warningZoneLayer.getBounds();
+
+    // Only actually fits once the map container has a real, non-zero
+    // pixel size — fitBounds silently does nothing useful if called
+    // against a 0×0 or stale-size container.
+    function attemptFit() {
+      if (_btvBoundsFitted) return;
+      if (!_btvZoneBoundsCache || !_btvZoneBoundsCache.isValid()) return;
+
+      var size = map.getSize();
+      if (size.x === 0 || size.y === 0) return; // container not sized yet — try again later
+
+      map.invalidateSize(false);
+      map.fitBounds(_btvZoneBoundsCache, { padding: [20, 20], animate: false });
+      _btvBoundsFitted = true;
     }
+
+    // Try immediately in case the container already has a size.
+    attemptFit();
+
+    // Watch the map container itself — fires as soon as the grid/flex
+    // layout gives it real dimensions, however long that takes.
+    if (!_btvBoundsFitted && typeof ResizeObserver !== 'undefined') {
+      var mapEl = map.getContainer();
+      var ro = new ResizeObserver(function() {
+        attemptFit();
+        if (_btvBoundsFitted) ro.disconnect();
+      });
+      ro.observe(mapEl);
+      setTimeout(function() { ro.disconnect(); }, 10000); // safety net
+    }
+
+    // Extra fallback retries in case ResizeObserver isn't available
+    // or the container size never actually changes (already correct
+    // on first paint, but attemptFit's guard prevents double-fitting).
+    [300, 800, 1500, 3000].forEach(function(delay) {
+      setTimeout(attemptFit, delay);
+    });
 
     refreshHazards();
   })
