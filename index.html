@@ -2964,12 +2964,13 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
 
   var glanceSection = document.getElementById('glanceSection');
 
-  if (mapMode !== 'today') {
-    glanceSection.style.display = 'none';
-    return;
-  }
+  // NEW
+if (mapMode !== 'today' || (todayDssEvents.length === 0 && todayCalls.length === 0)) {
+  glanceSection.style.display = 'none';
+  return;
+}
 
-  glanceSection.style.display = 'block';
+glanceSection.style.display = 'block';
 
   var items = [];
   var now = new Date();
