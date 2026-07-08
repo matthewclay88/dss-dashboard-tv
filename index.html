@@ -4635,11 +4635,15 @@ fetch("https://raw.githubusercontent.com/matthewclay88/severe-climatology/refs/h
     }).addTo(map);
 
     var zoneBounds = warningZoneLayer.getBounds();
-    if (zoneBounds.isValid()) map.fitBounds(zoneBounds, { padding: [20, 20] });
+    if (zoneBounds.isValid()) {
+      map.invalidateSize();
+      map.fitBounds(zoneBounds, { padding: [20, 20] });
+    }
 
     refreshHazards();
   })
   .catch(err => console.error("GeoJSON Error:", err));
+  
     document.getElementById("hazardToggle").addEventListener("change", function () {
 
     if (this.checked) {
