@@ -139,20 +139,23 @@ body{
 
   /* ── MAIN LAYOUT ── */
   .main-layout {
-    flex: 1;
-    display: grid;
-    grid-template-columns:
-        260px
-        minmax(600px,1fr)
-        minmax(480px,32vw);
-    min-height: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns:
+      240px
+      minmax(420px,1fr)
+      minmax(360px,28vw);
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
   /* ── LEFT PANEL ── */
   .left-panel {
-    background: var(--surface); border-right: 1px solid var(--border);
-    overflow-y: auto; display: flex; flex-direction: column;
-  }
+  background: var(--surface); border-right: 1px solid var(--border);
+  overflow-y: auto; display: flex; flex-direction: column;
+  min-width: 0;
+}
   .panel-section { padding: 12px 12px 8px; border-bottom: 1px solid var(--border); }
   .panel-section-title {
     font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
@@ -182,14 +185,20 @@ body{
   border-left: 4px solid #d97706;
 }
   .upcoming-item:hover         { transform: translateX(3px); }
-  .upcoming-item-name          { font-size: 11px; font-weight: 700; line-height: 1.2; }
-  .upcoming-item-meta          { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .upcoming-item-name { font-size: 11px; font-weight: 700; line-height: 1.2; overflow-wrap: break-word; word-break: break-word; }
+.upcoming-item-meta { font-size: 10px; color: var(--muted); margin-top: 1px; overflow-wrap: break-word; word-break: break-word; }
   .upcoming-radar   { background: rgba(239,68,68,.12);  border-left: 4px solid #ef4444; }
   .upcoming-headsup { background: rgba(59,130,246,.12); border-left: 4px solid #3b82f6; }
   .upcoming-onsite  { background: rgba(124,58,237,.12); border-left: 4px solid #7c3aed; }
 
   /* ── CENTER PANEL ── */
-  .center-panel { background: var(--bg); overflow-y: auto; display: flex; flex-direction: column; }
+  .center-panel {
+  background: var(--bg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;   /* fixes grid blowout regardless of which view triggers it */
+}
   .data-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
   .data-section-header { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
   .data-section-header h2 { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
@@ -411,6 +420,33 @@ body{
     letter-spacing:.08em;
 }
 
+#externalContainer {
+  display: none;
+  width: 100%;
+  flex: 1;
+  flex-direction: column;
+  background: var(--surface);
+  min-height: 0;
+}
+.external-subnav {
+  display: flex; gap: 6px; flex-shrink: 0;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.external-subnav-btn {
+  padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700;
+  border: 1px solid var(--border2); background: var(--surface2); color: var(--muted);
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.external-subnav-btn:hover  { background: #1a2535; color: var(--text); }
+.external-subnav-btn.active { background: #112233; color: #64b5f6; border-color: #1d6fa4; }
+.external-frame-wrap { flex: 1; min-height: 0; position: relative; }
+.external-frame {
+  display: none; width: 100%; height: 100%; border: none;
+  position: absolute; inset: 0;
+}
+.external-frame.active { display: block; }
+  
 #lastUpdatedText{
     font-size:13px;
     font-weight:700;
@@ -601,6 +637,12 @@ body{
 }
  
 /* Active threat colours */
+
+.tc-gray{
+    --tc-border:#374151;
+    --tc-color:#9ca3af;
+}
+  
 .tc-green{
     --tc-border:#16a34a;
     --tc-color:#86efac;
@@ -1297,16 +1339,19 @@ letter-spacing:.02em;
   </div>
 </div>
 
-<!-- FULL-SCREEN: LIGHTNING -->
-<div id="lightningContainer">
-  <iframe id="lightningFrame"
-    src="https://grafana-public.ssec.wisc.edu/grafana/d/cca85e59-9e80-4fd0-bde4-e0cc0cec31ae/dss-and-stadiums?orgId=1&var-Location=University%20of%20Vermont&refresh=1m&from=now-1h&to=now&timezone=browser">
-  </iframe>
-</div>
-
-<!-- FULL-SCREEN: AIRPORTS -->
-<div id="airportDashboardContainer">
-  <iframe src="https://cimss.ssec.wisc.edu/probsevere/lc/dashboard/#/?layout=N4IgbgpgTgzglgewHYgFwEYA0IDmU4AmAwggK5IAuaAHNggGb1wDGEAkgWiAEIAqAaiGw4EEGBy7ohIZggC2AB2QRKMNAG1QhNAFYALHoDM2AB5oADNgCeF7AHdCFABZpDOyyCcQ4OJ1VQATOYeeIRsSAQQZqjmAL6YWpyo+nq0INEeNjH2ji6obh5ePn5oQSH4BOGR0ejxiboGeqa2IFkeDgTOru7YRb7+ZcIVVVGldSDayQY6zdmtLR1d+T2e3v2lwUNhEaP545MpAGyzmQu53YVrJYGbuMM70Xr7SSkA7CfWZ515Bb1XA7dQpUHrpng09ABOD7zOaLH4rPrXQZ3bbVNCHMFTFYZT6w87LS7FAHlVG7V6xAC62AANhAcCoCLwEDgcLS0BQoKQINgKHA5BAAEoAQyQ9K4SAQdgAtOgXLEgA"></iframe>
+<div id="externalContainer">
+  <div class="external-subnav">
+    <button class="external-subnav-btn active" id="externalTabLightning">⚡ Lightning</button>
+    <button class="external-subnav-btn" id="externalTabAirports">✈ Airports</button>
+  </div>
+  <div class="external-frame-wrap">
+    <iframe id="lightningFrame" class="external-frame active"
+      src="https://grafana-public.ssec.wisc.edu/grafana/d/cca85e59-9e80-4fd0-bde4-e0cc0cec31ae/dss-and-stadiums?orgId=1&var-Location=University%20of%20Vermont&refresh=1m&from=now-1h&to=now&timezone=browser">
+    </iframe>
+    <iframe id="airportFrame" class="external-frame"
+      src="https://cimss.ssec.wisc.edu/probsevere/lc/dashboard/#/?layout=N4IgbgpgTgzglgewHYgFwEYA0IDmU4AmAwggK5IAuaAHNggGb1wDGEAkgWiAEIAqAaiGw4EEGBy7ohIZggC2AB2QRKMNAG1QhNAFYALHoDM2AB5oADNgCeF7AHdCFABZpDOyyCcQ4OJ1VQATOYeeIRsSAQQZqjmAL6YWpyo+nq0INEeNjH2ji6obh5ePn5oQSH4BOGR0ejxiboGeqa2IFkeDgTOru7YRb7+ZcIVVVGldSDayQY6zdmtLR1d+T2e3v2lwUNhEaP545MpAGyzmQu53YVrJYGbuMM70Xr7SSkA7CfWZ515Bb1XA7dQpUHrpng09ABOD7zOaLH4rPrXQZ3bbVNCHMFTFYZT6w87LS7FAHlVG7V6xAC62AANhAcCoCLwEDgcLS0BQoKQINgKHA5BAAEoAQyQ9K4SAQdgAtOgXLEgA">
+    </iframe>
+  </div>
 </div>
 
 <div id="analyticsContainer">
@@ -2898,13 +2943,10 @@ function setNavActive(id) {
 }
 
 function hideAllViews() {
-
     document.getElementById("mainLayout").style.display = "none";
     document.getElementById("calendarContainer").style.display = "none";
-    document.getElementById("lightningContainer").style.display = "none";
-    document.getElementById("airportDashboardContainer").style.display = "none";
+    document.getElementById("externalContainer").style.display = "none";
     document.getElementById("analyticsContainer").style.display = "none";
-
 }
 
 function showMainLayout() {
@@ -3512,15 +3554,22 @@ function renderOutageModal(data) {
 }
 
 function showLightningDashboard() {
-    hideAllViews();
-    const lightning = document.getElementById("lightningContainer");
-    lightning.style.display = "flex";
-    lightning.style.flex = "1";
-    lightning.style.flexDirection = "column";
-    document.getElementById("mapModeLabel").textContent = "Lightning Dashboard";
-    document.querySelectorAll(".nav-btn").forEach(btn =>
-        btn.classList.remove("active")
-    );
+    document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
+    showExternalDashboard('lightning');
+}
+
+function showExternalDashboard(which) {
+  hideAllViews();
+  const container = document.getElementById("externalContainer");
+  container.style.display = "flex";
+
+  document.getElementById("lightningFrame").classList.toggle("active", which === 'lightning');
+  document.getElementById("airportFrame").classList.toggle("active", which === 'airports');
+  document.getElementById("externalTabLightning").classList.toggle("active", which === 'lightning');
+  document.getElementById("externalTabAirports").classList.toggle("active", which === 'airports');
+
+  document.getElementById("mapModeLabel").textContent =
+    which === 'lightning' ? "Lightning Dashboard" : "Airport Dashboard";
 }
 
 function showAnalyticsDashboard() {
@@ -3659,7 +3708,12 @@ function loadData(rows, calls) {
   var cancelledCol   = headers.indexOf('Cancelled');
 
   var selectedDateString = document.getElementById('selectedDate').value;
-
+  var periodPhrase = {
+  today: 'Today', tomorrow: 'Tomorrow',
+  week: 'in the Next 7 Days', month: 'in the Next 30 Days'
+}[mapMode] || 'Today';
+var dssEmptyMessage   = 'No DSS Events Scheduled ' + periodPhrase;
+var callsEmptyMessage = 'No Coordination Calls Scheduled ' + periodPhrase;
   markerLayer.clearLayers();
 
   var eventNames      = {};
@@ -3814,6 +3868,14 @@ tr.innerHTML =
     table.appendChild(vmTr);
   }
 
+  if (activeCount === 0) {
+  var emptyDssTr = document.createElement('tr');
+  emptyDssTr.innerHTML =
+    '<td colspan="7" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' +
+    escapeHtml(dssEmptyMessage) + '</td>';
+  table.appendChild(emptyDssTr);
+}
+  
   Object.keys(markerGroups).forEach(function(key) {
     var group = markerGroups[key];
     var events = group.events;
@@ -3857,7 +3919,7 @@ tr.innerHTML =
   var lbl    = labels[mapMode] || "Today's";
   document.getElementById('dssTableTitle').textContent   = lbl + ' DSS Operations';
   document.getElementById('callsTableTitle').textContent = lbl + ' Coordination Calls';
-  document.getElementById('dssWrapper').style.display    = activeCount > 0 ? 'block' : 'none';
+  document.getElementById('dssWrapper').style.display    = 'block';
 
   upcoming.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
   var grouped = {};
@@ -3897,16 +3959,20 @@ tr.innerHTML =
   var callsTableEl = document.getElementById('callsTable');
   callsTableEl.innerHTML = '';
 
-  if (!calls || calls.length <= 1) {
-    document.getElementById('callsWrapper').style.display  = 'none';
-    document.getElementById('callStatusValue').textContent = 'No Calls';
-    document.getElementById('callStatusSub').textContent   = '--';
-    document.getElementById('upcomingCalls').innerHTML     = '<div class="empty-state">No upcoming calls</div>';
-    document.getElementById('callCount').innerHTML         = '';
-    buildGlanceTimeline(todayDssItems, []);
-    updateNextObligation(todayDssItems, []);
-    return;
-  }
+  // NEW
+if (!calls || calls.length <= 1) {
+  document.getElementById('callsWrapper').style.display  = 'block';
+  document.getElementById('callsTable').innerHTML =
+    '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' +
+    escapeHtml(callsEmptyMessage) + '</td></tr>';
+  document.getElementById('callStatusValue').textContent = 'No Calls';
+  document.getElementById('callStatusSub').textContent   = '--';
+  document.getElementById('upcomingCalls').innerHTML     = '<div class="empty-state">No upcoming calls</div>';
+  document.getElementById('callCount').innerHTML         = '';
+  buildGlanceTimeline(todayDssItems, []);
+  updateNextObligation(todayDssItems, []);
+  return;
+}
 
   var now = new Date();
 now.setSeconds(0, 0);
@@ -4045,7 +4111,16 @@ var todayCalls = sortedCalls.filter(function(call) {
     callsTableEl.appendChild(vcTr);
   }
 
-  document.getElementById('callsWrapper').style.display = visibleCallCount > 0 ? 'block' : 'none';
+  // NEW
+if (visibleCallCount === 0) {
+  var emptyCallTr = document.createElement('tr');
+  emptyCallTr.innerHTML =
+    '<td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' +
+    escapeHtml(callsEmptyMessage) + '</td>';
+  callsTableEl.appendChild(emptyCallTr);
+}
+
+document.getElementById('callsWrapper').style.display = 'block';
 
   if (visibleCallCount === 0) {
     document.getElementById('callStatusValue').style.color = '#4ade80';
@@ -4510,9 +4585,10 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   document.getElementById('airportDashboardView').addEventListener('click', function () {
     setNavActive('airportDashboardView');
-    hideAllViews();
-    document.getElementById("airportDashboardContainer").style.display = "block";
-  });
+    showExternalDashboard('airports');
+});
+document.getElementById('externalTabLightning').addEventListener('click', function() { showExternalDashboard('lightning'); });
+document.getElementById('externalTabAirports').addEventListener('click', function() { showExternalDashboard('airports'); });
   document.getElementById('analyticsYearFilter').addEventListener('change', function() {
   analyticsFilters.year = this.value;
   applyAnalyticsFilters();
