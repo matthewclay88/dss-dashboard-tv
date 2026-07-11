@@ -308,8 +308,10 @@ body{
 
 .tl-item {
   position: relative;
-  flex: 0 0 88px;
-  width: 88px;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 88px;
+  max-width: 150px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -346,22 +348,23 @@ body{
 
 .tl-label {
   font-size: 11px;
-  line-height: 1.2;
+  line-height: 1.25;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 3px;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: normal;
+  overflow: visible;
   text-align: center;
-  width: 88px;
+  width: auto;
+  max-width: 150px;
 }
 
 .tl-time {
   font-size: 10px;
   font-weight: 700;
   color: #d1d5db;
-  width: 88px;
+  width: auto;
   text-align: center;
   white-space: nowrap;
 }
@@ -370,10 +373,11 @@ body{
   flex-shrink: 0;
 }
 .tl-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
   min-width: 0;
+  word-break: break-word;
 }
   /* ── RIGHT PANEL (map fills full height) ── */
   .right-panel {
