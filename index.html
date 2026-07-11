@@ -3852,6 +3852,9 @@ tr.innerHTML =
   document.getElementById('callsTableTitle').textContent = lbl + ' Coordination Calls';
   document.getElementById('dssWrapper').style.display    = 'block';
 
+  var glanceEl = document.getElementById('glanceSection');
+  if (glanceEl) glanceEl.style.display = (mapMode === 'today') ? 'block' : 'none';
+  
   upcoming.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
   var grouped = {};
   upcoming.forEach(function(ev) {
