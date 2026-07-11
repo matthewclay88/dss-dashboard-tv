@@ -314,8 +314,8 @@ body{
   align-items: center;
   gap: 4px;
 }
-.tl-above { justify-content: flex-end; }   /* content hugs the dot from above */
-.tl-below { justify-content: flex-start; } /* content hugs the dot from below */
+.tl-above { flex: 9 1 0; justify-content: flex-end; }   /* 90% of height — matches the spine at top:90% */
+.tl-below { flex: 1 1 0; justify-content: flex-start; } /* 10% of height */
 
 .tl-dot-wrap { flex: 0 0 auto; }
 
