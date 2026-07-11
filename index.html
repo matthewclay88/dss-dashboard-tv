@@ -244,92 +244,136 @@ body{
   .view-more-row      { background: #223344; }
   .view-more-row:hover { background: #30465c; }
 
-  /* ── TODAY AT A GLANCE TIMELINE ── */
+/* ── TODAY AT A GLANCE TIMELINE ── */
   .glance-section {
-    padding: 10px 14px 12px;
-    min-height: 300px; 
-    border-bottom: 1px solid var(--border);
-    background: #080d14;
-  }
+  padding: 8px 14px 10px;
+  min-height: 100px;
+  border-bottom: 1px solid var(--border);
+  background: #080d14;
+}
   .glance-title {
     font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
     text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
     display: flex; align-items: center; gap: 6px;
   }
-  .glance-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
- .timeline-track{
-    overflow-x:auto;
-    padding:8px 0;
+ .glance-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+ .timeline-track {
+  position: relative;
+  height: 68px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 14px;
+  box-sizing: content-box;
+}
+.timeline-track::-webkit-scrollbar { height: 8px; }
+.timeline-track::-webkit-scrollbar-thumb {
+  background: #4b6b8c; border-radius: 6px; border: 1px solid #101720;
+}
+.timeline-track::-webkit-scrollbar-track { background: #101720; }
+
+.timeline-inner {
+  position: relative;
+  height: 100%;
+  min-width: 100%;
+  display: inline-flex;
+  align-items: stretch;
+  gap: 24px;
 }
 
-.timeline-inner{
-    display:flex;
-    gap:12px;
-    align-items:flex-start;
-    min-width:max-content;
+.timeline-spine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  height: 2px;
+  background: #2d3f52;
+  z-index: 0;
 }
 
-.timeline-card{
-    width:150px;
-    flex:0 0 auto;
-
-    background:white;
-    border:1px solid #ddd;
-    border-radius:10px;
-
-    padding:10px;
-
-    text-align:center;
+.timeline-empty {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 4px 0;
 }
 
-.timeline-icon{
-    font-size:22px;
-    margin-bottom:6px;
+.tl-label-row {
+  flex-direction: row;
+  gap: 5px;
+  width: auto;
+}
+.tl-label-row .tl-icon {
+  cursor: default;
 }
 
-.timeline-name{
-    font-weight:600;
-    font-size:13px;
-    line-height:1.2;
+.tl-item {
+  position: relative;
+  flex: 0 0 88px;
+  width: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 1;
+}
+.tl-item.past { opacity: 0.45; }
+.tl-item.past .tl-dot { box-shadow: none; filter: grayscale(60%); }
+
+.tl-above {
+  flex: 0 0 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
 }
 
-.timeline-time{
-    margin-top:6px;
-    font-size:12px;
-    color:#666;
+.tl-dot-wrap {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
 }
 
-.timeline-empty{
-    width:100%;
-    padding:20px;
-    text-align:center;
-    color:#8899a6;
-    font-style:italic;
+.tl-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid; flex-shrink: 0;
+  background: var(--bg);
+}
+.tl-dot.radar   { border-color: #dc2626; box-shadow: 0 0 6px rgba(220,38,38,.5); }
+.tl-dot.headsup { border-color: #2563eb; box-shadow: 0 0 6px rgba(37,99,235,.5); }
+.tl-dot.onsite  { border-color: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,.5); }
+.tl-dot.call    { border-color: #d97706; box-shadow: 0 0 6px rgba(217,119,6,.5); }
+
+.tl-label {
+  font-size: 11px;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
+  width: 88px;
 }
 
-.timeline-card{
-    width:150px;
-    flex:0 0 auto;
-
-    background:var(--surface2);
-    border:1px solid var(--border);
-    border-radius:10px;
-
-    padding:10px;
-    text-align:center;
+.tl-time {
+  font-size: 10px;
+  font-weight: 700;
+  color: #d1d5db;
+  width: 88px;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.timeline-name{
-    color:var(--text);
-    font-weight:700;
-    font-size:13px;
-    line-height:1.2;
+.tl-icon {
+  flex-shrink: 0;
 }
-
-.timeline-time{
-    margin-top:6px;
-    font-size:12px;
-    color:var(--muted);
+.tl-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
   /* ── RIGHT PANEL (map fills full height) ── */
   .right-panel {
@@ -2924,132 +2968,125 @@ function showMainLayout() {
     document.getElementById("mainLayout").style.display = "flex";
 }
 
-function buildGlanceTimeline(todayDssItems, todayCalls) {
+function buildGlanceTimeline(todayDssEvents, todayCalls) {
 
-  var container = document.getElementById("timelineInner");
-  if (!container) return;
+  var track = document.getElementById('timelineTrack');
+  if (!track) return;
 
-  container.innerHTML = "";
+  var glanceSection = document.getElementById('glanceSection');
+
+  if (mapMode !== 'today' || (todayDssEvents.length === 0 && todayCalls.length === 0)) {
+    glanceSection.style.display = 'none';
+    return;
+  }
+
+  glanceSection.style.display = 'block';
 
   var items = [];
+  var now = new Date();
+  var nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  function addEvent(time, endTime, icon, cls, label) {
+  // ── DSS EVENTS ──
+  todayDssEvents.forEach(function(ev){
+    var type = ev.type || "";
+    var timeStr = "";
+    var endTimeStr = "";
+    var icon = "";
+    var dotClass = "headsup";
 
-    if (!time) return;
+    if (type.indexOf("Heads-up") !== -1 && ev.emailTime) {
+      timeStr = ev.emailTime;
+      icon = "📧";
+      dotClass = "headsup";
+    }
+    else if (type.indexOf("Active radar watch") !== -1 && ev.radarTime) {
+      timeStr = ev.radarTime;
+      endTimeStr = ev.radarEndTime || "";
+      icon = "📡";
+      dotClass = "radar";
+    }
+    else if (type.indexOf("On-Site DSS") !== -1) {
+      timeStr = ev.dssTime || ev.radarTime || ev.emailTime || "";
+      endTimeStr = ev.dssEndTime || "";
+      icon = "🟣";
+      dotClass = "onsite";
+    }
 
-    var display = formatTimeForDisplay(time);
+    if (!timeStr) return;
 
-    if (endTime)
-      display += " – " + formatTimeForDisplay(endTime);
+    var eventMinutes = parseTimeToMinutes(timeStr);
+    var displayTime = formatTimeForDisplay(timeStr);
+    if (endTimeStr) displayTime += "–" + formatTimeForDisplay(endTimeStr);
+
+    var cutoff = eventMinutes;
+    if (endTimeStr) {
+      var endMinutes = parseTimeToMinutes(endTimeStr);
+      if (endMinutes !== 9999) cutoff = endMinutes;
+    }
 
     items.push({
-      sortKey: parseTimeToMinutes(time),
+      sortKey: eventMinutes,
+      time: displayTime,
+      label: ev.name,
       icon: icon,
-      cls: cls,
-      label: label,
-      time: display
+      dotClass: dotClass,
+      isPast: cutoff < nowMinutes
     });
-
-  }
-
-  // --------------------------
-  // DSS EVENTS
-  // --------------------------
-
-  todayDssItems.forEach(function(ev){
-
-    var type = String(ev.type || "");
-
-    if (type.indexOf("Heads-up") !== -1) {
-
-      addEvent(
-        ev.emailTime,
-        "",
-        "📧",
-        "headsup",
-        ev.name
-      );
-
-    }
-
-    else if (type.indexOf("Radar") !== -1) {
-
-      addEvent(
-        ev.radarTime,
-        ev.radarEndTime,
-        "📡",
-        "radar",
-        ev.name
-      );
-
-    }
-
-    else if (type.indexOf("On-Site") !== -1) {
-
-      addEvent(
-        ev.dssTime || ev.radarTime,
-        ev.dssEndTime,
-        "🟣",
-        "onsite",
-        ev.name
-      );
-
-    }
-
   });
 
-  // --------------------------
-  // CALLS
-  // --------------------------
-
+  // ── CALLS ──
   todayCalls.forEach(function(call){
-
-    addEvent(
-      call[1],
-      "",
-      "☎",
-      "call",
-      call[2]
-    );
-
+    if (!call[1]) return;
+    items.push({
+      sortKey: parseTimeToMinutes(call[1]),
+      time: formatTimeForDisplay(call[1]),
+      label: call[2],
+      icon: "☎",
+      dotClass: "call",
+      isPast: parseTimeToMinutes(call[1]) < nowMinutes
+    });
   });
 
-  // --------------------------
-  // SORT
-  // --------------------------
+  items.sort(function(a,b){ return a.sortKey - b.sortKey; });
 
-  items.sort(function(a,b){
-    return a.sortKey-b.sortKey;
-  });
-  console.log(items);
-  if (!items.length){
+  var inner = document.getElementById('timelineInner');
 
-    container.innerHTML =
-      '<div class="timeline-empty">No DSS Events Scheduled Today</div>';
+  inner.innerHTML = "";
 
+  if (items.length === 0) {
+    inner.innerHTML = '<div class="timeline-empty">No DSS Events Scheduled Today</div>';
+    inner.style.width = '100%';
+    inner.style.gap = '0px';
     return;
-
   }
 
-  // --------------------------
-  // DRAW
-  // --------------------------
+  var GAP = 20;
+  inner.style.gap = GAP + 'px';
+  inner.style.justifyContent = 'flex-start';
+
+  var spine = document.createElement("div");
+  spine.className = "timeline-spine";
+  inner.appendChild(spine);
 
   items.forEach(function(item){
 
-    var card = document.createElement("div");
+    var div = document.createElement("div");
+    div.className = "tl-item";
+    if (item.isPast) div.classList.add("past");
 
-    card.className = "timeline-card " + item.cls;
+    var timeHtml = '<div class="tl-time">' + escapeHtml(item.time) + '</div>';
+    var labelHtml =
+      '<div class="tl-label">' +
+        '<span class="tl-icon">' + item.icon + '</span>' +
+        '<span class="tl-text">' + escapeHtml(item.label) + '</span>' +
+      '</div>';
 
-    card.innerHTML =
-      '<div class="timeline-icon">'+item.icon+'</div>' +
-      '<div class="timeline-name">'+escapeHtml(item.label)+'</div>' +
-      '<div class="timeline-time">'+item.time+'</div>';
+    div.innerHTML =
+      '<div class="tl-above">' + labelHtml + timeHtml + '</div>' +
+      '<div class="tl-dot-wrap"><div class="tl-dot ' + item.dotClass + '"></div></div>';
 
-    container.appendChild(card);
-
+    inner.appendChild(div);
   });
-
 }
 // Accepts "H:MM AM/PM" (legacy free-text rows) as well as the "HH:MM"
 // 24-hour format produced by <input type="time">, so older sheet rows
