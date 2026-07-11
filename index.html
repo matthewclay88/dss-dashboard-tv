@@ -3063,47 +3063,42 @@ glanceSection.style.display = 'block';
     return;
   }
 
-  var SLOT_WIDTH = 160; // px per event slot — adjust to taste
-  var neededWidth = groups.length * SLOT_WIDTH;
-  var containerWidth = trackEl.clientWidth;
-  inner.style.width = Math.max(containerWidth, neededWidth) + 'px';
+  inner.style.width = "100%";
 
   var spine = document.createElement("div");
   spine.className = "timeline-spine";
   inner.appendChild(spine);
 
-  function buildTlLabelsHtml(items){
-    return items.map(function(item){
-      return '<div class="tl-label">' +
-          '<span class="tl-icon">' + item.icon + '</span>' +
-          '<span class="tl-text">' + escapeHtml(item.label) + '</span>' +
-        '</div>';
-    }).join('');
-  }
-
-  groups.forEach(function(group, idx){
-
-    var first = group.items[0];
+  items.forEach(function(item){
 
     var div = document.createElement("div");
     div.className = "tl-item";
-    if (first.isPast) div.classList.add("past");
 
-    var leftPx = idx * SLOT_WIDTH + (SLOT_WIDTH / 2);
-    div.style.left = leftPx + 'px';
+    if(item.isPast)
+        div.classList.add("past");
 
-    // Every item in this time-group now stacks above the dot, in order,
-    // with the shared time label sitting closest to the dot.
-    var timeHtml = '<div class="tl-time">' + escapeHtml(group.time) + '</div>';
-    var aboveHtml = buildTlLabelsHtml(group.items) + timeHtml;
+    // Position by actual time of day
+    var left =
+        (item.sortKey / 1440) * inner.clientWidth;
+
+    div.style.left = left + "px";
 
     div.innerHTML =
-      '<div class="tl-above">' + aboveHtml + '</div>' +
-      '<div class="tl-dot-wrap"><div class="tl-dot ' + first.dotClass + '"></div></div>' +
-      '<div class="tl-below"></div>';
+        '<div class="tl-above">' +
+            '<div class="tl-label">' +
+                '<span class="tl-icon">' + item.icon + '</span>' +
+                '<span class="tl-text">' + escapeHtml(item.label) + '</span>' +
+            '</div>' +
+            '<div class="tl-time">' + escapeHtml(item.time) + '</div>' +
+        '</div>' +
+
+        '<div class="tl-dot-wrap">' +
+            '<div class="tl-dot ' + item.dotClass + '"></div>' +
+        '</div>';
 
     inner.appendChild(div);
-  });
+
+});
 }
 // Accepts "H:MM AM/PM" (legacy free-text rows) as well as the "HH:MM"
 // 24-hour format produced by <input type="time">, so older sheet rows
