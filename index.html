@@ -257,105 +257,46 @@ body{
     display: flex; align-items: center; gap: 6px;
   }
   .glance-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
- .timeline-track {
-  position: relative;
-  height: 240px;
-  overflow-x: auto;
-  overflow-y: hidden;
+ .timeline-track{
+    overflow-x:auto;
+    padding:8px 0;
 }
-.timeline-track::-webkit-scrollbar { height: 8px; }
-.timeline-track::-webkit-scrollbar-thumb {
-  background: #4b6b8c; border-radius: 6px; border: 1px solid #101720;
-}
-.timeline-track::-webkit-scrollbar-track { background: #101720; }
 
 .timeline-inner{
     display:flex;
-    gap:20px;
-    overflow-x:auto;
+    gap:12px;
     align-items:flex-start;
+    min-width:max-content;
 }
 
-.timeline-spine {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 90%;
-  transform: translateY(-50%);
-  height: 2px;
-  background: #2d3f52;
-}
-
-.timeline-empty {
-  font-size: 12px;
-  color: var(--muted);
-  font-style: italic;
-  padding: 4px 0;
-}
-
-.tl-item{
-    flex:0 0 auto;
+.timeline-card{
     width:150px;
+    flex:0 0 auto;
+
+    background:white;
+    border:1px solid #ddd;
+    border-radius:10px;
+
+    padding:10px;
+
     text-align:center;
 }
-.tl-item.past { opacity: 0.45; }
-.tl-item.past .tl-dot { box-shadow: none; filter: grayscale(60%); }
 
-.tl-above,
-.tl-below {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.tl-above { flex: 9 1 0; justify-content: flex-end; }   /* 90% of height — matches the spine at top:90% */
-.tl-below { flex: 1 1 0; justify-content: flex-start; } /* 10% of height */
-
-.tl-dot-wrap { flex: 0 0 auto; }
-
-.tl-dot {
-  width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid; flex-shrink: 0;
-  background: var(--bg);
-}
-.tl-dot.radar   { border-color: #dc2626; box-shadow: 0 0 6px rgba(220,38,38,.5); }
-.tl-dot.headsup { border-color: #2563eb; box-shadow: 0 0 6px rgba(37,99,235,.5); }
-.tl-dot.onsite  { border-color: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,.5); }
-.tl-dot.call    { border-color: #d97706; box-shadow: 0 0 6px rgba(217,119,6,.5); }
-
-.tl-label {
-  font-size: 12px;
-  line-height: 1.25;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 3px;
-  white-space: normal;
-  overflow: visible;
-  text-align: center;
-  width: 130px;
+.timeline-icon{
+    font-size:22px;
+    margin-bottom:6px;
 }
 
-.tl-time {
-  font-size: 11px;
-  font-weight: 700;
-  color: #d1d5db;
-  width: 130px;
-  text-align: center;
-  white-space: nowrap;
+.timeline-name{
+    font-weight:600;
+    font-size:13px;
+    line-height:1.2;
 }
 
-.tl-icon {
-  flex-shrink: 0;
-}
-.tl-text {
-  overflow: visible;
-  text-overflow: unset;
-  white-space: normal;
-  word-break: break-word;
-  min-width: 0;
+.timeline-time{
+    margin-top:6px;
+    font-size:12px;
+    color:#666;
 }
 
   /* ── RIGHT PANEL (map fills full height) ── */
@@ -2951,107 +2892,132 @@ function showMainLayout() {
     document.getElementById("mainLayout").style.display = "flex";
 }
 
-// ══════════════════════════════════════════════════════════════
-//  TODAY AT A GLANCE TIMELINE
-// ══════════════════════════════════════════════════════════════
-function buildGlanceTimeline(todayDssEvents, todayCalls) {
+function buildGlanceTimeline(todayDssItems, todayCalls) {
 
-  var track = document.getElementById('timelineTrack');
-  if (!track) return;
+  var container = document.getElementById("timelineInner");
+  if (!container) return;
 
-  var glanceSection = document.getElementById('glanceSection');
-
-  // NEW
-if (mapMode !== 'today' || (todayDssEvents.length === 0 && todayCalls.length === 0)) {
-  glanceSection.style.display = 'none';
-  return;
-}
-
-glanceSection.style.display = 'block';
+  container.innerHTML = "";
 
   var items = [];
-  var now = new Date();
-  var nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  // ── DSS EVENTS ──
-  todayDssEvents.forEach(function(ev){
-    var type = ev.type || "";
-    var timeStr = "";
-    var endTimeStr = "";
-    var icon = "";
-    var dotClass = "headsup";
+  function addEvent(time, endTime, icon, cls, label) {
 
-    if (type.indexOf("Heads-up") !== -1 && ev.emailTime) {
-      timeStr = ev.emailTime;
-      icon = "📧";
-      dotClass = "headsup";
-    }
-    else if (type.indexOf("Active radar watch") !== -1 && ev.radarTime) {
-      timeStr = ev.radarTime;
-      endTimeStr = ev.radarEndTime || "";
-      icon = "📡";
-      dotClass = "radar";
-    }
-    else if (type.indexOf("On-Site DSS") !== -1) {
-      timeStr = ev.dssTime || ev.radarTime || ev.emailTime || "";
-      endTimeStr = ev.dssEndTime || "";
-      icon = "🟣";
-      dotClass = "onsite";
-    }
+    if (!time) return;
 
-    if (!timeStr) return;
+    var display = formatTimeForDisplay(time);
 
-    var eventMinutes = parseTimeToMinutes(timeStr);
-    var displayTime = formatTimeForDisplay(timeStr);
-    if (endTimeStr) displayTime += "–" + formatTimeForDisplay(endTimeStr);
-
-    var cutoff = eventMinutes;
-    if (endTimeStr) {
-      var endMinutes = parseTimeToMinutes(endTimeStr);
-      if (endMinutes !== 9999) cutoff = endMinutes;
-    }
+    if (endTime)
+      display += " – " + formatTimeForDisplay(endTime);
 
     items.push({
-      sortKey: eventMinutes,
-      time: displayTime,
-      label: ev.name,
+      sortKey: parseTimeToMinutes(time),
       icon: icon,
-      dotClass: dotClass,
-      isPast: cutoff < nowMinutes
+      cls: cls,
+      label: label,
+      time: display
     });
+
+  }
+
+  // --------------------------
+  // DSS EVENTS
+  // --------------------------
+
+  todayDssItems.forEach(function(ev){
+
+    var type = String(ev.type || "");
+
+    if (type.indexOf("Heads-up") !== -1) {
+
+      addEvent(
+        ev.emailTime,
+        "",
+        "📧",
+        "headsup",
+        ev.name
+      );
+
+    }
+
+    else if (type.indexOf("Radar") !== -1) {
+
+      addEvent(
+        ev.radarTime,
+        ev.radarEndTime,
+        "📡",
+        "radar",
+        ev.name
+      );
+
+    }
+
+    else if (type.indexOf("On-Site") !== -1) {
+
+      addEvent(
+        ev.dssTime || ev.radarTime,
+        ev.dssEndTime,
+        "🟣",
+        "onsite",
+        ev.name
+      );
+
+    }
+
   });
 
-  // ── CALLS ──
+  // --------------------------
+  // CALLS
+  // --------------------------
+
   todayCalls.forEach(function(call){
-    if (!call[1]) return;
-    items.push({
-      sortKey: parseTimeToMinutes(call[1]),
-      time: formatTimeForDisplay(call[1]),
-      label: call[2],
-      icon: "☎",
-      dotClass: "call",
-      isPast: parseTimeToMinutes(call[1]) < nowMinutes
-    });
+
+    addEvent(
+      call[1],
+      "",
+      "☎",
+      "call",
+      call[2]
+    );
+
   });
 
-  items.sort((a,b)=>a.sortKey-b.sortKey);
+  // --------------------------
+  // SORT
+  // --------------------------
 
-items.forEach(function(item){
+  items.sort(function(a,b){
+    return a.sortKey-b.sortKey;
+  });
 
-    var div = document.createElement("div");
-    div.className = "tl-item";
+  if (!items.length){
 
-    div.innerHTML =
-        '<div class="tl-label">' +
-            item.icon + ' ' + escapeHtml(item.label) +
-        '</div>' +
-        '<div class="tl-time">' +
-            escapeHtml(item.time) +
-        '</div>';
+    container.innerHTML =
+      '<div class="timeline-empty">No DSS Events Scheduled Today</div>';
 
-    inner.appendChild(div);
+    return;
 
-});
+  }
+
+  // --------------------------
+  // DRAW
+  // --------------------------
+
+  items.forEach(function(item){
+
+    var card = document.createElement("div");
+
+    card.className = "timeline-card " + item.cls;
+
+    card.innerHTML =
+      '<div class="timeline-icon">'+item.icon+'</div>' +
+      '<div class="timeline-name">'+escapeHtml(item.label)+'</div>' +
+      '<div class="timeline-time">'+item.time+'</div>';
+
+    container.appendChild(card);
+
+  });
+
 }
 // Accepts "H:MM AM/PM" (legacy free-text rows) as well as the "HH:MM"
 // 24-hour format produced by <input type="time">, so older sheet rows
