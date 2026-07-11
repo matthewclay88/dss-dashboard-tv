@@ -1023,7 +1023,7 @@ body{
 </div>
 
 <!-- ── STATUS BAR (4 narrower cards) ── -->
-<div class="status-bar">
+<div class="status-bar" id="statusBar">
   <!-- Card 1: DSS Status -->
   <div class="status-card" id="dssStatusCard">
     <div class="status-icon green" id="dssStatusIcon">✓</div>
@@ -2938,6 +2938,13 @@ function setNavActive(id) {
   document.getElementById(id).classList.add('active');
 }
 
+function setTopBarsVisible(visible) {
+  var sb = document.getElementById('statusBar');
+  var tk = document.getElementById('alertTicker');
+  if (sb) sb.style.display = visible ? 'grid' : 'none';
+  if (tk) tk.style.display = visible ? 'flex' : 'none';
+}
+  
 function hideAllViews() {
     document.getElementById("mainLayout").style.display = "none";
     document.getElementById("calendarContainer").style.display = "none";
@@ -2948,6 +2955,7 @@ function hideAllViews() {
 function showMainLayout() {
     hideAllViews();
     document.getElementById("mainLayout").style.display = "flex";
+    setTopBarsVisible(true);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3559,6 +3567,7 @@ function showExternalDashboard(which) {
   hideAllViews();
   const container = document.getElementById("externalContainer");
   container.style.display = "flex";
+  setTopBarsVisible(true);
 
   document.getElementById("lightningFrame").classList.toggle("active", which === 'lightning');
   document.getElementById("airportFrame").classList.toggle("active", which === 'airports');
@@ -3573,6 +3582,7 @@ function showAnalyticsDashboard() {
     hideAllViews();
     document.getElementById("analyticsContainer").style.display = "block";
     document.getElementById("mapModeLabel").textContent = "Analytics";
+    setTopBarsVisible(true);
     populateYearFilter(dssRows);
     applyAnalyticsFilters();
 }
@@ -4522,8 +4532,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setNavActive('calendarView');
     hideAllViews();
     document.getElementById("calendarContainer").style.display = "flex";
+    setTopBarsVisible(false);
     buildCalendar();
-  });
+});
   document.getElementById('calendarScrollWrapper').addEventListener('click', function(e) {
   var chip = e.target.closest('[data-dss-event]');
   if (chip) { showDssDetails(chip.getAttribute('data-dss-event')); return; }
@@ -4620,6 +4631,7 @@ fetch("https://raw.githubusercontent.com/matthewclay88/severe-climatology/refs/h
 
 hideAllViews();
 document.getElementById("calendarContainer").style.display = "flex";
+setTopBarsVisible(false);
 
 refreshDashboard().then(function() {
   buildCalendar();
