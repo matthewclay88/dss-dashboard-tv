@@ -269,10 +269,11 @@ body{
 }
 .timeline-track::-webkit-scrollbar-track { background: #101720; }
 
-.timeline-inner {
-  position: relative;
-  height: 100%;
-  min-width: 100%;
+.timeline-inner{
+    display:flex;
+    gap:20px;
+    overflow-x:auto;
+    align-items:flex-start;
 }
 
 .timeline-spine {
@@ -292,15 +293,10 @@ body{
   padding: 4px 0;
 }
 
-.tl-item {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 130px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transform: translateX(-50%);
+.tl-item{
+    flex:0 0 auto;
+    width:150px;
+    text-align:center;
 }
 .tl-item.past { opacity: 0.45; }
 .tl-item.past .tl-dot { box-shadow: none; filter: grayscale(60%); }
@@ -3038,62 +3034,19 @@ glanceSection.style.display = 'block';
     });
   });
 
-  items.sort(function(a,b){ return a.sortKey - b.sortKey; });
+  items.sort((a,b)=>a.sortKey-b.sortKey);
 
-  // ── GROUP items that share the same time ──
-  var groups = [];
-  items.forEach(function(item){
-    var g = groups.find(function(x){ return x.sortKey === item.sortKey; });
-    if (!g) {
-      g = { sortKey: item.sortKey, time: item.time, items: [] };
-      groups.push(g);
-    }
-    g.items.push(item);
-  });
-
-  // ── DRAW ──
-  var inner = document.getElementById('timelineInner');
-  var trackEl = document.getElementById('timelineTrack');
-
-  inner.innerHTML = "";
-
-  if (groups.length === 0) {
-    inner.innerHTML = '<div class="timeline-empty">No DSS Events Scheduled Today</div>';
-    inner.style.width = '100%';
-    return;
-  }
-
-  inner.style.width = "100%";
-
-  var spine = document.createElement("div");
-  spine.className = "timeline-spine";
-  inner.appendChild(spine);
-
-  items.forEach(function(item){
+items.forEach(function(item){
 
     var div = document.createElement("div");
     div.className = "tl-item";
 
-    if(item.isPast)
-        div.classList.add("past");
-
-    // Position by actual time of day
-    var left =
-        (item.sortKey / 1440) * inner.clientWidth;
-
-    div.style.left = left + "px";
-
     div.innerHTML =
-        '<div class="tl-above">' +
-            '<div class="tl-label">' +
-                '<span class="tl-icon">' + item.icon + '</span>' +
-                '<span class="tl-text">' + escapeHtml(item.label) + '</span>' +
-            '</div>' +
-            '<div class="tl-time">' + escapeHtml(item.time) + '</div>' +
+        '<div class="tl-label">' +
+            item.icon + ' ' + escapeHtml(item.label) +
         '</div>' +
-
-        '<div class="tl-dot-wrap">' +
-            '<div class="tl-dot ' + item.dotClass + '"></div>' +
+        '<div class="tl-time">' +
+            escapeHtml(item.time) +
         '</div>';
 
     inner.appendChild(div);
