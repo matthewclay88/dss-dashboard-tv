@@ -247,7 +247,7 @@ body{
   /* ── TODAY AT A GLANCE TIMELINE ── */
   .glance-section {
     padding: 10px 14px 12px;
-    min-height: 165px; 
+    min-height: 300px; 
     border-bottom: 1px solid var(--border);
     background: #080d14;
   }
@@ -259,7 +259,7 @@ body{
   .glance-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
  .timeline-track {
   position: relative;
-  height: 150px;
+  height: 240px;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -279,7 +279,7 @@ body{
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
+  top: 90%;
   transform: translateY(-50%);
   height: 2px;
   background: #2d3f52;
@@ -296,7 +296,7 @@ body{
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 110px;
+  width: 130px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -331,22 +331,22 @@ body{
 
 .tl-label {
   font-size: 12px;
-  line-height: 1.2;
+  line-height: 1.25;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 3px;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: normal;
+  overflow: visible;
   text-align: center;
-  width: 110px;
+  width: 130px;
 }
 
 .tl-time {
   font-size: 11px;
   font-weight: 700;
   color: #d1d5db;
-  width: 110px;
+  width: 130px;
   text-align: center;
   white-space: nowrap;
 }
@@ -355,9 +355,10 @@ body{
   flex-shrink: 0;
 }
 .tl-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  word-break: break-word;
   min-width: 0;
 }
 
@@ -3062,7 +3063,7 @@ glanceSection.style.display = 'block';
     return;
   }
 
-  var SLOT_WIDTH = 140; // px per event slot — adjust to taste
+  var SLOT_WIDTH = 160; // px per event slot — adjust to taste
   var neededWidth = groups.length * SLOT_WIDTH;
   var containerWidth = trackEl.clientWidth;
   inner.style.width = Math.max(containerWidth, neededWidth) + 'px';
@@ -3091,35 +3092,18 @@ glanceSection.style.display = 'block';
     var leftPx = idx * SLOT_WIDTH + (SLOT_WIDTH / 2);
     div.style.left = leftPx + 'px';
 
-    // Split items in this time-group between above/below the dot,
-    // alternating item-by-item so a group of 3-4 (or up to ~6) spreads
-    // evenly across both sides instead of stacking on just one.
-    var startAbove = (idx % 2 === 0);
-    var aboveItems = [];
-    var belowItems = [];
-    group.items.forEach(function(item, i){
-      var goAbove = (i % 2 === 0) ? startAbove : !startAbove;
-      (goAbove ? aboveItems : belowItems).push(item);
-    });
-
+    // Every item in this time-group now stacks above the dot, in order,
+    // with the shared time label sitting closest to the dot.
     var timeHtml = '<div class="tl-time">' + escapeHtml(group.time) + '</div>';
-
-    var aboveHtml = aboveItems.length
-      ? (buildTlLabelsHtml(aboveItems) + timeHtml)
-      : "";
-
-    var belowHtml = belowItems.length
-      ? (timeHtml + buildTlLabelsHtml(belowItems))
-      : "";
+    var aboveHtml = buildTlLabelsHtml(group.items) + timeHtml;
 
     div.innerHTML =
       '<div class="tl-above">' + aboveHtml + '</div>' +
       '<div class="tl-dot-wrap"><div class="tl-dot ' + first.dotClass + '"></div></div>' +
-      '<div class="tl-below">' + belowHtml + '</div>';
+      '<div class="tl-below"></div>';
 
     inner.appendChild(div);
   });
-}
 
 // Accepts "H:MM AM/PM" (legacy free-text rows) as well as the "HH:MM"
 // 24-hour format produced by <input type="time">, so older sheet rows
