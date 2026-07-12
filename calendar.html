@@ -907,6 +907,18 @@ body{
   .cal-chip-headsup { background: #172554; border-left-color: #3b82f6; color: #93c5fd; }
   .cal-chip-call    { background: #3d2800; border-left-color: #f59e0b; color: #fcd34d; }
 
+  .cal-legend-bar {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding: 2px 4px 16px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cal-legend-item { display: flex; align-items: center; gap: 9px; }
+.cal-legend-swatch { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+
   /* ── MODAL ── */
   #calendarModal {
     display: none; position: fixed; inset: 0;
@@ -2941,8 +2953,12 @@ function setNavActive(id) {
 function setTopBarsVisible(visible) {
   var sb = document.getElementById('statusBar');
   var tk = document.getElementById('alertTicker');
+  var th = document.querySelector('.top-header');
+  var nt = document.querySelector('.nav-toolbar');
   if (sb) sb.style.display = visible ? 'grid' : 'none';
   if (tk) tk.style.display = visible ? 'flex' : 'none';
+  if (th) th.style.display = visible ? 'flex' : 'none';
+  if (nt) nt.style.display = visible ? 'flex' : 'none';
 }
   
 function hideAllViews() {
@@ -4275,6 +4291,14 @@ function buildCalendar() {
     );
   }
 
+  var legendHtml =
+    '<div class="cal-legend-bar">' +
+      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#ef4444;"></span>Radar Watch</div>' +
+      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#3b82f6;"></span>Heads-Up Email</div>' +
+      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#a855f7;"></span>On-Site DSS</div>' +
+      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#f59e0b;"></span>Coordination Call</div>' +
+    '</div>';
+  
   var wrapper = document.getElementById('calendarScrollWrapper');
   wrapper.innerHTML = renderWeek(0) + renderWeek(7);
 }
