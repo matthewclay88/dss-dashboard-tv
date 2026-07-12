@@ -553,6 +553,104 @@ body{
     display:flex;
     flex-direction:column;
 }
+
+/* ── ACTIVE OPERATIONS COUNTDOWN CARDS ── */
+.ops-countdown-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border2);
+  border-radius: 0 6px 6px 0;
+  padding: 9px 11px;
+  margin-bottom: 6px;
+}
+
+.ops-countdown-card.oc-upcoming {
+  border-left-color: #d97706;
+}
+
+.ops-countdown-card.oc-active {
+  border-left-color: #16a34a;
+}
+
+.oc-title {
+  font-size:10px;
+  font-weight:700;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+
+.oc-event-name{
+  font-size:12px;
+  font-weight:800;
+  color:var(--text);
+  margin:2px 0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.oc-status{
+  font-size:11px;
+  font-weight:700;
+}
+
+.oc-status.status-active{
+  color:#4ade80;
+}
+
+.oc-status.status-upcoming{
+  color:#fbbf24;
+}
+
+.oc-bar-track{
+  height:8px;
+  border-radius:5px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  overflow:hidden;
+  margin-top:6px;
+}
+
+.oc-bar-fill{
+  height:100%;
+  border-radius:5px;
+  transition:width 1s linear;
+}
+
+.oc-bar-fill.radar-fill{
+  background:linear-gradient(90deg,#7f1d1d,#ef4444);
+}
+
+.oc-bar-fill.onsite-fill{
+  background:linear-gradient(90deg,#4c1d95,#a855f7);
+}
+
+.oc-times{
+  display:flex;
+  justify-content:space-between;
+  font-size:9px;
+  color:var(--muted);
+  margin-top:3px;
+}
+
+#tlHoverTooltip{
+  position:fixed;
+  z-index:20000;
+  display:none;
+  background:#0d1117;
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:10px 12px;
+  width:220px;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+  pointer-events:none;
+}
+
+.tl-item.has-window{
+  cursor:pointer;
+}
+  
 .threat-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1246,6 +1344,27 @@ letter-spacing:.02em;
         </div>
       </div>
     </div>
+
+    <div class="panel-section">
+  <div class="panel-section-title">Active Operations</div>
+
+  <div id="radarCountdownCard"
+       class="ops-countdown-card"
+       style="display:none;">
+  </div>
+
+  <div id="onsiteCountdownCard"
+       class="ops-countdown-card"
+       style="display:none;">
+  </div>
+
+  <div id="opsCountdownEmpty"
+       class="empty-state"
+       style="padding:6px 2px;">
+    No Radar Watch or On-Site DSS Today
+  </div>
+</div>
+    
     <div class="panel-section" style="flex:1;">
       <div class="panel-section-title">Upcoming DSS</div>
       <div class="upcoming-list" id="upcomingEvents"><div class="empty-state">Loading…</div></div>
@@ -3235,7 +3354,118 @@ function updateNextObligation(todayDssEvents, todayCalls) {
 
   refreshCountdown();
   nextObligationTimer = setInterval(refreshCountdown,1000);
+}
 
+var currentTodayDssItems = [];
+var opsCountdownTimer = null;
+var tlTooltipTimer = null;
+
+function pickCurrentOrNextOpsItem(items, startField, endField) {
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes();
+  var active = null, upcoming = null;
+
+  items.forEach(function(it) {
+    var s = it[startField], e = it[endField];
+    if (!s || !e) return;
+
+    var sMin = parseTimeToMinutes(s);
+    var eMin = parseTimeToMinutes(e);
+
+    if (sMin === 9999 || eMin === 9999) return;
+
+    if (nowMin >= sMin && nowMin <= eMin) {
+      if (!active || sMin > parseTimeToMinutes(active[startField])) {
+        active = it;
+      }
+    } else if (sMin > nowMin) {
+      if (!upcoming || sMin < parseTimeToMinutes(upcoming[startField])) {
+        upcoming = it;
+      }
+    }
+  });
+
+  return active || upcoming || null;
+}
+
+function renderOpsCountdownCard(cardId, item, startField, endField, icon, label, fillClass) {
+  var el = document.getElementById(cardId);
+  if (!el) return;
+
+  if (!item) {
+    el.style.display = 'none';
+    return;
+  }
+
+  el.style.display = 'block';
+
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds()/60;
+
+  var sMin = parseTimeToMinutes(item[startField]);
+  var eMin = parseTimeToMinutes(item[endField]);
+
+  var isActive = nowMin >= sMin && nowMin <= eMin;
+
+  var pct = isActive
+      ? Math.min(100, Math.max(0, ((nowMin-sMin)/(eMin-sMin))*100))
+      : 0;
+
+  el.className = 'ops-countdown-card ' +
+      (isActive ? 'oc-active' : 'oc-upcoming');
+
+  var diffMin = isActive ? (eMin-nowMin) : (sMin-nowMin);
+  var diffSec = Math.max(0, Math.round(diffMin*60));
+
+  var h = Math.floor(diffSec/3600);
+  var m = Math.floor((diffSec%3600)/60);
+  var s = diffSec%60;
+
+  var cd =
+      (h>0 ? h+'h ' : '') +
+      String(m).padStart(2,'0')+'m ' +
+      String(s).padStart(2,'0')+'s';
+
+  var statusText = isActive
+      ? 'Active — '+cd+' remaining'
+      : 'Starts in '+cd;
+
+  el.innerHTML =
+      '<div class="oc-title">'+icon+' '+label+'</div>'+
+      '<div class="oc-event-name">'+escapeHtml(item.name)+'</div>'+
+      '<div class="oc-status '+(isActive?'status-active':'status-upcoming')+'">'+statusText+'</div>'+
+      '<div class="oc-bar-track"><div class="oc-bar-fill '+fillClass+'" style="width:'+pct+'%;"></div></div>'+
+      '<div class="oc-times"><span>'+escapeHtml(formatTimeForDisplay(item[startField]))+'</span><span>'+escapeHtml(formatTimeForDisplay(item[endField]))+'</span></div>';
+}
+
+function renderOpsCountdowns(items) {
+  var radarItem = pickCurrentOrNextOpsItem(items,'radarTime','radarEndTime');
+  var onsiteItem = pickCurrentOrNextOpsItem(items,'dssTime','dssEndTime');
+
+  renderOpsCountdownCard(
+      'radarCountdownCard',
+      radarItem,
+      'radarTime',
+      'radarEndTime',
+      '📡',
+      'Radar Watch',
+      'radar-fill'
+  );
+
+  renderOpsCountdownCard(
+      'onsiteCountdownCard',
+      onsiteItem,
+      'dssTime',
+      'dssEndTime',
+      '🟣',
+      'On-Site DSS',
+      'onsite-fill'
+  );
+
+  var empty = document.getElementById('opsCountdownEmpty');
+  if (empty) {
+    empty.style.display = (!radarItem && !onsiteItem) ? 'block' : 'none';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3830,6 +4060,9 @@ tr.innerHTML =
     table.appendChild(tr);
   }
 
+  currentTodayDssItems = todayDssItems;
+  renderOpsCountdowns(todayDssItems);
+  
   if (activeCount > MAX_VISIBLE_ROWS) {
     var vmTr = document.createElement('tr');
     vmTr.className = 'view-more-row';
@@ -4639,13 +4872,22 @@ fetch("https://raw.githubusercontent.com/matthewclay88/severe-climatology/refs/h
     }
 
 });
-  refreshDashboard();
+refreshDashboard();
 
 setInterval(function () {
     refreshDashboard();
 }, 300000);
-});
 
+// Check every minute whether the calendar day has rolled over.
+setInterval(checkMidnightRollover, 60000);
+
+opsCountdownTimer = setInterval(function () {
+    if (currentTodayDssItems.length) {
+        renderOpsCountdowns(currentTodayDssItems);
+    }
+}, 1000);
+
+});
 </script>
 </body>
 </html>
