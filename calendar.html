@@ -883,15 +883,16 @@ body{
 }
 
 .cal-empty-day {
-    font-size: 12px;
-    font-weight: 600;
-    color: #4ade80;
-    text-align: center;
-    padding: 8px;
-    margin: 4px;
-    background: #052e16;
-    border: 1px solid #166534;
+    padding: calc(8px * var(--calScale, 1)) calc(10px * var(--calScale, 1));
+    border-left: calc(5px * var(--calScale, 1)) solid #166534;
     border-radius: 6px;
+    line-height: 1.2;
+    background: #052e16;
+    color: #86efac;
+    font-size: calc(18px * var(--calScale, 1));
+    font-weight: 800;
+    text-align: left;
+    white-space: normal;
 }
 
 .cal-event-chip {
