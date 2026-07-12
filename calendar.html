@@ -26,6 +26,15 @@
     --blue-bg:   #172554;
     --purple:    #7c3aed;
     --purple-bg: #2e1065;
+    --cal-day-font:    clamp(14px, 1.15vw, 24px);
+    --cal-chip-name:   clamp(13px, 1.1vw,  22px);
+    --cal-chip-time:   clamp(10px, 0.85vw, 17px);
+    --cal-chip-pad-v:  clamp(6px,  0.55vw, 12px);
+    --cal-chip-pad-h:  clamp(8px,  0.7vw,  14px);
+    --cal-chip-border: clamp(3px,  0.35vw, 7px);
+    --cal-legend-font: clamp(12px, 1vw,    20px);
+  }
+    
   }
 
 html,
@@ -833,12 +842,12 @@ body{
 
 .cal-day-header {
     display: block;
-    padding: 8px 6px;
+    padding: var(--cal-chip-pad-v) var(--cal-chip-pad-h);
     text-align: center;
     background: var(--surface);
 }
 .cal-day-header .day-name {
-    font-size: 18px;
+    font-size: var(--cal-day-font);
     font-weight: 800;
     color: white;
     letter-spacing: 0.02em;
@@ -883,34 +892,34 @@ body{
 }
 
 .cal-empty-day {
-    padding: calc(8px * var(--calScale, 1)) calc(10px * var(--calScale, 1));
-    border-left: calc(5px * var(--calScale, 1)) solid #166534;
+    padding: calc(var(--cal-chip-pad-v) * var(--calScale, 1)) calc(var(--cal-chip-pad-h) * var(--calScale, 1));
+    border-left: calc(var(--cal-chip-border) * var(--calScale, 1)) solid #166534;
     border-radius: 6px;
     line-height: 1.2;
     background: #052e16;
     color: #86efac;
-    font-size: calc(18px * var(--calScale, 1));
+    font-size: calc(var(--cal-chip-name) * var(--calScale, 1));
     font-weight: 800;
     text-align: left;
     white-space: normal;
 }
 
 .cal-event-chip {
-    padding: calc(8px * var(--calScale, 1)) calc(10px * var(--calScale, 1));
-    border-left-width: calc(5px * var(--calScale, 1));
+    padding: calc(var(--cal-chip-pad-v) * var(--calScale, 1)) calc(var(--cal-chip-pad-h) * var(--calScale, 1));
+    border-left-width: calc(var(--cal-chip-border) * var(--calScale, 1));
     border-radius: 6px;
     line-height: 1.2;
     flex-shrink: 0;
 }
 .cal-event-chip .chip-name {
-    font-size: calc(18px * var(--calScale, 1));
+    font-size: calc(var(--cal-chip-name) * var(--calScale, 1));
     font-weight: 800;
     white-space: normal;
     overflow-wrap: break-word;
     line-height: 1.25;
 }
 .cal-event-chip .chip-time {
-    font-size: calc(14px * var(--calScale, 1));
+    font-size: calc(var(--cal-chip-time) * var(--calScale, 1));
     font-weight: 700;
     opacity: 0.9;
     margin-top: calc(2px * var(--calScale, 1));
@@ -925,10 +934,10 @@ body{
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: clamp(14px, 1.4vw, 30px);
   flex-wrap: wrap;
-  padding: 10px 18px;
-  font-size: 16px;
+  padding: clamp(8px, 0.7vw, 18px) clamp(12px, 1.2vw, 24px);
+  font-size: var(--cal-legend-font);
   font-weight: 800;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
