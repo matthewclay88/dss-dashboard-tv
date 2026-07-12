@@ -1458,7 +1458,10 @@ letter-spacing:.02em;
   </div>
 
 </div>
-    <div id="map"></div>
+    <div id="mapWrap" style="position:relative; flex:1; min-height:0;">
+  <svg id="map" viewBox="0 0 800 700" preserveAspectRatio="xMidYMid meet"
+             style="width:100%;height:100%;background:#0b1420;display:block;"></svg>
+</div>
     <div class="map-legend-bar" id="mapLegendBar">
       <span class="map-legend-bar-label">Active:</span>
       <div id="mapLegendContent" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
@@ -1817,34 +1820,67 @@ document.getElementById('selectedDate').value = localDate;
 // ══════════════════════════════════════════════════════════════
 //  MAP SETUP
 // ══════════════════════════════════════════════════════════════
-var map         = L.map('map').setView([44.0, -73.5], 7);
-var markerLayer = L.layerGroup().addTo(map);
-// Hazard zone overlay
+// ── SVG MAP (replaces Leaflet — no tile server, no invalidateSize needed) ──
+var SVG_NS = 'http://www.w3.org/2000/svg';
+var svgMapEl = document.getElementById('map');
+var svgZonesGroup   = document.createElementNS(SVG_NS, 'g');
+var svgHazardsGroup = document.createElementNS(SVG_NS, 'g');
+var svgMarkersGroup = document.createElementNS(SVG_NS, 'g');
+svgMapEl.appendChild(svgZonesGroup);
+svgMapEl.appendChild(svgHazardsGroup);
+svgMapEl.appendChild(svgMarkersGroup);
+
+// Fixed bounds covering the BTV CWA — tuned to roughly match the old
+// Leaflet setView([44.15,-73.63], 7)
+var SVG_BOUNDS = { lonMin: -75.2, lonMax: -71.3, latMin: 42.6, latMax: 45.6 };
+var SVG_VB_W = 800, SVG_VB_H = 700;
+var SVG_LAT_MID = (SVG_BOUNDS.latMin + SVG_BOUNDS.latMax) / 2;
+var SVG_LON_SCALE = Math.cos(SVG_LAT_MID * Math.PI / 180);
+
+function svgProject(lon, lat) {
+  var lonSpan = (SVG_BOUNDS.lonMax - SVG_BOUNDS.lonMin) * SVG_LON_SCALE;
+  var latSpan = (SVG_BOUNDS.latMax - SVG_BOUNDS.latMin);
+  var x = ((lon - SVG_BOUNDS.lonMin) * SVG_LON_SCALE / lonSpan) * SVG_VB_W;
+  var y = SVG_VB_H - ((lat - SVG_BOUNDS.latMin) / latSpan) * SVG_VB_H;
+  return [x, y];
+}
+
+function svgRingToPath(ring) {
+  return ring.map(function (pt, i) {
+    var p = svgProject(pt[0], pt[1]);
+    return (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1);
+  }).join(' ') + ' Z';
+}
+
+function svgGeometryToPath(geom) {
+  if (!geom) return '';
+  if (geom.type === 'Polygon') return geom.coordinates.map(svgRingToPath).join(' ');
+  if (geom.type === 'MultiPolygon') {
+    return geom.coordinates.map(function (poly) {
+      return poly.map(svgRingToPath).join(' ');
+    }).join(' ');
+  }
+  return '';
+}
+
+// Keyed by "STATEZzone" (e.g. "VTZ001") -> the <path> element for that zone
+var svgZonePaths = {};
+
+// warningZoneLayer is now just a boolean flag ("have zones loaded?") since
+// refreshHazards() below checks it before doing anything.
 var warningZoneLayer = null;
-// Actual NWS warning/watch/advisory polygons (real alert geometry)
-var warningPolygonLayer = L.layerGroup().addTo(map);
+var markerLayer = null; // unused now, kept only so nothing else errors referencing it
 
-L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-  { attribution: 'Esri' }
-).addTo(map);
-
-setTimeout(function () {
-    map.invalidateSize(true);
-}, 100);
-
-// Map legend
-var legend = L.control({ position: 'bottomleft' });
-legend.onAdd = function() {
-  var div = L.DomUtil.create('div', 'map-legend');
-  div.innerHTML =
-    '<div class="legend-title">Legend</div>' +
-    '<div class="legend-row"><span class="legend-dot radar"></span>Radar Watch</div>' +
-    '<div class="legend-row"><span class="legend-dot headsup"></span>Heads-Up</div>' +
-    '<div class="legend-row"><span class="legend-dot onsite"></span>On-Site</div>';
-  return div;
-};
-legend.addTo(map);
+// Static legend box, same as the old Leaflet control, drawn once as plain HTML
+var staticLegend = document.createElement('div');
+staticLegend.className = 'map-legend';
+staticLegend.style.cssText = 'position:absolute; left:10px; bottom:10px; z-index:5;';
+staticLegend.innerHTML =
+  '<div class="legend-title">Legend</div>' +
+  '<div class="legend-row"><span class="legend-dot radar"></span>Radar Watch</div>' +
+  '<div class="legend-row"><span class="legend-dot headsup"></span>Heads-Up</div>' +
+  '<div class="legend-row"><span class="legend-dot onsite"></span>On-Site</div>';
+document.getElementById('mapWrap').appendChild(staticLegend);
 
 // ══════════════════════════════════════════════════════════════
 //  HELPERS
@@ -2854,7 +2890,7 @@ async function refreshHazards() {
       );
 
       // Clear old warning polygons
-      warningPolygonLayer.clearLayers();
+      svgHazardsGroup.innerHTML = '';
 
       var legendMap = {};
 
@@ -2900,7 +2936,7 @@ if (vtecArray && vtecArray.length) {
           ["TO.W","SV.W","FF.W","FA.W","SQ.W","MA.W"].includes(vtec)
         ) {
 
-          let color = HAZARD_COLORS[vtec];   // was HAZARD_COLORS[hazard]
+          let color = HAZARD_COLORS[vtec];
 
 if (!color) {
   if (vtec && vtec.endsWith(".Y")) color = "#d97706";
@@ -2913,26 +2949,25 @@ if (!color) {
             legendMap[alert.properties.event] = color;
           }
 
-          const gLayer = L.geoJSON(alert.geometry,{
-            style: {
-              color: color,
-              weight: 2,
-              fillColor: color,
-              fillOpacity: 0.28
-            }
-          });
+          var d = svgGeometryToPath(alert.geometry);
+          if (d) {
+            var hazardPath = document.createElementNS(SVG_NS, 'path');
+            hazardPath.setAttribute('d', d);
+            hazardPath.setAttribute('fill', color);
+            hazardPath.setAttribute('fill-opacity', '0.28');
+            hazardPath.setAttribute('stroke', color);
+            hazardPath.setAttribute('stroke-width', '2');
 
-          const exp = formatAlertExpiry(
-            alert.properties.ends || alert.properties.expires
-          );
+            var exp = formatAlertExpiry(alert.properties.ends || alert.properties.expires);
+            var hazardTitle = document.createElementNS(SVG_NS, 'title');
+            hazardTitle.textContent =
+              alert.properties.event +
+              (alert.properties.headline ? ' — ' + alert.properties.headline : '') +
+              (exp ? ' (' + exp + ')' : '');
+            hazardPath.appendChild(hazardTitle);
 
-          gLayer.bindPopup(
-            "<b>" + escapeHtml(alert.properties.event) + "</b>" +
-            (alert.properties.headline ? "<br>" + escapeHtml(alert.properties.headline) : "") +
-            (exp ? "<br><span style='color:#8899a6'>" + escapeHtml(exp) + "</span>" : "")
-          );
-
-          warningPolygonLayer.addLayer(gLayer);
+            svgHazardsGroup.appendChild(hazardPath);
+          }
 
         }
 
@@ -2969,8 +3004,6 @@ if (!color) {
 
               legendMap[alert.properties.event] = HAZARD_COLORS[vtec] || "#d97706";
 
-              // Product type + actual end time (not the VTEC "next update" expires
-              // field — "ends" is when NWS expects the hazard itself to conclude)
               affectedZoneInfo[zone] = {
                 event:   alert.properties.event,
                 endTime: alert.properties.ends || alert.properties.expires
@@ -2981,45 +3014,38 @@ if (!color) {
       });
 
       // Reset and recolor every forecast zone
-      warningZoneLayer.eachLayer(function(layer) {
+      Object.keys(svgZonePaths).forEach(function(zone) {
 
-        const p = layer.feature.properties;
-        const zone = p.STATE + "Z" + p.ZONE;
+        var path = svgZonePaths[zone];
+        var hazard = affectedZones[zone];
 
-        const hazard = affectedZones[zone];
+        // Clear any previous <title> tooltip
+        var oldTitle = path.querySelector('title');
+        if (oldTitle) path.removeChild(oldTitle);
 
         if (hazard) {
 
           const color = HAZARD_COLORS[hazard] || "#d97706";
 
-          layer.setStyle({
-            color: color,
-            weight: 2,
-            fillColor: color,
-            fillOpacity: 0.35
-          });
+          path.setAttribute('stroke', color);
+          path.setAttribute('stroke-width', '2');
+          path.setAttribute('fill', color);
+          path.setAttribute('fill-opacity', '0.35');
 
           const info = affectedZoneInfo[zone];
           if (info) {
             const endStr = formatAlertExpiry(info.endTime);
-            layer.bindPopup(
-              "<b>" + escapeHtml(info.event) + "</b>" +
-              (endStr
-                ? "<br><span style='color:#8899a6'>" + escapeHtml(endStr) + "</span>"
-                : "<br><span style='color:#8899a6'>End time not available</span>")
-            );
+            var zoneTitle = document.createElementNS(SVG_NS, 'title');
+            zoneTitle.textContent = info.event + (endStr ? ' — ' + endStr : ' — End time not available');
+            path.appendChild(zoneTitle);
           }
 
         } else {
 
-          layer.setStyle({
-            color: "#1e2d3d",
-            weight: 1,
-            fillColor: "#1e2d3d",
-            fillOpacity: 0
-          });
-
-          layer.unbindPopup();
+          path.setAttribute('stroke', '#1e2d3d');
+          path.setAttribute('stroke-width', '1');
+          path.setAttribute('fill', '#1e2d3d');
+          path.setAttribute('fill-opacity', '0');
         }
 
       });
@@ -3036,7 +3062,6 @@ if (!color) {
   }
 
 }
-
 // ══════════════════════════════════════════════════════════════
 //  ACTUAL WARNING/WATCH/ADVISORY POLYGON OVERLAY + DYNAMIC LEGEND
 // ══════════════════════════════════════════════════════════════
@@ -3072,7 +3097,7 @@ function renderMapLegend(legendItems) {
   }).join('');
 }
 
-function zoomToEvent(lat, lon) { map.setView([parseFloat(lat), parseFloat(lon)], 11); }
+function zoomToEvent(lat, lon) { /* static SVG map — no pan/zoom on the TV display */ }
 
 function setNavActive(id) {
   document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -3916,7 +3941,7 @@ function loadData(rows, calls) {
 }[mapMode] || 'Today';
 var dssEmptyMessage   = 'No DSS Events Scheduled ' + periodPhrase;
 var callsEmptyMessage = 'No Coordination Calls Scheduled ' + periodPhrase;
-  markerLayer.clearLayers();
+  svgMarkersGroup.innerHTML = '';
 
   var eventNames      = {};
   var cancelledEvents = {};
@@ -4090,16 +4115,31 @@ tr.innerHTML =
       else if (ev.type.indexOf('Active radar watch') !== -1 && color !== '#7c3aed') color = '#dc2626';
     });
     events.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
-    var popup = '<b>' + escapeHtml(events[0].name) + '</b><br><br>';
+
+    // Plain-text tooltip (SVG <title> can't render HTML like the old Leaflet popup did)
+    var tooltipLines = [events[0].name, ''];
     events.forEach(function(ev) {
-      popup += '<b>' + escapeHtml(ev.date) + '</b><br>' + escapeHtml(ev.type) + '<br>';
-      if (ev.type.indexOf('Heads-up') !== -1 && ev.emailTime) popup += '<span style="color:#60a5fa;">📧 Email Due: ' + escapeHtml(ev.emailTime) + '</span><br>';
-      if (ev.type.indexOf('Active radar watch') !== -1 && ev.radarTime) popup += '<span style="color:#fbbf24;">⏰ Radar Watch: ' + escapeHtml(ev.radarTime) + '</span><br>';
-      if (ev.type.indexOf('On-Site DSS') !== -1 && ev.dssTime) popup += '<span style="color:#c4b5fd;">🟣 On-Site: ' + escapeHtml(ev.dssTime) + '</span><br>';
-      popup += '<br>';
+      tooltipLines.push(ev.date + ' — ' + ev.type);
+      if (ev.type.indexOf('Heads-up') !== -1 && ev.emailTime) tooltipLines.push('📧 Email Due: ' + ev.emailTime);
+      if (ev.type.indexOf('Active radar watch') !== -1 && ev.radarTime) tooltipLines.push('⏰ Radar Watch: ' + ev.radarTime);
+      if (ev.type.indexOf('On-Site DSS') !== -1 && ev.dssTime) tooltipLines.push('🟣 On-Site: ' + ev.dssTime);
+      tooltipLines.push('');
     });
-    var marker = L.marker([group.lat, group.lon], { icon: makeCircleIcon(color) });
-    marker.bindPopup(popup); marker.addTo(markerLayer);
+
+    var p = svgProject(group.lon, group.lat);
+    var circle = document.createElementNS(SVG_NS, 'circle');
+    circle.setAttribute('cx', p[0].toFixed(1));
+    circle.setAttribute('cy', p[1].toFixed(1));
+    circle.setAttribute('r', '7');
+    circle.setAttribute('fill', color);
+    circle.setAttribute('stroke', '#ffffff');
+    circle.setAttribute('stroke-width', '2.5');
+
+    var markerTitle = document.createElementNS(SVG_NS, 'title');
+    markerTitle.textContent = tooltipLines.join('\n');
+    circle.appendChild(markerTitle);
+
+    svgMarkersGroup.appendChild(circle);
   });
 
   document.getElementById('tileRadar').textContent  = radarCount;
@@ -4405,7 +4445,6 @@ function buildCalendar() {
     document.getElementById('mapModeLabel').textContent = 'Today';
     document.getElementById('mapViewBadge').textContent = 'Today';
     refreshDashboard();
-    setTimeout(function() { map.invalidateSize(); }, 300);
   };
 
   function renderWeek(startDay) {
@@ -4755,7 +4794,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('mapModeLabel').textContent = 'Today';
     document.getElementById('mapViewBadge').textContent = 'Today';
     refreshDashboard();
-    setTimeout(function() { map.invalidateSize(); }, 200);
   });
   document.getElementById('tomorrowView').addEventListener('click', function() {
     showMainLayout(); setNavActive('tomorrowView');
@@ -4763,7 +4801,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('mapModeLabel').textContent = 'Tomorrow';
     document.getElementById('mapViewBadge').textContent = 'Tomorrow';
     refreshDashboard();
-    setTimeout(function() { map.invalidateSize(); }, 200);
   });
   document.getElementById('weekView').addEventListener('click', function() {
     showMainLayout(); setNavActive('weekView');
@@ -4771,7 +4808,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('mapModeLabel').textContent = 'Next 7 Days';
     document.getElementById('mapViewBadge').textContent = 'Next 7 Days';
     refreshDashboard();
-    setTimeout(function() { map.invalidateSize(); }, 200);
   });
   document.getElementById('monthView').addEventListener('click', function() {
     showMainLayout(); setNavActive('monthView');
@@ -4779,7 +4815,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('mapModeLabel').textContent = 'Next 30 Days';
     document.getElementById('mapViewBadge').textContent = 'Next 30 Days';
     refreshDashboard();
-    setTimeout(function() { map.invalidateSize(); }, 200);
   });
   document.getElementById('calendarView').addEventListener('click', function () {
     setNavActive('calendarView');
@@ -4836,50 +4871,42 @@ fetch("https://raw.githubusercontent.com/matthewclay88/severe-climatology/refs/h
     });
 
     BTV_ZONE_SET = new Set(
-      filteredFeatures.map(f => f.properties.STATE + f.properties.ZONE)
-    );
+  filteredFeatures.map(f => f.properties.STATE + 'Z' + f.properties.ZONE)
+);
 
-    warningZoneLayer = L.geoJSON(
-      { type: 'FeatureCollection', features: filteredFeatures },
-      {
-        interactive: true,
-        style: {
-          color: "#1e2d3d",
-          weight: 1,
-          fillOpacity: 0
-        }
-      }
-    ).addTo(map);
-
-    // Fixed operational view for the BTV CWA
-    map.invalidateSize(false);
-    map.setView([44.15, -73.63], 7, {
-      animate: false
+    // Draw each zone as an SVG path, keyed for later recoloring by refreshHazards()
+    svgZonesGroup.innerHTML = '';
+    svgZonePaths = {};
+    filteredFeatures.forEach(function (f) {
+      var d = svgGeometryToPath(f.geometry);
+      if (!d) return;
+      var zoneKey = f.properties.STATE + 'Z' + f.properties.ZONE;
+      var path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', '#1e2d3d');
+      path.setAttribute('fill-opacity', '0');
+      path.setAttribute('stroke', '#243447');
+      path.setAttribute('stroke-width', '1');
+      svgZonesGroup.appendChild(path);
+      svgZonePaths[zoneKey] = path;
     });
+
+    warningZoneLayer = true; // flag: zones are loaded, refreshHazards() can run
 
     refreshHazards();
   })
   .catch(err => console.error("GeoJSON Error:", err));
   
-    document.getElementById("hazardToggle").addEventListener("change", function () {
-
-    if (this.checked) {
-        if (warningZoneLayer) map.addLayer(warningZoneLayer);
-        map.addLayer(warningPolygonLayer);
-    } else {
-        if (warningZoneLayer) map.removeLayer(warningZoneLayer);
-        map.removeLayer(warningPolygonLayer);
-    }
-
-});
+  document.getElementById("hazardToggle").addEventListener("change", function () {
+      var display = this.checked ? '' : 'none';
+      svgZonesGroup.style.display   = display;
+      svgHazardsGroup.style.display = display;
+    });
 refreshDashboard();
 
 setInterval(function () {
     refreshDashboard();
 }, 300000);
-
-// Check every minute whether the calendar day has rolled over.
-setInterval(checkMidnightRollover, 60000);
 
 opsCountdownTimer = setInterval(function () {
     if (currentTodayDssItems.length) {
