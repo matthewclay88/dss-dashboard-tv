@@ -793,118 +793,124 @@ body{
     background: var(--bg);
   }
 
-  #calendarScrollWrapper {
+#calendarScrollWrapper {
     flex: 1;
-    overflow-y: auto;
-    overflow-x: auto;
     min-height: 0;
-    padding: 14px 18px 22px;
-  }
+    overflow: hidden;
+    padding: 8px 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
 
-  .cal-week-block { margin-bottom: 30px; }
-  .cal-week-block:last-child { margin-bottom: 0; }
+/* One of the two stacked weeks. Each takes exactly half the available
+   vertical space, so 14 days always fit with zero scrolling. */
+.cal-week-grid {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
 
-  .cal-empty-day {
+.cal-grid-headrow {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border);
+}
+
+.cal-grid-bodyrow {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border);
+}
+
+.cal-day-header {
+    display: block;
+    padding: 8px 6px;
+    text-align: center;
+    background: var(--surface);
+}
+.cal-day-header .day-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.02em;
+}
+.cal-day-header.is-today {
+    background: #0d2a45;
+    box-shadow: inset 0 0 0 2px #3b82f6;
+}
+.cal-day-header.is-today .day-name { color: #93c5fd; }
+.cal-day-header.is-today::after {
+    content: 'TODAY';
+    display: block;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: #60a5fa;
+    margin-top: 2px;
+}
+
+/* Grid cell — content never overflows because JS sets --calScale on
+   this element per-cell, shrinking font/padding only as much as that
+   specific day's event count requires. */
+.cal-grid-cell {
+    background: var(--surface);
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.cal-events {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    padding: calc(8px * var(--calScale, 1));
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: calc(6px * var(--calScale, 1));
+}
+
+.cal-empty-day {
     font-size: 12px;
     font-weight: 600;
     color: #4ade80;
     text-align: center;
-    padding: 10px 8px;
-    margin: 7px;
+    padding: 8px;
+    margin: auto 4px;
     background: #052e16;
     border: 1px solid #166534;
     border-radius: 6px;
-  }
-
-  .cal-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
-
-  .cal-table th {
-    background: var(--surface);
-    color: var(--muted);
-    border: 1px solid var(--border);
-    padding: 0;
-  }
-
-  .cal-day-header {
-    display: block;
-    padding: 18px 8px;
-    cursor: pointer;
-    text-align: center;
-  }
-  .cal-day-header:hover { background: #1a3a55; }
-  .cal-day-header .day-name {
-    font-size: 26px;
-    font-weight: 800;
-    color: white;
-    letter-spacing: 0.02em;
-  }
-  .cal-day-header.is-today {
-    background: #0d2a45;
-    box-shadow: inset 0 0 0 2px #3b82f6;
-  }
-  .cal-day-header.is-today .day-name { color: #93c5fd; }
-  .cal-day-header.is-today::after {
-    content: 'TODAY';
-    display: block;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: #60a5fa;
-    margin-top: 3px;
-  }
-
-  .cal-table td {
-    min-height: 340px;
-    padding: 0;
-    vertical-align: top;
-    border: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  .cal-cell {
-    display: flex;
-    flex-direction: column;
-  }
-
-  #calendarScrollWrapper{
-    padding:30px;
-  }
-  
-  .cal-events {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .cal-events::-webkit-scrollbar { width: 5px; }
-  .cal-events::-webkit-scrollbar-track { background: transparent; }
-  .cal-events::-webkit-scrollbar-thumb { background: #34495e; border-radius: 4px; }
-
-  .cal-event-chip {
-  padding: 14px 16px;
-  border-left-width: 6px;
-  border-radius: 6px;
-  line-height: 1.25;
-  cursor: pointer;
-  transition: filter 0.15s;
 }
-  .cal-event-chip:hover { filter: brightness(1.2); }
-  .cal-event-chip .chip-name {
-  font-size: 22px;
-  font-weight: 800;
-  white-space: normal;
-  overflow-wrap: break-word;
-  line-height: 1.35;
+
+.cal-event-chip {
+    padding: calc(8px * var(--calScale, 1)) calc(10px * var(--calScale, 1));
+    border-left-width: calc(5px * var(--calScale, 1));
+    border-radius: 6px;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+.cal-event-chip .chip-name {
+    font-size: calc(18px * var(--calScale, 1));
+    font-weight: 800;
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.25;
 }
 .cal-event-chip .chip-time {
-  font-size: 18px;
-  font-weight: 700;
-  opacity: 0.9;
-  margin-top: 3px;
+    font-size: calc(14px * var(--calScale, 1));
+    font-weight: 700;
+    opacity: 0.9;
+    margin-top: calc(2px * var(--calScale, 1));
 }
   .cal-chip-radar   { background: #3b0a0a; border-left-color: #ef4444; color: #fca5a5; }
   .cal-chip-onsite  { background: #2e1065; border-left-color: #a855f7; color: #d8b4fe; }
@@ -915,10 +921,10 @@ body{
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 22px;
   flex-wrap: wrap;
-  padding: 18px 24px;
-  font-size: 26px;
+  padding: 10px 18px;
+  font-size: 16px;
   font-weight: 800;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -4263,8 +4269,10 @@ function buildCalendar() {
     );
   }
 
-  function renderWeek(startDay) {
-    var headerRow = '<tr>';
+function renderWeek(startDay) {
+    var headerCells = '';
+    var bodyCells   = '';
+
     for (var d = startDay; d < startDay + 7; d++) {
       var dd = new Date(startOfWeek);
       dd.setDate(startOfWeek.getDate() + d);
@@ -4272,28 +4280,23 @@ function buildCalendar() {
       var dayName  = dd.toLocaleDateString('en-US', { weekday: 'short' });
       var monthDay = (dd.getMonth()+1) + '/' + dd.getDate();
       var isToday  = iso === todayIso;
-      headerRow +=
-        '<th>' +
-          '<span class="cal-day-header' + (isToday ? ' is-today' : '') + '" data-jump-date="' + iso + '">' +
-            '<span class="day-name">' + dayName + ' ' + monthDay + '</span>' +
-          '</span>' +
-        '</th>';
-    }
-    headerRow += '</tr>';
 
-    var bodyRow = '<tr>';
-    for (var day = startDay; day < startDay + 7; day++) {
-      var items = dayBuckets[day].map(dssChipHtml).concat(callBuckets[day].map(callChipHtml));
+      headerCells +=
+        '<span class="cal-day-header' + (isToday ? ' is-today' : '') + '" data-jump-date="' + iso + '">' +
+          '<span class="day-name">' + dayName + ' ' + monthDay + '</span>' +
+        '</span>';
+
+      var items = dayBuckets[d].map(dssChipHtml).concat(callBuckets[d].map(callChipHtml));
       var cellContent = items.length > 0
         ? items.join('')
         : '<div class="cal-empty-day">No Scheduled DSS or Coordination Calls</div>';
-      bodyRow += '<td><div class="cal-cell"><div class="cal-events">' + cellContent + '</div></div></td>';
+      bodyCells += '<div class="cal-grid-cell"><div class="cal-events">' + cellContent + '</div></div>';
     }
-    bodyRow += '</tr>';
 
     return (
-      '<div class="cal-week-block">' +
-        '<table class="cal-table">' + headerRow + bodyRow + '</table>' +
+      '<div class="cal-week-grid">' +
+        '<div class="cal-grid-headrow">' + headerCells + '</div>' +
+        '<div class="cal-grid-bodyrow">' + bodyCells + '</div>' +
       '</div>'
     );
   }
@@ -4307,8 +4310,34 @@ function buildCalendar() {
       '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#f59e0b;"></span>Coordination Call</div>';
   }
 
-  var wrapper = document.getElementById('calendarScrollWrapper');
+var wrapper = document.getElementById('calendarScrollWrapper');
   wrapper.innerHTML = renderWeek(0) + renderWeek(7);
+  fitCalendarCells();
+}
+
+// ── TV / KIOSK PER-DAY AUTO-FIT ─────────────────────────────────
+// Each day cell has a fixed height (set by the CSS grid). Most days
+// have 1-2 events and render at full size. A day with a pile of
+// events gets its OWN --calScale shrunk — via a real overflow check,
+// not a guess based on count — until its content fits without
+// scrolling. Other days on the same row are unaffected.
+function fitCalendarCells() {
+  var cells = document.querySelectorAll('#calendarScrollWrapper .cal-grid-cell');
+
+  cells.forEach(function (cell) {
+    var eventsEl = cell.querySelector('.cal-events');
+    if (!eventsEl) return;
+
+    var scale = 1;
+    cell.style.setProperty('--calScale', scale);
+
+    var attempts = 0;
+    while (eventsEl.scrollHeight > eventsEl.clientHeight + 1 && scale > 0.4 && attempts < 40) {
+      scale = Math.max(0.4, scale - 0.03);
+      cell.style.setProperty('--calScale', scale.toFixed(2));
+      attempts++;
+    }
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -4667,6 +4696,12 @@ setTopBarsVisible(false);
 
 refreshDashboard().then(function() {
   buildCalendar();
+});
+
+var _calResizeTimer = null;
+window.addEventListener('resize', function () {
+  clearInterval(_calResizeTimer);
+  _calResizeTimer = setTimeout(fitCalendarCells, 150);
 });
 
 setInterval(function () {
