@@ -4307,7 +4307,18 @@ function renderWeek(startDay) {
           '<span class="day-name">' + dayName + ' ' + monthDay + '</span>' +
         '</span>';
 
-      var items = dayBuckets[d].map(dssChipHtml).concat(callBuckets[d].map(callChipHtml));
+      // Weekly Brief is a standing Monday reminder — pin it to the top
+      // of the cell above any other DSS items that day, rather than
+      // sitting wherever it happens to fall in date-sorted order.
+      var sortedDayItems = dayBuckets[d].slice().sort(function(a, b) {
+        var aIsBrief = /weekly brief/i.test(a.name || '');
+        var bIsBrief = /weekly brief/i.test(b.name || '');
+        if (aIsBrief && !bIsBrief) return -1;
+        if (bIsBrief && !aIsBrief) return 1;
+        return 0;
+      });
+
+      var items = sortedDayItems.map(dssChipHtml).concat(callBuckets[d].map(callChipHtml));
       var cellContent = items.length > 0
         ? items.join('')
         : '<div class="cal-empty-day">No Scheduled DSS or Coordination Calls</div>';
