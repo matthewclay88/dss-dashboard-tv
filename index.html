@@ -1823,9 +1823,11 @@ document.getElementById('selectedDate').value = localDate;
 // ── SVG MAP (replaces Leaflet — no tile server, no invalidateSize needed) ──
 var SVG_NS = 'http://www.w3.org/2000/svg';
 var svgMapEl = document.getElementById('map');
+var svgBasemapGroup = document.createElementNS(SVG_NS, 'g');
 var svgZonesGroup   = document.createElementNS(SVG_NS, 'g');
 var svgHazardsGroup = document.createElementNS(SVG_NS, 'g');
 var svgMarkersGroup = document.createElementNS(SVG_NS, 'g');
+svgMapEl.appendChild(svgBasemapGroup);
 svgMapEl.appendChild(svgZonesGroup);
 svgMapEl.appendChild(svgHazardsGroup);
 svgMapEl.appendChild(svgMarkersGroup);
@@ -1834,16 +1836,59 @@ svgMapEl.appendChild(svgMarkersGroup);
 // Leaflet setView([44.15,-73.63], 7)
 var SVG_BOUNDS = { lonMin: -75.2, lonMax: -71.3, latMin: 42.6, latMax: 45.6 };
 var SVG_VB_W = 800, SVG_VB_H = 700;
-var SVG_LAT_MID = (SVG_BOUNDS.latMin + SVG_BOUNDS.latMax) / 2;
-var SVG_LON_SCALE = Math.cos(SVG_LAT_MID * Math.PI / 180);
+
+// True Web Mercator (matches standard map tile math exactly, so any
+// tile basemap dropped in below lines up perfectly with the zone polygons).
+function lonToMercX(lon) { return (lon + 180) / 360; }
+function latToMercY(lat) {
+  var rad = lat * Math.PI / 180;
+  return 0.5 - Math.log(Math.tan(Math.PI / 4 + rad / 2)) / (2 * Math.PI);
+}
+
+var SVG_MX0 = lonToMercX(SVG_BOUNDS.lonMin);
+var SVG_MX1 = lonToMercX(SVG_BOUNDS.lonMax);
+var SVG_MY0 = latToMercY(SVG_BOUNDS.latMax); // north edge
+var SVG_MY1 = latToMercY(SVG_BOUNDS.latMin); // south edge
+
+function mercToSvgX(mx) { return ((mx - SVG_MX0) / (SVG_MX1 - SVG_MX0)) * SVG_VB_W; }
+function mercToSvgY(my) { return ((my - SVG_MY0) / (SVG_MY1 - SVG_MY0)) * SVG_VB_H; }
 
 function svgProject(lon, lat) {
-  var lonSpan = (SVG_BOUNDS.lonMax - SVG_BOUNDS.lonMin) * SVG_LON_SCALE;
-  var latSpan = (SVG_BOUNDS.latMax - SVG_BOUNDS.latMin);
-  var x = ((lon - SVG_BOUNDS.lonMin) * SVG_LON_SCALE / lonSpan) * SVG_VB_W;
-  var y = SVG_VB_H - ((lat - SVG_BOUNDS.latMin) / latSpan) * SVG_VB_H;
-  return [x, y];
+  return [mercToSvgX(lonToMercX(lon)), mercToSvgY(latToMercY(lat))];
 }
+
+// ── STATIC DARK BASEMAP (CARTO "dark_all" tiles — free, no API key,
+// includes city/town labels + roads for geographic reference) ──
+var BASEMAP_ZOOM = 8; // ~24 tiles for this bbox; bump to 9 for sharper labels (~4x more tiles)
+var BASEMAP_SUBDOMAINS = ['a', 'b', 'c', 'd'];
+
+function buildBasemapTiles() {
+  var n = Math.pow(2, BASEMAP_ZOOM);
+  var tx0 = Math.floor(SVG_MX0 * n), tx1 = Math.floor(SVG_MX1 * n);
+  var ty0 = Math.floor(SVG_MY0 * n), ty1 = Math.floor(SVG_MY1 * n);
+
+  for (var ty = ty0; ty <= ty1; ty++) {
+    for (var tx = tx0; tx <= tx1; tx++) {
+      var sub = BASEMAP_SUBDOMAINS[(tx + ty) % BASEMAP_SUBDOMAINS.length];
+      var url = 'https://' + sub + '.basemaps.cartocdn.com/dark_all/' +
+        BASEMAP_ZOOM + '/' + tx + '/' + ty + '.png';
+
+      var x0 = mercToSvgX(tx / n), x1 = mercToSvgX((tx + 1) / n);
+      var y0 = mercToSvgY(ty / n), y1 = mercToSvgY((ty + 1) / n);
+
+      var img = document.createElementNS(SVG_NS, 'image');
+      img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
+      img.setAttribute('href', url);
+      img.setAttribute('x', x0.toFixed(2));
+      img.setAttribute('y', y0.toFixed(2));
+      img.setAttribute('width',  (x1 - x0).toFixed(2));
+      img.setAttribute('height', (y1 - y0).toFixed(2));
+      img.setAttribute('preserveAspectRatio', 'none');
+      svgBasemapGroup.appendChild(img);
+    }
+  }
+}
+buildBasemapTiles();
 
 function svgRingToPath(ring) {
   return ring.map(function (pt, i) {
@@ -1881,6 +1926,12 @@ staticLegend.innerHTML =
   '<div class="legend-row"><span class="legend-dot headsup"></span>Heads-Up</div>' +
   '<div class="legend-row"><span class="legend-dot onsite"></span>On-Site</div>';
 document.getElementById('mapWrap').appendChild(staticLegend);
+var basemapAttribution = document.createElement('div');
+basemapAttribution.style.cssText =
+  'position:absolute; right:8px; bottom:6px; z-index:5; font-size:9px; ' +
+  'color:rgba(255,255,255,.35); pointer-events:none;';
+basemapAttribution.textContent = '© OpenStreetMap contributors © CARTO';
+document.getElementById('mapWrap').appendChild(basemapAttribution);
 
 // ══════════════════════════════════════════════════════════════
 //  HELPERS
