@@ -810,6 +810,7 @@ body{
     min-height: 0;
     display: flex;
     flex-direction: column;
+    border: 1px solid #ffffff;
 }
 
 .cal-grid-headrow {
@@ -817,7 +818,8 @@ body{
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
-    background: var(--border);
+    background: #ffffff;
+    border-bottom: 1px solid #ffffff;
 }
 
 .cal-grid-bodyrow {
@@ -826,7 +828,7 @@ body{
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
-    background: var(--border);
+    background: #ffffff;
 }
 
 .cal-day-header {
@@ -886,7 +888,7 @@ body{
     color: #4ade80;
     text-align: center;
     padding: 8px;
-    margin: auto 4px;
+    margin: 4px;
     background: #052e16;
     border: 1px solid #166534;
     border-radius: 6px;
@@ -916,6 +918,7 @@ body{
   .cal-chip-onsite  { background: #2e1065; border-left-color: #a855f7; color: #d8b4fe; }
   .cal-chip-headsup { background: #172554; border-left-color: #3b82f6; color: #93c5fd; }
   .cal-chip-call    { background: #3d2800; border-left-color: #f59e0b; color: #fcd34d; }
+  .cal-chip-weeklybrief { outline: 2px solid #ffffff; outline-offset: -2px; }
 
   .cal-legend-bar {
   flex-shrink: 0;
@@ -4252,6 +4255,14 @@ function buildCalendar() {
       cls = 'cal-chip-onsite';
       timeStr = formatTimeRange(ev.dssStart, ev.dssEnd);
     }
+
+    // BTV Weekly Brief is an internal office reminder riding along in the
+    // heads-up-email bucket — give it a white outline so it doesn't blend
+    // in with actual external DSS heads-up emails.
+    if (/weekly brief/i.test(ev.name || '')) {
+      cls += ' cal-chip-weeklybrief';
+    }
+
     return (
       '<div class="cal-event-chip ' + cls + '" data-dss-event="' + escapeHtml(ev.name) + '">' +
         '<div class="chip-name">' + escapeHtml(ev.name) + '</div>' +
