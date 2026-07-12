@@ -1110,6 +1110,69 @@ body{
   </div>
 </div>
 
+<div id="weeklyReminderBanner" style="
+display:none;
+background:#3157D5;
+border-top:1px solid #ffffff;
+border-bottom:1px solid #ffffff;
+padding:10px 18px;
+color:white;
+font-weight:700;
+font-size:15px;
+text-align:center;
+letter-spacing:.02em;
+">
+📋 Weekly Brief Due Today — Don't forget to prepare and distribute this week's DSS Weekly Brief.
+</div>
+
+<!-- ── NAV TOOLBAR ── -->
+<div class="nav-toolbar">
+
+  <!-- DATE RANGE -->
+  <div class="nav-group group-date">
+    <span class="nav-group-label">Date range</span>
+    <button class="nav-btn" id="todayView">Today</button>
+    <button class="nav-btn" id="tomorrowView">Tomorrow</button>
+    <button class="nav-btn" id="weekView">7 days</button>
+    <button class="nav-btn" id="monthView">30 days</button>
+    <button class="nav-btn active" id="calendarView"><span class="icon">🗓</span>Calendar</button>
+    <button class="nav-btn" id="analyticsView"><span class="icon">📈</span>Analytics</button>
+  </div>
+
+  <div class="nav-sep"></div>
+
+ <!-- ENVIRONMENTAL RISKS -->
+  <div class="nav-group group-risk">
+    <span class="nav-group-label">Environmental risks</span>
+    <button class="nav-btn" id="spcBtn" onclick="openRiskLink('spc')" title="SPC Convective Outlook">
+      <span class="icon">⛈</span><span id="spcLabel">SPC: Loading…</span>
+    </button>
+    <button class="nav-btn" id="wpcBtn" onclick="openRiskLink('wpc')" title="WPC Excessive Rainfall Outlook">
+      <span class="icon">🌧</span><span id="wpcLabel">WPC ERO: Loading…</span>
+    </button>
+    <button class="nav-btn" id="heatBtn" onclick="openRiskLink('heat')" title="NWS Heat Risk">
+      <span class="icon">🌡</span><span id="heatLabel">Heat Risk: Loading…</span>
+    </button>
+    <button class="nav-btn" id="wssiBtn" onclick="openRiskLink('wssi')" title="Winter Storm Severity Index">
+      <span class="icon">❄</span><span id="wssiLabel">WSSI: Loading…</span>
+    </button>
+  </div>
+
+  <div class="nav-sep"></div>
+
+  <!-- QUICK DASHBOARDS -->
+  <div class="nav-group group-dash">
+    <span class="nav-group-label">Quick dashboards</span>
+    <button class="nav-btn" id="airportDashboardView"><span class="icon">✈</span>Airports</button>
+    <button class="nav-btn" id="severeDashboardView" onclick="openSevereDashboard()"><span class="icon">🌪</span>Severe</button>
+  </div>
+
+  <div class="nav-view-label">Current view: <span id="mapModeLabel">Today</span></div>
+
+</div>
+
+<input type="date" id="selectedDate">
+
 <!-- ── MAIN LAYOUT ── -->
 <div id="mainLayout" class="main-layout">
 
