@@ -908,17 +908,20 @@ body{
   .cal-chip-call    { background: #3d2800; border-left-color: #f59e0b; color: #fcd34d; }
 
   .cal-legend-bar {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 26px;
+  gap: 30px;
   flex-wrap: wrap;
-  padding: 2px 4px 16px;
-  font-size: 15px;
-  font-weight: 700;
+  padding: 14px 20px;
+  font-size: 18px;
+  font-weight: 800;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
 }
-.cal-legend-item { display: flex; align-items: center; gap: 9px; }
-.cal-legend-swatch { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
-
+.cal-legend-item { display: flex; align-items: center; gap: 10px; }
+.cal-legend-swatch { width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0; }
+  
   /* ── MODAL ── */
   #calendarModal {
     display: none; position: fixed; inset: 0;
@@ -1342,6 +1345,7 @@ letter-spacing:.02em;
 <!-- FULL-SCREEN: CALENDAR
      #calendarContainer is flex column; #calendarScrollWrapper inside it scrolls -->
 <div id="calendarContainer">
+  <div id="calendarLegendBar" class="cal-legend-bar"></div>
   <div id="calendarScrollWrapper">
     <!-- Calendar table injected here by buildCalendar() -->
   </div>
@@ -4230,18 +4234,17 @@ function buildCalendar() {
 
   function dssChipHtml(ev) {
     var cls = 'cal-chip-headsup';
-    var icon = '📧';
     var timeStr = ev.emailTime || '';
     if (ev.type === 'Active radar watch') {
-      cls = 'cal-chip-radar'; icon = '📡';
+      cls = 'cal-chip-radar';
       timeStr = formatTimeRange(ev.radarStart, ev.radarEnd);
     } else if (ev.type === 'On-Site DSS') {
-      cls = 'cal-chip-onsite'; icon = '🟣';
+      cls = 'cal-chip-onsite';
       timeStr = formatTimeRange(ev.dssStart, ev.dssEnd);
     }
     return (
       '<div class="cal-event-chip ' + cls + '" data-dss-event="' + escapeHtml(ev.name) + '">' +
-        '<div class="chip-name">' + icon + ' ' + escapeHtml(ev.name) + '</div>' +
+        '<div class="chip-name">' + escapeHtml(ev.name) + '</div>' +
         (timeStr ? '<div class="chip-time">' + escapeHtml(timeStr) + '</div>' : '') +
       '</div>'
     );
@@ -4250,7 +4253,7 @@ function buildCalendar() {
   function callChipHtml(callItem) {
     return (
       '<div class="cal-event-chip cal-chip-call" data-call-index="' + callItem.rowIndex + '">' +
-        '<div class="chip-name">☎ ' + escapeHtml(callItem.event) + '</div>' +
+        '<div class="chip-name">' + escapeHtml(callItem.event) + '</div>' +
         '<div class="chip-time">' + escapeHtml(callItem.time) + '</div>' +
       '</div>'
     );
@@ -4291,14 +4294,15 @@ function buildCalendar() {
     );
   }
 
-  var legendHtml =
-    '<div class="cal-legend-bar">' +
+  var legendBar = document.getElementById('calendarLegendBar');
+  if (legendBar) {
+    legendBar.innerHTML =
       '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#ef4444;"></span>Radar Watch</div>' +
       '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#3b82f6;"></span>Heads-Up Email</div>' +
       '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#a855f7;"></span>On-Site DSS</div>' +
-      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#f59e0b;"></span>Coordination Call</div>' +
-    '</div>';
-  
+      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#f59e0b;"></span>Coordination Call</div>';
+  }
+
   var wrapper = document.getElementById('calendarScrollWrapper');
   wrapper.innerHTML = renderWeek(0) + renderWeek(7);
 }
