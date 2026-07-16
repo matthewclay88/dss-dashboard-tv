@@ -1412,8 +1412,11 @@ async function refreshSpotForecasts() {
 
             }))
 
-            .filter(function(spot) {
-    return spot.wfo && spot.wfo.trim().toUpperCase() === "BTV";
+           .filter(function(spot) {
+
+    return spot.wfo &&
+           spot.wfo.toUpperCase().includes("BTV");
+
 })
 
         // Pending first
@@ -1477,7 +1480,7 @@ function renderSpotForecasts(spots) {
             </tr>
         `;
 
-        updateSpotLegend([]);
+        renderMapLegend([]);
         return;
     }
 
