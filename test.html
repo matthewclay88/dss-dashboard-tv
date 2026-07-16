@@ -1455,46 +1455,54 @@ renderSpotForecasts(spots);
 
 }
 
-function renderSpotForecasts(spots){
+function renderSpotForecasts(spots) {
 
     const tbody = document.getElementById("spotForecastTable");
-
-    if(!tbody) return;
+    if (!tbody) return;
 
     tbody.innerHTML = "";
 
-    if(!spots.length){
-
-        tbody.innerHTML =
-            '<tr><td colspan="5" class="empty-state">' +
-            'No active Spot Forecast requests.' +
-            '</td></tr>';
-
-        return;
-
+    // Remove existing SVG fire markers
+    if (svgMarkersGroup) {
+        svgMarkersGroup.innerHTML = "";
     }
 
-    spots.forEach(function(spot){
+    if (!spots.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty-state">
+                    No active Spot Forecast requests.
+                </td>
+            </tr>
+        `;
+
+        updateSpotLegend([]);
+        return;
+    }
+
+    spots.forEach(function (spot) {
 
         let badge;
 
-        switch(spot.statusCode){
-
+        switch (spot.statusCode) {
             case "P":
-                badge='<span class="spot-status-pending">Pending</span>';
+                badge = '<span class="spot-status-pending">Pending</span>';
                 break;
 
             case "I":
-                badge='<span class="spot-status-progress">In Progress</span>';
+                badge = '<span class="spot-status-progress">In Progress</span>';
                 break;
 
             case "C":
             case "F":
-                badge='<span class="spot-status-complete">Completed</span>';
+                badge = '<span class="spot-status-complete">Completed</span>';
                 break;
 
             default:
-                badge='<span class="spot-status-other">'+spot.status+'</span>';
+                badge = '<span class="spot-status-other">' +
+                        (spot.status || "") +
+                        '</span>';
         }
 
         const cleanType = (spot.type || "")
@@ -1502,19 +1510,63 @@ function renderSpotForecasts(spots){
             .trim();
 
         const completed =
-            spot.posted === "Incomplete"
-                ? "--"
-                : spot.posted;
+            (spot.posted &&
+             spot.posted !== "Incomplete")
+                ? spot.posted
+                : "--";
 
+        // ----- Table row -----
         tbody.insertAdjacentHTML("beforeend", `
-<tr>
-    <td><strong>${spot.incident}</strong></td>
-    <td>${cleanType}</td>
-    <td>${spot.requested}</td>
-    <td>${completed}</td>
-    <td>${badge}</td>
-</tr>`);
+            <tr>
+                <td><strong>${spot.incident}</strong></td>
+                <td>${cleanType}</td>
+                <td>${spot.requested}</td>
+                <td>${completed}</td>
+                <td>${badge}</td>
+            </tr>
+        `);
+
+        // ----- SVG fire marker -----
+        if (
+            typeof svgProject === "function" &&
+            svgMarkersGroup
+        ) {
+
+            const pt = svgProject(spot.lon, spot.lat);
+
+            const fire = document.createElementNS(
+                SVG_NS,
+                "text"
+            );
+
+            fire.setAttribute("x", pt[0]);
+            fire.setAttribute("y", pt[1]);
+            fire.setAttribute("text-anchor", "middle");
+            fire.setAttribute("dominant-baseline", "middle");
+            fire.setAttribute("font-size", "18");
+            fire.setAttribute("font-weight", "700");
+            fire.setAttribute("cursor", "pointer");
+
+            fire.textContent = "🔥";
+
+            const title = document.createElementNS(
+                SVG_NS,
+                "title"
+            );
+
+            title.textContent =
+                spot.incident + "\n" +
+                cleanType + "\n" +
+                "Status: " + spot.status;
+
+            fire.appendChild(title);
+
+            svgMarkersGroup.appendChild(fire);
+        }
+
     });
+
+    updateSpotLegend(spots);
 }
   
 // ══════════════════════════════════════════════════════════════
