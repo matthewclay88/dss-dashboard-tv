@@ -1435,7 +1435,10 @@ async function refreshSpotForecasts() {
 
         activeSpotForecasts = spots;
 
-        renderSpotForecasts(spots);
+        document.getElementById("spotForecastTable").innerHTML =
+    "<tr><td colspan='5'>Loaded " + spots.length + " Spot Forecasts</td></tr>";
+
+renderSpotForecasts(spots);
 
     }
     catch(err){
