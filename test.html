@@ -1412,7 +1412,9 @@ async function refreshSpotForecasts() {
 
             }))
 
-            .filter(() => true)
+            .filter(function(spot) {
+    return spot.wfo && spot.wfo.trim().toUpperCase() === "BTV";
+})
 
         // Pending first
         spots.sort(function(a,b){
