@@ -1459,17 +1459,16 @@ function renderSpotForecasts(spots){
 
     if(!tbody) return;
 
-    tbody.innerHTML="";
-
-    clearSpotForecastMarkers();
+    tbody.innerHTML = "";
 
     if(!spots.length){
 
         tbody.innerHTML =
-        '<tr><td colspan="5" class="empty-state">' +
-        'No active Spot Forecast requests.' +
-        '</td></tr>';
+            '<tr><td colspan="5" class="empty-state">' +
+            'No active Spot Forecast requests.' +
+            '</td></tr>';
 
+        renderMapLegend(currentLegendItems);
         return;
 
     }
@@ -1495,57 +1494,25 @@ function renderSpotForecasts(spots){
 
             default:
                 badge='<span class="spot-status-other">'+spot.status+'</span>';
-
         }
 
-        const cleanType=(spot.type||"")
-            .replace(/\d{4}-\d{2}-\d{2}.*/,"")
+        const cleanType = (spot.type || "")
+            .replace(/\d{4}-\d{2}-\d{2}.*/, "")
             .trim();
 
         const completed =
-            spot.posted==="Incomplete"
-            ? "--"
-            : spot.posted;
+            spot.posted === "Incomplete"
+                ? "--"
+                : spot.posted;
 
-        tbody.insertAdjacentHTML("beforeend",`
-
+        tbody.insertAdjacentHTML("beforeend", `
 <tr>
-
-<td><strong>${spot.incident}</strong></td>
-
-<td>${cleanType}</td>
-
-<td>${spot.requested}</td>
-
-<td>${completed}</td>
-
-<td>${badge}</td>
-
-</tr>
-
-`);
-
-        const marker=L.marker(
-            [spot.lat,spot.lon],
-            {
-                icon:L.divIcon({
-                    className:"spot-fire-marker",
-                    html:"🔥",
-                    iconSize:[22,22]
-                })
-            }
-        );
-
-        marker.bindPopup(
-            "<b>"+spot.incident+"</b><br>" +
-            cleanType+"<br>" +
-            "<b>Status:</b> "+spot.status
-        );
-
-        marker.addTo(map);
-
-        spotForecastMarkers.push(marker);
-
+    <td><strong>${spot.incident}</strong></td>
+    <td>${cleanType}</td>
+    <td>${spot.requested}</td>
+    <td>${completed}</td>
+    <td>${badge}</td>
+</tr>`);
     });
 
     renderMapLegend(currentLegendItems);
