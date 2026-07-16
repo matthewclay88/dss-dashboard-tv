@@ -1412,34 +1412,7 @@ async function refreshSpotForecasts() {
 
             }))
 
-            // Only Burlington
-            .filter(s => s.wfo === "BTV")
-
-            // Remove old completed forecasts
-            .filter(function(spot){
-
-                if (spot.statusCode === "P") return true;
-                if (spot.statusCode === "I") return true;
-
-                if (
-                    (spot.statusCode === "C" || spot.statusCode === "F") &&
-                    spot.posted &&
-                    spot.posted !== "Incomplete"
-                ) {
-
-                    const postedTime = new Date(
-                        spot.posted.replace(/\s[A-Z]{3,4}$/,"")
-                    ).getTime();
-
-                    if (!isNaN(postedTime)) {
-                        return (now - postedTime) < SPOT_FORECAST_WINDOW_MS;
-                    }
-
-                }
-
-                return false;
-
-            });
+            .filter(() => true)
 
         // Pending first
         spots.sort(function(a,b){
