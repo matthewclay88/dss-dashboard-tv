@@ -119,6 +119,71 @@ body {
   .table-scroll { overflow-x: auto; }
   .time-chip    { font-size: 11px; color: var(--muted); font-weight: 600; }
 
+  /* ==========================================================
+   SPOT FORECAST TABLE
+   ========================================================== */
+
+#spotForecastWrapper{
+    margin-top:12px;
+}
+
+#spotForecastTable td{
+    vertical-align:middle;
+}
+
+.spot-status-complete{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#052e16;
+    color:#4ade80;
+    border:1px solid #16a34a;
+    font-size:11px;
+    font-weight:700;
+}
+
+.spot-status-pending{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#450a0a;
+    color:#f87171;
+    border:1px solid #dc2626;
+    font-size:11px;
+    font-weight:700;
+}
+
+.spot-status-progress{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#3b2f00;
+    color:#facc15;
+    border:1px solid #ca8a04;
+    font-size:11px;
+    font-weight:700;
+}
+
+.spot-status-other{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#1f2937;
+    color:#d1d5db;
+    border:1px solid #4b5563;
+    font-size:11px;
+    font-weight:700;
+}
+
+.map-legend-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:14px;
+    margin-right:6px;
+    font-size:15px;
+}
+
   /* ── TODAY AT A GLANCE TIMELINE ── */
   .glance-section { padding: 8px 14px 10px; min-height: 118px; border-bottom: 1px solid var(--border); background: #080d14; }
   .glance-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
@@ -394,19 +459,61 @@ body {
         </div>
       </div>
     </div>
-    <div id="callsWrapper">
-      <div class="data-section">
-        <div class="data-section-header"><span class="section-icon">☎</span><h2>Today's Coordination Calls</h2></div>
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead><tr><th>Date</th><th>Time</th><th>Event</th><th>Contact Info</th><th>Join</th></tr></thead>
-            <tbody id="callsTable"></tbody>
-          </table>
-        </div>
+
+  
+  <!-- COORDINATION CALLS -->
+  <div id="callsWrapper">
+    <div class="data-section">
+      <div class="data-section-header">
+        <span class="section-icon">☎</span>
+        <h2 id="callsTableTitle">Today's Coordination Calls</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Event</th>
+              <th>Contact Info</th>
+              <th>Join</th>
+            </tr>
+          </thead>
+          <tbody id="callsTable"></tbody>
+        </table>
       </div>
     </div>
   </div>
-
+  <!-- SPOT FORECAST REQUESTS -->
+  <div id="spotForecastWrapper">
+    <div class="data-section">
+      <div class="data-section-header">
+        <span class="section-icon">🔥</span>
+        <h2>Spot Forecast Requests</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Event Name</th>
+              <th>Type</th>
+              <th>Request Submitted</th>
+              <th>Completed</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="spotForecastTable">
+            <tr>
+              <td colspan="5" class="empty-state">
+                No active Spot Forecast requests.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
   <!-- RIGHT PANEL -->
   <div class="right-panel">
     <div class="map-header">
@@ -472,6 +579,7 @@ var nextObligationTimer = null;
 var BTV_ZONE_SET = new Set();
 var currentTodayDssItems = [];
 var opsCountdownTimer = null;
+var activeSpotForecasts = [];
 
 var THREAT_PARAM_LABELS = {
   cape: 'CAPE', shear: 'Shear', helicity: 'Helicity', pwat: 'PWAT',
@@ -840,15 +948,50 @@ async function refreshHazards() {
 }
 
 function renderMapLegend(legendItems) {
-  var el = document.getElementById('mapLegendContent');
-  if (!el) return;
-  if (!legendItems || legendItems.length === 0) {
-    el.innerHTML = '<div class="map-legend-none"><span class="map-legend-dot" style="background:#4ade80;"></span>No watches, warnings, or advisories are in effect at this time.</div>';
-    return;
-  }
-  el.innerHTML = legendItems.map(function(item) {
-    return '<div class="map-legend-chip"><span class="map-legend-dot" style="background:' + item.color + ';"></span>' + escapeHtml(item.label) + '</div>';
-  }).join('');
+
+    var el = document.getElementById('mapLegendContent');
+    if (!el) return;
+
+    legendItems = legendItems || [];
+
+    // Add Spot Forecast legend item
+    if (activeSpotForecasts.length > 0) {
+
+        legendItems = legendItems.slice();
+
+        legendItems.unshift({
+            label: "Spot Forecast",
+            icon: "🔥"
+        });
+
+    }
+
+    if (legendItems.length === 0) {
+
+        el.innerHTML =
+            '<div class="map-legend-none">' +
+                '<span class="map-legend-dot" style="background:#4ade80;"></span>' +
+                'No watches, warnings, or advisories are in effect at this time.' +
+            '</div>';
+
+        return;
+    }
+
+    el.innerHTML = legendItems.map(function(item){
+
+        var symbol = item.icon
+            ? '<span class="map-legend-icon">' + item.icon + '</span>'
+            : '<span class="map-legend-dot" style="background:' + item.color + ';"></span>';
+
+        return (
+            '<div class="map-legend-chip">' +
+                symbol +
+                escapeHtml(item.label) +
+            '</div>'
+        );
+
+    }).join('');
+
 }
 
 function buildGlanceTimeline(todayDssEvents, todayCalls) {
@@ -1206,6 +1349,229 @@ function checkWeeklyReminder() {
   document.getElementById("weeklyReminderBanner").style.display = "block";
 }
 
+// ==========================================================
+// SPOT FORECASTS
+// ==========================================================
+
+var activeSpotForecasts = [];
+var spotForecastMarkers = [];
+var SPOT_FORECAST_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function clearSpotForecastMarkers() {
+
+    spotForecastMarkers.forEach(function(m){
+        map.removeLayer(m);
+    });
+
+    spotForecastMarkers = [];
+}
+
+async function refreshSpotForecasts() {
+
+    console.log("Refreshing Spot Forecasts...");
+
+    try {
+
+        const url =
+    "https://mapservices.weather.noaa.gov/vector/rest/services/fire_weather/nws_fire_weather_spot/MapServer/0/query" +
+    "?where=1%3D1" +
+            "&outFields=*" +
+            "&returnGeometry=true" +
+            "&f=json";
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+
+        const now = Date.now();
+
+        const spots = (data.features || [])
+
+            .map(f => ({
+
+                id: f.attributes.snumunum,
+                incident: f.attributes.name,
+                type: f.attributes.type,
+
+                status: f.attributes.stattext,
+                statusCode: f.attributes.stat,
+
+                wfo: f.attributes.wfo,
+
+                requested: f.attributes.rmade,
+                posted: f.attributes.rfill,
+
+                delivery: f.attributes.deliverdtg,
+
+                lat: Number(f.geometry.y),
+                lon: Number(f.geometry.x)
+
+            }))
+
+           .filter(function(spot) {
+
+    return spot.wfo &&
+           spot.wfo.toUpperCase().includes("BTV");
+
+})
+
+        // Pending first
+        spots.sort(function(a,b){
+
+            const order = {
+                P:0,
+                I:1,
+                C:2,
+                F:2
+            };
+
+            const ao = order[a.statusCode] ?? 99;
+            const bo = order[b.statusCode] ?? 99;
+
+            if (ao !== bo) return ao-bo;
+
+            return new Date(b.requested)-new Date(a.requested);
+
+        });
+
+        activeSpotForecasts = spots;
+
+        document.getElementById("spotForecastTable").innerHTML =
+    "<tr><td colspan='5'>Loaded " + spots.length + " Spot Forecasts</td></tr>";
+
+renderSpotForecasts(spots);
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        activeSpotForecasts = [];
+
+        renderSpotForecasts([]);
+
+    }
+
+}
+
+function renderSpotForecasts(spots) {
+
+    const tbody = document.getElementById("spotForecastTable");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    // Remove existing SVG fire markers
+    if (svgMarkersGroup) {
+        svgMarkersGroup.innerHTML = "";
+    }
+
+    if (!spots.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty-state">
+                    No active Spot Forecast requests.
+                </td>
+            </tr>
+        `;
+
+        renderMapLegend([]);
+        return;
+    }
+
+    spots.forEach(function (spot) {
+
+        let badge;
+
+        switch (spot.statusCode) {
+            case "P":
+                badge = '<span class="spot-status-pending">Pending</span>';
+                break;
+
+            case "I":
+                badge = '<span class="spot-status-progress">In Progress</span>';
+                break;
+
+            case "C":
+            case "F":
+                badge = '<span class="spot-status-complete">Completed</span>';
+                break;
+
+            default:
+                badge = '<span class="spot-status-other">' +
+                        (spot.status || "") +
+                        '</span>';
+        }
+
+        const cleanType = (spot.type || "")
+            .replace(/\d{4}-\d{2}-\d{2}.*/, "")
+            .trim();
+
+        const completed =
+            (spot.posted &&
+             spot.posted !== "Incomplete")
+                ? spot.posted
+                : "--";
+
+        // ----- Table row -----
+        tbody.insertAdjacentHTML("beforeend", `
+            <tr>
+                <td><strong>${spot.incident}</strong></td>
+                <td>${cleanType}</td>
+                <td>${spot.requested}</td>
+                <td>${completed}</td>
+                <td>${badge}</td>
+            </tr>
+        `);
+
+        // ----- SVG fire marker -----
+        if (
+            typeof svgProject === "function" &&
+            svgMarkersGroup
+        ) {
+
+            const pt = svgProject(spot.lon, spot.lat);
+
+            const fire = document.createElementNS(
+                SVG_NS,
+                "text"
+            );
+
+            fire.setAttribute("x", pt[0]);
+            fire.setAttribute("y", pt[1]);
+            fire.setAttribute("text-anchor", "middle");
+            fire.setAttribute("dominant-baseline", "middle");
+            fire.setAttribute("font-size", "18");
+            fire.setAttribute("font-weight", "700");
+            fire.setAttribute("cursor", "pointer");
+
+            fire.textContent = "🔥";
+
+            const title = document.createElementNS(
+                SVG_NS,
+                "title"
+            );
+
+            title.textContent =
+                spot.incident + "\n" +
+                cleanType + "\n" +
+                "Status: " + spot.status;
+
+            fire.appendChild(title);
+
+            svgMarkersGroup.appendChild(fire);
+        }
+
+    });
+
+    refreshHazards();
+}
+  
 // ══════════════════════════════════════════════════════════════
 //  REFRESH
 // ══════════════════════════════════════════════════════════════
@@ -1236,6 +1602,7 @@ async function refreshDashboard() {
   updateOutageCard();
   refreshThreatGauges();
   refreshHazards();
+  refreshSpotForecasts();
   updateAlertTicker();
   checkWeeklyReminder();
   updateLastUpdated();
