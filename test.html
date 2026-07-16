@@ -15,14 +15,12 @@
     --border2:   #243447;
     --text:      #e2e8f0;
     --muted:     #8899a6;
-
-    --cal-day-font:    clamp(14px, 1.15vw, 24px);
-    --cal-chip-name:   clamp(13px, 1.1vw,  22px);
-    --cal-chip-time:   clamp(10px, 0.85vw, 17px);
-    --cal-chip-pad-v:  clamp(6px,  0.55vw, 12px);
-    --cal-chip-pad-h:  clamp(8px,  0.7vw,  14px);
-    --cal-chip-border: clamp(3px,  0.35vw, 7px);
-    --cal-legend-font: clamp(12px, 1vw,    20px);
+    --accent:    #1d6fa4;
+    --green:     #16a34a;
+    --red:       #dc2626;
+    --amber:     #d97706;
+    --blue:      #2563eb;
+    --purple:    #7c3aed;
   }
 
 html, body { height:100%; overflow:hidden; }
@@ -37,171 +35,265 @@ body {
     line-height: 1.5;
 }
 
-  /* ── CALENDAR (the only view this page ever shows) ── */
-  #calendarContainer {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-    overflow: hidden;
-    flex-direction: column;
-    background: var(--bg);
-  }
-
-  #calendarScrollWrapper {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-    padding: 8px 12px 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  /* One of the two stacked weeks. Each takes exactly half the available
-     vertical space, so 14 days always fit with zero scrolling. */
-  .cal-week-grid {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #ffffff;
-  }
-
-  .cal-grid-headrow {
-    flex: 0 0 auto;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #ffffff;
-    border-bottom: 1px solid #ffffff;
-  }
-
-  .cal-grid-bodyrow {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #ffffff;
-  }
-
-  .cal-day-header {
-    display: block;
-    padding: var(--cal-chip-pad-v) var(--cal-chip-pad-h);
-    text-align: center;
-    background: var(--surface);
-  }
-  .cal-day-header .day-name {
-    font-size: var(--cal-day-font);
-    font-weight: 800;
-    color: white;
-    letter-spacing: 0.02em;
-  }
-  .cal-day-header.is-today {
-    background: #0d2a45;
-    box-shadow: inset 0 0 0 2px #3b82f6;
-  }
-  .cal-day-header.is-today .day-name { color: #93c5fd; }
-  .cal-day-header.is-today::after {
-    content: 'TODAY';
-    display: block;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: #60a5fa;
-    margin-top: 2px;
-  }
-
-  /* Grid cell — content never overflows because JS sets --calScale on
-     this element per-cell, shrinking font/padding only as much as that
-     specific day's event count requires. */
-  .cal-grid-cell {
-    background: var(--surface);
-    min-height: 0;
-    min-width: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .cal-events {
-    flex: 1;
-    min-height: 0;
-    min-width: 0;
-    overflow: hidden;
-    padding: calc(8px * var(--calScale, 1));
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: calc(6px * var(--calScale, 1));
-  }
-
-  .cal-empty-day {
-    padding: calc(var(--cal-chip-pad-v) * var(--calScale, 1)) calc(var(--cal-chip-pad-h) * var(--calScale, 1));
-    border-left: calc(var(--cal-chip-border) * var(--calScale, 1)) solid #166534;
-    border-radius: 6px;
-    line-height: 1.2;
-    background: #052e16;
-    color: #86efac;
-    font-size: calc(var(--cal-chip-name) * var(--calScale, 1));
-    font-weight: 800;
-    text-align: left;
-    white-space: normal;
-  }
-
-  .cal-event-chip {
-    padding: calc(var(--cal-chip-pad-v) * var(--calScale, 1)) calc(var(--cal-chip-pad-h) * var(--calScale, 1));
-    border-left-width: calc(var(--cal-chip-border) * var(--calScale, 1));
-    border-left-style: solid;
-    border-radius: 6px;
-    line-height: 1.2;
-    flex-shrink: 0;
-  }
-  .cal-event-chip .chip-name {
-    font-size: calc(var(--cal-chip-name) * var(--calScale, 1));
-    font-weight: 800;
-    white-space: normal;
-    overflow-wrap: break-word;
-    line-height: 1.25;
-  }
-  .cal-event-chip .chip-time {
-    font-size: calc(var(--cal-chip-time) * var(--calScale, 1));
-    font-weight: 700;
-    opacity: 0.9;
-    margin-top: calc(2px * var(--calScale, 1));
-  }
-  .cal-chip-radar   { background: #3b0a0a; border-left-color: #ef4444; color: #fca5a5; }
-  .cal-chip-onsite  { background: #2e1065; border-left-color: #a855f7; color: #d8b4fe; }
-  .cal-chip-headsup { background: #172554; border-left-color: #3b82f6; color: #93c5fd; }
-  .cal-chip-call    { background: #3d2800; border-left-color: #f59e0b; color: #fcd34d; }
-  .cal-chip-weeklybrief { outline: 2px solid #ffffff; outline-offset: -2px; }
-
-  .cal-legend-bar {
-    flex-shrink: 0;
+  /* ── TOP HEADER ── */
+  .top-header {
+    background: #0f1b2de0;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
     display: flex;
     align-items: center;
-    gap: clamp(14px, 1.4vw, 30px);
-    flex-wrap: wrap;
-    padding: clamp(8px, 0.7vw, 18px) clamp(12px, 1.2vw, 24px);
-    font-size: var(--cal-legend-font);
-    font-weight: 800;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    gap: 12px;
   }
-  .cal-legend-item { display: flex; align-items: center; gap: 10px; }
-  .cal-legend-swatch { width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0; }
+  .header-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .header-brand .nws-logo { width: 160px; height: auto; display: block; object-fit: contain; }
+  .header-brand h1 { font-size: 17px; font-weight: 600; color: #fff; line-height: 1.1; white-space: nowrap; }
+  .header-sep { width: 1px; background: var(--border); align-self: stretch; margin: 0 4px; flex-shrink: 0; }
+  .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
+  .refresh-btn {
+    background: #112233; border: 1px solid #1d6fa4; color: #64b5f6;
+    width: 30px; height: 30px; border-radius: 6px; cursor: pointer;
+    font-size: 15px; display: flex; align-items: center; justify-content: flex-start;
+    transition: background 0.15s;
+  }
+  .refresh-btn:hover { background: #1a3a55; }
 
-  /* ── MODAL (calendar day-chip detail popups) ── */
-  #calendarModal {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.75); z-index: 9999;
-  }
-  .modal-box {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 12px; width: 480px; max-width: 90%; padding: 24px;
-    color: var(--text); margin: 80px auto;
-  }
+  /* ── STATUS BAR ── */
+  .status-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border-bottom: 1px solid var(--border); }
+  .status-card { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--surface); border-right: 1px solid var(--border); min-width: 0; }
+  .status-card:last-child { border-right: none; }
+  .status-icon { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .status-icon.green  { background: #052e16; border: 2px solid #16a34a; }
+  .status-icon.amber  { background: #451a03; border: 2px solid #d97706; }
+  .status-icon.red    { background: #3b0a0a; border: 2px solid #dc2626; }
+  .status-icon.blue   { background: #172554; border: 2px solid #2563eb; }
+  .status-icon.purple { background: #2e1065; border: 2px solid #7c3aed; }
+  .status-icon.teal   { background: #042f2e; border: 2px solid #0d9488; }
+  .status-label { font-size: 11px; font-weight: 700; letter-spacing:1px; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
+  .status-value { font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .status-sub   { font-size: 12px; line-height: 1.3; color: var(--muted); }
+
+  /* ── MAIN LAYOUT ── */
+  .main-layout { flex: 1; display: grid; grid-template-columns: 240px minmax(420px,1fr) minmax(360px,28vw); min-height: 0; min-width: 0; overflow: hidden; }
+
+  /* ── LEFT PANEL ── */
+  .left-panel { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; min-width: 0; }
+  .panel-section { padding: 12px 12px 8px; border-bottom: 1px solid var(--border); }
+  .panel-section-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .panel-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .summary-tile { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 8px; display: flex; align-items: center; gap: 7px; }
+  .tile-icon  { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; }
+  .tile-num   { font-size: 20px; font-weight: 900; line-height: 1; }
+  .tile-label { font-size: 9px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.2; }
+  .tile-red    { border-left: 3px solid var(--red); }
+  .tile-blue   { border-left: 3px solid var(--blue); }
+  .tile-purple { border-left: 3px solid var(--purple); }
+  .upcoming-list { display: flex; flex-direction: column; gap: 3px; max-height: 230px; overflow-y: auto; }
+  .upcoming-item { border-radius: 7px; padding: 8px 10px; margin-bottom: 5px; background: rgba(217, 119, 6, 0.08); border-left: 4px solid #d97706; }
+  .upcoming-item-name { font-size: 11px; font-weight: 700; line-height: 1.2; overflow-wrap: break-word; word-break: break-word; }
+  .upcoming-item-meta { font-size: 10px; color: var(--muted); margin-top: 1px; overflow-wrap: break-word; word-break: break-word; }
+  .upcoming-radar   { background: rgba(239,68,68,.12);  border-left: 4px solid #ef4444; }
+  .upcoming-headsup { background: rgba(59,130,246,.12); border-left: 4px solid #3b82f6; }
+  .upcoming-onsite  { background: rgba(124,58,237,.12); border-left: 4px solid #7c3aed; }
+
+  /* ── CENTER PANEL ── */
+  .center-panel { background: var(--bg); overflow-y: auto; display: flex; flex-direction: column; min-width: 0; }
+  .data-section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .data-section-header { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+  .data-section-header h2 { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .data-section-header .section-icon { font-size: 14px; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { background: #1b2d3c; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 6px 10px; text-align: left; border-bottom: 2px solid #3b82f6; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,.25); white-space: nowrap; }
+  .data-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; background: var(--surface); }
+  .data-table tr:hover td { background: #0f1b2a; }
+  .data-table tr.row-radar   td:first-child { border-left: 4px solid #dc2626; }
+  .data-table tr.row-headsup td:first-child { border-left: 4px solid #2563eb; }
+  .data-table tr.row-onsite  td:first-child { border-left: 4px solid #7c3aed; }
+  .dss-type-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+  .badge-radar   { background: #3b0a0a; color: #f87171; border: 1px solid #7f1d1d; }
+  .badge-email   { background: #172554; color: #93c5fd; border: 1px solid #1e3a8a; }
+  .badge-onsite  { background: #2e1065; color: #c4b5fd; border: 1px solid #7c3aed; }
+  .badge-default { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .join-btn { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; background: #112233; border: 1px solid #1d6fa4; color: #64b5f6; border-radius: 5px; text-decoration: none; font-size: 11px; font-weight: 600; transition: background 0.15s; }
+  .join-btn:hover { background: #1a3a55; }
+  .table-scroll { overflow-x: auto; }
+  .time-chip    { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+  /* ==========================================================
+   SPOT FORECAST TABLE
+   ========================================================== */
+
+#spotForecastWrapper{
+    margin-top:12px;
+}
+
+#spotForecastTable td{
+    vertical-align:middle;
+}
+
+.spot-status-complete{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#052e16;
+    color:#4ade80;
+    border:1px solid #16a34a;
+    font-size:11px;
+    font-weight:700;
+}
+
+.spot-status-pending{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#450a0a;
+    color:#f87171;
+    border:1px solid #dc2626;
+    font-size:11px;
+    font-weight:700;
+}
+
+.spot-status-progress{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#3b2f00;
+    color:#facc15;
+    border:1px solid #ca8a04;
+    font-size:11px;
+    font-weight:700;
+}
+
+.spot-status-other{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:6px;
+    background:#1f2937;
+    color:#d1d5db;
+    border:1px solid #4b5563;
+    font-size:11px;
+    font-weight:700;
+}
+
+.map-legend-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:14px;
+    margin-right:6px;
+    font-size:15px;
+}
+
+  /* ── TODAY AT A GLANCE TIMELINE ── */
+  .glance-section { padding: 8px 14px 10px; min-height: 118px; border-bottom: 1px solid var(--border); background: #080d14; }
+  .glance-title { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .glance-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .timeline-track { position: relative; height: 86px; overflow-x: auto; overflow-y: hidden; padding-bottom: 14px; box-sizing: content-box; }
+  .timeline-track::-webkit-scrollbar { height: 8px; }
+  .timeline-track::-webkit-scrollbar-thumb { background: #4b6b8c; border-radius: 6px; border: 1px solid #101720; }
+  .timeline-track::-webkit-scrollbar-track { background: #101720; }
+  .timeline-inner { position: relative; height: 100%; min-width: 100%; display: inline-flex; align-items: stretch; gap: 24px; }
+  .timeline-spine { position: absolute; left: 0; right: 0; bottom: 14px; height: 2px; background: #2d3f52; z-index: 0; }
+  .timeline-empty { font-size: 12px; color: var(--muted); font-style: italic; padding: 4px 0; }
+  .tl-item { position: relative; flex: 0 0 auto; width: auto; min-width: 88px; max-width: 150px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 1; }
+  .tl-item.past { opacity: 0.45; }
+  .tl-item.past .tl-dot { box-shadow: none; filter: grayscale(60%); }
+  .tl-above { flex: 0 0 auto; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end; }
+  .tl-dot-wrap { flex: 0 0 auto; margin-bottom: 8px; }
+  .tl-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; flex-shrink: 0; background: var(--bg); }
+  .tl-dot.radar   { border-color: #dc2626; box-shadow: 0 0 6px rgba(220,38,38,.5); }
+  .tl-dot.headsup { border-color: #2563eb; box-shadow: 0 0 6px rgba(37,99,235,.5); }
+  .tl-dot.onsite  { border-color: #7c3aed; box-shadow: 0 0 6px rgba(124,58,237,.5); }
+  .tl-dot.call    { border-color: #d97706; box-shadow: 0 0 6px rgba(217,119,6,.5); }
+  .tl-label { font-size: 11px; line-height: 1.25; display: flex; align-items: flex-start; justify-content: center; gap: 3px; white-space: normal; overflow: visible; text-align: center; width: auto; max-width: 150px; }
+  .tl-time { font-size: 10px; font-weight: 700; color: #d1d5db; width: auto; text-align: center; white-space: nowrap; }
+  .tl-text { overflow: visible; text-overflow: clip; white-space: normal; min-width: 0; word-break: break-word; }
+
+  /* ── RIGHT PANEL (map) ── */
+  .right-panel { background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; min-width: 0; overflow: hidden; position: relative; }
+  .map-header { flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface); z-index: 5; }
+  .map-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  #map { flex: 1; width: 100%; min-height: 0; }
+  .map-legend { background: rgba(15,25,35,.88); color: white; border-radius: 8px; padding: 6px 8px; font-size: 11px; line-height: 1.3; box-shadow: 0 2px 8px rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08); }
+  .legend-title { font-size: 10px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .08em; color: #d8e6f5; }
+  .legend-row   { display: flex; align-items: center; gap: 5px; margin: 2px 0; }
+  .legend-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.radar   { background: #ef4444; }
+  .legend-dot.headsup { background: #2563eb; }
+  .legend-dot.onsite  { background: #7c3aed; }
+
+  .last-updated-box { display:flex; flex-direction:column; justify-content:center; background:#0f1b2d; border:1px solid var(--border2); border-radius:6px; padding:5px 10px; min-width:120px; }
+  .last-updated-label { font-size:9px; font-weight:700; color:var(--muted); letter-spacing:.08em; }
+  #lastUpdatedText { font-size:13px; font-weight:700; color:#64b5f6; }
+
+  /* ── ACTIVE OPERATIONS COUNTDOWN CARDS ── */
+  .ops-countdown-card { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--border2); border-radius: 0 6px 6px 0; padding: 9px 11px; margin-bottom: 6px; }
+  .ops-countdown-card.oc-upcoming { border-left-color: #d97706; }
+  .ops-countdown-card.oc-active { border-left-color: #16a34a; }
+  .oc-title { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .oc-event-name{ font-size:12px; font-weight:800; color:var(--text); margin:2px 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .oc-status{ font-size:11px; font-weight:700; }
+  .oc-status.status-active{ color:#4ade80; }
+  .oc-status.status-upcoming{ color:#fbbf24; }
+  .oc-bar-track{ height:8px; border-radius:5px; background:var(--surface); border:1px solid var(--border); overflow:hidden; margin-top:6px; }
+  .oc-bar-fill{ height:100%; border-radius:5px; transition:width 1s linear; }
+  .oc-bar-fill.radar-fill{ background:linear-gradient(90deg,#7f1d1d,#ef4444); }
+  .oc-bar-fill.onsite-fill{ background:linear-gradient(90deg,#4c1d95,#a855f7); }
+  .oc-times{ display:flex; justify-content:space-between; font-size:9px; color:var(--muted); margin-top:3px; }
+
+  .threat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin: 6px 0; }
+  .threat-card { background: #111827; border-left: 3px solid var(--tc-border, #374151); border-radius: 0 6px 6px 0; padding: 9px 11px; display: flex; align-items: center; gap: 10px; transition: all .25s ease; cursor: pointer; }
+  .threat-card:hover { transform: translateY(-2px); filter: brightness(1.12); box-shadow: 0 6px 14px rgba(0,0,0,.3); }
+  .threat-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .threat-detail-tile { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .threat-detail-tile .tdt-label { font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+  .threat-detail-tile .tdt-value { font-size: 16px; font-weight: 800; color: var(--text); }
+  .threat-detail-empty { margin-top: 14px; padding: 10px 12px; background: #0a1628; border: 1px solid var(--border2); border-radius: 8px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .threat-dial{ width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:2px solid var(--tc-border); font-size:13px; font-weight:800; line-height:1; flex-shrink:0; }
+  .threat-meta{ display:flex; flex-direction:column; justify-content:center; min-width:0; flex:1; }
+  .threat-type{ font-size:9px; color:#9ca3af; font-weight:600; }
+  .threat-label{ font-size:11px; font-weight:800; color:var(--tc-color,#4b5563); margin-top:2px; line-height:1.05; }
+  .threat-bar-track { height: 3px; border-radius: 2px; background: linear-gradient(to right, #16a34a, #ca8a04, #ea580c, #dc2626, #7c3aed); width: 100%; position: relative; margin-top: 3px; }
+  .threat-bar-marker { position: absolute; top: -4px; width: 2px; height: 11px; background:var(--tc-color,#fff); border-radius: 1px; transform: translateX(-50%); }
+  .tc-gray{ --tc-border:#374151; --tc-color:#9ca3af; }
+  .tc-green{ --tc-border:#16a34a; --tc-color:#86efac; box-shadow:0 0 6px rgba(22,163,74,.15); }
+  .tc-yellow{ --tc-border:#ca8a04; --tc-color:#facc15; box-shadow:0 0 8px rgba(202,138,4,.18); }
+  .tc-orange{ --tc-border:#ea580c; --tc-color:#fb923c; box-shadow:0 0 10px rgba(234,88,12,.22); }
+  .tc-red{ --tc-border:#dc2626; --tc-color:#f87171; box-shadow:0 0 14px rgba(220,38,38,.28); }
+  .tc-purple{ --tc-border:#7c3aed; --tc-color:#c084fc; box-shadow:0 0 16px rgba(124,58,237,.32); }
+  #threat-gauge-row.threat-row { grid-template-columns: 1fr; gap: 6px; margin: 0; }
+  #threat-gauge-row .threat-card { padding: 8px 10px; gap: 9px; }
+  #threat-gauge-row .threat-dial { width: 32px; height: 32px; font-size: 12px; }
+
+  .outage-card { cursor: pointer; transition: all .2s ease; }
+  .outage-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,.25); }
+  #outageCardIcon { font-size: 22px; background: none !important; }
+  .status-icon.outage-none     { background: #052e16; border: 2px solid #16a34a; }
+  .status-icon.outage-minor    { background: #422006; border: 2px solid #facc15; }
+  .status-icon.outage-moderate { background: #431407; border: 2px solid #f97316; }
+  .status-icon.outage-major    { background: #3b0a0a; border: 2px solid #dc2626; }
+  .status-icon.outage-severe   { background: #2e1065; border: 2px solid #a855f7; }
+  .outage-county-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 6px; margin-bottom: 4px; background: var(--surface2); border: 1px solid var(--border); font-size: 12px; }
+  .outage-county-name { font-weight: 700; }
+  .outage-county-state { color: var(--muted); font-size: 10px; margin-left: 4px; }
+  .outage-county-count { font-weight: 800; font-size: 13px; }
+  .outage-trend-up   { color: #f87171; }
+  .outage-trend-down { color: #4ade80; }
+  .outage-trend-flat { color: var(--muted); }
+  .outage-modal-total { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  .ticker-chip { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; height: 100%; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; border-right: 1px solid #1e2d3d; transition: filter 0.15s; text-decoration: none; }
+  .ticker-chip:hover { filter: brightness(1.2); }
+  .ticker-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ticker-sep { display: inline-flex; align-items: center; padding: 0 10px; color: #1e2d3d; font-size: 16px; height: 100%; }
+
+  .lightning-card{ transition:all .2s ease; }
+  #lightningCardIcon{ font-size:28px; background:none !important; width:auto; height:auto; color:#4ade80; }
+  .lightning-card .status-value{ color:#60a5fa !important; }
+
+  /* ── MODAL ── */
+  #calendarModal, #outageModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; }
+  .modal-box { background: var(--surface); border: 1px solid var(--border2); border-radius: 12px; width: 480px; max-width: 90%; padding: 24px; color: var(--text); margin: 80px auto; }
   .modal-box h2 { font-size: 18px; font-weight: 800; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
   .modal-row { margin-bottom: 10px; font-size: 13px; }
   .modal-row strong { display: block; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
@@ -216,34 +308,270 @@ body {
   ::-webkit-scrollbar       { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: #243447; border-radius: 3px; }
+
+  .map-legend-bar { flex: 0 0 auto; max-height: 74px; overflow-y: auto; background: var(--surface); border-top: 1px solid var(--border); padding: 6px 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .map-legend-bar-label { font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-right: 2px; flex-shrink: 0; }
+  .map-legend-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border2); font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .map-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .map-legend-none { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); font-weight: 600; }
 </style>
 </head>
 <body>
 
-<div id="weeklyReminderBanner" style="
-display:none;
-background:#3157D5;
-border-top:1px solid #ffffff;
-border-bottom:1px solid #ffffff;
-padding:10px 18px;
-color:white;
-font-weight:700;
-font-size:15px;
-text-align:center;
-letter-spacing:.02em;
-">
-📋 Weekly Brief Due Today — Don't forget to prepare and distribute this week's DSS Weekly Brief.
-</div>
-
-<!-- ── CALENDAR (only view) ── -->
-<div id="calendarContainer">
-  <div id="calendarLegendBar" class="cal-legend-bar"></div>
-  <div id="calendarScrollWrapper">
-    <!-- Calendar table injected here by buildCalendar() -->
+<!-- ── TOP HEADER ── -->
+<div class="top-header">
+  <div class="header-brand">
+    <img class="nws-logo" src="https://lh3.googleusercontent.com/d/1GT37aCk0jaEtRToJ_afhTcBJAbCFybXt" alt="NWS Burlington">
+    <div><h1>NWS Burlington DSS Dashboard — Today</h1></div>
+  </div>
+  <div class="header-sep"></div>
+  <div class="header-right">
+    <div class="last-updated-box">
+      <div class="last-updated-label">LAST UPDATED</div>
+      <div id="lastUpdatedText">--:--:--</div>
+    </div>
+    <button class="refresh-btn" onclick="refreshDashboard()" title="Refresh Dashboard">↻</button>
   </div>
 </div>
 
-<!-- CALENDAR DETAIL MODAL -->
+<!-- ── STATUS BAR ── -->
+<div class="status-bar">
+  <div class="status-card" id="dssStatusCard">
+    <div class="status-icon green" id="dssStatusIcon">✓</div>
+    <div style="min-width:0;">
+      <div class="status-label">DSS Status</div>
+      <div class="status-value" id="dssStatusValue" style="color:#4ade80;">NORMAL OPS</div>
+      <div class="status-sub" id="dssStatusSub">Loading…</div>
+    </div>
+  </div>
+  <div class="status-card">
+    <div class="status-icon blue" id="callStatusIcon">☎</div>
+    <div style="min-width:0;">
+      <div class="status-label">Coord. Calls</div>
+      <div class="status-value" id="callStatusValue" style="color:#60a5fa;">Loading…</div>
+      <div class="status-sub" id="callStatusSub">--</div>
+    </div>
+  </div>
+  <div class="status-card">
+    <div class="status-icon teal" id="nextObligationIcon">⏱</div>
+    <div style="min-width:0;">
+      <div class="status-label">Next DSS Event Today</div>
+      <div class="status-value" id="nextObligationValue" style="color:#2dd4bf;">--</div>
+      <div class="status-sub" id="nextObligationSub">No upcoming tasks</div>
+    </div>
+  </div>
+  <div class="status-card lightning-card">
+    <div class="status-icon" id="lightningCardIcon">⚡</div>
+    <div style="min-width:0;">
+      <div class="status-label">UVM LIGHTNING</div>
+      <div class="status-value" id="lightningCardValue">Loading...</div>
+      <div class="status-sub" id="lightningCardSub">&nbsp;</div>
+    </div>
+  </div>
+  <div class="status-card outage-card" onclick="showOutageDetails();">
+    <div class="status-icon outage-none" id="outageCardIcon">🗼</div>
+    <div style="min-width:0;">
+      <div class="status-label">BTV Power Outages</div>
+      <div class="status-value" id="outageCardValue" style="color:#4ade80;">Loading…</div>
+      <div class="status-sub" id="outageCardSub">Click for county breakdown</div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERT TICKER -->
+<div id="alertTicker" style="background:#050d18; border-bottom:1px solid var(--border); height:28px; display:flex; align-items:center; overflow:hidden; position:relative; flex-shrink:0;">
+  <div style="flex-shrink:0; background:#0f1b2d; border-right:1px solid var(--border); padding:0 10px; height:100%; display:flex; align-items:center; font-size:10px; font-weight:800; letter-spacing:0.1em; color:#64b5f6; text-transform:uppercase; white-space:nowrap;">⚠ BTV Alerts</div>
+  <div style="flex:1; overflow:hidden; position:relative; height:100%;">
+    <div id="tickerTrack" style="display:flex; align-items:center; height:100%; position:absolute; white-space:nowrap; will-change:transform;"></div>
+  </div>
+</div>
+
+<div id="weeklyReminderBanner" style="display:none; background:#3157D5; border-top:1px solid #ffffff; border-bottom:1px solid #ffffff; padding:10px 18px; color:white; font-weight:700; font-size:15px; text-align:center; letter-spacing:.02em;">
+📋 Weekly Brief Due Today — Don't forget to prepare and distribute this week's DSS Weekly Brief.
+</div>
+
+<!-- ── MAIN LAYOUT ── -->
+<div id="mainLayout" class="main-layout">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="panel-section">
+      <div class="panel-section-title">DSS Summary</div>
+      <div class="summary-grid">
+        <div class="summary-tile tile-red"><div class="tile-icon">🔴</div><div><div class="tile-num" id="tileRadar">–</div><div class="tile-label">Radar Watch</div></div></div>
+        <div class="summary-tile tile-blue"><div class="tile-icon">🔵</div><div><div class="tile-num" id="tileEmail">–</div><div class="tile-label">Heads Up Email</div></div></div>
+        <div class="summary-tile tile-purple"><div class="tile-icon">🟣</div><div><div class="tile-num" id="tileOnsite">–</div><div class="tile-label">On Site DSS</div></div></div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Environmental Threats</div>
+      <div class="threat-row" id="threat-gauge-row">
+        <div class="threat-card tc-gray" onclick="showThreatDetail('severe')">
+          <div class="threat-dial">—</div>
+          <div class="threat-meta"><div class="threat-type">⚡ Severe</div><div class="threat-label">Loading…</div><div class="threat-bar-track"><div class="threat-bar-marker" style="left:0%"></div></div></div>
+        </div>
+        <div class="threat-card tc-gray" onclick="showThreatDetail('tornado')">
+          <div class="threat-dial">—</div>
+          <div class="threat-meta"><div class="threat-type">🌪 Tornado</div><div class="threat-label">Loading…</div><div class="threat-bar-track"><div class="threat-bar-marker" style="left:0%"></div></div></div>
+        </div>
+        <div class="threat-card tc-gray" onclick="showThreatDetail('hydro')">
+          <div class="threat-dial">—</div>
+          <div class="threat-meta"><div class="threat-type">💧 Hydrology</div><div class="threat-label">Loading…</div><div class="threat-bar-track"><div class="threat-bar-marker" style="left:0%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Active Operations</div>
+      <div id="radarCountdownCard" class="ops-countdown-card" style="display:none;"></div>
+      <div id="onsiteCountdownCard" class="ops-countdown-card" style="display:none;"></div>
+      <div id="opsCountdownEmpty" class="empty-state" style="padding:6px 2px;">No Radar Watch or On-Site DSS Today</div>
+    </div>
+
+    <div class="panel-section" style="flex:1;">
+      <div class="panel-section-title">Upcoming DSS</div>
+      <div class="upcoming-list" id="upcomingEvents"><div class="empty-state">Loading…</div></div>
+      <div class="panel-section-title" style="margin-top:10px;">Upcoming Calls</div>
+      <div class="upcoming-list" id="upcomingCalls"><div class="empty-state">Loading…</div></div>
+      <div id="callCount" style="margin-top:6px;"></div>
+    </div>
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+
+    <div class="glance-section" id="glanceSection">
+      <div class="glance-title">Today at a Glance</div>
+      <div class="timeline-track" id="timelineTrack">
+        <div class="timeline-inner" id="timelineInner"><div class="timeline-spine"></div></div>
+      </div>
+    </div>
+
+    <div id="dssWrapper">
+      <div class="data-section">
+        <div class="data-section-header"><span class="section-icon">📋</span><h2>Today's DSS Operations</h2></div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Time</th><th>Event Name</th><th>DSS Type</th><th>Contact</th><th>Contact Info</th><th style="width:50px;text-align:center;">Slides Link</th></tr></thead>
+            <tbody id="eventTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- CENTER PANEL -->
+<div class="center-panel">
+
+  <!-- DSS TABLE -->
+  <div id="dssWrapper">
+    <div class="data-section">
+      <div class="data-section-header">
+        <span class="section-icon">📋</span>
+        <h2 id="dssTableTitle">Today's DSS Operations</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Event Name</th>
+              <th>DSS Type</th>
+              <th>Contact</th>
+              <th>Contact Info</th>
+              <th style="width:50px;text-align:center;">Slides</th>
+            </tr>
+          </thead>
+          <tbody id="eventTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- COORDINATION CALLS -->
+  <div id="callsWrapper">
+    <div class="data-section">
+      <div class="data-section-header">
+        <span class="section-icon">☎</span>
+        <h2 id="callsTableTitle">Today's Coordination Calls</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Event</th>
+              <th>Contact Info</th>
+              <th>Join</th>
+            </tr>
+          </thead>
+          <tbody id="callsTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- SPOT FORECAST REQUESTS -->
+  <div id="spotForecastWrapper">
+    <div class="data-section">
+      <div class="data-section-header">
+        <span class="section-icon">🔥</span>
+        <h2>Spot Forecast Requests</h2>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Event Name</th>
+              <th>Type</th>
+              <th>Request Submitted</th>
+              <th>Completed</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="spotForecastTable">
+            <tr>
+              <td colspan="5" class="empty-state">
+                No active Spot Forecast requests.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="map-header">
+      <div class="map-title"><span>🗺</span> DSS Event Map</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#cbd5e1;cursor:pointer;">
+          <input type="checkbox" id="hazardToggle" checked> Hazards
+        </label>
+        <div style="font-size:11px;color:#64b5f6;">Today</div>
+      </div>
+    </div>
+    <div id="mapWrap" style="position:relative; flex:1; min-height:0;">
+      <svg id="map" viewBox="0 0 800 700" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;background:#e8e6e1;display:block;"></svg>
+    </div>
+    <div class="map-legend-bar" id="mapLegendBar">
+      <span class="map-legend-bar-label">Active:</span>
+      <div id="mapLegendContent" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
+  </div>
+
+</div>
+<!-- END MAIN LAYOUT -->
+
+<div id="outageModal">
+  <div class="modal-box" style="width:420px;">
+    <h2>🗼 BTV Power Outages — County Breakdown</h2>
+    <div id="outageModalTotal" class="outage-modal-total"></div>
+    <div id="outageModalList" style="max-height:380px; overflow-y:auto;"></div>
+    <button class="modal-close" onclick="document.getElementById('outageModal').style.display='none';">Close</button>
+  </div>
+</div>
+
 <div id="calendarModal">
   <div class="modal-box">
     <div id="calendarModalContent"></div>
@@ -262,288 +590,1019 @@ letter-spacing:.02em;
 <script>
 // ══════════════════════════════════════════════════════════════
 //  STATE
-//  This build shows ONLY the calendar. Today / Tomorrow / 7-day /
-//  30-day / Analytics / external dashboards, the environmental-risk
-//  links, and the Leaflet map have all been removed — none of them
-//  fed the calendar, they were just extra weight being loaded every
-//  refresh. What's left: fetch events.json + calls.json, keep them
-//  fresh on a timer, and render the 2-week calendar grid.
+//  NOTE: this build only ever shows "today" — the Tomorrow / 7-day /
+//  30-day / Calendar / Analytics views, the environmental-risk links,
+//  and the external Lightning/Airport dashboards have been removed.
+//  Removing Leaflet, Leaflet.markercluster, Leaflet.heat, Chart.js,
+//  and the two hidden dashboard iframes (which were loading full
+//  external websites on every single page load) is the big win for
+//  a screen that only lives for ~10 seconds every 30 seconds.
 // ══════════════════════════════════════════════════════════════
-var dssRows  = [];
-var callRows = [];
+var eventDates  = {};
+var dssRows     = [];
+var callRows    = [];
+var nextObligationTimer = null;
+var BTV_ZONE_SET = new Set();
+var currentTodayDssItems = [];
+var opsCountdownTimer = null;
 
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+var THREAT_PARAM_LABELS = {
+  cape: 'CAPE', shear: 'Shear', helicity: 'Helicity', pwat: 'PWAT',
+  lapseRate: 'Lapse Rate', freezingLevel: 'Freezing Level',
+  soilMoisture: 'Soil Moisture', qpf: 'QPF', flashFloodGuidance: 'Flash Flood Guidance'
+};
+
+const HAZARD_COLORS = {
+  "TO.W":"#FF0000","TO.A":"#FFFF00","SV.W":"#FFA500","SV.A":"#DB7093","FF.W":"#8B0000",
+  "FF.A":"#2E8B57","FF.S":"#8B0000","FA.W":"#00FF00","FA.A":"#2E8B57","FA.Y":"#00FF7F",
+  "MA.W":"#FFA500","SW.Y":"#D8BFD8","WI.Y":"#D2B48C","HW.W":"#DAA520","HW.A":"#B8860B",
+  "EW.W":"#FF8C00","WS.W":"#FF69B4","WS.A":"#4682B4","WW.Y":"#7B68EE","BZ.W":"#FF4500",
+  "IS.W":"#8B008B","SQ.W":"#C71585","FZ.W":"#483D8B","FZ.A":"#00FFFF","FR.Y":"#6495ED",
+  "HT.Y":"#FF7F50","XH.W":"#C71585","XH.A":"#800000","EH.W":"#C71585","EH.A":"#800000",
+  "AQ.Y":"#808080","DS.W":"#FFE4C4","DU.Y":"#BDB76B","FG.Y":"#708090","SM.Y":"#F0E68C",
+  "RP.S":"#40E0D0","SU.Y":"#BA55D3","SU.W":"#228B22","CF.Y":"#7CFC00","CF.W":"#228B22",
+  "CF.A":"#66CDAA","LS.Y":"#7CFC00","LS.W":"#228B22","FW.W":"#FF1493","FW.A":"#FFDEAD",
+  "AF.Y":"#696969","TS.W":"#FD6347","TS.A":"#FF00FF","TS.Y":"#D2691E","AS.Y":"#808080",
+  "EC.W":"#0000FF","EC.A":"#5F9EA0","CW.Y":"#AFEEEE","LE.W":"#008B8B"
+};
+
+const PRODUCT_PRIORITY = {
+  "TO.W":100,"FF.W":95,"SV.W":90,"SQ.W":88,"EW.W":87,"FA.W":85,"HW.W":80,"BZ.W":78,
+  "IS.W":76,"WS.W":74,"XH.W":72,"EH.W":72,"FW.W":71,"TO.A":60,"SV.A":58,"FF.A":56,
+  "FA.A":54,"WS.A":52,"HW.A":50,"XH.A":48,"EH.A":48,"FW.A":46,"FZ.A":44,"CF.A":42,
+  "FA.Y":30,"WW.Y":29,"WI.Y":28,"HT.Y":27,"FR.Y":26,"FG.Y":25,"SM.Y":24,"CF.Y":23,
+  "LS.Y":22,"DU.Y":21,"SW.Y":20,"FF.S":19,"RP.S":18
+};
+
+const COUNTY_TO_ZONES = {
+  'VT001': ['009','018'], 'VT003': ['013'], 'VT005': ['007'], 'VT007': ['017','005'],
+  'VT009': ['004'], 'VT011': ['016','002'], 'VT013': ['001'], 'VT015': ['006'],
+  'VT017': ['010'], 'VT019': ['003'], 'VT021': ['011','019'], 'VT023': ['008'],
+  'VT025': ['014','015'], 'VT027': ['020','021'], 'NY019': ['028','031'],
+  'NY031': ['034','035'], 'NY033': ['027','030'], 'NY089': ['026','029','087']
+};
+
+function rankOf(vtec) { return PRODUCT_PRIORITY[vtec] || 0; }
+
+var BTV_ZONES = [
+  'VTZ001','VTZ002','VTZ003','VTZ004','VTZ005','VTZ006','VTZ007','VTZ008','VTZ009','VTZ010','VTZ011',
+  'VTZ016','VTZ017','VTZ018','VTZ019','VTZ020','VTZ021','VTZ013','VTZ014','VTZ015',
+  'NYZ026','NYZ027','NYZ028','NYZ029','NYZ030','NYZ031','NYZ034','NYZ035','NYZ087'
+];
+var BTV_COUNTIES = [
+  'VTC001','VTC003','VTC007','VTC009','VTC011','VTC013','VTC015','VTC017','VTC019',
+  'VTC021','VTC023','VTC025','VTC027','NYC031','NYC033','NYC089'
+];
+var ALERTS_URL = 'https://api.weather.gov/alerts/active?zone=' + BTV_ZONES.concat(BTV_COUNTIES).join(',');
+
+// ── TODAY'S DATE (fixed for this build — always "today") ──
+var _now = new Date();
+var todayDateString =
+  _now.getFullYear() + '-' + String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0');
+
+// ══════════════════════════════════════════════════════════════
+//  SVG MAP SETUP (no Leaflet dependency)
+// ══════════════════════════════════════════════════════════════
+var SVG_NS = 'http://www.w3.org/2000/svg';
+var svgMapEl = document.getElementById('map');
+var svgBasemapGroup = document.createElementNS(SVG_NS, 'g');
+var svgZonesGroup   = document.createElementNS(SVG_NS, 'g');
+var svgHazardsGroup = document.createElementNS(SVG_NS, 'g');
+var svgMarkersGroup = document.createElementNS(SVG_NS, 'g');
+svgMapEl.appendChild(svgBasemapGroup);
+svgMapEl.appendChild(svgZonesGroup);
+svgMapEl.appendChild(svgHazardsGroup);
+svgMapEl.appendChild(svgMarkersGroup);
+
+var SVG_BOUNDS = { lonMin: -75.95, lonMax: -71.3, latMin: 42.7, latMax: 45.2 };
+var SVG_VB_W = 800, SVG_VB_H = 700;
+
+function lonToMercX(lon) { return (lon + 180) / 360; }
+function latToMercY(lat) { var rad = lat * Math.PI / 180; return 0.5 - Math.log(Math.tan(Math.PI / 4 + rad / 2)) / (2 * Math.PI); }
+
+var SVG_MX0 = lonToMercX(SVG_BOUNDS.lonMin);
+var SVG_MX1 = lonToMercX(SVG_BOUNDS.lonMax);
+var SVG_MY0 = latToMercY(SVG_BOUNDS.latMax);
+var SVG_MY1 = latToMercY(SVG_BOUNDS.latMin);
+
+function mercToSvgX(mx) { return ((mx - SVG_MX0) / (SVG_MX1 - SVG_MX0)) * SVG_VB_W; }
+function mercToSvgY(my) { return ((my - SVG_MY0) / (SVG_MY1 - SVG_MY0)) * SVG_VB_H; }
+function svgProject(lon, lat) { return [mercToSvgX(lonToMercX(lon)), mercToSvgY(latToMercY(lat))]; }
+
+var BASEMAP_ZOOM = 8;
+var BASEMAP_SUBDOMAINS = ['a', 'b', 'c', 'd'];
+
+function buildBasemapTiles() {
+  var n = Math.pow(2, BASEMAP_ZOOM);
+  var tx0 = Math.floor(SVG_MX0 * n), tx1 = Math.floor(SVG_MX1 * n);
+  var ty0 = Math.floor(SVG_MY0 * n), ty1 = Math.floor(SVG_MY1 * n);
+  for (var ty = ty0; ty <= ty1; ty++) {
+    for (var tx = tx0; tx <= tx1; tx++) {
+      var sub = BASEMAP_SUBDOMAINS[(tx + ty) % BASEMAP_SUBDOMAINS.length];
+      var url = 'https://' + sub + '.basemaps.cartocdn.com/rastertiles/voyager/' + BASEMAP_ZOOM + '/' + tx + '/' + ty + '.png';
+      var x0 = mercToSvgX(tx / n), x1 = mercToSvgX((tx + 1) / n);
+      var y0 = mercToSvgY(ty / n), y1 = mercToSvgY((ty + 1) / n);
+      var img = document.createElementNS(SVG_NS, 'image');
+      img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', url);
+      img.setAttribute('href', url);
+      img.setAttribute('x', x0.toFixed(2));
+      img.setAttribute('y', y0.toFixed(2));
+      img.setAttribute('width',  (x1 - x0).toFixed(2));
+      img.setAttribute('height', (y1 - y0).toFixed(2));
+      img.setAttribute('preserveAspectRatio', 'none');
+      svgBasemapGroup.appendChild(img);
+    }
+  }
+}
+buildBasemapTiles();
+
+function svgRingToPath(ring) {
+  return ring.map(function (pt, i) {
+    var p = svgProject(pt[0], pt[1]);
+    return (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1);
+  }).join(' ') + ' Z';
+}
+function svgGeometryToPath(geom) {
+  if (!geom) return '';
+  if (geom.type === 'Polygon') return geom.coordinates.map(svgRingToPath).join(' ');
+  if (geom.type === 'MultiPolygon') return geom.coordinates.map(function (poly) { return poly.map(svgRingToPath).join(' '); }).join(' ');
+  return '';
 }
 
-// Safe wrapper for building an href — escapes the value and rejects
-// anything that isn't http(s), since these strings ultimately come
-// from user-typed "Slides Link" / "Contact Info" fields.
+var svgZonePaths = {};
+var warningZoneLayer = null;
+
+var staticLegend = document.createElement('div');
+staticLegend.className = 'map-legend';
+staticLegend.style.cssText = 'position:absolute; left:10px; bottom:10px; z-index:5;';
+staticLegend.innerHTML =
+  '<div class="legend-title">Legend</div>' +
+  '<div class="legend-row"><span class="legend-dot radar"></span>Radar Watch</div>' +
+  '<div class="legend-row"><span class="legend-dot headsup"></span>Heads-Up</div>' +
+  '<div class="legend-row"><span class="legend-dot onsite"></span>On-Site</div>';
+document.getElementById('mapWrap').appendChild(staticLegend);
+
+var basemapAttribution = document.createElement('div');
+basemapAttribution.style.cssText = 'position:absolute; right:8px; bottom:6px; z-index:5; font-size:9px; color:rgba(255,255,255,.35); pointer-events:none;';
+basemapAttribution.textContent = '© OpenStreetMap contributors © CARTO';
+document.getElementById('mapWrap').appendChild(basemapAttribution);
+
+// ══════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 function safeHref(url) {
   var u = String(url || '').trim();
   if (!/^https?:\/\//i.test(u)) return '';
   return escapeHtml(u);
 }
+function formatDate(dateString) {
+  var parts = dateString.split('-');
+  return Number(parts[1]) + '/' + Number(parts[2]) + '/' + parts[0];
+}
 
-function formatTimeRange(start, end) {
-  if (!start) return '';
-  return end ? (start + ' – ' + end) : start;
+var _threatDataCache = null;
+
+async function refreshThreatGauges() {
+  function scoreToColor(score) {
+    if (score === null || score === undefined) return 'tc-gray';
+    if (score < 25) return 'tc-green';
+    if (score < 45) return 'tc-yellow';
+    if (score < 60) return 'tc-orange';
+    if (score < 80) return 'tc-red';
+    return 'tc-purple';
+  }
+  try {
+    const response = await fetch("threats.json?_=" + Date.now());
+    if (!response.ok) throw new Error("Unable to load threats.json");
+    const data = await response.json();
+    if (!data) return;
+    _threatDataCache = data;
+    var row = document.getElementById('threat-gauge-row');
+    if (!row) return;
+    var cardEls = row.querySelectorAll('.threat-card');
+    var keys = ['severe', 'tornado', 'hydro'];
+    keys.forEach(function(key, i) {
+      var el = cardEls[i];
+      if (!el) return;
+      var d = data[key] || {};
+      var score = (d.score !== null && d.score !== undefined) ? Number(d.score) : null;
+      var lbl = d.label || 'N/A';
+      var pct = score !== null ? Math.max(0, Math.min(100, score)) : 0;
+      el.className = 'threat-card ' + scoreToColor(score);
+      var dial = el.querySelector('.threat-dial');
+      if (dial) dial.textContent = score !== null ? Math.round(score) : '—';
+      var labelEl = el.querySelector('.threat-label');
+      if (labelEl) labelEl.textContent = lbl;
+      var marker = el.querySelector('.threat-bar-marker');
+      if (marker) marker.style.left = pct + '%';
+    });
+  } catch (err) {
+    console.error("Unable to load threat data:", err);
+    var row = document.getElementById('threat-gauge-row');
+    if (!row) return;
+    row.querySelectorAll('.threat-label').forEach(function(el) { el.textContent = 'Unavailable'; });
+    row.querySelectorAll('.threat-dial').forEach(function(el) { el.textContent = '!'; });
+  }
+}
+
+function formatThreatParamLabel(key) {
+  if (THREAT_PARAM_LABELS[key]) return THREAT_PARAM_LABELS[key];
+  return key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, function(c) { return c.toUpperCase(); }).trim();
+}
+
+var THREAT_TITLES = { severe: '⚡ Severe Weather Threat', tornado: '🌪 Tornado Threat', hydro: '💧 Hydrology Threat' };
+
+function showThreatDetail(key) {
+  var data = _threatDataCache;
+  var title = THREAT_TITLES[key] || key;
+  if (!data || !data[key]) {
+    showCalendarModal('<h2>' + title + '</h2><div class="threat-detail-empty">No data available yet — try refreshing the dashboard.</div>');
+    return;
+  }
+  var d = data[key];
+  var html = '<h2>' + title + '</h2>';
+  html += '<div class="modal-row"><strong>Score</strong>' + (d.score !== null && d.score !== undefined ? d.score : 'N/A') + '</div>';
+  html += '<div class="modal-row"><strong>Category</strong>' + escapeHtml(d.label || 'N/A') + '</div>';
+  var extraKeys = Object.keys(d).filter(function(k) { return k !== 'score' && k !== 'label'; });
+  if (extraKeys.length > 0) {
+    html += '<div class="threat-detail-grid">';
+    extraKeys.forEach(function(k) {
+      var val = d[k];
+      if (val === null || val === undefined || val === '') val = '—';
+      html += '<div class="threat-detail-tile"><div class="tdt-label">' + escapeHtml(formatThreatParamLabel(k)) + '</div><div class="tdt-value">' + escapeHtml(val) + '</div></div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="threat-detail-empty">Detailed parameters (CAPE, shear, PWAT, etc.) aren\'t included in the current threat data yet.</div>';
+  }
+  showCalendarModal(html);
+}
+
+function getDssTypeBadge(dssType) {
+  if (dssType.indexOf('On-Site DSS') !== -1)        return '<span class="dss-type-badge badge-onsite">On Site</span>';
+  if (dssType.indexOf('Active radar watch') !== -1)  return '<span class="dss-type-badge badge-radar">Radar Watch</span>';
+  if (dssType.indexOf('Heads-up') !== -1)            return '<span class="dss-type-badge badge-email">Heads Up Email</span>';
+  return '<span class="dss-type-badge badge-default">' + escapeHtml(dssType) + '</span>';
+}
+function getDssRowClass(dssType) {
+  if (dssType.indexOf('On-Site DSS') !== -1)        return 'row-onsite';
+  if (dssType.indexOf('Active radar watch') !== -1)  return 'row-radar';
+  if (dssType.indexOf('Heads-up') !== -1)            return 'row-headsup';
+  return '';
+}
+
+async function refreshHazards() {
+  if (!warningZoneLayer) { console.log("Hazard layer not loaded yet."); return; }
+
+  var affectedZones = {};
+  var affectedRanks = {};
+  var affectedZoneInfo = {};
+
+  try {
+    const response = await fetch("hazards.json?_=" + Date.now());
+    if (!response.ok) throw new Error("Unable to load hazards.json");
+    const alerts = await response.json();
+
+    const btvAlerts = (alerts.features || []).filter(alert =>
+      alert.properties.senderName &&
+      (alert.properties.senderName.includes("Burlington") || alert.properties.senderName.includes("Albany"))
+    );
+
+    svgHazardsGroup.innerHTML = '';
+    var legendMap = {};
+
+    btvAlerts.forEach(function(alert) {
+      let vtec = null;
+      const vtecArray = alert.properties.parameters?.VTEC;
+      if (vtecArray && vtecArray.length) {
+        const parts = vtecArray[0].split(".");
+        if (parts.length >= 5) vtec = parts[3] + "." + parts[4];
+      } else {
+        const event = (alert.properties.event || "").toLowerCase();
+        if (event.includes("warning")) vtec = "XX.W";
+        else if (event.includes("watch")) vtec = "XX.A";
+        else if (event.includes("advisory")) vtec = "XX.Y";
+        else if (event.includes("statement")) vtec = "XX.S";
+        else if (event.includes("air quality")) vtec = "AQ.Y";
+      }
+
+      if (alert.geometry && ["TO.W","SV.W","FF.W","FA.W","SQ.W","MA.W"].includes(vtec)) {
+        let color = HAZARD_COLORS[vtec];
+        if (!color) {
+          if (vtec && vtec.endsWith(".Y")) color = "#d97706";
+          else if (vtec && vtec.endsWith(".A")) color = "#facc15";
+          else if (vtec && vtec.endsWith(".W")) color = "#dc2626";
+          else color = "#64748b";
+        }
+        if (!legendMap[alert.properties.event]) legendMap[alert.properties.event] = color;
+
+        var d = svgGeometryToPath(alert.geometry);
+        if (d) {
+          var hazardPath = document.createElementNS(SVG_NS, 'path');
+          hazardPath.setAttribute('d', d);
+          hazardPath.setAttribute('fill', color);
+          hazardPath.setAttribute('fill-opacity', '0.28');
+          hazardPath.setAttribute('stroke', color);
+          hazardPath.setAttribute('stroke-width', '2');
+          var exp = formatAlertExpiry(alert.properties.ends || alert.properties.expires);
+          var hazardTitle = document.createElementNS(SVG_NS, 'title');
+          hazardTitle.textContent = alert.properties.event + (alert.properties.headline ? ' — ' + alert.properties.headline : '') + (exp ? ' (' + exp + ')' : '');
+          hazardPath.appendChild(hazardTitle);
+          svgHazardsGroup.appendChild(hazardPath);
+        }
+      }
+
+      (alert.properties.geocode?.UGC || []).forEach(function(ugc) {
+        var zoneList = [];
+        if (ugc.charAt(2) === "Z") {
+          zoneList.push(ugc);
+        } else if (ugc.charAt(2) === "C") {
+          var countyKey = ugc.substring(0,2) + ugc.substring(3,6);
+          if (COUNTY_TO_ZONES[countyKey]) {
+            COUNTY_TO_ZONES[countyKey].forEach(function(zoneNum){ zoneList.push(ugc.substring(0,2) + "Z" + zoneNum); });
+          }
+        }
+        zoneList.forEach(function(zone){
+          if (!BTV_ZONE_SET.has(zone)) return;
+          var currentRank = rankOf(vtec);
+          if (!affectedZones[zone] || currentRank > (affectedRanks[zone] || 0)) {
+            affectedZones[zone] = vtec;
+            affectedRanks[zone] = currentRank;
+            legendMap[alert.properties.event] = HAZARD_COLORS[vtec] || "#d97706";
+            affectedZoneInfo[zone] = { event: alert.properties.event, endTime: alert.properties.ends || alert.properties.expires };
+          }
+        });
+      });
+    });
+
+    Object.keys(svgZonePaths).forEach(function(zone) {
+      var path = svgZonePaths[zone];
+      var hazard = affectedZones[zone];
+      var oldTitle = path.querySelector('title');
+      if (oldTitle) path.removeChild(oldTitle);
+      if (hazard) {
+        const color = HAZARD_COLORS[hazard] || "#d97706";
+        path.setAttribute('stroke', color);
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', color);
+        path.setAttribute('fill-opacity', '0.35');
+        const info = affectedZoneInfo[zone];
+        if (info) {
+          const endStr = formatAlertExpiry(info.endTime);
+          var zoneTitle = document.createElementNS(SVG_NS, 'title');
+          zoneTitle.textContent = info.event + (endStr ? ' — ' + endStr : ' — End time not available');
+          path.appendChild(zoneTitle);
+        }
+      } else {
+        path.setAttribute('stroke', '#1e2d3d');
+        path.setAttribute('stroke-width', '1');
+        path.setAttribute('fill', '#1e2d3d');
+        path.setAttribute('fill-opacity', '0');
+      }
+    });
+
+    renderMapLegend(Object.keys(legendMap).map(function(name){ return { label: name, color: legendMap[name] }; }));
+
+  } catch (err) {
+    console.error("Hazard refresh failed:", err);
+  }
+}
+
+function renderMapLegend(legendItems) {
+
+    var el = document.getElementById('mapLegendContent');
+    if (!el) return;
+
+    legendItems = legendItems || [];
+
+    // Add Spot Forecast legend item
+    if (activeSpotForecasts.length > 0) {
+
+        legendItems = legendItems.slice();
+
+        legendItems.unshift({
+            label: "Spot Forecast",
+            icon: "🔥"
+        });
+
+    }
+
+    if (legendItems.length === 0) {
+
+        el.innerHTML =
+            '<div class="map-legend-none">' +
+                '<span class="map-legend-dot" style="background:#4ade80;"></span>' +
+                'No watches, warnings, or advisories are in effect at this time.' +
+            '</div>';
+
+        return;
+    }
+
+    el.innerHTML = legendItems.map(function(item){
+
+        var symbol = item.icon
+            ? '<span class="map-legend-icon">' + item.icon + '</span>'
+            : '<span class="map-legend-dot" style="background:' + item.color + ';"></span>';
+
+        return (
+            '<div class="map-legend-chip">' +
+                symbol +
+                escapeHtml(item.label) +
+            '</div>'
+        );
+
+    }).join('');
+
+}
+
+function buildGlanceTimeline(todayDssEvents, todayCalls) {
+  var track = document.getElementById('timelineTrack');
+  if (!track) return;
+  var glanceSection = document.getElementById('glanceSection');
+
+  if (todayDssEvents.length === 0 && todayCalls.length === 0) {
+    glanceSection.style.display = 'none';
+    return;
+  }
+  glanceSection.style.display = 'block';
+
+  var items = [];
+  var now = new Date();
+  var nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  todayDssEvents.forEach(function(ev){
+    var type = ev.type || "";
+    var timeStr = "", endTimeStr = "", icon = "", dotClass = "headsup";
+
+    if (type.indexOf("Heads-up") !== -1 && ev.emailTime) {
+      timeStr = ev.emailTime; icon = "📧"; dotClass = "headsup";
+    } else if (type.indexOf("Active radar watch") !== -1 && ev.radarTime) {
+      timeStr = ev.radarTime; endTimeStr = ev.radarEndTime || ""; icon = "📡"; dotClass = "radar";
+    } else if (type.indexOf("On-Site DSS") !== -1) {
+      timeStr = ev.dssTime || ev.radarTime || ev.emailTime || ""; endTimeStr = ev.dssEndTime || ""; icon = "🟣"; dotClass = "onsite";
+    }
+    if (!timeStr) return;
+
+    var eventMinutes = parseTimeToMinutes(timeStr);
+    var displayTime = formatTimeForDisplay(timeStr);
+    if (endTimeStr) displayTime += "–" + formatTimeForDisplay(endTimeStr);
+
+    var cutoff = eventMinutes;
+    if (endTimeStr) {
+      var endMinutes = parseTimeToMinutes(endTimeStr);
+      if (endMinutes !== 9999) cutoff = endMinutes;
+    }
+
+    items.push({ sortKey: eventMinutes, time: displayTime, label: ev.name, icon: icon, dotClass: dotClass, isPast: cutoff < nowMinutes });
+  });
+
+  todayCalls.forEach(function(call){
+    if (!call[1]) return;
+    items.push({ sortKey: parseTimeToMinutes(call[1]), time: formatTimeForDisplay(call[1]), label: call[2], icon: "☎", dotClass: "call", isPast: parseTimeToMinutes(call[1]) < nowMinutes });
+  });
+
+  items.sort(function(a,b){ return a.sortKey - b.sortKey; });
+
+  var inner = document.getElementById('timelineInner');
+  inner.innerHTML = "";
+
+  if (items.length === 0) {
+    inner.innerHTML = '<div class="timeline-empty">No DSS Events Scheduled Today</div>';
+    inner.style.width = '100%';
+    inner.style.gap = '0px';
+    return;
+  }
+
+  inner.style.gap = '20px';
+  inner.style.justifyContent = 'flex-start';
+
+  var spine = document.createElement("div");
+  spine.className = "timeline-spine";
+  inner.appendChild(spine);
+
+  items.forEach(function(item){
+    var div = document.createElement("div");
+    div.className = "tl-item";
+    if (item.isPast) div.classList.add("past");
+
+    var timeHtml = '<div class="tl-time">' + escapeHtml(item.time) + '</div>';
+    var labelHtml = '<div class="tl-label"><span class="tl-icon">' + item.icon + '</span><span class="tl-text">' + escapeHtml(item.label) + '</span></div>';
+
+    div.innerHTML = '<div class="tl-above">' + labelHtml + timeHtml + '</div><div class="tl-dot-wrap"><div class="tl-dot ' + item.dotClass + '"></div></div>';
+    inner.appendChild(div);
+  });
+}
+
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr) return 9999;
+  var s = String(timeStr).trim();
+  var ampm = s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (ampm) {
+    var h = parseInt(ampm[1], 10);
+    var min = parseInt(ampm[2], 10);
+    if (ampm[3].toUpperCase() === 'PM' && h < 12) h += 12;
+    if (ampm[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+  var military = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (military) return parseInt(military[1], 10) * 60 + parseInt(military[2], 10);
+  return 9999;
+}
+
+function formatTimeForDisplay(timeStr) {
+  if (!timeStr) return '';
+  var s = String(timeStr).trim();
+  var m = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return s;
+  var h = parseInt(m[1], 10);
+  var min = m[2];
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return h + ':' + min + ' ' + ampm;
 }
 
 // ══════════════════════════════════════════════════════════════
-//  DETAIL MODAL (click a calendar chip to see full info)
+//  NEXT OBLIGATION COUNTDOWN
+// ══════════════════════════════════════════════════════════════
+function updateNextObligation(todayDssEvents, todayCalls) {
+  if (nextObligationTimer) clearInterval(nextObligationTimer);
+
+  function refreshCountdown() {
+    var now = new Date();
+    var nowSecs = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    var soonestSecs = Infinity, soonestLabel = '';
+
+    todayDssEvents.forEach(function(ev) {
+      var times = [];
+      if (ev.emailTime) times.push({t: ev.emailTime, label:'📧 ' + ev.name});
+      if (ev.radarTime) times.push({t: ev.radarTime, label:'⏰ ' + ev.name});
+      if (ev.dssTime)   times.push({t: ev.dssTime,   label:'🟣 ' + ev.name});
+      times.forEach(function(item){
+        var mins = parseTimeToMinutes(item.t);
+        var secs = mins * 60;
+        if (secs >= nowSecs && secs < soonestSecs){ soonestSecs = secs; soonestLabel = item.label; }
+      });
+    });
+
+    todayCalls.forEach(function(call){
+      if (!call[1]) return;
+      var secs = parseTimeToMinutes(call[1]) * 60;
+      if (secs >= nowSecs && secs < soonestSecs){ soonestSecs = secs; soonestLabel = '☎ ' + call[2]; }
+    });
+
+    var valEl  = document.getElementById('nextObligationValue');
+    var subEl  = document.getElementById('nextObligationSub');
+    var iconEl = document.getElementById('nextObligationIcon');
+
+    if (soonestSecs === Infinity){
+      valEl.textContent = 'None Today'; subEl.textContent = '--'; valEl.style.color = '#4ade80';
+      iconEl.className = 'status-icon green'; iconEl.textContent = '✓';
+      return;
+    }
+
+    var diff = soonestSecs - nowSecs;
+    if (diff <= 0){
+      valEl.textContent = 'ACTIVE'; valEl.style.color = '#ef4444';
+      subEl.textContent = soonestLabel.replace(/[📧⏰☎🟣]/g,'').trim();
+      iconEl.className = 'status-icon red'; iconEl.textContent = '⚠';
+      return;
+    }
+
+    var h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+    var countdown = (h>0 ? h+'h ' : '') + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    valEl.textContent = countdown;
+    subEl.textContent = soonestLabel.replace(/[📧⏰☎🟣]/g,'').trim();
+    valEl.style.color = diff <= 3600 ? '#f87171' : '#2dd4bf';
+    iconEl.className = diff <= 3600 ? 'status-icon red' : 'status-icon teal';
+    iconEl.textContent = diff <= 3600 ? '⚠' : '⏱';
+  }
+
+  refreshCountdown();
+  nextObligationTimer = setInterval(refreshCountdown,1000);
+}
+
+function pickCurrentOrNextOpsItem(items, startField, endField) {
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes();
+  var active = null, upcoming = null;
+  items.forEach(function(it) {
+    var s = it[startField], e = it[endField];
+    if (!s || !e) return;
+    var sMin = parseTimeToMinutes(s), eMin = parseTimeToMinutes(e);
+    if (sMin === 9999 || eMin === 9999) return;
+    if (nowMin >= sMin && nowMin <= eMin) {
+      if (!active || sMin > parseTimeToMinutes(active[startField])) active = it;
+    } else if (sMin > nowMin) {
+      if (!upcoming || sMin < parseTimeToMinutes(upcoming[startField])) upcoming = it;
+    }
+  });
+  return active || upcoming || null;
+}
+
+function renderOpsCountdownCard(cardId, item, startField, endField, icon, label, fillClass) {
+  var el = document.getElementById(cardId);
+  if (!el) return;
+  if (!item) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds()/60;
+  var sMin = parseTimeToMinutes(item[startField]);
+  var eMin = parseTimeToMinutes(item[endField]);
+  var isActive = nowMin >= sMin && nowMin <= eMin;
+  var pct = isActive ? Math.min(100, Math.max(0, ((nowMin-sMin)/(eMin-sMin))*100)) : 0;
+
+  el.className = 'ops-countdown-card ' + (isActive ? 'oc-active' : 'oc-upcoming');
+
+  var diffMin = isActive ? (eMin-nowMin) : (sMin-nowMin);
+  var diffSec = Math.max(0, Math.round(diffMin*60));
+  var h = Math.floor(diffSec/3600), m = Math.floor((diffSec%3600)/60), s = diffSec%60;
+  var cd = (h>0 ? h+'h ' : '') + String(m).padStart(2,'0')+'m ' + String(s).padStart(2,'0')+'s';
+  var statusText = isActive ? 'Active — '+cd+' remaining' : 'Starts in '+cd;
+
+  el.innerHTML =
+      '<div class="oc-title">'+icon+' '+label+'</div>'+
+      '<div class="oc-event-name">'+escapeHtml(item.name)+'</div>'+
+      '<div class="oc-status '+(isActive?'status-active':'status-upcoming')+'">'+statusText+'</div>'+
+      '<div class="oc-bar-track"><div class="oc-bar-fill '+fillClass+'" style="width:'+pct+'%;"></div></div>'+
+      '<div class="oc-times"><span>'+escapeHtml(formatTimeForDisplay(item[startField]))+'</span><span>'+escapeHtml(formatTimeForDisplay(item[endField]))+'</span></div>';
+}
+
+function renderOpsCountdowns(items) {
+  var radarItem = pickCurrentOrNextOpsItem(items,'radarTime','radarEndTime');
+  var onsiteItem = pickCurrentOrNextOpsItem(items,'dssTime','dssEndTime');
+  renderOpsCountdownCard('radarCountdownCard', radarItem, 'radarTime', 'radarEndTime', '📡', 'Radar Watch', 'radar-fill');
+  renderOpsCountdownCard('onsiteCountdownCard', onsiteItem, 'dssTime', 'dssEndTime', '🟣', 'On-Site DSS', 'onsite-fill');
+  var empty = document.getElementById('opsCountdownEmpty');
+  if (empty) empty.style.display = (!radarItem && !onsiteItem) ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  MODALS
 // ══════════════════════════════════════════════════════════════
 function closeCalendarModal() { document.getElementById('calendarModal').style.display = 'none'; }
 function showCalendarModal(html) {
   document.getElementById('calendarModalContent').innerHTML = html;
-  document.getElementById('calendarModal').style.display   = 'block';
+  document.getElementById('calendarModal').style.display = 'block';
 }
 
-function showDssDetails(eventName) {
-  var headers        = dssRows[0];
-  var eventCol       = headers.indexOf('Event Name');
-  var typeCol        = headers.indexOf('DSS Type');
-  var contactCol     = headers.indexOf('Contact Name');
-  var contactInfoCol = headers.indexOf('Contact Info');
-  var radarStartCol  = headers.indexOf('Radar Start');
-  var radarEndCol    = headers.indexOf('Radar End');
-  var emailCol       = headers.indexOf('Email Due By');
-  var dssStartCol    = headers.indexOf('DSS Start');
-  var dssEndCol      = headers.indexOf('DSS End');
-  var html = '';
-  for (var i = 1; i < dssRows.length; i++) {
-    var row = dssRows[i];
-    if (row[eventCol] !== eventName) continue;
+// ══════════════════════════════════════════════════════════════
+//  LIGHTNING CARD
+// ══════════════════════════════════════════════════════════════
+async function updateLightningCard() {
+  try {
+    const response = await fetch("lightning.json?_=" + Date.now());
+    if (!response.ok) throw new Error("Unable to load lightning.json");
+    const data = await response.json();
 
-    var radarRange = row[radarStartCol]
-      ? row[radarStartCol] + (row[radarEndCol] ? ' – ' + row[radarEndCol] : '')
-      : '';
-    var dssRange = (dssStartCol !== -1 && row[dssStartCol])
-      ? row[dssStartCol] + (dssEndCol !== -1 && row[dssEndCol] ? ' – ' + row[dssEndCol] : '')
-      : '';
+    const card  = document.querySelector('.lightning-card');
+    if (card) {
+      card.style.background = `linear-gradient(135deg, ${data.color}22 0%, #111827 45%, #111827 100%)`;
+    }
 
-    html =
-      '<h2>' + escapeHtml(row[eventCol]) + '</h2>' +
-      '<div class="modal-row"><strong>DSS Type</strong>'     + escapeHtml(row[typeCol])        + '</div>' +
-      '<div class="modal-row"><strong>Contact</strong>'      + escapeHtml(row[contactCol])     + '</div>' +
-      '<div class="modal-row"><strong>Contact Info</strong>' + escapeHtml(row[contactInfoCol]) + '</div>' +
-      (row[emailCol] ? '<div class="modal-row"><strong>Email Due</strong>'   + escapeHtml(row[emailCol]) + '</div>' : '') +
-      (radarRange ? '<div class="modal-row"><strong>Radar Watch</strong>' + escapeHtml(radarRange) + '</div>' : '') +
-      (dssRange ? '<div class="modal-row"><strong>On-Site DSS Time</strong>' + escapeHtml(dssRange) + '</div>' : '');
-    break;
+    const icon  = document.getElementById('lightningCardIcon');
+    const value = document.getElementById('lightningCardValue');
+    if (icon) { icon.textContent = "⚡"; icon.style.color = data.color; }
+    if (value) {
+      value.textContent = (data.level || "Unknown").toUpperCase() + " (" + (data.probability ?? 0) + "%)";
+      value.style.color = "white";
+    }
+  } catch (err) {
+    console.error("updateLightningCard failed:", err);
+    const value = document.getElementById("lightningCardValue");
+    if (value) { value.textContent = "Unavailable"; value.style.color = "#8899a6"; }
   }
-  showCalendarModal(html);
 }
 
-function showCallDetails(rowIndex) {
-  var call = callRows[rowIndex];
-  if (!call) return;
-  var urlMatch = String(call[3] || '').match(/https?:\/\/\S+/);
-  var joinHref = urlMatch ? safeHref(urlMatch[0]) : '';
-  var html =
-    '<h2>' + escapeHtml(call[2]) + '</h2>' +
-    '<div class="modal-row"><strong>Date</strong>'         + escapeHtml(call[0]) + '</div>' +
-    '<div class="modal-row"><strong>Time</strong>'         + escapeHtml(call[1]) + '</div>' +
-    '<div class="modal-row"><strong>Contact Info</strong>' + escapeHtml(call[3]) + '</div>' +
-    (call[4] ? '<div class="modal-row"><strong>Additional</strong>' + escapeHtml(call[4]) + '</div>' : '') +
-    (joinHref ? '<br><a href="' + joinHref + '" target="_blank" style="display:inline-block;background:#1d6fa4;color:white;padding:8px 14px;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">Join Meeting</a>' : '');
-  showCalendarModal(html);
+var _outageDataCache = null;
+
+function _outageTierClass(level) {
+  switch (level) {
+    case 'NONE':     return 'outage-none';
+    case 'MINOR':    return 'outage-minor';
+    case 'MODERATE': return 'outage-moderate';
+    case 'MAJOR':    return 'outage-major';
+    case 'SEVERE':   return 'outage-severe';
+    default:         return 'outage-none';
+  }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  WEEKLY BRIEF REMINDER BANNER
-// ══════════════════════════════════════════════════════════════
+async function updateOutageCard() {
+  try {
+    const response = await fetch("outages.json?_=" + Date.now());
+    if (!response.ok) throw new Error("Unable to load outages.json");
+    const data = await response.json();
+    _outageDataCache = data;
+
+    var icon = document.getElementById('outageCardIcon');
+    var value = document.getElementById('outageCardValue');
+    var card = document.querySelector('.outage-card');
+    var iconCircle = document.querySelector('.outage-card .status-icon');
+
+    if (card) card.style.background = `linear-gradient(135deg, ${data.color}22 0%, #111827 45%, #111827 100%)`;
+    if (icon) icon.textContent = "🗼";
+    if (value) { value.textContent = Number(data.total || 0).toLocaleString() + " Customers Out"; value.style.color = data.color; }
+    if (iconCircle) iconCircle.className = "status-icon " + _outageTierClass(data.level);
+  } catch (err) {
+    console.error("updateOutageCard failed:", err);
+    var value = document.getElementById("outageCardValue");
+    if (value) value.textContent = "Unavailable";
+  }
+}
+
+async function showOutageDetails() {
+  if (!_outageDataCache) {
+    try {
+      const response = await fetch("outages.json?_=" + Date.now());
+      if (!response.ok) throw new Error("Unable to load outages.json");
+      const data = await response.json();
+      _outageDataCache = data;
+      renderOutageModal(data);
+    } catch (err) {
+      console.error("showOutageDetails failed:", err);
+      alert("Could not load outage data:\n\n" + (err.message || "Unknown error"));
+    }
+    return;
+  }
+  renderOutageModal(_outageDataCache);
+}
+
+function renderOutageModal(data) {
+  var totalEl = document.getElementById('outageModalTotal');
+  var listEl  = document.getElementById('outageModalList');
+
+  totalEl.innerHTML =
+    data.emoji + ' <span style="font-size:16px;">' + data.total.toLocaleString() +
+    '</span> total customers out across VT + Northern NY' +
+    '<span style="font-size:10px;color:var(--muted);margin-left:8px;">via vtoutages.com + ODIN</span>';
+
+  listEl.innerHTML = '';
+  data.counties.forEach(function(c) {
+    if (c.count === 0) return;
+    var trendIcon = '➡️', trendClass = 'outage-trend-flat';
+    if (c.trend === 'up')   { trendIcon = '⬆️'; trendClass = 'outage-trend-up'; }
+    if (c.trend === 'down') { trendIcon = '⬇️'; trendClass = 'outage-trend-down'; }
+    var row = document.createElement('div');
+    row.className = 'outage-county-row';
+    row.innerHTML =
+      '<div><span class="outage-county-name">' + escapeHtml(c.name) + '</span>' +
+      '<span class="outage-county-state"> ' + escapeHtml(c.state) + '</span></div>' +
+      '<div><span class="outage-county-count">' + c.count.toLocaleString() + '</span> ' +
+      '<span class="' + trendClass + '">' + trendIcon + '</span></div>';
+    listEl.appendChild(row);
+  });
+
+  if (data.total === 0) {
+    listEl.innerHTML = '<div style="text-align:center;padding:16px;color:#4ade80;font-weight:700;">✓ No reported outages across the region</div>';
+  }
+
+  document.getElementById('outageModal').style.display = 'block';
+}
+
+function updateLastUpdated() {
+  const now = new Date();
+  document.getElementById("lastUpdatedText").textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
 function checkWeeklyReminder() {
-  var today = new Date();
+  const today = new Date();
   if (today.getDay() !== 1) return; // Monday only
   document.getElementById("weeklyReminderBanner").style.display = "block";
 }
 
-function updateLastUpdated() {
-  var el = document.getElementById('calLastUpdated');
-  if (!el) return;
-  var now = new Date();
-  el.textContent = 'Updated ' + now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+// ==========================================================
+// SPOT FORECASTS
+// ==========================================================
+
+var activeSpotForecasts = [];
+var spotForecastMarkers = [];
+var SPOT_FORECAST_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function clearSpotForecastMarkers() {
+
+    spotForecastMarkers.forEach(function(m){
+        map.removeLayer(m);
+    });
+
+    spotForecastMarkers = [];
 }
 
-// ══════════════════════════════════════════════════════════════
-//  CALENDAR VIEW
-// ══════════════════════════════════════════════════════════════
-function buildCalendar() {
-  var headers       = dssRows[0];
-  if (!headers) return; // nothing loaded yet
+async function refreshSpotForecasts() {
 
-  var eventCol      = headers.indexOf('Event Name');
-  var eventDateCol  = headers.indexOf('Event Date');
-  var typeCol       = headers.indexOf('DSS Type');
-  var radarStartCol = headers.indexOf('Radar Start');
-  var radarEndCol   = headers.indexOf('Radar End');
-  var emailTimeCol  = headers.indexOf('Email Due By');
-  var dssStartCol   = headers.indexOf('DSS Start');
-  var dssEndCol     = headers.indexOf('DSS End');
-  var cancelledCol  = headers.indexOf('Cancelled');
+    console.log("Refreshing Spot Forecasts...");
 
-  var now = new Date();
-  var todayIso = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    try {
 
-  var startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const url =
+            "https://mapservices.weather.noaa.gov/vector/rest/services/fire_weather/nws_fire_weather_spot/MapServer/0/query" +
+            "?where=1%3D1" +
+            "&outFields=*" +
+            "&returnGeometry=true" +
+            "&f=json";
 
-  var dayBuckets  = Array(14).fill(null).map(function() { return []; });
-  var callBuckets = Array(14).fill(null).map(function() { return []; });
+        const response = await fetch(url);
 
-  for (var ci = 1; ci < callRows.length; ci++) {
-    var call = callRows[ci];
-    if (String(call[5]).trim().toUpperCase() === 'TRUE') continue;
-    var cp = String(call[0] || '').split('/');
-    if (cp.length !== 3) continue;
-    var callDate = new Date(cp[2], cp[0]-1, cp[1]);
-    var diff = Math.floor((callDate - startOfWeek) / 86400000);
-    if (diff >= 0 && diff < 14) callBuckets[diff].push({ event: call[2], time: call[1], rowIndex: ci });
-  }
+        if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+        }
 
-  for (var i = 1; i < dssRows.length; i++) {
-    var row = dssRows[i];
-    if (String(row[cancelledCol]).trim().toUpperCase() === 'TRUE') continue;
-    var p = String(row[eventDateCol] || '').split('/');
-    if (p.length !== 3) continue;
-    var eDate = new Date(Number(p[2]), Number(p[0])-1, Number(p[1]));
-    var diff2 = Math.floor((eDate - startOfWeek) / 86400000);
-    if (diff2 >= 0 && diff2 < 14) {
-      dayBuckets[diff2].push({
-        name: row[eventCol], type: row[typeCol],
-        radarStart: row[radarStartCol], radarEnd: row[radarEndCol],
-        emailTime: row[emailTimeCol],
-        dssStart: row[dssStartCol], dssEnd: row[dssEndCol]
-      });
+        const data = await response.json();
+
+        const now = Date.now();
+
+        const spots = (data.features || [])
+
+            .map(f => ({
+
+                id: f.attributes.snumunum,
+                incident: f.attributes.name,
+                type: f.attributes.type,
+
+                status: f.attributes.stattext,
+                statusCode: f.attributes.stat,
+
+                wfo: f.attributes.wfo,
+
+                requested: f.attributes.rmade,
+                posted: f.attributes.rfill,
+
+                delivery: f.attributes.deliverdtg,
+
+                lat: Number(f.geometry.y),
+                lon: Number(f.geometry.x)
+
+            }))
+
+            // Only Burlington
+            .filter(s => s.wfo === "BTV")
+
+            // Remove old completed forecasts
+            .filter(function(spot){
+
+                if (spot.statusCode === "P") return true;
+                if (spot.statusCode === "I") return true;
+
+                if (
+                    (spot.statusCode === "C" || spot.statusCode === "F") &&
+                    spot.posted &&
+                    spot.posted !== "Incomplete"
+                ) {
+
+                    const postedTime = new Date(
+                        spot.posted.replace(/\s[A-Z]{3,4}$/,"")
+                    ).getTime();
+
+                    if (!isNaN(postedTime)) {
+                        return (now - postedTime) < SPOT_FORECAST_WINDOW_MS;
+                    }
+
+                }
+
+                return false;
+
+            });
+
+        // Pending first
+        spots.sort(function(a,b){
+
+            const order = {
+                P:0,
+                I:1,
+                C:2,
+                F:2
+            };
+
+            const ao = order[a.statusCode] ?? 99;
+            const bo = order[b.statusCode] ?? 99;
+
+            if (ao !== bo) return ao-bo;
+
+            return new Date(b.requested)-new Date(a.requested);
+
+        });
+
+        activeSpotForecasts = spots;
+
+        renderSpotForecasts(spots);
+
     }
-  }
+    catch(err){
 
-  function dssChipHtml(ev) {
-    var cls = 'cal-chip-headsup';
-    var timeStr = ev.emailTime || '';
-    if (ev.type === 'Active radar watch') {
-      cls = 'cal-chip-radar';
-      timeStr = formatTimeRange(ev.radarStart, ev.radarEnd);
-    } else if (ev.type === 'On-Site DSS') {
-      cls = 'cal-chip-onsite';
-      timeStr = formatTimeRange(ev.dssStart, ev.dssEnd);
-    }
+        console.error(err);
 
-    // BTV Weekly Brief is an internal office reminder riding along in the
-    // heads-up-email bucket — give it a white outline so it doesn't blend
-    // in with actual external DSS heads-up emails.
-    if (/weekly brief/i.test(ev.name || '')) {
-      cls += ' cal-chip-weeklybrief';
-    }
+        activeSpotForecasts = [];
 
-    return (
-      '<div class="cal-event-chip ' + cls + '" data-dss-event="' + escapeHtml(ev.name) + '">' +
-        '<div class="chip-name">' + escapeHtml(ev.name) + '</div>' +
-        (timeStr ? '<div class="chip-time">' + escapeHtml(timeStr) + '</div>' : '') +
-      '</div>'
-    );
-  }
+        renderSpotForecasts([]);
 
-  function callChipHtml(callItem) {
-    return (
-      '<div class="cal-event-chip cal-chip-call" data-call-index="' + callItem.rowIndex + '">' +
-        '<div class="chip-name">' + escapeHtml(callItem.event) + '</div>' +
-        '<div class="chip-time">' + escapeHtml(callItem.time) + '</div>' +
-      '</div>'
-    );
-  }
-
-  function renderWeek(startDay) {
-    var headerCells = '';
-    var bodyCells   = '';
-
-    for (var d = startDay; d < startDay + 7; d++) {
-      var dd = new Date(startOfWeek);
-      dd.setDate(startOfWeek.getDate() + d);
-      var iso = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
-      var dayName  = dd.toLocaleDateString('en-US', { weekday: 'short' });
-      var monthDay = (dd.getMonth()+1) + '/' + dd.getDate();
-      var isToday  = iso === todayIso;
-
-      headerCells +=
-        '<span class="cal-day-header' + (isToday ? ' is-today' : '') + '">' +
-          '<span class="day-name">' + dayName + ' ' + monthDay + '</span>' +
-        '</span>';
-
-      // Weekly Brief is a standing Monday reminder — pin it to the top
-      // of the cell above any other DSS items that day, rather than
-      // sitting wherever it happens to fall in date-sorted order.
-      var sortedDayItems = dayBuckets[d].slice().sort(function(a, b) {
-        var aIsBrief = /weekly brief/i.test(a.name || '');
-        var bIsBrief = /weekly brief/i.test(b.name || '');
-        if (aIsBrief && !bIsBrief) return -1;
-        if (bIsBrief && !aIsBrief) return 1;
-        return 0;
-      });
-
-      var items = sortedDayItems.map(dssChipHtml).concat(callBuckets[d].map(callChipHtml));
-      var cellContent = items.length > 0
-        ? items.join('')
-        : '<div class="cal-empty-day">No Scheduled DSS or Coordination Calls</div>';
-      bodyCells += '<div class="cal-grid-cell"><div class="cal-events">' + cellContent + '</div></div>';
     }
 
-    return (
-      '<div class="cal-week-grid">' +
-        '<div class="cal-grid-headrow">' + headerCells + '</div>' +
-        '<div class="cal-grid-bodyrow">' + bodyCells + '</div>' +
-      '</div>'
-    );
-  }
-
-  var legendBar = document.getElementById('calendarLegendBar');
-  if (legendBar) {
-    legendBar.innerHTML =
-      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#ef4444;"></span>Radar Watch</div>' +
-      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#3b82f6;"></span>Heads-Up Email</div>' +
-      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#a855f7;"></span>On-Site DSS</div>' +
-      '<div class="cal-legend-item"><span class="cal-legend-swatch" style="background:#f59e0b;"></span>Coordination Call</div>' +
-      '<span id="calLastUpdated" style="margin-left:auto;font-size:11px;color:var(--muted);font-weight:600;">Updated --:--:--</span>';
-  }
-
-  var wrapper = document.getElementById('calendarScrollWrapper');
-  wrapper.innerHTML = renderWeek(0) + renderWeek(7);
-  fitCalendarCells();
 }
 
-// ── TV / KIOSK PER-DAY AUTO-FIT ─────────────────────────────────
-// Each day cell has a fixed height (set by the CSS grid). Most days
-// have 1-2 events and render at full size. A day with a pile of
-// events gets its OWN --calScale shrunk — via a real overflow check,
-// not a guess based on count — until its content fits without
-// scrolling. Other days on the same row are unaffected.
-function fitCalendarCells() {
-  var cells = document.querySelectorAll('#calendarScrollWrapper .cal-grid-cell');
+function renderSpotForecasts(spots){
 
-  cells.forEach(function (cell) {
-    var eventsEl = cell.querySelector('.cal-events');
-    if (!eventsEl) return;
+    const tbody = document.getElementById("spotForecastTable");
 
-    var scale = 1;
-    cell.style.setProperty('--calScale', scale);
+    if(!tbody) return;
 
-    var attempts = 0;
-    while (eventsEl.scrollHeight > eventsEl.clientHeight + 1 && scale > 0.4 && attempts < 40) {
-      scale = Math.max(0.4, scale - 0.03);
-      cell.style.setProperty('--calScale', scale.toFixed(2));
-      attempts++;
+    tbody.innerHTML="";
+
+    clearSpotForecastMarkers();
+
+    if(!spots.length){
+
+        tbody.innerHTML =
+        '<tr><td colspan="5" class="empty-state">' +
+        'No active Spot Forecast requests.' +
+        '</td></tr>';
+
+        return;
+
     }
-  });
-}
 
+    spots.forEach(function(spot){
+
+        let badge;
+
+        switch(spot.statusCode){
+
+            case "P":
+                badge='<span class="spot-status-pending">Pending</span>';
+                break;
+
+            case "I":
+                badge='<span class="spot-status-progress">In Progress</span>';
+                break;
+
+            case "C":
+            case "F":
+                badge='<span class="spot-status-complete">Completed</span>';
+                break;
+
+            default:
+                badge='<span class="spot-status-other">'+spot.status+'</span>';
+
+        }
+
+        const cleanType=(spot.type||"")
+            .replace(/\d{4}-\d{2}-\d{2}.*/,"")
+            .trim();
+
+        const completed =
+            spot.posted==="Incomplete"
+            ? "--"
+            : spot.posted;
+
+        tbody.insertAdjacentHTML("beforeend",`
+
+<tr>
+
+<td><strong>${spot.incident}</strong></td>
+
+<td>${cleanType}</td>
+
+<td>${spot.requested}</td>
+
+<td>${completed}</td>
+
+<td>${badge}</td>
+
+</tr>
+
+`);
+
+        const marker=L.marker(
+            [spot.lat,spot.lon],
+            {
+                icon:L.divIcon({
+                    className:"spot-fire-marker",
+                    html:"🔥",
+                    iconSize:[22,22]
+                })
+            }
+        );
+
+        marker.bindPopup(
+            "<b>"+spot.incident+"</b><br>" +
+            cleanType+"<br>" +
+            "<b>Status:</b> "+spot.status
+        );
+
+        marker.addTo(map);
+
+        spotForecastMarkers.push(marker);
+
+    });
+
+    renderMapLegend(currentLegendItems);
+
+}
+  
 // ══════════════════════════════════════════════════════════════
-//  REFRESH — fetch events.json + calls.json, rebuild the calendar
+//  REFRESH
 // ══════════════════════════════════════════════════════════════
 async function refreshDashboard() {
   try {
@@ -553,15 +1612,458 @@ async function refreshDashboard() {
     ]);
     if (!eventsResponse.ok) throw new Error("Unable to load events.json");
     if (!callsResponse.ok) throw new Error("Unable to load calls.json");
-    dssRows  = await eventsResponse.json();
-    callRows = await callsResponse.json();
+    const events = await eventsResponse.json();
+    const calls  = await callsResponse.json();
+    try {
+      loadData(events, calls);
+    } catch (e) {
+      console.error("loadData error:", e);
+      const status = document.getElementById("dssStatusSub");
+      if (status) status.textContent = "Render error";
+    }
   } catch (err) {
     console.error("refreshDashboard failed:", err);
+    const status = document.getElementById("dssStatusSub");
+    if (status) status.textContent = "Failed: " + (err.message || "Unable to load dashboard data");
   }
 
+  updateLightningCard();
+  updateOutageCard();
+  refreshThreatGauges();
+  refreshHazards();
+  refreshSpotForecasts();
+  updateAlertTicker();
   checkWeeklyReminder();
-  buildCalendar();
   updateLastUpdated();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LOAD DATA (today only)
+// ══════════════════════════════════════════════════════════════
+function loadData(rows, calls) {
+  dssRows  = rows;
+  callRows = calls || [];
+  if (!calls) calls = [];
+
+  var headers = rows[0];
+  var sortedRows = rows.slice(1).sort(function(a, b) {
+    var da = String(a[headers.indexOf('Event Date')] || '').split('/');
+    var db = String(b[headers.indexOf('Event Date')] || '').split('/');
+    if (da.length !== 3 || db.length !== 3) return 0;
+    return new Date(da[2], da[0]-1, da[1]) - new Date(db[2], db[0]-1, db[1]);
+  });
+
+  var eventCol       = headers.indexOf('Event Name');
+  var typeCol        = headers.indexOf('DSS Type');
+  var eventDateCol   = headers.indexOf('Event Date');
+  var contactInfoCol = headers.indexOf('Contact Info');
+  var slidesLinkCol  = headers.indexOf('Slides Link');
+  var radarWatchCol  = headers.indexOf("Radar Start");
+  var radarEndCol    = headers.indexOf("Radar End");
+  var headsUpCol     = headers.indexOf('Email Due By');
+  var dssTimeCol     = headers.indexOf("DSS Start");
+  var dssEndCol      = headers.indexOf("DSS End");
+  var contactCol     = headers.indexOf('Contact Name');
+  var latCol         = headers.indexOf('Latitude');
+  var lonCol         = headers.indexOf('Longitude');
+  var cancelledCol   = headers.indexOf('Cancelled');
+
+  var selectedDateString = todayDateString;
+  var dssEmptyMessage   = 'No DSS Events Scheduled Today';
+  var callsEmptyMessage = 'No Coordination Calls Scheduled Today';
+
+  svgMarkersGroup.innerHTML = '';
+
+  eventDates = {};
+  var bounds       = [];
+  var markerGroups = {};
+  var upcoming     = [];
+  var todayDssItems = [];
+
+  var table = document.getElementById('eventTable');
+  table.innerHTML = '';
+
+  var activeCount = 0, radarCount = 0, headsUpCount = 0, onsiteCount = 0;
+
+  for (var i = 0; i < sortedRows.length; i++) {
+    var row   = sortedRows[i];
+    var parts = String(row[eventDateCol] || '').split('/');
+    if (parts.length !== 3) continue;
+
+    var eventDateString = parts[2] + '-' + parts[0].padStart(2, '0') + '-' + parts[1].padStart(2, '0');
+
+    if (String(row[cancelledCol]).trim().toUpperCase() === 'TRUE') continue;
+
+    if (eventDateString > selectedDateString) {
+      upcoming.push({ date: eventDateString, name: row[eventCol], type: row[typeCol], lat: row[latCol], lon: row[lonCol] });
+      continue; // future events don't appear in today's table/map
+    }
+    if (eventDateString !== selectedDateString) continue; // past events are irrelevant to a today-only view
+
+    todayDssItems.push({
+      name: row[eventCol], type: row[typeCol],
+      emailTime: row[headsUpCol],
+      radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
+      dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+    });
+
+    activeCount++;
+    if (row[typeCol].indexOf('Heads-up email') !== -1)          headsUpCount++;
+    else if (row[typeCol].indexOf('Active radar watch') !== -1) radarCount++;
+    else if (row[typeCol].indexOf('On-Site DSS') !== -1)        onsiteCount++;
+
+    var lat = parseFloat(row[latCol]);
+    var lon = parseFloat(row[lonCol]);
+    if (!isNaN(lat) && !isNaN(lon)) {
+      bounds.push([lat, lon]);
+      var key = lat.toFixed(5) + ',' + lon.toFixed(5);
+      if (!markerGroups[key]) markerGroups[key] = { lat: lat, lon: lon, events: [] };
+      markerGroups[key].events.push({
+        name: row[eventCol], type: row[typeCol], date: row[eventDateCol],
+        contact: row[contactCol], contactInfo: row[contactInfoCol],
+        emailTime: row[headsUpCol], radarTime: row[radarWatchCol],
+        radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
+        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+      });
+    }
+
+    var slidesHref = row[slidesLinkCol] ? safeHref(row[slidesLinkCol]) : '';
+    var linkCell = slidesHref
+      ? '<a href="' + slidesHref + '" target="_blank" title="Open Slides" style="color:#64b5f6;font-size:15px;text-decoration:none;">🔗</a>'
+      : '<span style="color:var(--muted);">—</span>';
+
+    var rowClass = getDssRowClass(row[typeCol]);
+    var tr = document.createElement('tr');
+    if (rowClass) tr.className = rowClass;
+
+    var displayTime = '—';
+    if (row[typeCol].indexOf('Heads-up email') !== -1) {
+      displayTime = row[headsUpCol] || '—';
+    } else if (row[typeCol].indexOf('Active radar watch') !== -1) {
+      displayTime = (row[radarWatchCol] || '') + (row[radarEndCol] ? ' – ' + row[radarEndCol] : '');
+    } else if (row[typeCol].indexOf('On-Site DSS') !== -1) {
+      displayTime = (row[dssTimeCol] || '') + (row[dssEndCol] ? ' – ' + row[dssEndCol] : '');
+    }
+
+    tr.innerHTML =
+      '<td style="white-space:nowrap;">' + escapeHtml(row[eventDateCol]) + '</td>' +
+      '<td class="time-chip">' + escapeHtml(displayTime) + '</td>' +
+      '<td style="font-weight:600;">' + escapeHtml(row[eventCol]) + '</td>' +
+      '<td>' + getDssTypeBadge(row[typeCol]) + '</td>' +
+      '<td>' + escapeHtml(row[contactCol]) + '</td>' +
+      '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(row[contactInfoCol]) + '</td>' +
+      '<td style="text-align:center;">' + linkCell + '</td>';
+    table.appendChild(tr);
+  }
+
+  currentTodayDssItems = todayDssItems;
+  renderOpsCountdowns(todayDssItems);
+
+  if (activeCount === 0) {
+    var emptyDssTr = document.createElement('tr');
+    emptyDssTr.innerHTML = '<td colspan="7" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' + escapeHtml(dssEmptyMessage) + '</td>';
+    table.appendChild(emptyDssTr);
+  }
+
+  Object.keys(markerGroups).forEach(function(key) {
+    var group = markerGroups[key];
+    var events = group.events;
+    var color = '#2563eb';
+    events.forEach(function(ev) {
+      if (ev.type.indexOf('On-Site DSS') !== -1) color = '#7c3aed';
+      else if (ev.type.indexOf('Active radar watch') !== -1 && color !== '#7c3aed') color = '#dc2626';
+    });
+    events.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+
+    var tooltipLines = [events[0].name, ''];
+    events.forEach(function(ev) {
+      tooltipLines.push(ev.date + ' — ' + ev.type);
+      if (ev.type.indexOf('Heads-up') !== -1 && ev.emailTime) tooltipLines.push('📧 Email Due: ' + ev.emailTime);
+      if (ev.type.indexOf('Active radar watch') !== -1 && ev.radarTime) tooltipLines.push('⏰ Radar Watch: ' + ev.radarTime);
+      if (ev.type.indexOf('On-Site DSS') !== -1 && ev.dssTime) tooltipLines.push('🟣 On-Site: ' + ev.dssTime);
+      tooltipLines.push('');
+    });
+
+    var p = svgProject(group.lon, group.lat);
+    var circle = document.createElementNS(SVG_NS, 'circle');
+    circle.setAttribute('cx', p[0].toFixed(1));
+    circle.setAttribute('cy', p[1].toFixed(1));
+    circle.setAttribute('r', '10');
+    circle.setAttribute('fill', color);
+    circle.setAttribute('stroke', '#ffffff');
+    circle.setAttribute('stroke-width', '2.5');
+    var markerTitle = document.createElementNS(SVG_NS, 'title');
+    markerTitle.textContent = tooltipLines.join('\n');
+    circle.appendChild(markerTitle);
+    svgMarkersGroup.appendChild(circle);
+  });
+
+  document.getElementById('tileRadar').textContent  = radarCount;
+  document.getElementById('tileEmail').textContent  = headsUpCount;
+  document.getElementById('tileOnsite').textContent = onsiteCount;
+
+  var dssColor = '#4ade80', dssIconClass = 'green', dssIcon = '✓', dssValue = 'No Active Events', dssSub = 'No DSS operations today.';
+  if (activeCount > 0) {
+    if (onsiteCount > 0)     { dssColor = '#7c3aed'; dssIconClass = 'purple'; dssIcon = '🟣'; }
+    else if (radarCount > 0) { dssColor = '#ef4444'; dssIconClass = 'red';    dssIcon = '🔴'; }
+    else                     { dssColor = '#3b82f6'; dssIconClass = 'blue';   dssIcon = '🔵'; }
+    dssValue = activeCount + ' Event' + (activeCount !== 1 ? 's' : '');
+    dssSub   = 'See table for details';
+  }
+  document.getElementById('dssStatusValue').style.color = dssColor;
+  document.getElementById('dssStatusValue').textContent  = dssValue;
+  document.getElementById('dssStatusSub').textContent    = dssSub;
+  document.getElementById('dssStatusIcon').className     = 'status-icon ' + dssIconClass;
+  document.getElementById('dssStatusIcon').textContent   = dssIcon;
+
+  upcoming.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+  var grouped = {};
+  upcoming.forEach(function(ev) {
+    var key = ev.name + '|' + ev.type;
+    if (!grouped[key]) grouped[key] = { name: ev.name, dates: [], type: ev.type, lat: ev.lat, lon: ev.lon };
+    grouped[key].dates.push(ev.date);
+  });
+  var upcomingContainer = document.getElementById('upcomingEvents');
+  upcomingContainer.innerHTML = '';
+  var groupKeys = Object.keys(grouped);
+  if (groupKeys.length === 0) {
+    upcomingContainer.innerHTML = '<div class="empty-state">No upcoming DSS events</div>';
+  } else {
+    groupKeys.forEach(function(key) {
+      var g = grouped[key];
+      var eventClass = '';
+      if (g.type.indexOf('Heads-up email') !== -1)          eventClass = 'upcoming-headsup';
+      else if (g.type.indexOf('Active radar watch') !== -1) eventClass = 'upcoming-radar';
+      else if (g.type.indexOf('On-Site DSS') !== -1)        eventClass = 'upcoming-onsite';
+      g.dates.sort();
+      var start = formatDate(g.dates[0]);
+      var end   = formatDate(g.dates[g.dates.length - 1]);
+      var range = start === end ? start : start + ' – ' + end;
+      var div = document.createElement('div');
+      div.className = 'upcoming-item ' + eventClass;
+      div.innerHTML = '<div class="upcoming-item-name">' + escapeHtml(g.name) + '</div><div class="upcoming-item-meta">' + escapeHtml(g.type) + ' · ' + escapeHtml(range) + '</div>';
+      upcomingContainer.appendChild(div);
+    });
+  }
+
+  // ── CALLS ──────────────────────────────────────────────────
+  var callsTableEl = document.getElementById('callsTable');
+  callsTableEl.innerHTML = '';
+
+  if (!calls || calls.length <= 1) {
+    document.getElementById('callsTable').innerHTML =
+      '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' + escapeHtml(callsEmptyMessage) + '</td></tr>';
+    document.getElementById('callStatusValue').textContent = 'No Calls';
+    document.getElementById('callStatusSub').textContent   = '--';
+    document.getElementById('upcomingCalls').innerHTML     = '<div class="empty-state">No upcoming calls</div>';
+    document.getElementById('callCount').innerHTML         = '';
+    buildGlanceTimeline(todayDssItems, []);
+    updateNextObligation(todayDssItems, []);
+    return;
+  }
+
+  var now = new Date();
+  now.setSeconds(0, 0);
+
+  function computeCallDateTime(call) {
+    var parts = String(call[0] || '').split('/');
+    if (parts.length !== 3) return null;
+    var callDate = new Date(parseInt(parts[2],10), parseInt(parts[0],10)-1, parseInt(parts[1],10));
+    var time = String(call[1] || '').trim();
+    var m = time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (m) {
+      var hour = parseInt(m[1],10), minute = parseInt(m[2],10);
+      if (m[3].toUpperCase() === 'PM' && hour < 12) hour += 12;
+      if (m[3].toUpperCase() === 'AM' && hour === 12) hour = 0;
+      callDate.setHours(hour, minute, 0, 0);
+    }
+    return callDate;
+  }
+
+  var sortedCalls = calls.slice(1)
+    .filter(function(call) {
+      if (String(call[5]).trim().toUpperCase() === 'TRUE') return false;
+      var parts = String(call[0] || '').split('/');
+      return parts.length === 3;
+    })
+    .sort(function(a, b) {
+      var da = computeCallDateTime(a) || new Date(0);
+      var db = computeCallDateTime(b) || new Date(0);
+      return da - db;
+    });
+
+  var futureCalls = sortedCalls.filter(function(call) {
+    var cd = computeCallDateTime(call);
+    return cd && cd >= now;
+  });
+
+  var todayCalls = sortedCalls.filter(function(call) {
+    var cp = String(call[0] || '').split('/');
+    if (cp.length !== 3) return false;
+    var ds = cp[2] + '-' + cp[0].padStart(2,'0') + '-' + cp[1].padStart(2,'0');
+    return ds === selectedDateString;
+  });
+
+  buildGlanceTimeline(todayDssItems, todayCalls);
+  updateNextObligation(todayDssItems, todayCalls);
+
+  var upcomingCallsContainer = document.getElementById('upcomingCalls');
+  upcomingCallsContainer.innerHTML = '';
+  if (futureCalls.length === 0) {
+    upcomingCallsContainer.innerHTML = '<div class="empty-state">No upcoming calls</div>';
+  } else {
+    futureCalls.forEach(function(call) {
+      var div = document.createElement('div');
+      div.className = 'upcoming-item';
+      div.innerHTML = '<div class="upcoming-item-name">' + escapeHtml(call[2]) + '</div><div class="upcoming-item-meta">' + escapeHtml(call[0]) + ' ' + escapeHtml(call[1]) + '</div>';
+      upcomingCallsContainer.appendChild(div);
+    });
+  }
+
+  document.getElementById('callCount').innerHTML =
+    '<div style="font-size:11px;color:var(--muted);padding:4px 0;">📞 ' + futureCalls.length + ' planned call' + (futureCalls.length !== 1 ? 's' : '') + ' total</div>';
+
+  var visibleCallCount = 0;
+  todayCalls.forEach(function(call) {
+    visibleCallCount++;
+    var callDate = call[0], callTime = call[1], eventInfo = call[2], contactInfo = call[3];
+    var urlMatch = String(contactInfo || '').match(/https?:\/\/\S+/);
+    var joinHref = urlMatch ? safeHref(urlMatch[0]) : '';
+    var joinBtn  = joinHref ? '<a href="' + joinHref + '" target="_blank" class="join-btn">🔗 Join</a>' : '';
+    var ctr = document.createElement('tr');
+    ctr.innerHTML =
+      '<td style="white-space:nowrap;">' + escapeHtml(callDate)    + '</td>' +
+      '<td class="time-chip">'           + escapeHtml(callTime)    + '</td>' +
+      '<td style="font-weight:600;">'    + escapeHtml(eventInfo)   + '</td>' +
+      '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(contactInfo) + '</td>' +
+      '<td>' + joinBtn + '</td>';
+    callsTableEl.appendChild(ctr);
+  });
+
+  if (visibleCallCount === 0) {
+    var emptyCallTr = document.createElement('tr');
+    emptyCallTr.innerHTML = '<td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' + escapeHtml(callsEmptyMessage) + '</td>';
+    callsTableEl.appendChild(emptyCallTr);
+  }
+
+  if (visibleCallCount === 0) {
+    document.getElementById('callStatusValue').style.color = '#4ade80';
+    document.getElementById('callStatusValue').textContent  = 'No Calls';
+    document.getElementById('callStatusSub').textContent    = '--';
+    document.getElementById('callStatusIcon').className     = 'status-icon green';
+    document.getElementById('callStatusIcon').textContent   = '✓';
+  } else {
+    document.getElementById('callStatusValue').style.color = '#fbbf24';
+    document.getElementById('callStatusValue').textContent  = visibleCallCount + ' Coordination Call' + (visibleCallCount > 1 ? 's' : '');
+    document.getElementById('callStatusSub').textContent    = 'See table for details';
+    document.getElementById('callStatusIcon').className     = 'status-icon amber';
+    document.getElementById('callStatusIcon').textContent   = '☎';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ALERT TICKER
+// ══════════════════════════════════════════════════════════════
+var tickerAnimFrame    = null;
+var tickerPos          = 0;
+var tickerSpeed        = 0.6;
+var tickerContentWidth = 0;
+
+function getAlertColor(event, severity) {
+  var e = (event || '').toLowerCase();
+  var s = (severity || '').toLowerCase();
+  if (s === 'extreme' || s === 'severe' || e.indexOf('warning') !== -1 || e.indexOf('emergency') !== -1) return { dot: '#ef4444', text: '#fca5a5', bg: 'rgba(239,68,68,0.08)' };
+  if (e.indexOf('watch') !== -1) return { dot: '#f97316', text: '#fdba74', bg: 'rgba(249,115,22,0.08)' };
+  if (e.indexOf('advisory') !== -1 || e.indexOf('statement') !== -1) return { dot: '#facc15', text: '#fde68a', bg: 'rgba(250,204,21,0.08)' };
+  return { dot: '#60a5fa', text: '#93c5fd', bg: 'rgba(96,165,250,0.08)' };
+}
+
+function formatAlertExpiry(expiresStr) {
+  if (!expiresStr) return '';
+  var d = new Date(expiresStr);
+  if (isNaN(d)) return '';
+  var mo = d.getMonth() + 1, day = d.getDate(), h = d.getHours(), min = d.getMinutes();
+  var ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return 'Until ' + mo + '/' + day + ' ' + h + ':' + String(min).padStart(2,'0') + ' ' + ampm;
+}
+
+function buildTickerChip(alert) {
+  var props   = alert.properties || {};
+  var event   = props.event   || 'Alert';
+  var expires = props.ends || props.expires || '';
+  var colors  = getAlertColor(event, props.severity);
+  var expStr  = formatAlertExpiry(expires);
+
+  var chip = document.createElement('a');
+  chip.className = 'ticker-chip';
+  chip.href      = 'https://script.google.com/a/macros/noaa.gov/s/AKfycbwYEZ9T08KI6OlJ8Lwg0XpOiRyaQEW50uSbG551p8_GxRUfA2Z4f_u72k8bMz3nqM8Tig/exec';
+  chip.target    = '_blank';
+  chip.style.cssText = 'background:' + colors.bg + '; color:' + colors.text + ';';
+  chip.innerHTML = '<span class="ticker-dot" style="background:' + colors.dot + ';"></span><span>' + escapeHtml(event) + (expStr ? ' — ' + escapeHtml(expStr) : '') + '</span>';
+  return chip;
+}
+
+function runTickerAnimation() {
+  var track = document.getElementById('tickerTrack');
+  if (!track) return;
+  tickerPos -= tickerSpeed;
+  if (tickerContentWidth > 0 && tickerPos <= -tickerContentWidth) tickerPos = 0;
+  track.style.transform = 'translateX(' + tickerPos + 'px)';
+  tickerAnimFrame = requestAnimationFrame(runTickerAnimation);
+}
+
+function updateAlertTicker() {
+  fetch(ALERTS_URL)
+    .then(function(r) { return r.ok ? r.json() : { features: [] }; })
+    .catch(function() { return { features: [] }; })
+    .then(function(data) {
+      var track  = document.getElementById('tickerTrack');
+      var ticker = document.getElementById('alertTicker');
+      if (!track || !ticker) return;
+
+      if (tickerAnimFrame) { cancelAnimationFrame(tickerAnimFrame); tickerAnimFrame = null; }
+      track.innerHTML = '';
+      tickerPos = 0;
+
+      var alerts = (data.features || []).filter(function(a) {
+        var s = (a.properties || {}).status || '';
+        return s !== 'Test' && s !== 'Exercise';
+      });
+
+      if (alerts.length === 0) {
+        ticker.style.background = 'rgba(5,46,22,0.4)';
+        tickerPos = 0;
+        var noAlertText =
+          '<span style="display:inline-flex;align-items:center;gap:7px;padding:0 16px;font-size:11px;font-weight:700;color:#4ade80;white-space:nowrap;">' +
+          '<span style="width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;display:inline-block;"></span>' +
+          'No active watches, warnings, or advisories are in effect at this time.</span>';
+        track.innerHTML = noAlertText + noAlertText + noAlertText;
+        setTimeout(function() { tickerContentWidth = track.scrollWidth / 3; runTickerAnimation(); }, 50);
+        return;
+      }
+
+      ticker.style.background = '#050d18';
+
+      function appendChips() {
+        alerts.forEach(function(alert, i) {
+          track.appendChild(buildTickerChip(alert));
+          if (i < alerts.length - 1) {
+            var sep = document.createElement('span');
+            sep.className   = 'ticker-sep';
+            sep.textContent = '·';
+            track.appendChild(sep);
+          }
+        });
+      }
+
+      appendChips();
+      setTimeout(function() { tickerContentWidth = track.scrollWidth; appendChips(); runTickerAnimation(); }, 50);
+    })
+    .catch(function() {
+      var track = document.getElementById('tickerTrack');
+      if (track) track.innerHTML = '<span style="padding:0 16px;font-size:11px;color:#8899a6;white-space:nowrap;">Unable to load alert data</span>';
+    });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -570,28 +2072,60 @@ async function refreshDashboard() {
 document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('btnCloseModal').addEventListener('click', closeCalendarModal);
-  document.getElementById('calendarModal').addEventListener('click', function(e) {
-    if (e.target === this) closeCalendarModal();
-  });
+  document.getElementById('calendarModal').addEventListener('click', function(e) { if (e.target === this) closeCalendarModal(); });
 
-  document.getElementById('calendarScrollWrapper').addEventListener('click', function(e) {
-    var chip = e.target.closest('[data-dss-event]');
-    if (chip) { showDssDetails(chip.getAttribute('data-dss-event')); return; }
-    var callChip = e.target.closest('[data-call-index]');
-    if (callChip) { showCallDetails(parseInt(callChip.getAttribute('data-call-index'), 10)); }
+  fetch("https://raw.githubusercontent.com/matthewclay88/severe-climatology/refs/heads/main/allzones.geojson")
+    .then(response => response.json())
+    .then(data => {
+      var TARGET_CWA = 'BTV';
+      var EXTRA_ZONES = ['VT013', 'VT014', 'VT015'];
+
+      var filteredFeatures = (data.features || []).filter(function(f) {
+        var p = f.properties || {};
+        if (p.CWA === TARGET_CWA) return true;
+        if (EXTRA_ZONES.includes(p.STATE_ZONE)) return true;
+        return false;
+      });
+
+      BTV_ZONE_SET = new Set(filteredFeatures.map(f => f.properties.STATE + 'Z' + f.properties.ZONE));
+
+      svgZonesGroup.innerHTML = '';
+      svgZonePaths = {};
+      filteredFeatures.forEach(function (f) {
+        var d = svgGeometryToPath(f.geometry);
+        if (!d) return;
+        var zoneKey = f.properties.STATE + 'Z' + f.properties.ZONE;
+        var path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('fill', '#1e2d3d');
+        path.setAttribute('fill-opacity', '0');
+        path.setAttribute('stroke', '#243447');
+        path.setAttribute('stroke-width', '1');
+        svgZonesGroup.appendChild(path);
+        svgZonePaths[zoneKey] = path;
+      });
+
+      warningZoneLayer = true;
+      refreshHazards();
+    })
+    .catch(err => console.error("GeoJSON Error:", err));
+
+  document.getElementById("hazardToggle").addEventListener("change", function () {
+    var display = this.checked ? '' : 'none';
+    svgZonesGroup.style.display   = display;
+    svgHazardsGroup.style.display = display;
   });
 
   refreshDashboard();
 
-  var _calResizeTimer = null;
-  window.addEventListener('resize', function () {
-    clearTimeout(_calResizeTimer);
-    _calResizeTimer = setTimeout(fitCalendarCells, 150);
-  });
+  // No 5-minute auto-refresh loop — the page itself is reloaded
+  // externally every 30 seconds, so a fresh load already re-fetches
+  // everything. This avoids overlapping fetch/refresh cycles.
 
-  // Since this page stays open (unlike a page that gets externally
-  // reloaded every 30s), keep the data current on a timer.
-  setInterval(refreshDashboard, 300000);
+  opsCountdownTimer = setInterval(function () {
+    if (currentTodayDssItems.length) renderOpsCountdowns(currentTodayDssItems);
+  }, 1000);
+
 });
 </script>
 </body>
