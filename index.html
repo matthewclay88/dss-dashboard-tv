@@ -1640,12 +1640,32 @@ function loadData(rows, calls) {
   if (!calls) calls = [];
 
   var headers = rows[0];
-  var sortedRows = rows.slice(1).sort(function(a, b) {
-    var da = String(a[headers.indexOf('Event Date')] || '').split('/');
-    var db = String(b[headers.indexOf('Event Date')] || '').split('/');
-    if (da.length !== 3 || db.length !== 3) return 0;
-    return new Date(da[2], da[0]-1, da[1]) - new Date(db[2], db[0]-1, db[1]);
-  });
+  var dssTypeColIdx    = headers.indexOf('DSS Type');
+var radarStartColIdx = headers.indexOf('Radar Start');
+var headsUpColIdx    = headers.indexOf('Email Due By');
+var dssStartColIdx   = headers.indexOf('DSS Start');
+
+// Picks whichever time field is relevant to a row's DSS type so same-day
+// rows sort by actual time-of-day instead of falling back to spreadsheet
+// row order (Heads-up -> Email Due By, Radar Watch -> Radar Start,
+// On-Site -> DSS Start). Rows with no usable time sort to the end of that day.
+function getDssSortMinutes(row) {
+  var type = String(row[dssTypeColIdx] || '');
+  var timeStr = '';
+  if (type.indexOf('Heads-up email') !== -1) timeStr = row[headsUpColIdx];
+  else if (type.indexOf('Active radar watch') !== -1) timeStr = row[radarStartColIdx];
+  else if (type.indexOf('On-Site DSS') !== -1) timeStr = row[dssStartColIdx];
+  return parseTimeToMinutes(timeStr);
+}
+
+var sortedRows = rows.slice(1).sort(function(a, b) {
+  var da = String(a[headers.indexOf('Event Date')] || '').split('/');
+  var db = String(b[headers.indexOf('Event Date')] || '').split('/');
+  if (da.length !== 3 || db.length !== 3) return 0;
+  var dateDiff = new Date(da[2], da[0]-1, da[1]) - new Date(db[2], db[0]-1, db[1]);
+  if (dateDiff !== 0) return dateDiff;
+  return getDssSortMinutes(a) - getDssSortMinutes(b);
+});
 
   var eventCol       = headers.indexOf('Event Name');
   var typeCol        = headers.indexOf('DSS Type');
