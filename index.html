@@ -1101,6 +1101,25 @@ body::before{
     border:none !important;
 
 }
+
+@keyframes markerPulse {
+
+    0% {
+        r: 8;
+        opacity: 1;
+    }
+
+    50% {
+        r: 14;
+        opacity: .35;
+    }
+
+    100% {
+        r: 8;
+        opacity: 1;
+    }
+
+}
   
 </style>
 </head>
@@ -2007,6 +2026,36 @@ function renderOpsCountdowns(items) {
   if (empty) empty.style.display = (!radarItem && !onsiteItem) ? 'block' : 'none';
 }
 
+function isDssEventActive(ev) {
+
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+
+    let start = null;
+    let end = null;
+
+    if (ev.type.indexOf("Active radar watch") !== -1) {
+
+        start = parseTimeToMinutes(ev.radarTime);
+        end   = parseTimeToMinutes(ev.radarEndTime);
+
+    } else if (ev.type.indexOf("On-Site DSS") !== -1) {
+
+        start = parseTimeToMinutes(ev.dssTime);
+        end   = parseTimeToMinutes(ev.dssEndTime);
+
+    } else {
+
+        return false;
+
+    }
+
+    if (start == null || end == null) return false;
+
+    return nowMin >= start && nowMin <= end;
+
+}
+  
 // ══════════════════════════════════════════════════════════════
 //  MODALS
 // ══════════════════════════════════════════════════════════════
@@ -2409,6 +2458,37 @@ function renderDssMarkers(events) {
 
         const marker = document.createElementNS(SVG_NS,"circle");
 
+        if (isDssEventActive(ev)) {
+
+    const ring = document.createElementNS(SVG_NS, "circle");
+
+    ring.setAttribute("cx", pt[0]);
+    ring.setAttribute("cy", pt[1]);
+    ring.setAttribute("r", 8);
+
+    ring.setAttribute("fill", "none");
+    ring.setAttribute("stroke", color);
+    ring.setAttribute("stroke-width", 3);
+    ring.setAttribute("opacity", 0.7);
+
+    const animateRadius = document.createElementNS(SVG_NS, "animate");
+    animateRadius.setAttribute("attributeName", "r");
+    animateRadius.setAttribute("values", "8;18");
+    animateRadius.setAttribute("dur", "1.8s");
+    animateRadius.setAttribute("repeatCount", "indefinite");
+
+    const animateOpacity = document.createElementNS(SVG_NS, "animate");
+    animateOpacity.setAttribute("attributeName", "opacity");
+    animateOpacity.setAttribute("values", "0.8;0");
+    animateOpacity.setAttribute("dur", "1.8s");
+    animateOpacity.setAttribute("repeatCount", "indefinite");
+
+    ring.appendChild(animateRadius);
+    ring.appendChild(animateOpacity);
+
+    svgDssGroup.appendChild(ring);
+}
+
         marker.setAttribute("cx",pt[0]);
         marker.setAttribute("cy",pt[1]);
         marker.setAttribute("r",8);
@@ -2430,6 +2510,51 @@ function renderDssMarkers(events) {
 
     });
 
+}
+
+function parseTimeToMinutes(timeStr) {
+
+    if (!timeStr) return null;
+
+    const m = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) return null;
+
+    let hour = parseInt(m[1], 10);
+    const minute = parseInt(m[2], 10);
+    const ampm = m[3].toUpperCase();
+
+    if (hour === 12) hour = 0;
+    if (ampm === "PM") hour += 12;
+
+    return hour * 60 + minute;
+}
+
+function isDssEventActive(ev) {
+
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+
+    let start = null;
+    let end = null;
+
+    if (ev.type.indexOf("Active radar watch") !== -1) {
+        start = parseTimeToMinutes(ev.radarTime);
+        end = parseTimeToMinutes(ev.radarEndTime);
+    } else if (ev.type.indexOf("On-Site DSS") !== -1) {
+        start = parseTimeToMinutes(ev.dssTime);
+        end = parseTimeToMinutes(ev.dssEndTime);
+    } else {
+        return false;
+    }
+
+    if (start == null || end == null) return false;
+
+    if (end >= start) {
+        return nowMin >= start && nowMin <= end;
+    }
+
+    // Handles events crossing midnight
+    return nowMin >= start || nowMin <= end;
 }
   
 // ══════════════════════════════════════════════════════════════
