@@ -2551,20 +2551,28 @@ svgDssGroup.innerHTML = '';
     }
     if (eventDateString !== selectedDateString) continue; // past events are irrelevant to a today-only view
 
-    todayDssItems.push({
-      name: row[eventCol], type: row[typeCol],
-      emailTime: row[headsUpCol],
-      radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
-      dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
-    });
+    var lat = parseFloat(row[latCol]);
+var lon = parseFloat(row[lonCol]);
+
+todayDssItems.push({
+  name: row[eventCol],
+  type: row[typeCol],
+
+  lat: lat,
+  lon: lon,
+
+  emailTime: row[headsUpCol],
+  radarTime: row[radarWatchCol],
+  radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
+  dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '',
+  dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+});
 
     activeCount++;
     if (row[typeCol].indexOf('Heads-up email') !== -1)          headsUpCount++;
     else if (row[typeCol].indexOf('Active radar watch') !== -1) radarCount++;
     else if (row[typeCol].indexOf('On-Site DSS') !== -1)        onsiteCount++;
 
-    var lat = parseFloat(row[latCol]);
-    var lon = parseFloat(row[lonCol]);
     if (!isNaN(lat) && !isNaN(lon)) {
       bounds.push([lat, lon]);
       var key = lat.toFixed(5) + ',' + lon.toFixed(5);
