@@ -2464,16 +2464,16 @@ function renderDssMarkers(events) {
 
     ring.setAttribute("cx", pt[0]);
     ring.setAttribute("cy", pt[1]);
-    ring.setAttribute("r", 8);
+    ring.setAttribute("r", 10);
 
     ring.setAttribute("fill", "none");
     ring.setAttribute("stroke", color);
-    ring.setAttribute("stroke-width", 3);
+    ring.setAttribute("stroke-width", 4);
     ring.setAttribute("opacity", 0.7);
 
     const animateRadius = document.createElementNS(SVG_NS, "animate");
     animateRadius.setAttribute("attributeName", "r");
-    animateRadius.setAttribute("values", "8;18");
+    animateRadius.setAttribute("values", "10;26");
     animateRadius.setAttribute("dur", "1.8s");
     animateRadius.setAttribute("repeatCount", "indefinite");
 
@@ -2491,12 +2491,12 @@ function renderDssMarkers(events) {
 
         marker.setAttribute("cx",pt[0]);
         marker.setAttribute("cy",pt[1]);
-        marker.setAttribute("r",8);
+        marker.setAttribute("r",10);
 
         marker.setAttribute("fill",color);
 
         marker.setAttribute("stroke","#ffffff");
-        marker.setAttribute("stroke-width","2");
+        marker.setAttribute("stroke-width","3");
 
         const title = document.createElementNS(SVG_NS,"title");
 
