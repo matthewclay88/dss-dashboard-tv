@@ -2523,7 +2523,7 @@ var sortedRows = rows.slice(1).sort(function(a, b) {
   var dssEmptyMessage   = 'No DSS Events Scheduled Today';
   var callsEmptyMessage = 'No Coordination Calls Scheduled Today';
 
-  svgMarkersGroup.innerHTML = '';
+svgDssGroup.innerHTML = '';
 
   eventDates = {};
   var bounds       = [];
@@ -2616,39 +2616,6 @@ var sortedRows = rows.slice(1).sort(function(a, b) {
     emptyDssTr.innerHTML = '<td colspan="7" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' + escapeHtml(dssEmptyMessage) + '</td>';
     table.appendChild(emptyDssTr);
   }
-
-  Object.keys(markerGroups).forEach(function(key) {
-    var group = markerGroups[key];
-    var events = group.events;
-    var color = '#2563eb';
-    events.forEach(function(ev) {
-      if (ev.type.indexOf('On-Site DSS') !== -1) color = '#7c3aed';
-      else if (ev.type.indexOf('Active radar watch') !== -1 && color !== '#7c3aed') color = '#dc2626';
-    });
-    events.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
-
-    var tooltipLines = [events[0].name, ''];
-    events.forEach(function(ev) {
-      tooltipLines.push(ev.date + ' — ' + ev.type);
-      if (ev.type.indexOf('Heads-up') !== -1 && ev.emailTime) tooltipLines.push('📧 Email Due: ' + ev.emailTime);
-      if (ev.type.indexOf('Active radar watch') !== -1 && ev.radarTime) tooltipLines.push('⏰ Radar Watch: ' + ev.radarTime);
-      if (ev.type.indexOf('On-Site DSS') !== -1 && ev.dssTime) tooltipLines.push('🟣 On-Site: ' + ev.dssTime);
-      tooltipLines.push('');
-    });
-
-    var p = svgProject(group.lon, group.lat);
-    var circle = document.createElementNS(SVG_NS, 'circle');
-    circle.setAttribute('cx', p[0].toFixed(1));
-    circle.setAttribute('cy', p[1].toFixed(1));
-    circle.setAttribute('r', '10');
-    circle.setAttribute('fill', color);
-    circle.setAttribute('stroke', '#ffffff');
-    circle.setAttribute('stroke-width', '2.5');
-    var markerTitle = document.createElementNS(SVG_NS, 'title');
-    markerTitle.textContent = tooltipLines.join('\n');
-    circle.appendChild(markerTitle);
-    svgMarkersGroup.appendChild(circle);
-  });
 
   document.getElementById('tileRadar').textContent  = radarCount;
   document.getElementById('tileEmail').textContent  = headsUpCount;
