@@ -1295,7 +1295,7 @@ body::before{
   <div id="spotForecastWrapper">
     <div class="data-section">
       <div class="data-section-header">
-        <span class="section-icon">🔥</span>
+        <span class="section-icon"></span>
         <h2>Spot Forecast Requests</h2>
       </div>
       <div class="table-scroll">
@@ -2321,6 +2321,28 @@ renderSpotForecasts(spots);
 
 }
 
+function getSpotEmoji(type){
+
+    type = (type || "").toLowerCase();
+
+    if (type.includes("hazmat")) return "☣️";
+
+    if (
+        type.includes("sar") ||
+        type.includes("search")
+    ) return "🚁";
+
+    if (type.includes("marine")) return "🚤";
+
+    if (
+        type.includes("wildfire") ||
+        type.includes("prescribed")
+    ) return "🔥";
+
+    return "🔥";
+
+}
+  
 function renderSpotForecasts(spots) {
 
     const tbody = document.getElementById("spotForecastTable");
@@ -2410,15 +2432,15 @@ if (svgSpotGroup) {
             fire.setAttribute("y", pt[1]);
             fire.setAttribute("text-anchor", "middle");
             fire.setAttribute("dominant-baseline", "middle");
-            fire.setAttribute("font-size", "34");
+            fire.setAttribute("font-size", "40");
             fire.setAttribute("font-weight", "700");
             fire.setAttribute("cursor", "pointer");
 
-            fire.textContent = "🔥";
+            fire.textContent = getSpotEmoji(spot.type);
             const animateSize = document.createElementNS(SVG_NS, "animate");
 
             animateSize.setAttribute("attributeName", "font-size");
-            animateSize.setAttribute("values", "24;30;24");
+            animateSize.setAttribute("values", "36;42;36");
             animateSize.setAttribute("dur", "1.6s");
             animateSize.setAttribute("repeatCount", "indefinite");
 
