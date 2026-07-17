@@ -1431,11 +1431,14 @@ var svgMapEl = document.getElementById('map');
 var svgBasemapGroup = document.createElementNS(SVG_NS, 'g');
 var svgZonesGroup   = document.createElementNS(SVG_NS, 'g');
 var svgHazardsGroup = document.createElementNS(SVG_NS, 'g');
-var svgMarkersGroup = document.createElementNS(SVG_NS, 'g');
+var svgDssGroup     = document.createElementNS(SVG_NS, 'g');
+var svgSpotGroup    = document.createElementNS(SVG_NS, 'g');
+
 svgMapEl.appendChild(svgBasemapGroup);
 svgMapEl.appendChild(svgZonesGroup);
 svgMapEl.appendChild(svgHazardsGroup);
-svgMapEl.appendChild(svgMarkersGroup);
+svgMapEl.appendChild(svgDssGroup);
+svgMapEl.appendChild(svgSpotGroup);
 
 var SVG_BOUNDS = { lonMin: -75.95, lonMax: -71.3, latMin: 42.7, latMax: 45.2 };
 var SVG_VB_W = 800, SVG_VB_H = 700;
@@ -2277,9 +2280,10 @@ function renderSpotForecasts(spots) {
     tbody.innerHTML = "";
 
     // Remove existing SVG fire markers
-    if (svgMarkersGroup) {
-        svgMarkersGroup.innerHTML = "";
-    }
+    // Remove existing SVG fire markers
+if (svgSpotGroup) {
+    svgSpotGroup.innerHTML = "";
+}
 
     if (!spots.length) {
 
@@ -2342,9 +2346,9 @@ function renderSpotForecasts(spots) {
 
         // ----- SVG fire marker -----
         if (
-            typeof svgProject === "function" &&
-            svgMarkersGroup
-        ) {
+    typeof svgProject === "function" &&
+    svgSpotGroup
+) {
 
             const pt = svgProject(spot.lon, spot.lat);
 
@@ -2375,12 +2379,57 @@ function renderSpotForecasts(spots) {
 
             fire.appendChild(title);
 
-            svgMarkersGroup.appendChild(fire);
+            svgSpotGroup.appendChild(fire);
         }
 
     });
 
     refreshHazards();
+}
+
+function renderDssMarkers(events) {
+
+    if (!svgDssGroup) return;
+
+    svgDssGroup.innerHTML = "";
+
+    events.forEach(function(ev) {
+
+        if (!ev.lat || !ev.lon) return;
+
+        const pt = svgProject(ev.lon, ev.lat);
+
+        let color = "#2563eb";
+
+        if (ev.type.indexOf("Active radar watch") !== -1)
+            color = "#dc2626";
+
+        else if (ev.type.indexOf("On-Site DSS") !== -1)
+            color = "#7c3aed";
+
+        const marker = document.createElementNS(SVG_NS,"circle");
+
+        marker.setAttribute("cx",pt[0]);
+        marker.setAttribute("cy",pt[1]);
+        marker.setAttribute("r",8);
+
+        marker.setAttribute("fill",color);
+
+        marker.setAttribute("stroke","#ffffff");
+        marker.setAttribute("stroke-width","2");
+
+        const title = document.createElementNS(SVG_NS,"title");
+
+        title.textContent =
+            ev.name + "\n" +
+            ev.type;
+
+        marker.appendChild(title);
+
+        svgDssGroup.appendChild(marker);
+
+    });
+
 }
   
 // ══════════════════════════════════════════════════════════════
@@ -2560,6 +2609,7 @@ var sortedRows = rows.slice(1).sort(function(a, b) {
 
   currentTodayDssItems = todayDssItems;
   renderOpsCountdowns(todayDssItems);
+  renderDssMarkers(todayDssItems);
 
   if (activeCount === 0) {
     var emptyDssTr = document.createElement('tr');
