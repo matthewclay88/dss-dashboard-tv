@@ -314,6 +314,139 @@ body {
   .map-legend-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 5px; background: var(--surface2); border: 1px solid var(--border2); font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; }
   .map-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .map-legend-none { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); font-weight: 600; }
+
+/*=========================================================
+    NWS BURLINGTON DSS DASHBOARD
+              V4 THEME
+    ===============================================
+    ALL VISUAL OVERRIDES GO BELOW
+=========================================================*/
+
+  body{
+
+    background:
+        radial-gradient(1100px 520px at 75% -10%, rgba(37,99,235,.12) 0%, transparent 60%),
+        radial-gradient(900px 520px at -10% 110%, rgba(124,58,237,.06) 0%, transparent 55%),
+        linear-gradient(180deg,#04070d 0%,#060b12 100%);
+
+}
+
+/* smoother appearance everywhere */
+
+*{
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background-color .18s ease;
+
+}
+
+/* modern scrollbar */
+
+::-webkit-scrollbar{
+
+    width:8px;
+    height:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#06090f;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#27405c;
+    border-radius:10px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#35628e;
+
+}
+
+.left-panel,
+.right-panel,
+.data-section,
+.glance-section{
+
+    background:
+        linear-gradient(
+            180deg,
+            #101827 0%,
+            #0c1420 100%
+        );
+
+    border-radius:14px;
+
+    border:1px solid rgba(74,144,226,.20);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.03),
+        0 0 0 1px rgba(74,144,226,.05),
+        0 12px 30px rgba(0,0,0,.35);
+
+}
+
+/* spacing between cards */
+
+.center-panel{
+
+    gap:14px;
+
+}
+
+/* left sidebar */
+
+.left-panel{
+
+    padding:2px;
+
+}
+
+/* right map */
+
+.right-panel{
+
+    padding:2px;
+
+}
+
+  .panel-section-title,
+.glance-title,
+.data-section-header h2,
+.map-title{
+
+    color:#d9e7f5;
+
+    font-size:11px;
+
+    letter-spacing:.12em;
+
+    font-weight:800;
+
+    text-transform:uppercase;
+
+}
+
+.panel-section-title::after,
+.glance-title::after{
+
+    background:
+
+        linear-gradient(
+            90deg,
+            rgba(77,163,255,.65),
+            transparent
+        );
+
+}
+  
 </style>
 </head>
 <body>
