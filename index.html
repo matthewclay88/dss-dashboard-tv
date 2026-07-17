@@ -1419,6 +1419,29 @@ async function refreshSpotForecasts() {
 
 })
 
+           .filter(function(spot) {
+
+    // Keep pending / in-progress requests (future / outstanding spots)
+    if (spot.statusCode === "P" || spot.statusCode === "I") return true;
+
+    // Only keep completed requests if they were fulfilled within the last 24 hours
+    if (spot.statusCode === "C" || spot.statusCode === "F") {
+
+        var completedTime = (spot.posted && spot.posted !== "Incomplete")
+            ? new Date(spot.posted)
+            : null;
+
+        if (!completedTime || isNaN(completedTime.getTime())) return false;
+
+        var age = now - completedTime.getTime();
+
+        return age >= 0 && age <= SPOT_FORECAST_WINDOW_MS;
+    }
+
+    return false;
+
+})
+
         // Pending first
         spots.sort(function(a,b){
 
