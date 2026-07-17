@@ -296,6 +296,43 @@ function formatTimeRange(start, end) {
   return end ? (start + ' – ' + end) : start;
 }
 
+// Accepts "H:MM AM/PM" (the format times are stored/displayed in) as well
+// as raw "HH:MM" 24-hour values, and returns minutes-since-midnight so
+// DSS events and coordination calls can be sorted chronologically within
+// a day instead of falling back to whatever order they arrived in.
+// Unparseable/blank times sort to the end of the day (9999).
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr) return 9999;
+  var s = String(timeStr).trim();
+
+  var ampm = s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (ampm) {
+    var h = parseInt(ampm[1], 10);
+    var min = parseInt(ampm[2], 10);
+    if (ampm[3].toUpperCase() === 'PM' && h < 12) h += 12;
+    if (ampm[3].toUpperCase() === 'AM' && h === 12) h = 0;
+    return h * 60 + min;
+  }
+
+  var military = s.match(/^(\d{1,2}):(\d{2})$/);
+  if (military) {
+    return parseInt(military[1], 10) * 60 + parseInt(military[2], 10);
+  }
+
+  return 9999;
+}
+
+// Picks whichever time field is relevant to a DSS row's type so it can be
+// merged and sorted alongside coordination calls (Heads-up -> Email Due By,
+// Radar Watch -> Radar Start, On-Site -> DSS Start).
+function getCalDssSortMinutes(ev) {
+  var timeStr = '';
+  if (ev.type === 'Heads-up email') timeStr = ev.emailTime;
+  else if (ev.type === 'Active radar watch') timeStr = ev.radarStart;
+  else if (ev.type === 'On-Site DSS') timeStr = ev.dssStart;
+  return parseTimeToMinutes(timeStr);
+}
+
 // ══════════════════════════════════════════════════════════════
 //  DETAIL MODAL (click a calendar chip to see full info)
 // ══════════════════════════════════════════════════════════════
@@ -459,6 +496,7 @@ function buildCalendar() {
     );
   }
 
+  
   function renderWeek(startDay) {
     var headerCells = '';
     var bodyCells   = '';
@@ -476,18 +514,29 @@ function buildCalendar() {
           '<span class="day-name">' + dayName + ' ' + monthDay + '</span>' +
         '</span>';
 
-      // Weekly Brief is a standing Monday reminder — pin it to the top
-      // of the cell above any other DSS items that day, rather than
-      // sitting wherever it happens to fall in date-sorted order.
-      var sortedDayItems = dayBuckets[d].slice().sort(function(a, b) {
-        var aIsBrief = /weekly brief/i.test(a.name || '');
-        var bIsBrief = /weekly brief/i.test(b.name || '');
-        if (aIsBrief && !bIsBrief) return -1;
-        if (bIsBrief && !aIsBrief) return 1;
-        return 0;
+      // Merge DSS events and coordination calls into one list per day and
+      // sort by actual time-of-day, so a 9am call, an 11am radar watch,
+      // and a 2pm on-site DSS render top-to-bottom in that order instead
+      // of "all DSS first, then all calls" / raw sheet order. Weekly Brief
+      // is still pinned to the very top of its day as a standing reminder,
+      // ahead of anything else regardless of time.
+      var mergedDayItems = dayBuckets[d].map(function(ev) {
+        return {
+          isBrief: /weekly brief/i.test(ev.name || ''),
+          min: getCalDssSortMinutes(ev),
+          html: dssChipHtml(ev)
+        };
+      }).concat(callBuckets[d].map(function(c) {
+        return { isBrief: false, min: parseTimeToMinutes(c.time), html: callChipHtml(c) };
+      }));
+
+      mergedDayItems.sort(function(a, b) {
+        if (a.isBrief && !b.isBrief) return -1;
+        if (b.isBrief && !a.isBrief) return 1;
+        return a.min - b.min;
       });
 
-      var items = sortedDayItems.map(dssChipHtml).concat(callBuckets[d].map(callChipHtml));
+      var items = mergedDayItems.map(function(it) { return it.html; });
       var cellContent = items.length > 0
         ? items.join('')
         : '<div class="cal-empty-day">No Scheduled DSS or Coordination Calls</div>';
