@@ -446,6 +446,152 @@ body {
         );
 
 }
+
+.status-bar{
+
+    gap:12px !important;
+
+    padding:12px !important;
+
+    background:transparent !important;
+
+    border-bottom:none !important;
+
+}
+
+.status-card{
+
+    background:
+        linear-gradient(
+            180deg,
+            #111b2a 0%,
+            #0b121c 100%
+        ) !important;
+
+    border-radius:14px;
+
+    border:1px solid rgba(74,144,226,.18);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.03),
+        0 8px 20px rgba(0,0,0,.30);
+
+    transition:
+        transform .18s,
+        box-shadow .18s,
+        border-color .18s;
+
+}
+
+.status-card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.03),
+        0 16px 34px rgba(0,0,0,.42);
+
+}
+
+.status-icon{
+
+    width:48px;
+
+    height:48px;
+
+    font-size:22px;
+
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,.08),
+        0 0 12px rgba(0,0,0,.35);
+
+}
+
+.status-label{
+
+    color:#9fb8d5;
+
+    letter-spacing:.14em;
+
+    font-size:10px;
+
+    font-weight:800;
+
+}
+
+.status-value{
+
+    font-size:22px;
+
+    font-weight:800;
+
+}
+
+.status-sub{
+
+    color:#8fa6bd;
+
+}
+
+.status-card:has(.status-icon.green){
+
+    border-color:rgba(34,197,94,.45);
+
+    box-shadow:
+        inset 0 0 24px rgba(22,163,74,.08),
+        0 8px 22px rgba(0,0,0,.35);
+
+}
+
+.status-card:has(.status-icon.red){
+
+    border-color:rgba(239,68,68,.45);
+
+    box-shadow:
+        inset 0 0 24px rgba(239,68,68,.08),
+        0 8px 22px rgba(0,0,0,.35);
+
+}
+
+.status-card:has(.status-icon.blue){
+
+    border-color:rgba(59,130,246,.45);
+
+    box-shadow:
+        inset 0 0 24px rgba(59,130,246,.08),
+        0 8px 22px rgba(0,0,0,.35);
+
+}
+
+.status-card:has(.status-icon.purple){
+
+    border-color:rgba(168,85,247,.45);
+
+    box-shadow:
+        inset 0 0 24px rgba(168,85,247,.08),
+        0 8px 22px rgba(0,0,0,.35);
+
+}
+
+.status-card:has(.status-icon.teal){
+
+    border-color:rgba(13,148,136,.45);
+
+    box-shadow:
+        inset 0 0 24px rgba(13,148,136,.08),
+        0 8px 22px rgba(0,0,0,.35);
+
+}
+
+.status-card:has(.status-icon.amber){
+
+    border-color:rgba(245,158,11,.45);
+
+    box-shadow:
+        inset 0 0 24px rgba(245,158,11,.08),
+        0 8px 22px rgba(0,0,0,.35);
+
+}
   
 </style>
 </head>
