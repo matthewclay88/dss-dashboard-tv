@@ -2410,12 +2410,19 @@ if (svgSpotGroup) {
             fire.setAttribute("y", pt[1]);
             fire.setAttribute("text-anchor", "middle");
             fire.setAttribute("dominant-baseline", "middle");
-            fire.setAttribute("font-size", "18");
+            fire.setAttribute("font-size", "34");
             fire.setAttribute("font-weight", "700");
             fire.setAttribute("cursor", "pointer");
 
             fire.textContent = "🔥";
+            const animateSize = document.createElementNS(SVG_NS, "animate");
 
+            animateSize.setAttribute("attributeName", "font-size");
+            animateSize.setAttribute("values", "24;30;24");
+            animateSize.setAttribute("dur", "1.6s");
+            animateSize.setAttribute("repeatCount", "indefinite");
+
+            fire.appendChild(animateSize);
             const title = document.createElementNS(
                 SVG_NS,
                 "title"
