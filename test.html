@@ -1994,8 +1994,8 @@ try {
   spotForecastLayer = L.layerGroup().addTo(map);
 
   L.tileLayer(
-    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
-    { attribution: '&copy; Stadia Maps &copy; OpenMapTiles &copy; OpenStreetMap contributors', maxZoom: 20 }
+    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    { attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19, subdomains: 'abcd' }
   ).addTo(map);
 
   setTimeout(function () {
