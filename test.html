@@ -2439,7 +2439,7 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
         var startM = Math.max(0, m - 120);
         rows.push({
           kind: 'headsup', label: ev.name,
-          time: minutesToTimeStr(startM) + ' – ' + formatTimeForDisplay(ev.emailTime) + ' (due)',
+          time: formatTimeForDisplay(ev.emailTime),
           startMin: startM, endMin: m, isPast: m < nowMinutes
         });
       }
