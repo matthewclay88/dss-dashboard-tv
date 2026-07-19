@@ -260,41 +260,74 @@ body{
 @keyframes navHazardDotPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
   /* ── MAIN LAYOUT ── */
+  /* Two independent columns instead of one shared grid. This matters
+     because the table's content height varies a lot (spot forecasts
+     show/hide, event counts vary day to day) while the map wants a
+     big, stable, guaranteed size regardless of what's happening in the
+     table. Sharing one set of row tracks meant every attempt to let the
+     table shrink to fit its content also shrank or stretched the map's
+     row by the same fixed proportion — adjusting the ratio just moved
+     the dead space around instead of removing it. Splitting into two
+     independently-managed flex columns lets the left column's timeline
+     genuinely fill whatever the table doesn't use, with no fixed ratio
+     to fight against, while the right column keeps the map's height
+     completely unaffected by any of it. */
   .main-layout {
     flex: 1;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: minmax(0, 1.7fr) minmax(160px, 0.3fr);
-    column-gap: 10px;
-    row-gap: 14px;
+    display: flex;
+    gap: 10px;
     padding: 10px;
     min-height: 0;
     min-width: 0;
     overflow: hidden;
-    transition: grid-template-rows 0.3s ease;
 }
-  /* Applied when there's no active Spot Forecast section, so the table
-     card has noticeably less content — give the timeline row more of the
-     shared vertical space instead of leaving a dead gap under the table. */
-  .main-layout.compact-table {
-    grid-template-rows: minmax(0, 1.25fr) minmax(160px, 0.75fr);
+  .left-column, .right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 0;
+    min-width: 0;
+}
+  .left-column  { flex: 2; }
+  .right-column { flex: 1; }
+
+  /* Table sizes to its own content (up to a viewport-relative cap, so a
+     very busy day still scrolls internally instead of squeezing the
+     timeline to nothing) instead of being forced to fill a fixed share
+     of the column. */
+  #dssWrapper {
+    flex: 0 1 auto;
+    min-height: 160px;
+    max-height: 68vh;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+  #dssWrapper.expanded { max-height: none; flex: 1; }
+
+  /* Timeline absorbs whatever vertical space the table doesn't use —
+     this is what actually closes the gap, rather than guessing a ratio. */
+  #glanceSection.glance-section {
+    flex: 1;
+    min-height: 140px;
+    min-width: 0;
 }
 
-  /* ── LEFT PANEL (hidden in this layout — kept in DOM for JS wiring) ── */
-  .left-panel {
-    display: none;
-  }
-  /* center-panel/right-panel are structural only — display:contents lets
-     their children (table, timeline, map, gauges) become direct items of
-     the main-layout grid so table/map share a row and timeline/gauges
-     share the row below, each pair locked to equal heights. The map
-     spans the nav row too, so it sits beside the Today/Tomorrow pills
-     instead of leaving empty space there. */
-  #dssWrapper   { grid-column: 1; grid-row: 1; min-height: 0; min-width: 0; height: 100%; overflow: hidden; display: flex; flex-direction: column; }
-  #dssWrapper.expanded { grid-row: 1 / 3; }
-  #glanceSection.glance-section { grid-column: 1; grid-row: 2; min-height: 0; min-width: 0; }
-  #mapCard      { grid-column: 2; grid-row: 1; min-height: 0; min-width: 0; }
-  #envThreatPanel { grid-column: 2; grid-row: 2; min-height: 0; min-width: 0; margin-top: 0; overflow: hidden; display: flex; flex-direction: column; }
+  #mapCard {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+}
+  #envThreatPanel {
+    flex: 0 0 auto;
+    min-height: 0;
+    min-width: 0;
+    margin-top: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
   /* Coordination calls / spot forecast are merged into the same
      scrollable card as the DSS operations table (see #dssWrapper below),
      so users can scroll straight from DSS events through calls to spot
@@ -1764,8 +1797,9 @@ body{
 </div>
 
 <!-- ── MAIN LAYOUT ── -->
-<div id="mainLayout" class="main-layout compact-table">
+<div id="mainLayout" class="main-layout">
 
+<div class="left-column">
   <div id="dssWrapper">
     <div class="data-section">
       <div class="data-section-header">
@@ -1811,7 +1845,9 @@ body{
       <div id="glanceRows"></div>
     </div>
   </div>
+</div>
 
+<div class="right-column">
   <!-- MAP -->
   <div class="map-card" id="mapCard">
     <div class="map-header">
@@ -1863,6 +1899,7 @@ body{
       </div>
     </div>
   </div>
+</div>
 
 </div>
 <!-- END MAIN LAYOUT -->
@@ -3038,20 +3075,16 @@ function renderSpotForecasts(spots){
     tbody.innerHTML="";
     clearSpotForecastMarkers();
     var wrapperEl = document.getElementById("spotForecastWrapper");
-    var mainLayoutEl = document.getElementById("mainLayout");
     if(spots.length===0){
         // Nothing to show — hide the whole subsection instead of rendering
-        // an empty-state row. This section is rare (only appears when a
-        // spot forecast is actually active), so on a TV-sized layout with
-        // no scroll room to spare, a permanent placeholder was eating
-        // space that pushed the timeline below it off-screen.
+        // an empty-state row. The table now sizes to its own content
+        // (see #dssWrapper CSS), so hiding this just naturally shrinks
+        // the table and lets the timeline below it fill the freed space.
         if (wrapperEl) wrapperEl.style.display = "none";
-        if (mainLayoutEl) mainLayoutEl.classList.add("compact-table");
         updateSpotLegend([]);
         return;
     }
     if (wrapperEl) wrapperEl.style.display = "";
-    if (mainLayoutEl) mainLayoutEl.classList.remove("compact-table");
     spots.forEach(function(spot){
         addSpotMarker(spot);
         var row=document.createElement("tr");
