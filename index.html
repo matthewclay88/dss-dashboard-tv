@@ -2151,12 +2151,15 @@ try {
   lightningLayer = L.layerGroup();
   spotForecastLayer = L.layerGroup().addTo(map);
 
-  var baseTileLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 20, subdomains: 'abcd' }
+  var BASEMAP_BOUNDS = [[42.60, -76.20], [45.70, -71.10]];
+
+  var baseTileLayer = L.imageOverlay(
+    'https://matthewclay88.github.io/dss-dashboard-tv/basemap-btv.png',
+    BASEMAP_BOUNDS
   ).addTo(map);
-  baseTileLayer.on('tileerror', function(err) {
-    console.error('Map tile failed to load:', err);
+
+  baseTileLayer.on('error', function(err) {
+    console.error('Static basemap image failed to load:', err);
   });
 
   setTimeout(function () {
