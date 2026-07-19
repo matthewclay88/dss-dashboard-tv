@@ -30,6 +30,7 @@ html, body { height:100%; overflow:hidden; }
 body {
     display:flex;
     flex-direction:column;
+    position: relative;
     background:
       radial-gradient(1100px 520px at 75% -10%, rgba(29,111,164,.10) 0%, transparent 60%),
       radial-gradient(900px 500px at -10% 110%, rgba(124,58,237,.06) 0%, transparent 55%),
@@ -39,6 +40,35 @@ body {
     font-size: 14px;
     line-height: 1.5;
 }
+
+  /* ── AMBIENT BACKGROUND (subtle panning grid + periodic flash) ── */
+  #ambientBg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  #ambientGrid {
+    position: absolute;
+    inset: -60px;
+    background-image:
+      linear-gradient(rgba(120,170,230,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,170,230,0.06) 1px, transparent 1px);
+    background-size: 44px 44px;
+    animation: ambientPan 40s linear infinite;
+  }
+  @keyframes ambientPan {
+    from { transform: translate(0,0); }
+    to   { transform: translate(44px,44px); }
+  }
+  #ambientFlash {
+    position: absolute;
+    inset: 0;
+    background: #cfe0f5;
+    opacity: 0;
+    transition: opacity 120ms ease-out;
+  }
 
   /* ── CALENDAR (the only view this page ever shows) ── */
   #calendarContainer {
@@ -68,10 +98,31 @@ body {
     min-height: 0;
     display: flex;
     flex-direction: column;
+    position: relative;
     border: 1px solid rgba(96,165,250,.28);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 0 30px rgba(29,111,164,.10);
+  }
+  /* This week is what someone actually needs to act on — a touch
+     brighter border/glow. Next week recedes slightly rather than
+     competing for the same visual weight. */
+  .cal-week-grid.current-week {
+    border-color: rgba(96,165,250,.55);
+    box-shadow: 0 0 34px rgba(29,111,164,.22);
+  }
+  .cal-week-grid.next-week {
+    border-color: rgba(96,165,250,.14);
+    box-shadow: none;
+    opacity: 0.88;
+  }
+  .cal-week-tag {
+    position: absolute; top: 8px; right: 10px; z-index: 5;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
+    background: rgba(29,111,164,.35); color: #93c5fd;
+    border: 1px solid rgba(96,165,250,.4);
+    pointer-events: none;
   }
 
   .cal-grid-headrow {
@@ -185,6 +236,17 @@ body {
   .cal-chip-headsup { background: linear-gradient(135deg, rgba(37,99,235,.30), rgba(10,14,24,.88)); border-left-color: #3b82f6; color: #93c5fd; box-shadow: 0 0 12px rgba(59,130,246,.28); }
   .cal-chip-call    { background: linear-gradient(135deg, rgba(245,158,11,.26), rgba(10,14,24,.88)); border-left-color: #f59e0b; color: #fcd34d; box-shadow: 0 0 12px rgba(245,158,11,.24); }
   .cal-chip-weeklybrief { outline: 2px solid #ffffff; outline-offset: -2px; box-shadow: 0 0 16px rgba(255,255,255,.35); }
+  /* Only applied within today's column — everything happening right now
+     gets a quiet glow layered on top of its normal type color; anything
+     already over today dims slightly. No animation, matching the
+     dashboard's "no blinking, just enough" table-row treatment. */
+  .cal-event-chip.cal-chip-active { box-shadow: 0 0 14px 1px currentColor; }
+  .cal-event-chip.cal-chip-elapsed { opacity: 0.55; }
+  .weekly-brief-pulse { animation: weeklyBriefPulse 3.2s ease-in-out infinite; }
+  @keyframes weeklyBriefPulse {
+    0%, 100% { box-shadow: 0 0 18px rgba(49,87,213,.3); }
+    50%      { box-shadow: 0 0 30px rgba(49,87,213,.6); }
+  }
 
   .cal-legend-bar {
     flex-shrink: 0;
@@ -235,12 +297,16 @@ body {
 </head>
 <body>
 
-<div id="weeklyReminderBanner" style="
+<div id="ambientBg">
+  <div id="ambientGrid"></div>
+  <div id="ambientFlash"></div>
+</div>
+
+<div id="weeklyReminderBanner" class="weekly-brief-pulse" style="
 display:none;
 background:linear-gradient(135deg, rgba(49,87,213,.55), rgba(10,14,24,.9));
 border-top:1px solid rgba(96,165,250,.4);
 border-bottom:1px solid rgba(96,165,250,.4);
-box-shadow:0 0 20px rgba(49,87,213,.35);
 padding:10px 18px;
 color:white;
 font-weight:700;
@@ -477,16 +543,44 @@ function buildCalendar() {
     }
   }
 
-  function dssChipHtml(ev) {
+  // Live status for today's column only — everything else on the calendar
+  // is a future or past day where "right now" doesn't mean anything.
+  // Returns 'cal-chip-active' if genuinely in progress right now, or
+  // 'cal-chip-elapsed' if its window (or deadline) has already passed.
+  function getCalChipStatus(isToday, startMin, endMin) {
+    if (!isToday || startMin === 9999) return '';
+    var now = new Date();
+    var nowMin = now.getHours() * 60 + now.getMinutes();
+    if (endMin !== null && endMin !== 9999) {
+      if (nowMin >= startMin && nowMin <= endMin) return 'cal-chip-active';
+      if (nowMin > endMin) return 'cal-chip-elapsed';
+      return '';
+    }
+    // Point-in-time (heads-up deadline, coordination call) — no duration,
+    // so just dim it once its time has passed.
+    return nowMin > startMin ? 'cal-chip-elapsed' : '';
+  }
+
+  function dssChipHtml(ev, isToday) {
     var cls = 'cal-chip-headsup';
     var timeStr = ev.emailTime || '';
+    var startMin = null, endMin = null;
     if (ev.type === 'Active radar watch') {
       cls = 'cal-chip-radar';
       timeStr = formatTimeRange(ev.radarStart, ev.radarEnd);
+      startMin = parseTimeToMinutes(ev.radarStart);
+      endMin   = ev.radarEnd ? parseTimeToMinutes(ev.radarEnd) : null;
     } else if (ev.type === 'On-Site DSS') {
       cls = 'cal-chip-onsite';
       timeStr = formatTimeRange(ev.dssStart, ev.dssEnd);
+      startMin = parseTimeToMinutes(ev.dssStart);
+      endMin   = ev.dssEnd ? parseTimeToMinutes(ev.dssEnd) : null;
+    } else {
+      startMin = parseTimeToMinutes(ev.emailTime);
     }
+
+    var statusCls = getCalChipStatus(isToday, startMin, endMin);
+    if (statusCls) cls += ' ' + statusCls;
 
     // BTV Weekly Brief is an internal office reminder riding along in the
     // heads-up-email bucket — give it a white outline so it doesn't blend
@@ -503,9 +597,11 @@ function buildCalendar() {
     );
   }
 
-  function callChipHtml(callItem) {
+  function callChipHtml(callItem, isToday) {
+    var statusCls = getCalChipStatus(isToday, parseTimeToMinutes(callItem.time), null);
+    var cls = 'cal-chip-call' + (statusCls ? ' ' + statusCls : '');
     return (
-      '<div class="cal-event-chip cal-chip-call" data-call-index="' + callItem.rowIndex + '">' +
+      '<div class="cal-event-chip ' + cls + '" data-call-index="' + callItem.rowIndex + '">' +
         '<div class="chip-name">' + escapeHtml(callItem.event) + '</div>' +
         '<div class="chip-time">' + escapeHtml(callItem.time) + '</div>' +
       '</div>'
@@ -540,10 +636,10 @@ function buildCalendar() {
         return {
           isBrief: /weekly brief/i.test(ev.name || ''),
           min: getCalDssSortMinutes(ev),
-          html: dssChipHtml(ev)
+          html: dssChipHtml(ev, isToday)
         };
       }).concat(callBuckets[d].map(function(c) {
-        return { isBrief: false, min: parseTimeToMinutes(c.time), html: callChipHtml(c) };
+        return { isBrief: false, min: parseTimeToMinutes(c.time), html: callChipHtml(c, isToday) };
       }));
 
       mergedDayItems.sort(function(a, b) {
@@ -559,8 +655,12 @@ function buildCalendar() {
       bodyCells += '<div class="cal-grid-cell"><div class="cal-events">' + cellContent + '</div></div>';
     }
 
+    var weekClass = startDay === 0 ? 'current-week' : 'next-week';
+    var weekTag   = startDay === 0 ? '<div class="cal-week-tag">This Week</div>' : '<div class="cal-week-tag" style="background:rgba(96,165,250,.12);color:#93c5fd99;">Next Week</div>';
+
     return (
-      '<div class="cal-week-grid">' +
+      '<div class="cal-week-grid ' + weekClass + '">' +
+        weekTag +
         '<div class="cal-grid-headrow">' + headerCells + '</div>' +
         '<div class="cal-grid-bodyrow">' + bodyCells + '</div>' +
       '</div>'
@@ -630,9 +730,30 @@ async function refreshDashboard() {
 }
 
 // ══════════════════════════════════════════════════════════════
+//  AMBIENT BACKGROUND FLASH
+//  Fires a soft double-flicker every 9-14 seconds. Purely decorative —
+//  not tied to any real data on this page.
+// ══════════════════════════════════════════════════════════════
+function startAmbientFlash() {
+  var flash = document.getElementById('ambientFlash');
+  if (!flash) return;
+  function doFlash() {
+    flash.style.opacity = '0.09';
+    setTimeout(function() { flash.style.opacity = '0'; }, 120);
+    setTimeout(function() { flash.style.opacity = '0.05'; }, 260);
+    setTimeout(function() { flash.style.opacity = '0'; }, 340);
+    var next = 9000 + Math.random() * 5000;
+    setTimeout(doFlash, next);
+  }
+  setTimeout(doFlash, 1500);
+}
+
+// ══════════════════════════════════════════════════════════════
 //  DOM READY
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', function() {
+
+  startAmbientFlash();
 
   document.getElementById('btnCloseModal').addEventListener('click', closeCalendarModal);
   document.getElementById('calendarModal').addEventListener('click', function(e) {
