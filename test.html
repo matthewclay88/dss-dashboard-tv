@@ -292,7 +292,7 @@ body{
      scrollable card as the DSS operations table (see #dssWrapper below),
      so users can scroll straight from DSS events through calls to spot
      forecasts in one card. */
-  #callsWrapper, #spotForecastWrapper { margin-top: 18px; }
+  #spotForecastWrapper { margin-top: 18px; }
   .data-subsection-header {
     display: flex; align-items: center; gap: 7px; margin-bottom: 8px;
     padding-top: 14px; border-top: 1px solid rgba(96,165,250,.18);
@@ -382,6 +382,7 @@ body{
   .data-table tr.row-radar   td:first-child { border-left: 4px solid #dc2626; }
   .data-table tr.row-headsup td:first-child { border-left: 4px solid #2563eb; }
   .data-table tr.row-onsite  td:first-child { border-left: 4px solid #7c3aed; }
+  .data-table tr.row-call    td:first-child { border-left: 4px solid #d97706; }
 
   .dss-recurring-hidden { display: none !important; }
 
@@ -392,6 +393,7 @@ body{
   .badge-radar   { background: linear-gradient(135deg,#dc2626,#ef4444); color: #fff; border: 1px solid #f87171; box-shadow: 0 0 12px rgba(239,68,68,.5); }
   .badge-email   { background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff; border: 1px solid #60a5fa; box-shadow: 0 0 12px rgba(59,130,246,.5); }
   .badge-onsite  { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; border: 1px solid #c084fc; box-shadow: 0 0 12px rgba(147,51,234,.5); }
+  .badge-call    { background: linear-gradient(135deg,#d97706,#f59e0b); color: #fff; border: 1px solid #fbbf24; box-shadow: 0 0 12px rgba(217,119,6,.5); }
   .badge-default { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
   .join-btn {
     display: inline-flex; align-items: center; gap: 4px;
@@ -1774,17 +1776,6 @@ body{
         </table>
         <div class="data-section-footer" id="dssTableFooterCount"></div>
 
-        <div id="callsWrapper">
-          <div class="data-subsection-header">
-            <span class="section-icon">☎</span>
-            <h2 id="callsTableTitle">Today's Coordination Calls</h2>
-          </div>
-          <table class="data-table subtable">
-            <thead><tr><th>Date</th><th>Time</th><th>Event</th><th>Contact Info</th><th>Join</th></tr></thead>
-            <tbody id="callsTable"></tbody>
-          </table>
-        </div>
-
         <div id="spotForecastWrapper">
           <div class="data-subsection-header">
             <span class="section-icon">🎯</span>
@@ -2630,7 +2621,7 @@ var GLANCE_TYPE_STYLE = {
   radar:   { icon: '📡', border: '#dc2626', color: '#f87171' },
   onsite:  { icon: '🧑',  border: '#7c3aed', color: '#c4b5fd' },
   headsup: { icon: '✉',  border: '#2563eb', color: '#93c5fd' },
-  call:    { icon: '☎',  border: '#4b5563', color: '#9ca3af' }
+  call:    { icon: '☎',  border: '#d97706', color: '#fbbf24' }
 };
 
 // Converts a minute-of-day (0-1440) into a left-offset percentage across
@@ -3349,7 +3340,6 @@ var dssRows          = [];
 var callRows         = [];
 var mapMode           = 'today'; // this static build only ever shows "today"
 var showAllDss        = false;
-var showAllCalls      = false;
 var MAX_VISIBLE_ROWS  = 5;
 var BTV_ZONE_SET      = new Set();
 var _mapFirstFitDone  = false;
@@ -3814,8 +3804,7 @@ function loadData(rows, calls) {
   var now = new Date();
   var selectedDateString = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
 
-  var dssEmptyMessage   = 'No DSS Events Scheduled Today';
-  var callsEmptyMessage = 'No Coordination Calls Scheduled Today';
+  var dssEmptyMessage   = 'No DSS Events or Coordination Calls Scheduled Today';
 
   markerLayer.clearLayers();
 
@@ -3824,6 +3813,7 @@ function loadData(rows, calls) {
 
   var table = document.getElementById('eventTable');
   table.innerHTML = '';
+  var displayItems = []; // merged DSS + call rows, sorted once and paginated together
 
   var activeCount = 0, radarCount = 0, headsUpCount = 0, onsiteCount = 0;
   var anyRowActiveNow = false;
@@ -3867,8 +3857,6 @@ function loadData(rows, calls) {
       });
     }
 
-    if (!showAllDss && activeCount > MAX_VISIBLE_ROWS) continue;
-
     var slidesHref = row[slidesLinkCol] ? safeHref(row[slidesLinkCol]) : '';
     var linkCell = slidesHref
       ? '<a href="' + slidesHref + '" target="_blank" title="Open Slides" style="color:#64b5f6;font-size:15px;text-decoration:none;">🔗</a>'
@@ -3904,25 +3892,7 @@ function loadData(rows, calls) {
       '<td>' + escapeHtml(row[contactCol]) + '</td>' +
       '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(row[contactInfoCol]) + '</td>' +
       '<td style="text-align:center;">' + linkCell + '</td>';
-    table.appendChild(tr);
-  }
-
-  if (activeCount > MAX_VISIBLE_ROWS) {
-    var vmTr = document.createElement('tr');
-    vmTr.className = 'view-more-row';
-    vmTr.innerHTML =
-      '<td colspan="7" style="text-align:center;font-weight:600;cursor:pointer;color:#60a5fa;">' +
-      (showAllDss ? '▲ Show Less' : '▼ View ' + (activeCount - MAX_VISIBLE_ROWS) + ' More Events') + '</td>';
-    vmTr.onclick = function() { showAllDss = !showAllDss; loadData(dssRows, callRows); };
-    table.appendChild(vmTr);
-  }
-
-  if (activeCount === 0) {
-    var emptyDssTr = document.createElement('tr');
-    emptyDssTr.innerHTML =
-      '<td colspan="7" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' +
-      escapeHtml(dssEmptyMessage) + '</td>';
-    table.appendChild(emptyDssTr);
+    displayItems.push({ el: tr, sortDate: eventDateString, sortMin: getDssSortMinutes(row) });
   }
 
   Object.keys(markerGroups).forEach(function(key) {
@@ -3961,23 +3931,16 @@ function loadData(rows, calls) {
   if (dssStatusCardEl) dssStatusCardEl.classList.toggle('pulse-active', anyRowActiveNow);
   document.getElementById('dssWrapper').style.display   = 'block';
 
-  var shownCount = Math.min(activeCount, showAllDss ? activeCount : MAX_VISIBLE_ROWS);
-  var footerEl = document.getElementById('dssTableFooterCount');
-  if (footerEl) footerEl.textContent = activeCount > 0 ? 'Showing ' + shownCount + ' of ' + activeCount + ' events' : '';
-
   // ── CALLS ──────────────────────────────────────────────────
   var visibleCallCount = 0;
-  var callsTableEl = document.getElementById('callsTable');
-  callsTableEl.innerHTML = '';
+  var noCallsAtAll = !calls || calls.length <= 1;
 
-  if (!calls || calls.length <= 1) {
-    callsTableEl.innerHTML =
-      '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' +
-      escapeHtml(callsEmptyMessage) + '</td></tr>';
+  if (noCallsAtAll) {
     document.getElementById('callStatusValue').textContent = '0';
     document.getElementById('callStatusSub2').textContent  = 'Active today';
     buildGlanceTimeline(todayDssItems, []);
     updateNextObligation(todayDssItems, []);
+    finalizeDssTable();
     return;
   }
 
@@ -3995,42 +3958,70 @@ function loadData(rows, calls) {
   todayCalls.forEach(function(call) {
     var callDate = call[0], callTime = call[1], eventInfo = call[2], contactInfo = call[3];
     visibleCallCount++;
-    if (!showAllCalls && visibleCallCount > MAX_VISIBLE_ROWS) return;
 
     var urlMatch = String(contactInfo || '').match(/https?:\/\/\S+/);
     var joinHref = urlMatch ? safeHref(urlMatch[0]) : '';
-    var joinBtn  = joinHref ? '<a href="' + joinHref + '" target="_blank" class="join-btn">🔗 Join</a>' : '';
+    var joinCell = joinHref
+      ? '<a href="' + joinHref + '" target="_blank" title="Join Call" style="color:#64b5f6;font-size:15px;text-decoration:none;">🔗</a>'
+      : '<span style="color:var(--muted);">—</span>';
+
     var ctr = document.createElement('tr');
+    ctr.className = 'row-call';
     ctr.innerHTML =
       '<td style="white-space:nowrap;">' + escapeHtml(callDate)    + '</td>' +
       '<td class="time-chip">'           + escapeHtml(callTime)    + '</td>' +
       '<td style="font-weight:600;">'    + escapeHtml(eventInfo)   + '</td>' +
+      '<td><span class="dss-type-badge badge-call">Coord Call</span></td>' +
+      '<td>—</td>' +
       '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(contactInfo) + '</td>' +
-      '<td>' + joinBtn + '</td>';
-    callsTableEl.appendChild(ctr);
+      '<td style="text-align:center;">' + joinCell + '</td>';
+    displayItems.push({ el: ctr, sortDate: selectedDateString, sortMin: parseTimeToMinutes(callTime) });
   });
-
-  if (visibleCallCount > MAX_VISIBLE_ROWS) {
-    var vcTr = document.createElement('tr');
-    vcTr.className = 'view-more-row';
-    vcTr.innerHTML =
-      '<td colspan="5" style="text-align:center;font-weight:600;cursor:pointer;color:#60a5fa;">' +
-      (showAllCalls ? '▲ Show Less' : '▼ View ' + (visibleCallCount - MAX_VISIBLE_ROWS) + ' More Calls') + '</td>';
-    vcTr.onclick = function() { showAllCalls = !showAllCalls; loadData(dssRows, callRows); };
-    callsTableEl.appendChild(vcTr);
-  }
-
-  if (visibleCallCount === 0) {
-    var emptyCallTr = document.createElement('tr');
-    emptyCallTr.innerHTML =
-      '<td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' +
-      escapeHtml(callsEmptyMessage) + '</td>';
-    callsTableEl.appendChild(emptyCallTr);
-  }
 
   document.getElementById('callStatusValue').style.color = '#4ade80';
   document.getElementById('callStatusValue').textContent  = visibleCallCount;
   document.getElementById('callStatusSub2').textContent   = 'Active today';
+
+  finalizeDssTable();
+
+  // Sorts the merged DSS + coordination-call rows chronologically, applies
+  // one shared "view N more" pagination limit across the combined table,
+  // and renders the result — this is what makes "Today's DSS Operations"
+  // a single table instead of two stacked ones.
+  function finalizeDssTable() {
+    displayItems.sort(function(a, b) {
+      if (a.sortDate !== b.sortDate) return a.sortDate < b.sortDate ? -1 : 1;
+      return a.sortMin - b.sortMin;
+    });
+
+    var totalCount = displayItems.length;
+    var shownCount = showAllDss ? totalCount : Math.min(totalCount, MAX_VISIBLE_ROWS);
+
+    for (var di = 0; di < shownCount; di++) {
+      table.appendChild(displayItems[di].el);
+    }
+
+    if (totalCount > MAX_VISIBLE_ROWS) {
+      var vmTr = document.createElement('tr');
+      vmTr.className = 'view-more-row';
+      vmTr.innerHTML =
+        '<td colspan="7" style="text-align:center;font-weight:600;cursor:pointer;color:#60a5fa;">' +
+        (showAllDss ? '▲ Show Less' : '▼ View ' + (totalCount - MAX_VISIBLE_ROWS) + ' More') + '</td>';
+      vmTr.onclick = function() { showAllDss = !showAllDss; loadData(dssRows, callRows); };
+      table.appendChild(vmTr);
+    }
+
+    if (totalCount === 0) {
+      var emptyTr = document.createElement('tr');
+      emptyTr.innerHTML =
+        '<td colspan="7" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">' +
+        escapeHtml(dssEmptyMessage) + '</td>';
+      table.appendChild(emptyTr);
+    }
+
+    var footerEl = document.getElementById('dssTableFooterCount');
+    if (footerEl) footerEl.textContent = totalCount > 0 ? 'Showing ' + shownCount + ' of ' + totalCount + ' items' : '';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
