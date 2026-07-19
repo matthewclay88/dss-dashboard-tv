@@ -2160,11 +2160,11 @@ try {
   lightningLayer = L.layerGroup();
   spotForecastLayer = L.layerGroup().addTo(map);
 
-  var BASEMAP_BOUNDS = [[42.75, -76.00], [45.55, -71.30]];
+  var BASEMAP_BOUNDS = [[42.70, -76.08], [45.58, -71.15]];
 
-  var baseTileLayer = L.imageOverlay(
-    'https://matthewclay88.github.io/dss-dashboard-tv/basemap-btv.png',
-    BASEMAP_BOUNDS
+  var baseTileLayer = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    { attribution: '&copy; OpenStreetMap contributors &copy; CARTO', maxZoom: 20 }
   ).addTo(map);
 
   baseTileLayer.on('error', function(err) {
