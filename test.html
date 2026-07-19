@@ -60,15 +60,19 @@ body{
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
+    --ambient-tint: 120,170,230;
+    transition: filter 1.2s ease;
   }
+  #ambientBg.severity-elevated { --ambient-tint: 230,110,110; }
   #ambientGrid {
     position: absolute;
     inset: -60px;
     background-image:
-      linear-gradient(rgba(120,170,230,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(120,170,230,0.06) 1px, transparent 1px);
+      linear-gradient(rgba(var(--ambient-tint),0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(var(--ambient-tint),0.06) 1px, transparent 1px);
     background-size: 44px 44px;
     animation: ambientPan 40s linear infinite;
+    transition: background-image 1.2s ease;
   }
   @keyframes ambientPan {
     from { transform: translate(0,0); }
@@ -77,9 +81,9 @@ body{
   #ambientFlash {
     position: absolute;
     inset: 0;
-    background: #cfe0f5;
+    background: rgb(var(--ambient-tint));
     opacity: 0;
-    transition: opacity 120ms ease-out;
+    transition: opacity 120ms ease-out, background 1.2s ease;
   }
 
   /* ── TOP HEADER ── */
@@ -159,6 +163,11 @@ body{
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
   }
   .status-card:hover { transform: translateY(-2px); }
+  #dssStatusCard.pulse-active { animation: dssActivePulse 3s ease-in-out infinite; }
+  @keyframes dssActivePulse {
+    0%, 100% { box-shadow: 0 0 26px rgba(220,38,38,.18); }
+    50%      { box-shadow: 0 0 34px rgba(220,38,38,.4); }
+  }
   /* Tint each card with a soft outer glow + gradient wash matching its icon color */
   .status-card:has(.status-icon.green)  { border-color: rgba(74,222,128,.45);  background: linear-gradient(160deg, rgba(22,163,74,.16) 0%, rgba(8,11,18,.92) 65%); box-shadow: 0 0 26px rgba(34,197,94,.16); }
   .status-card:has(.status-icon.red)    { border-color: rgba(248,113,113,.45); background: linear-gradient(160deg, rgba(220,38,38,.18) 0%, rgba(8,11,18,.92) 65%); box-shadow: 0 0 26px rgba(220,38,38,.18); }
@@ -227,6 +236,28 @@ body{
 .nav-sep { width: 1px; background: var(--border); margin: 0 4px; align-self: stretch; }
 .nav-view-label { display: none; }
 .nav-view-label span { color: #64b5f6; font-weight: 700; }
+.nav-hazard-summary {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: 9px;
+  font-size: 12px; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0;
+  cursor: pointer; transition: filter 0.15s, transform 0.15s;
+}
+.nav-hazard-summary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.nav-hazard-summary::after { content: '→'; margin-left: auto; padding-left: 8px; opacity: 0.7; flex-shrink: 0; }
+.nav-hazard-summary::before { content: '●'; font-size: 9px; flex-shrink: 0; }
+.nav-hazard-summary.clear {
+  background: rgba(22,163,74,.10); border: 1px solid rgba(74,222,128,.28);
+  color: #86efac;
+}
+.nav-hazard-summary.clear::before { color: #4ade80; }
+.nav-hazard-summary.active {
+  background: rgba(217,119,6,.14); border: 1px solid rgba(251,191,36,.35);
+  color: #fcd34d;
+}
+.nav-hazard-summary.active::before { color: #fbbf24; animation: navHazardDotPulse 2s ease-in-out infinite; }
+@keyframes navHazardDotPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
   /* ── MAIN LAYOUT ── */
   .main-layout {
@@ -338,6 +369,13 @@ body{
     vertical-align: middle; background: transparent;
   }
   .data-table tr:hover td { background: rgba(59,130,246,.08); }
+  /* Live status tint — a second signal alongside the type border, not a
+     replacement for it. Deliberately subtle washes, not saturated colors,
+     and no animation: "no blinking, just enough." */
+  .data-table tr.status-active td      { background: rgba(255,255,255,.035); }
+  .data-table tr.status-ending-soon td { background: rgba(217,119,6,.12); }
+  .data-table tr.status-starting-soon td { background: rgba(37,99,235,.10); }
+  .data-table tr.status-completed td   { opacity: 0.55; }
   .data-table.subtable th { position: static; }
 
   /* ── COLORED LEFT BORDER ON TABLE ROWS BY DSS TYPE ── */
@@ -428,14 +466,18 @@ body{
   }
   .glance-bar {
     position: absolute; top: 50%; transform: translateY(-50%);
-    height: 20px; border-radius: 6px;
+    height: 20px; border-radius: 10px;
     display: flex; align-items: center; padding: 0 8px;
     font-size: 10.5px; font-weight: 700; color: #fff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     cursor: pointer; min-width: 26px;
     box-shadow: 0 1px 4px rgba(0,0,0,.4);
+    transition: box-shadow 0.4s ease;
   }
   .glance-bar.past { opacity: 0.45; }
+  .glance-bar.active-now {
+    box-shadow: 0 0 14px 2px var(--bar-glow-color, rgba(255,255,255,.5)), 0 1px 4px rgba(0,0,0,.4);
+  }
   .glance-bar.point { padding: 0 4px; font-size: 10px; }
   .glance-dot-marker {
     position: absolute; top: 50%; transform: translate(-50%, -50%);
@@ -458,7 +500,11 @@ body{
     position: absolute; top: -18px; transform: translateX(-50%);
     background: #0d9488; color: #fff; font-size: 11px; font-weight: 800;
     padding: 3px 9px; border-radius: 6px; white-space: nowrap;
-    box-shadow: 0 0 10px rgba(13,148,136,.5);
+    animation: nowBadgePulse 2.6s ease-in-out infinite;
+  }
+  @keyframes nowBadgePulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(13,148,136,.4); }
+    50%      { box-shadow: 0 0 16px rgba(13,148,136,.75); }
   }
   .glance-now-badge::after {
     content: ''; position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%);
@@ -1615,6 +1661,10 @@ body{
 
 </div>
 
+<div class="nav-hazard-summary clear" id="navHazardSummary" style="margin:8px 12px 0;">
+  <span id="navHazardText">Checking hazards…</span>
+</div>
+
 <!-- ── STATUS BAR (6 rounded glow cards) ── -->
 <div class="status-bar" id="statusBar">
   <!-- Card 1: DSS Events -->
@@ -2084,6 +2134,41 @@ function formatDate(dateString) {
 }
 
 
+// CSS transitions don't reliably animate conic-gradient stop changes
+// across browsers, so the ring's fill sweep is driven by hand: ease from
+// whatever percentage is currently showing to the new target over ~800ms.
+// Tracks the in-flight animation per element so a fast refresh cadence
+// can't stack up multiple competing rAF loops on the same ring.
+var _gaugeRingAnimations = new WeakMap();
+
+function animateGaugeRing(ringEl, targetPct, color) {
+  var prior = _gaugeRingAnimations.get(ringEl);
+  if (prior) cancelAnimationFrame(prior.raf);
+
+  var startPct = parseFloat(ringEl.dataset.pct || '0');
+  var startTime = null;
+  var duration = 800;
+
+  ringEl.style.boxShadow = '0 0 16px ' + color + '66';
+
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    var progress = Math.min((ts - startTime) / duration, 1);
+    var eased = 1 - Math.pow(1 - progress, 3);
+    var current = startPct + (targetPct - startPct) * eased;
+    ringEl.style.background = 'conic-gradient(' + color + ' 0% ' + current + '%, #1b2a3d ' + current + '% 100%)';
+    if (progress < 1) {
+      var raf = requestAnimationFrame(step);
+      _gaugeRingAnimations.set(ringEl, { raf: raf });
+    } else {
+      ringEl.dataset.pct = targetPct;
+      _gaugeRingAnimations.delete(ringEl);
+    }
+  }
+  var raf = requestAnimationFrame(step);
+  _gaugeRingAnimations.set(ringEl, { raf: raf });
+}
+
 function updateBottomThreatCard(key, score, pct, rawDisplayValue) {
   var idMap = { severe: 'envSevere', tornado: 'envTornado', hydro: 'envHydro', snowsquall: 'envSnowSquall' };
   var prefix = idMap[key];
@@ -2103,8 +2188,7 @@ function updateBottomThreatCard(key, score, pct, rawDisplayValue) {
     else                  { color = '#7c3aed'; badgeText = 'Extreme'; }
   }
 
-  ringEl.style.background = 'conic-gradient(' + color + ' 0% ' + pct + '%, #1b2a3d ' + pct + '% 100%)';
-  ringEl.style.boxShadow = '0 0 16px ' + color + '66';
+  animateGaugeRing(ringEl, pct, color);
   if (valueEl) {
     valueEl.textContent = (rawDisplayValue !== undefined && rawDisplayValue !== null)
       ? rawDisplayValue
@@ -2219,9 +2303,10 @@ function makeCircleIcon(color, active) {
   var pulseHtml = active
     ? '<circle cx="17" cy="17" r="9" class="marker-pulse-ring" fill="none" stroke="' + color + '" stroke-width="2"/>'
     : '';
+  var haloOpacity = active ? 0.42 : 0.14;
   var svg =
     '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34" style="overflow:visible;">' +
-    '<circle cx="17" cy="17" r="12" fill="' + color + '" opacity="0.28"/>' +
+    '<circle cx="17" cy="17" r="12" fill="' + color + '" opacity="' + haloOpacity + '"/>' +
     pulseHtml +
     '<circle cx="17" cy="17" r="9" fill="' + color + '" stroke="#FFFFFF" stroke-width="2.5"/></svg>';
   return L.divIcon({ className: '', html: svg, iconSize: [34,34], iconAnchor: [17,17], popupAnchor: [0,-13] });
@@ -2266,6 +2351,35 @@ function getDssRowClass(dssType) {
   if (dssType.indexOf('On-Site DSS') !== -1)        return 'row-onsite';
   if (dssType.indexOf('Active radar watch') !== -1)  return 'row-radar';
   if (dssType.indexOf('Heads-up') !== -1)            return 'row-headsup';
+  return '';
+}
+
+// Live status for a single table row, used to tint the row background
+// (separate from the left-border color, which stays reserved for DSS
+// type). Radar Watch / On-Site DSS have a real start-end window;
+// Heads-up email is a deadline, so "ending soon" means "due within the
+// hour" and there's no "starting soon" state for it.
+function getDssTemporalStatusClass(dssType, startTime, endTime, isToday) {
+  if (!isToday) return '';
+  var start = parseTimeToMinutes(startTime);
+  var end   = endTime ? parseTimeToMinutes(endTime) : start;
+  if (start === 9999) return '';
+
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes();
+
+  if (dssType.indexOf('Heads-up') !== -1) {
+    if (nowMin > start) return 'status-completed';
+    if (start - nowMin <= 60) return 'status-ending-soon';
+    return '';
+  }
+
+  if (end === 9999 || end === start) return '';
+  if (nowMin > end) return 'status-completed';
+  if (nowMin >= start && nowMin <= end) {
+    return (end - nowMin) <= 30 ? 'status-ending-soon' : 'status-active';
+  }
+  if (start - nowMin > 0 && start - nowMin <= 60) return 'status-starting-soon';
   return '';
 }
 
@@ -2540,11 +2654,12 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
     var widthPct = row.allDay ? 98 : Math.min(Math.max(endPct - startPct, 3), 98);
 
     var bar = document.createElement('div');
-    bar.className = 'glance-bar' + (row.isPast ? ' past' : '') + (row.isPoint ? ' point' : '');
+    var isActiveNow = !row.allDay && nowMinutes >= row.startMin && nowMinutes <= row.endMin;
+    bar.className = 'glance-bar' + (row.isPast ? ' past' : '') + (row.isPoint ? ' point' : '') + (isActiveNow ? ' active-now' : '');
     bar.style.background = 'linear-gradient(90deg, ' + style.border + ', ' + style.color + ')';
-    bar.style.boxShadow = '0 0 10px ' + style.border + '99';
+    if (isActiveNow) bar.style.setProperty('--bar-glow-color', style.border);
     bar.style.justifyContent = 'center';
-    bar.title = row.label + ' — ' + row.time;
+    bar.title = row.label + ' — ' + row.time + (isActiveNow ? ' (active now)' : '');
     bar.textContent = row.allDay ? 'ALL DAY' : row.time;
 
     if (row.isPoint) {
@@ -3159,13 +3274,23 @@ function refreshThreatGauges() {
     .then(function(data) {
       if (!data) return;
       _threatDataCache = data;
+      var maxAlertScore = 0;
       ['severe', 'tornado', 'hydro', 'snowsquall'].forEach(function(key) {
         var d     = data[key] || {};
         var score = d.score !== null && d.score !== undefined ? d.score : null;
         var pct   = score !== null ? Math.min(100, Math.max(0, score)) : 0;
+        if ((key === 'severe' || key === 'tornado') && score !== null) {
+          maxAlertScore = Math.max(maxAlertScore, score);
+        }
         var rawDisplay = (key === 'snowsquall' && d.ssp !== undefined) ? d.ssp : undefined;
         updateBottomThreatCard(key, score, pct, rawDisplay);
       });
+
+      // Ambient background picks up a faint red tint once Severe or
+      // Tornado crosses into "Moderate" (score >= 60) — same threshold
+      // the gauge badge text already uses.
+      var ambientBg = document.getElementById('ambientBg');
+      if (ambientBg) ambientBg.classList.toggle('severity-elevated', maxAlertScore >= 60);
     })
     .catch(function(err) { console.error('threats.json fetch failed:', err); });
 }
@@ -3334,6 +3459,7 @@ function refreshHazards() {
 
       warningPolygonLayer.clearLayers();
       var legendMap = {};
+      var activeHazardNames = new Set();
 
       btvAlerts.forEach(function(alert) {
         let vtec = null;
@@ -3367,6 +3493,7 @@ function refreshHazards() {
           }
         });
         var affectsBtvZone = alertZoneList.some(function(zone) { return BTV_ZONE_SET.has(zone); });
+        if (affectsBtvZone) activeHazardNames.add(alert.properties.event);
 
         if (affectsBtvZone && alert.geometry && ["TO.W","SV.W","FF.W","FA.W","SQ.W","MA.W"].includes(vtec)) {
           let color = HAZARD_COLORS[vtec];
@@ -3446,8 +3573,36 @@ function refreshHazards() {
       renderMapLegend(
         Object.keys(legendMap).map(function(name){ return { label: name, color: legendMap[name] }; })
       );
+
+      updateNavHazardSummary(Array.from(activeHazardNames));
     })
-    .catch(function(err) { console.error("Hazard refresh failed:", err); });
+    .catch(function(err) {
+      console.error("Hazard refresh failed:", err);
+      var el = document.getElementById('navHazardText');
+      if (el) el.textContent = 'Hazard data unavailable';
+    });
+}
+
+// Fills the always-visible hazard summary strip below the header — a
+// quiet preview of active watches/warnings so someone doesn't have to
+// click through to another page just to confirm there's nothing going on.
+// Clicking the strip itself opens the linked hazards dashboard.
+function updateNavHazardSummary(names) {
+  var el = document.getElementById('navHazardSummary');
+  var textEl = document.getElementById('navHazardText');
+  if (!el || !textEl) return;
+
+  if (!names || names.length === 0) {
+    el.className = 'nav-hazard-summary clear';
+    textEl.textContent = 'No active watches or warnings';
+    el.title = 'Open current hazards dashboard';
+    return;
+  }
+
+  el.className = 'nav-hazard-summary active';
+  var label = names.length + ' Active: ' + names.join(', ');
+  textEl.textContent = label;
+  el.title = label + ' — click to open hazards dashboard';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3557,6 +3712,7 @@ function loadData(rows, calls) {
   table.innerHTML = '';
 
   var activeCount = 0, radarCount = 0, headsUpCount = 0, onsiteCount = 0;
+  var anyRowActiveNow = false;
 
   for (var i = 0; i < sortedRows.length; i++) {
     var row   = sortedRows[i];
@@ -3605,8 +3761,17 @@ function loadData(rows, calls) {
       : '<span style="color:var(--muted);">—</span>';
 
     var rowClass = getDssRowClass(row[typeCol]);
+    var statusStart = row[typeCol].indexOf('Active radar watch') !== -1 ? row[radarWatchCol]
+                     : row[typeCol].indexOf('On-Site DSS') !== -1        ? row[dssTimeCol]
+                     : row[typeCol].indexOf('Heads-up') !== -1           ? row[headsUpCol]
+                     : '';
+    var statusEnd   = row[typeCol].indexOf('Active radar watch') !== -1 ? row[radarEndCol]
+                     : row[typeCol].indexOf('On-Site DSS') !== -1        ? row[dssEndCol]
+                     : '';
+    var statusClass = getDssTemporalStatusClass(row[typeCol], statusStart, statusEnd, mapMode === 'today');
+    if (statusClass === 'status-active' || statusClass === 'status-ending-soon') anyRowActiveNow = true;
     var tr = document.createElement('tr');
-    if (rowClass) tr.className = rowClass;
+    tr.className = [rowClass, statusClass].filter(Boolean).join(' ');
 
     var displayTime = '—';
     if (row[typeCol].indexOf('Heads-up email') !== -1) {
@@ -3678,6 +3843,8 @@ function loadData(rows, calls) {
   }
   document.getElementById('dssStatusValue').textContent = dssValue;
   document.getElementById('dssStatusSub2').textContent  = dssSub2;
+  var dssStatusCardEl = document.getElementById('dssStatusCard');
+  if (dssStatusCardEl) dssStatusCardEl.classList.toggle('pulse-active', anyRowActiveNow);
   document.getElementById('dssWrapper').style.display   = 'block';
 
   var shownCount = Math.min(activeCount, showAllDss ? activeCount : MAX_VISIBLE_ROWS);
@@ -3772,6 +3939,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   on('refreshBtn', 'click', function() { refreshDashboard(); });
+  on('navHazardSummary', 'click', function() {
+    window.open('https://script.google.com/a/macros/noaa.gov/s/AKfycbwYEZ9T08KI6OlJ8Lwg0XpOiRyaQEW50uSbG551p8_GxRUfA2Z4f_u72k8bMz3nqM8Tig/exec', '_blank');
+  });
 
   on('lightningCard', 'click', function() {
     window.open(
