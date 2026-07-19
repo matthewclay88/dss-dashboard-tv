@@ -1842,7 +1842,21 @@ body{
           <span>12 AM</span><span>4 AM</span><span>8 AM</span><span>12 PM</span><span>4 PM</span><span>8 PM</span><span>12 AM</span>
         </div>
       </div>
-      <div id="glanceRows"></div>
+    <div id="glanceRows"></div>
+    </div>
+  </div>
+
+  <!-- TOMORROW AT A GLANCE -->
+  <div class="glance-section" id="tomorrowGlanceSection" style="display:none;">
+    <div class="glance-title">Tomorrow at a Glance</div>
+    <div class="glance-grid" id="tomorrowGlanceGrid">
+      <div class="glance-axis">
+        <div class="glance-row-label"></div>
+        <div class="glance-axis-track">
+          <span>12 AM</span><span>4 AM</span><span>8 AM</span><span>12 PM</span><span>4 PM</span><span>8 PM</span><span>12 AM</span>
+        </div>
+      </div>
+      <div id="tomorrowGlanceRows"></div>
     </div>
   </div>
 </div>
@@ -2677,14 +2691,28 @@ function minutesToPct(mins) {
 
 
 function buildGlanceTimeline(todayDssEvents, todayCalls) {
+  renderGlanceTimeline({
+    rowsId: 'glanceRows', gridId: 'glanceGrid', sectionId: 'glanceSection',
+    events: todayDssEvents, calls: todayCalls, isToday: true
+  });
+}
 
-  var rowsContainer = document.getElementById('glanceRows');
+function buildTomorrowGlanceTimeline(tomorrowDssEvents, tomorrowCalls) {
+  renderGlanceTimeline({
+    rowsId: 'tomorrowGlanceRows', gridId: 'tomorrowGlanceGrid', sectionId: 'tomorrowGlanceSection',
+    events: tomorrowDssEvents, calls: tomorrowCalls, isToday: false
+  });
+}
+
+function renderGlanceTimeline(opts) {
+
+  var rowsContainer = document.getElementById(opts.rowsId);
   if (!rowsContainer) return;
 
-  var glanceSection = document.getElementById('glanceSection');
-  var dssWrapperEl  = document.getElementById('dssWrapper');
+  var glanceSection = document.getElementById(opts.sectionId);
+  var dssWrapperEl  = opts.isToday ? document.getElementById('dssWrapper') : null;
 
-  if (mapMode !== 'today' || (todayDssEvents.length === 0 && todayCalls.length === 0)) {
+  if (opts.events.length === 0 && opts.calls.length === 0) {
     glanceSection.style.display = 'none';
     if (dssWrapperEl) dssWrapperEl.classList.add('expanded');
     return;
@@ -2696,24 +2724,18 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
   var now = new Date();
   var nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  // One row per individual event, in time order — radar/on-site/heads-up
-  // events show a colored bar spanning their scheduled window; coordination
-  // calls show a neutral "All day" bar (calls don't carry a duration).
   var rows = [];
 
-  todayDssEvents.forEach(function(ev){
+  opts.events.forEach(function(ev){
     var type = ev.type || "";
 
     if (type.indexOf("Heads-up") !== -1 && ev.emailTime) {
       var m = parseTimeToMinutes(ev.emailTime);
       if (m !== 9999) {
-        // Show as a 2-hour lead-up bar ending right at the due time,
-        // rather than a single point — makes the "coming due" window
-        // visible on the timeline instead of just a moment in time.
         rows.push({
           kind: 'headsup', label: ev.name,
           time: formatTimeForDisplay(ev.emailTime),
-          startMin: Math.max(0, m - 120), endMin: m, isPast: m < nowMinutes
+          startMin: Math.max(0, m - 120), endMin: m, isPast: opts.isToday && m < nowMinutes
         });
       }
     }
@@ -2725,7 +2747,7 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
         rows.push({
           kind: 'radar', label: ev.name,
           time: formatTimeForDisplay(ev.radarTime) + (ev.radarEndTime ? ' – ' + formatTimeForDisplay(ev.radarEndTime) : ''),
-          startMin: s, endMin: endMin, isPast: endMin < nowMinutes
+          startMin: s, endMin: endMin, isPast: opts.isToday && endMin < nowMinutes
         });
       }
     }
@@ -2739,30 +2761,30 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
           rows.push({
             kind: 'onsite', label: ev.name,
             time: formatTimeForDisplay(ts) + (ev.dssEndTime ? ' – ' + formatTimeForDisplay(ev.dssEndTime) : ''),
-            startMin: s2, endMin: endMin2, isPast: endMin2 < nowMinutes
+            startMin: s2, endMin: endMin2, isPast: opts.isToday && endMin2 < nowMinutes
           });
         }
       }
     }
   });
 
-  todayCalls.forEach(function(call) {
+  opts.calls.forEach(function(call) {
     if (!call[1]) return;
     var m = parseTimeToMinutes(call[1]);
     if (m === 9999) return;
-    // Same point-in-time treatment as Heads-Up Email used to get — a call
-    // happens AT a specific time, it doesn't span "all day."
     rows.push({
       kind: 'call', label: call[2] || 'Coordination Call',
       time: formatTimeForDisplay(call[1]),
-      startMin: m, endMin: m, isPast: m < nowMinutes, isPoint: true
+      startMin: m, endMin: m, isPast: opts.isToday && m < nowMinutes, isPoint: true
     });
   });
 
   rowsContainer.innerHTML = '';
 
   if (rows.length === 0) {
-    rowsContainer.innerHTML = '<div class="glance-empty-row">No DSS Events Scheduled Today</div>';
+    rowsContainer.innerHTML = '<div class="glance-empty-row">' +
+      (opts.isToday ? 'No DSS Events Scheduled Today' : 'No DSS Events Scheduled Tomorrow') +
+      '</div>';
     return;
   }
 
@@ -2790,7 +2812,7 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
     var widthPct = row.allDay ? 98 : Math.min(Math.max(endPct - startPct, 3), 98);
 
     var bar = document.createElement('div');
-    var isActiveNow = !row.allDay && nowMinutes >= row.startMin && nowMinutes <= row.endMin;
+    var isActiveNow = opts.isToday && !row.allDay && nowMinutes >= row.startMin && nowMinutes <= row.endMin;
     bar.className = 'glance-bar' + (row.isPast ? ' past' : '') + (row.isPoint ? ' point' : '') + (isActiveNow ? ' active-now' : '');
     bar.style.background = 'linear-gradient(90deg, ' + style.border + ', ' + style.color + ')';
     if (isActiveNow) bar.style.setProperty('--bar-glow-color', style.border);
@@ -2799,9 +2821,6 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
     bar.textContent = row.allDay ? 'ALL DAY' : row.time;
 
     if (row.isPoint) {
-      // A point-in-time event (no real duration) gets a fixed-width pill
-      // centered on its timestamp, instead of a percentage-width bar that
-      // would be too narrow to legibly fit the time text.
       bar.style.left  = 'calc(' + startPct + '% - 30px)';
       bar.style.width = '60px';
     } else {
@@ -2815,24 +2834,25 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
     rowsContainer.appendChild(rowEl);
   });
 
-  // Dashed NOW line + time badge, overlaid across every row's track column.
-  var glanceGridEl = document.getElementById('glanceGrid');
+  var glanceGridEl = document.getElementById(opts.gridId);
   if (glanceGridEl) {
     var prevOverlay = glanceGridEl.querySelector('.glance-now-overlay');
     if (prevOverlay) prevOverlay.remove();
   }
-  var overlay = document.createElement('div');
-  overlay.className = 'glance-now-overlay';
-  var nowLine = document.createElement('div');
-  nowLine.className = 'glance-now-line';
-  nowLine.style.left = nowPct + '%';
-  var nowBadge = document.createElement('div');
-  nowBadge.className = 'glance-now-badge';
-  nowBadge.style.left = nowPct + '%';
-  nowBadge.textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  overlay.appendChild(nowLine);
-  overlay.appendChild(nowBadge);
-  if (glanceGridEl) glanceGridEl.appendChild(overlay);
+  if (opts.isToday && glanceGridEl) {
+    var overlay = document.createElement('div');
+    overlay.className = 'glance-now-overlay';
+    var nowLine = document.createElement('div');
+    nowLine.className = 'glance-now-line';
+    nowLine.style.left = nowPct + '%';
+    var nowBadge = document.createElement('div');
+    nowBadge.className = 'glance-now-badge';
+    nowBadge.style.left = nowPct + '%';
+    nowBadge.textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    overlay.appendChild(nowLine);
+    overlay.appendChild(nowBadge);
+    glanceGridEl.appendChild(overlay);
+  }
 }
 // Accepts "H:MM AM/PM" (legacy free-text rows) as well as the "HH:MM"
 // 24-hour format produced by <input type="time">, so older sheet rows
@@ -3846,6 +3866,8 @@ function loadData(rows, calls) {
 
   var now = new Date();
   var selectedDateString = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  var tomorrowDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  var tomorrowDateString = tomorrowDate.getFullYear() + '-' + String(tomorrowDate.getMonth()+1).padStart(2,'0') + '-' + String(tomorrowDate.getDate()).padStart(2,'0');
 
   var dssEmptyMessage   = 'No DSS Events or Coordination Calls Scheduled Today';
 
@@ -3853,6 +3875,7 @@ function loadData(rows, calls) {
 
   var markerGroups  = {};
   var todayDssItems = [];
+  var tomorrowDssItems = [];
 
   var table = document.getElementById('eventTable');
   table.innerHTML = '';
@@ -3870,8 +3893,17 @@ function loadData(rows, calls) {
 
     if (String(row[cancelledCol]).trim().toUpperCase() === 'TRUE') continue;
 
-    if (eventDateString === selectedDateString) {
+   if (eventDateString === selectedDateString) {
       todayDssItems.push({
+        name: row[eventCol], type: row[typeCol],
+        emailTime: row[headsUpCol],
+        radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
+        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+      });
+    }
+
+    if (eventDateString === tomorrowDateString) {
+      tomorrowDssItems.push({
         name: row[eventCol], type: row[typeCol],
         emailTime: row[headsUpCol],
         radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
@@ -3982,6 +4014,7 @@ function loadData(rows, calls) {
     document.getElementById('callStatusValue').textContent = '0';
     document.getElementById('callStatusSub2').textContent  = 'Active today';
     buildGlanceTimeline(todayDssItems, []);
+    buildTomorrowGlanceTimeline(tomorrowDssItems, []);
     updateNextObligation(todayDssItems, []);
     finalizeDssTable();
     return;
@@ -3995,7 +4028,16 @@ function loadData(rows, calls) {
     return ds === selectedDateString;
   }).sort(function(a, b) { return parseTimeToMinutes(a[1]) - parseTimeToMinutes(b[1]); });
 
+  var tomorrowCalls = calls.slice(1).filter(function(call) {
+    if (String(call[5]).trim().toUpperCase() === 'TRUE') return false;
+    var cp = String(call[0] || '').split('/');
+    if (cp.length !== 3) return false;
+    var ds = cp[2] + '-' + cp[0].padStart(2,'0') + '-' + cp[1].padStart(2,'0');
+    return ds === tomorrowDateString;
+  }).sort(function(a, b) { return parseTimeToMinutes(a[1]) - parseTimeToMinutes(b[1]); });
+
   buildGlanceTimeline(todayDssItems, todayCalls);
+  buildTomorrowGlanceTimeline(tomorrowDssItems, tomorrowCalls);
   updateNextObligation(todayDssItems, todayCalls);
 
   todayCalls.forEach(function(call) {
