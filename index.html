@@ -734,11 +734,11 @@ body{
     text-transform: uppercase; color: #9db4cc;
     display: flex; align-items: center; gap: 5px;
   }
- #map {
+#map {
     flex: 1;
     width: 100%;
     min-height: 0;
-    background: #10201c; /* matches the dark basemap tone so any edge gap between the image and container is invisible instead of a black frame */
+    background: #e8e6dc; /* matches the light CARTO Voyager basemap tone so any edge gap between the image and container is invisible */
 }
   .map-legend {
     background: rgba(15,25,35,.88); color: white;
@@ -2160,7 +2160,7 @@ try {
   lightningLayer = L.layerGroup();
   spotForecastLayer = L.layerGroup().addTo(map);
 
-  var BASEMAP_BOUNDS = [[42.60, -76.20], [45.70, -71.10]];
+  var BASEMAP_BOUNDS = [[42.75, -76.00], [45.55, -71.30]];
 
   var baseTileLayer = L.imageOverlay(
     'https://matthewclay88.github.io/dss-dashboard-tv/basemap-btv.png',
