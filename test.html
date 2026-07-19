@@ -2616,12 +2616,18 @@ function buildGlanceTimeline(todayDssEvents, todayCalls) {
     }
   });
 
-  if (todayCalls.length > 0) {
-    // All of today's coordination calls collapse into one "All day" row,
-    // matching the mockup — individual call times still show in the
-    // Coordination Calls table below.
-    rows.push({ kind: 'call', label: 'Coordination Calls', time: 'All day', startMin: 0, endMin: 1440, isPast: false, allDay: true });
-  }
+  todayCalls.forEach(function(call) {
+    if (!call[1]) return;
+    var m = parseTimeToMinutes(call[1]);
+    if (m === 9999) return;
+    // Same point-in-time treatment as Heads-Up Email used to get — a call
+    // happens AT a specific time, it doesn't span "all day."
+    rows.push({
+      kind: 'call', label: call[2] || 'Coordination Call',
+      time: formatTimeForDisplay(call[1]),
+      startMin: m, endMin: m, isPast: m < nowMinutes, isPoint: true
+    });
+  });
 
   rowsContainer.innerHTML = '';
 
