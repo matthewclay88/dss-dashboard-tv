@@ -271,6 +271,13 @@ body{
     min-height: 0;
     min-width: 0;
     overflow: hidden;
+    transition: grid-template-rows 0.3s ease;
+}
+  /* Applied when there's no active Spot Forecast section, so the table
+     card has noticeably less content — give the timeline row more of the
+     shared vertical space instead of leaving a dead gap under the table. */
+  .main-layout.compact-table {
+    grid-template-rows: minmax(0, 1.25fr) minmax(160px, 0.75fr);
 }
 
   /* ── LEFT PANEL (hidden in this layout — kept in DOM for JS wiring) ── */
@@ -1757,7 +1764,7 @@ body{
 </div>
 
 <!-- ── MAIN LAYOUT ── -->
-<div id="mainLayout" class="main-layout">
+<div id="mainLayout" class="main-layout compact-table">
 
   <div id="dssWrapper">
     <div class="data-section">
@@ -2073,10 +2080,13 @@ try {
   lightningLayer = L.layerGroup();
   spotForecastLayer = L.layerGroup().addTo(map);
 
-  L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    { attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19, subdomains: 'abcd' }
+  var baseTileLayer = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19, subdomains: 'abc' }
   ).addTo(map);
+  baseTileLayer.on('tileerror', function(err) {
+    console.error('Map tile failed to load:', err);
+  });
 
   setTimeout(function () {
       map.invalidateSize(true);
@@ -3028,6 +3038,7 @@ function renderSpotForecasts(spots){
     tbody.innerHTML="";
     clearSpotForecastMarkers();
     var wrapperEl = document.getElementById("spotForecastWrapper");
+    var mainLayoutEl = document.getElementById("mainLayout");
     if(spots.length===0){
         // Nothing to show — hide the whole subsection instead of rendering
         // an empty-state row. This section is rare (only appears when a
@@ -3035,10 +3046,12 @@ function renderSpotForecasts(spots){
         // no scroll room to spare, a permanent placeholder was eating
         // space that pushed the timeline below it off-screen.
         if (wrapperEl) wrapperEl.style.display = "none";
+        if (mainLayoutEl) mainLayoutEl.classList.add("compact-table");
         updateSpotLegend([]);
         return;
     }
     if (wrapperEl) wrapperEl.style.display = "";
+    if (mainLayoutEl) mainLayoutEl.classList.remove("compact-table");
     spots.forEach(function(spot){
         addSpotMarker(spot);
         var row=document.createElement("tr");
