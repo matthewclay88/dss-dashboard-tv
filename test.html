@@ -2209,18 +2209,31 @@ function animateGaugeRing(ringEl, targetPct, color) {
 // ══════════════════════════════════════════════════════════════
 var GAUGE_SPARKLINE_MAX_POINTS = 20;
 
+// In-memory store is the source of truth — works reliably even if
+// localStorage is blocked. localStorage is attempted as a nice-to-have on
+// top, so history survives a hard reload when the browser allows it, but
+// the sparkline itself never depends on it actually working.
+var _gaugeHistoryMemory = {};
+
 function pushGaugeHistory(key, score) {
   if (score === null || score === undefined) return null;
   var storageKey = 'gaugeHistory_' + key;
-  var history = [];
-  try {
-    history = JSON.parse(localStorage.getItem(storageKey) || '[]');
-  } catch (e) { history = []; }
+
+  var history = _gaugeHistoryMemory[key];
+  if (!history) {
+    history = [];
+    try {
+      history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    } catch (e) { history = []; }
+  }
+
   history.push(score);
   if (history.length > GAUGE_SPARKLINE_MAX_POINTS) {
     history = history.slice(history.length - GAUGE_SPARKLINE_MAX_POINTS);
   }
-  try { localStorage.setItem(storageKey, JSON.stringify(history)); } catch (e) { /* storage full/unavailable — sparkline just won't persist */ }
+
+  _gaugeHistoryMemory[key] = history;
+  try { localStorage.setItem(storageKey, JSON.stringify(history)); } catch (e) { /* blocked/unavailable — in-memory store above still works */ }
   return history;
 }
 
