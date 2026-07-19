@@ -564,32 +564,33 @@ body{
   .glance-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); font-weight: 600; }
   .glance-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
-  /* ── TOMORROW AT A GLANCE — compact one-line strip ── */
+ /* ── TOMORROW AT A GLANCE — compact one-line strip (TV-sized) ── */
   .tomorrow-glance-bar {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 7px 12px;
+    gap: 16px;
+    padding: 14px 20px;
     background: linear-gradient(160deg, rgba(19,32,32,.78) 0%, rgba(8,14,13,.94) 100%);
     border: 1px solid rgba(45,212,191,.28);
-    border-radius: 10px;
+    border-radius: 12px;
     overflow-x: auto;
     white-space: nowrap;
   }
   .tomorrow-glance-label {
-    font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 15px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
     color: #5eead4; flex-shrink: 0;
   }
-  .tomorrow-glance-list { display: flex; align-items: center; gap: 7px; flex-wrap: nowrap; }
+  .tomorrow-glance-list { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; }
   .tomorrow-glance-chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 9px 16px; border-radius: 8px; font-size: 18px; font-weight: 700;
     white-space: nowrap; flex-shrink: 0;
-    border-left: 3px solid var(--chip-border, #64748b);
+    border-left: 4px solid var(--chip-border, #64748b);
     background: rgba(255,255,255,.04);
   }
-  .tomorrow-glance-chip .tgc-time { color: var(--muted); font-weight: 600; margin-right: 2px; }
+  .tomorrow-glance-chip span:first-child { font-size: 20px; }
+  .tomorrow-glance-chip .tgc-time { color: var(--muted); font-weight: 700; margin-right: 4px; }
  .timeline-track {
   position: relative;
   height: 68px;   /* was 112px */
