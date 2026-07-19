@@ -116,14 +116,6 @@ body {
     box-shadow: none;
     opacity: 0.88;
   }
-  .cal-week-tag {
-    position: absolute; top: 8px; right: 10px; z-index: 5;
-    font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
-    text-transform: uppercase; padding: 3px 9px; border-radius: 5px;
-    background: rgba(29,111,164,.35); color: #93c5fd;
-    border: 1px solid rgba(96,165,250,.4);
-    pointer-events: none;
-  }
 
   .cal-grid-headrow {
     flex: 0 0 auto;
@@ -656,11 +648,9 @@ function buildCalendar() {
     }
 
     var weekClass = startDay === 0 ? 'current-week' : 'next-week';
-    var weekTag   = startDay === 0 ? '<div class="cal-week-tag">This Week</div>' : '<div class="cal-week-tag" style="background:rgba(96,165,250,.12);color:#93c5fd99;">Next Week</div>';
 
     return (
       '<div class="cal-week-grid ' + weekClass + '">' +
-        weekTag +
         '<div class="cal-grid-headrow">' + headerCells + '</div>' +
         '<div class="cal-grid-bodyrow">' + bodyCells + '</div>' +
       '</div>'
