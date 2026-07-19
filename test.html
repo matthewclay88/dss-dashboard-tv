@@ -1470,6 +1470,7 @@ body{
   .env-gauge-label { font-size: 10px; font-weight: 700; color: var(--text); margin-top: 6px; text-transform: uppercase; letter-spacing: .03em; }
   .env-gauge-badge { font-size: 10px; font-weight: 800; margin-top: 2px; }
   .env-gauge-trend { font-size: 9px; color: var(--muted); margin-top: 3px; }
+  .env-gauge-sparkline { width: 100%; max-width: 60px; height: 16px; margin-top: 5px; display: block; }
 
   /* ── DATA SECTION header link + footer count (table cards) ── */
   .data-section-link {
@@ -1720,9 +1721,36 @@ body{
     <div class="status-icon purple" id="glmCardIcon">⚡</div>
     <div style="min-width:0; width:100%;">
       <div class="status-label">BTV Lightning - GLM</div>
-      <div class="status-value" id="glmCardValue" style="color:#c084fc;"><span class="skeleton-text" style="width:70px;"></span></div>
-      <div class="status-sub" id="glmCardSub">Strikes last 60 min</div>
-      <div id="glmUpdated" class="status-sub" style="margin-top:2px;font-size:10px;">Updated --</div>
+      <div
+        id="glmCardValue"
+        style="
+          display:grid;
+          grid-template-columns:repeat(4,1fr);
+          gap:4px;
+          margin-top:4px;
+          font-size:16px;
+          font-weight:700;
+        ">
+        <div>0</div>
+        <div>0</div>
+        <div>0</div>
+        <div>0</div>
+      </div>
+      <div
+        id="glmCardSub"
+        class="status-sub"
+        style="
+          display:grid;
+          grid-template-columns:repeat(4,1fr);
+          gap:4px;
+          margin-top:2px;
+        ">
+        <div>5m</div>
+        <div>15m</div>
+        <div>30m</div>
+        <div>60m</div>
+      </div>
+      <div id="glmUpdated" class="status-sub" style="margin-top:6px;font-size:11px;text-align:center;">Updated --</div>
     </div>
   </div>
 </div>
@@ -1818,21 +1846,25 @@ body{
         <div class="env-gauge-ring" id="envSevereRing"><div class="env-gauge-value" id="envSevereValue">–</div></div>
         <div class="env-gauge-label">Severe</div>
         <div class="env-gauge-badge" id="envSevereBadge" style="color:var(--muted);">--</div>
+        <svg class="env-gauge-sparkline" id="envSevereSparkline" viewBox="0 0 60 18" preserveAspectRatio="none"></svg>
       </div>
       <div class="env-gauge-card" data-threat-key="tornado">
         <div class="env-gauge-ring" id="envTornadoRing"><div class="env-gauge-value" id="envTornadoValue">–</div></div>
         <div class="env-gauge-label">Tornado</div>
         <div class="env-gauge-badge" id="envTornadoBadge" style="color:var(--muted);">--</div>
+        <svg class="env-gauge-sparkline" id="envTornadoSparkline" viewBox="0 0 60 18" preserveAspectRatio="none"></svg>
       </div>
       <div class="env-gauge-card" data-threat-key="hydro">
         <div class="env-gauge-ring" id="envHydroRing"><div class="env-gauge-value" id="envHydroValue">–</div></div>
         <div class="env-gauge-label">Hydrology</div>
         <div class="env-gauge-badge" id="envHydroBadge" style="color:var(--muted);">--</div>
+        <svg class="env-gauge-sparkline" id="envHydroSparkline" viewBox="0 0 60 18" preserveAspectRatio="none"></svg>
       </div>
       <div class="env-gauge-card" data-threat-key="snowsquall">
         <div class="env-gauge-ring" id="envSnowSquallRing"><div class="env-gauge-value" id="envSnowSquallValue">–</div></div>
         <div class="env-gauge-label">Snow Squall</div>
         <div class="env-gauge-badge" id="envSnowSquallBadge" style="color:var(--muted);">--</div>
+        <svg class="env-gauge-sparkline" id="envSnowSquallSparkline" viewBox="0 0 60 18" preserveAspectRatio="none"></svg>
       </div>
     </div>
   </div>
@@ -2169,6 +2201,50 @@ function animateGaugeRing(ringEl, targetPct, color) {
   _gaugeRingAnimations.set(ringEl, { raf: raf });
 }
 
+// ══════════════════════════════════════════════════════════════
+//  GAUGE SPARKLINES
+//  Keeps a short rolling history of each gauge's score in
+//  localStorage so the trend line survives refreshes and page
+//  reloads, not just in-memory across one session.
+// ══════════════════════════════════════════════════════════════
+var GAUGE_SPARKLINE_MAX_POINTS = 20;
+
+function pushGaugeHistory(key, score) {
+  if (score === null || score === undefined) return null;
+  var storageKey = 'gaugeHistory_' + key;
+  var history = [];
+  try {
+    history = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  } catch (e) { history = []; }
+  history.push(score);
+  if (history.length > GAUGE_SPARKLINE_MAX_POINTS) {
+    history = history.slice(history.length - GAUGE_SPARKLINE_MAX_POINTS);
+  }
+  try { localStorage.setItem(storageKey, JSON.stringify(history)); } catch (e) { /* storage full/unavailable — sparkline just won't persist */ }
+  return history;
+}
+
+function renderSparkline(svgEl, history, color) {
+  if (!svgEl || !history || history.length < 2) {
+    if (svgEl) svgEl.innerHTML = '';
+    return;
+  }
+  var w = 60, h = 18, pad = 2;
+  var min = Math.min.apply(null, history);
+  var max = Math.max.apply(null, history);
+  var range = (max - min) || 1;
+  var stepX = (w - pad * 2) / (history.length - 1);
+
+  var points = history.map(function(v, i) {
+    var x = pad + i * stepX;
+    var y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+
+  svgEl.innerHTML =
+    '<polyline points="' + points + '" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>';
+}
+
 function updateBottomThreatCard(key, score, pct, rawDisplayValue) {
   var idMap = { severe: 'envSevere', tornado: 'envTornado', hydro: 'envHydro', snowsquall: 'envSnowSquall' };
   var prefix = idMap[key];
@@ -2195,6 +2271,12 @@ function updateBottomThreatCard(key, score, pct, rawDisplayValue) {
       : (score !== null && score !== undefined ? score : '–') + '/100';
   }
   if (badgeEl) { badgeEl.textContent = badgeText; badgeEl.style.color = color; }
+
+  var sparklineEl = document.getElementById(prefix + 'Sparkline');
+  if (sparklineEl) {
+    var history = pushGaugeHistory(key, score);
+    renderSparkline(sparklineEl, history, color);
+  }
 
   var updatedEl = document.getElementById('envThreatUpdated');
   if (updatedEl) {
@@ -3347,11 +3429,19 @@ function updateGlmCard() {
     .then(function(data) {
       if (!data || !data.counts) throw new Error("No lightning data returned.");
 
-      const sixty = Number(data.counts["60"] || 0);
+      const five    = Number(data.counts["5"]  || 0);
+      const fifteen = Number(data.counts["15"] || 0);
+      const thirty  = Number(data.counts["30"] || 0);
+      const sixty   = Number(data.counts["60"] || 0);
 
-      // NOTE: only a 60-min bucket is available today, used here as the
-      // closest proxy for "BTV Lightning - GLM" until a true 24hr count exists.
-      document.getElementById("glmCardValue").textContent = sixty + (sixty === 1 ? " Strike" : " Strikes");
+      // GLM detects flashes, not "strikes" — the field names/labels here
+      // reflect that terminology.
+      document.getElementById("glmCardValue").innerHTML = `
+        <div>${five}</div>
+        <div>${fifteen}</div>
+        <div>${thirty}</div>
+        <div>${sixty}</div>
+      `;
 
       const updatedEl = document.getElementById("glmUpdated");
       if (updatedEl) {
@@ -3377,7 +3467,12 @@ function updateGlmCard() {
     })
     .catch(function(err) {
       console.error("GLM Error:", err);
-      document.getElementById("glmCardValue").textContent = "Unavailable";
+      document.getElementById("glmCardValue").innerHTML = `
+        <div>-</div>
+        <div>-</div>
+        <div>-</div>
+        <div>-</div>
+      `;
       const updatedEl = document.getElementById("glmUpdated");
       if (updatedEl) updatedEl.textContent = "Unavailable";
     });
