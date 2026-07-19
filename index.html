@@ -2144,7 +2144,7 @@ var map,
     spotForecastLayer;
 
 try {
- map         = L.map('map').setView([39.8, -98.5], 4); // wide US view — flies into BTV on first load
+ map  = L.map('map').setView([44.15, -73.63], 7); // load directly into BTV view 
   markerLayer = L.layerGroup().addTo(map);
   // Hazard zone overlay
   warningPolygonLayer = L.layerGroup().addTo(map);
@@ -4274,12 +4274,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (size.x === 0 || size.y === 0) return;
         map.invalidateSize(false);
         map.invalidateSize(false);
-        if (!_mapFirstFitDone) {
-          map.flyTo([44.15, -73.63], 7, { animate: true, duration: 1.75 });
-          _mapFirstFitDone = true;
-        } else {
-          map.setView([44.15, -73.63], 7, { animate: false });
-        }
+        map.setView([44.15, -73.63], 7, { animate: false });
+        _mapFirstFitDone = true;
       }
 
       attemptFit();
