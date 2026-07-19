@@ -345,7 +345,6 @@ body{
     border-radius: 13px;
     box-shadow: 0 0 30px rgba(29,111,164,.08);
     flex: 1;
-    height: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1776,7 +1775,7 @@ body{
         </table>
         <div class="data-section-footer" id="dssTableFooterCount"></div>
 
-        <div id="spotForecastWrapper">
+        <div id="spotForecastWrapper" style="display:none;">
           <div class="data-subsection-header">
             <span class="section-icon">🎯</span>
             <h2>Active Spot Forecast Requests</h2>
@@ -1785,9 +1784,7 @@ body{
             <thead><tr>
               <th style="width:36px;"></th><th>Event Name</th><th>Type</th><th>Request Submitted</th><th>Completed</th><th>Status</th>
             </tr></thead>
-            <tbody id="spotForecastTable">
-              <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">No active Spot Forecast requests.</td></tr>
-            </tbody>
+            <tbody id="spotForecastTable"></tbody>
           </table>
         </div>
       </div>
@@ -3030,18 +3027,18 @@ function renderSpotForecasts(spots){
     if(!tbody) return;
     tbody.innerHTML="";
     clearSpotForecastMarkers();
+    var wrapperEl = document.getElementById("spotForecastWrapper");
     if(spots.length===0){
-        tbody.innerHTML=
-        `
-        <tr>
-            <td colspan="6" style="text-align:center;padding:20px;color:var(--muted);font-style:italic;">
-                No active Spot Forecast requests.
-            </td>
-        </tr>
-        `;
+        // Nothing to show — hide the whole subsection instead of rendering
+        // an empty-state row. This section is rare (only appears when a
+        // spot forecast is actually active), so on a TV-sized layout with
+        // no scroll room to spare, a permanent placeholder was eating
+        // space that pushed the timeline below it off-screen.
+        if (wrapperEl) wrapperEl.style.display = "none";
         updateSpotLegend([]);
         return;
     }
+    if (wrapperEl) wrapperEl.style.display = "";
     spots.forEach(function(spot){
         addSpotMarker(spot);
         var row=document.createElement("tr");
