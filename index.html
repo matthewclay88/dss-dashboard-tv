@@ -738,6 +738,7 @@ body{
     flex: 1;
     width: 100%;
     min-height: 0;
+    background: #10201c; /* matches the dark basemap tone so any edge gap between the image and container is invisible instead of a black frame */
 }
   .map-legend {
     background: rgba(15,25,35,.88); color: white;
@@ -2144,7 +2145,15 @@ var map,
     spotForecastLayer;
 
 try {
- map  = L.map('map').setView([44.15, -73.63], 7); // load directly into BTV view 
+ map  = L.map('map', {
+    dragging: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    boxZoom: false,
+    keyboard: false,
+    touchZoom: false,
+    zoomControl: false
+  }).setView([44.15, -73.63], 7); // load directly into BTV view — locked in place since this is a fixed kiosk display, not an interactive map
   markerLayer = L.layerGroup().addTo(map);
   // Hazard zone overlay
   warningPolygonLayer = L.layerGroup().addTo(map);
@@ -2154,13 +2163,20 @@ try {
   var BASEMAP_BOUNDS = [[42.60, -76.20], [45.70, -71.10]];
 
   var baseTileLayer = L.imageOverlay(
-    'https://matthewclay88.github.io/dss-dashboard-tv/basemap-btv.png',
+    'https://matthewclay88.github.io/dss-dashboard-tv/assets/basemap-btv.png',
     BASEMAP_BOUNDS
   ).addTo(map);
 
   baseTileLayer.on('error', function(err) {
     console.error('Static basemap image failed to load:', err);
   });
+
+  // Hard-clamp the map to the image's own bounds so it's impossible to
+  // pan/zoom past the edge of the static image and expose the container
+  // background — belt-and-suspenders alongside disabling interaction above.
+  map.setMaxBounds(BASEMAP_BOUNDS);
+  map.setMinZoom(7);
+  map.setMaxZoom(7);
 
   setTimeout(function () {
       map.invalidateSize(true);
