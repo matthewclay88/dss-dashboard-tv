@@ -2137,15 +2137,7 @@ var BTV_COUNTIES = [
 ];
 
 
-var map,
-    markerLayer,
-    warningZoneLayer = null,
-    warningPolygonLayer,
-    lightningLayer,
-    spotForecastLayer;
-
-try {
- map  = L.map('map', {
+map = L.map('map', {
     dragging: false,
     scrollWheelZoom: false,
     doubleClickZoom: false,
@@ -2153,29 +2145,34 @@ try {
     keyboard: false,
     touchZoom: false,
     zoomControl: false
-  }).setView([44.15, -73.63], 7); // load directly into BTV view — locked in place since this is a fixed kiosk display, not an interactive map
-  markerLayer = L.layerGroup().addTo(map);
-  // Hazard zone overlay
-  warningPolygonLayer = L.layerGroup().addTo(map);
-  lightningLayer = L.layerGroup();
-  spotForecastLayer = L.layerGroup().addTo(map);
+});
 
-  var BASEMAP_BOUNDS = [[42.204246627651266, -76.14624023437501], [45.69863777199709, -71.27929687500001]];
+markerLayer = L.layerGroup().addTo(map);
 
-  var BASEMAP_BOUNDS = [[42.204246627651266, -76.14624023437501], [45.69863777199709, -71.27929687500001]];
+// Hazard zone overlay
+warningPolygonLayer = L.layerGroup().addTo(map);
+lightningLayer = L.layerGroup();
+spotForecastLayer = L.layerGroup().addTo(map);
 
-  var baseTileLayer = L.imageOverlay(
+const BASEMAP_BOUNDS = [
+    [42.204246627651266, -76.14624023437501],
+    [45.69863777199709, -71.27929687500001]
+];
+
+var baseTileLayer = L.imageOverlay(
     'https://matthewclay88.github.io/dss-dashboard-tv/basemap-btv.png',
     BASEMAP_BOUNDS
-  ).addTo(map);
+).addTo(map);
 
-  baseTileLayer.on('error', function(err) {
-    console.error('Static basemap image failed to load:', err);
-  });
+// Fit exactly to the image
+map.fitBounds(BASEMAP_BOUNDS, {
+    padding: [0, 0],
+    animate: false
+});
 
-  setTimeout(function () {
-      map.invalidateSize(true);
-  }, 100);
+// Lock map to image
+map.setMaxBounds(BASEMAP_BOUNDS);
+map.options.maxBoundsViscosity = 1.0;
 
   // Map legend
   var legend = L.control({ position: 'bottomleft' });
