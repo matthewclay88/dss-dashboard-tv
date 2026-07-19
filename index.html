@@ -2175,14 +2175,6 @@ try {
 
   // Hard-clamp the map to the image's own bounds so it's impossible to
   // pan/zoom past the edge of the static image and expose the container
-  // background — belt-and-suspenders alongside the interaction options
-  // already disabled up in L.map(...).
-  map.setMaxBounds(BASEMAP_BOUNDS);
-  map.setMinZoom(7);
-  map.setMaxZoom(7);
-
-  // Hard-clamp the map to the image's own bounds so it's impossible to
-  // pan/zoom past the edge of the static image and expose the container
   // background — belt-and-suspenders alongside disabling interaction above.
   map.setMaxBounds(BASEMAP_BOUNDS);
   map.setMinZoom(7);
