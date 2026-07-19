@@ -4284,9 +4284,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var size = map.getSize();
         if (size.x === 0 || size.y === 0) return;
         map.invalidateSize(false);
-        map.invalidateSize(false);
-        map.setView([44.15, -73.63], 7, { animate: false });
-        _mapFirstFitDone = true;
+map.invalidateSize(false);
+map.fitBounds(BASEMAP_BOUNDS, {
+    padding: [0, 0],
+    animate: false
+});
+_mapFirstFitDone = true;
       }
 
       attemptFit();
