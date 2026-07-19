@@ -2159,12 +2159,16 @@ const BASEMAP_BOUNDS = [
     [45.69863777199709, -71.27929687500001]
 ];
 
-var baseTileLayer = L.imageOverlay(
-    'https://matthewclay88.github.io/dss-dashboard-tv/basemap-btv.png',
-    BASEMAP_BOUNDS
+var baseTileLayer = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    {
+        subdomains: 'abcd',
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }
 ).addTo(map);
 
-// Fit exactly to the image
+// Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
     padding: [0, 0],
     animate: false
