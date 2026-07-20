@@ -2213,27 +2213,22 @@ const BASEMAP_BOUNDS = [
 // that service's docs) for real topographic/landuse styling —
 // elevation shading, land cover, water features, roads — instead of
 // a flat street basemap. No API key required.
-// The image is deliberately fetched/anchored to a PADDED area larger
-// than BASEMAP_BOUNDS (the view fitBounds() actually frames). If the
-// fitted viewport ends up showing even a little more than the exact
-// bounds — which is common with fitBounds() regardless of zoom
-// rounding — an image anchored to the exact same bounds falls short of
-// the edges, leaving a border. Overshooting the image's own extent
-// guarantees full coverage either way.
-var PAD = 0.32; // 32% padding on each side — 15% only closed about half the gap last try
-var latSpan = BASEMAP_BOUNDS[1][0] - BASEMAP_BOUNDS[0][0];
-var lngSpan = BASEMAP_BOUNDS[1][1] - BASEMAP_BOUNDS[0][1];
-var IMAGE_BOUNDS = [
-  [BASEMAP_BOUNDS[0][0] - latSpan * PAD, BASEMAP_BOUNDS[0][1] - lngSpan * PAD],
-  [BASEMAP_BOUNDS[1][0] + latSpan * PAD, BASEMAP_BOUNDS[1][1] + lngSpan * PAD]
-];
-
+//
+// IMPORTANT: the image bbox must match BASEMAP_BOUNDS exactly. An
+// earlier attempt padded the requested bbox to close a visual border
+// gap, but Esri's export service dynamically reprojects its cached
+// Web Mercator tiles to whatever bbox/SR is requested — a
+// significantly larger or differently-shaped bbox request introduced
+// a slight warp in the returned image, which threw off alignment
+// with the real-coordinate GeoJSON hazard zone overlay drawn on top
+// of it. Getting the hazard zones positioned correctly matters far
+// more than a cosmetic border, so this stays an exact 1:1 match.
 var BASEMAP_IMAGE_URL =
   'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export' +
-  '?bbox=' + IMAGE_BOUNDS[0][1] + ',' + IMAGE_BOUNDS[0][0] + ',' + IMAGE_BOUNDS[1][1] + ',' + IMAGE_BOUNDS[1][0] +
+  '?bbox=' + BASEMAP_BOUNDS[0][1] + ',' + BASEMAP_BOUNDS[0][0] + ',' + BASEMAP_BOUNDS[1][1] + ',' + BASEMAP_BOUNDS[1][0] +
   '&bboxSR=4326&imageSR=4326&size=1400,1000&format=svg&transparent=false&f=image';
 
-var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, IMAGE_BOUNDS, {
+var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, BASEMAP_BOUNDS, {
   attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors'
 }).addTo(map);
 baseImageOverlay.on('error', function() {
