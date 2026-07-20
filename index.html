@@ -2207,7 +2207,7 @@ var baseTileLayer = L.tileLayer(
 // whole block below (down to "diag panel end") once the map is
 // confirmed working reliably if you'd rather not have it at all.
 var _diagBox = document.createElement('div');
-_diagBox.style.cssText = 'position:fixed;bottom:6px;left:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7dd3fc;font:10px monospace;padding:4px 8px;border-radius:4px;pointer-events:none;max-width:340px;line-height:1.5;';
+_diagBox.style.cssText = 'position:fixed;bottom:6px;left:6px;z-index:99999;background:rgba(0,0,0,.85);color:#7dd3fc;font:10px monospace;padding:4px 8px;border-radius:4px;pointer-events:none;max-width:420px;line-height:1.5;white-space:pre-wrap;';
 _diagBox.textContent = 'map diag: starting…';
 document.body.appendChild(_diagBox);
 var _diagTileOk = 0, _diagTileErr = 0, _diagLastErr = '';
@@ -2216,13 +2216,38 @@ baseTileLayer.on('tileerror', function(e) { _diagTileErr++; _diagLastErr = (e.ti
 function _updateDiagBox() {
   var mapDiv = document.getElementById('map');
   var size = mapDiv ? mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight : 'no #map';
-  var txt = 'map diag — size:' + size + ' tiles ok:' + _diagTileOk + ' err:' + _diagTileErr;
-  if (_diagTileErr > 0) txt += '\\nlast fail: ' + _diagLastErr.slice(-60);
+  var txt = 'map diag — container:' + size + ' tiles ok:' + _diagTileOk + ' err:' + _diagTileErr;
+
+  // Where is an actual tile <img>, relative to the container that's
+  // supposed to be clipping/showing it? This is the key question once
+  // tiles report "loaded" but nothing's visible — either they're sitting
+  // correctly inside the container's box (a pure paint/compositing bug),
+  // or they're positioned way outside it (a transform/math bug).
+  var tileEl = mapDiv ? mapDiv.querySelector('.leaflet-tile') : null;
+  if (tileEl) {
+    var tr = tileEl.getBoundingClientRect();
+    var mr = mapDiv.getBoundingClientRect();
+    var cs = window.getComputedStyle(tileEl);
+    txt += '\ntile rect: L' + Math.round(tr.left) + ' T' + Math.round(tr.top) + ' ' + Math.round(tr.width) + 'x' + Math.round(tr.height);
+    txt += '\nmap  rect: L' + Math.round(mr.left) + ' T' + Math.round(mr.top) + ' ' + Math.round(mr.width) + 'x' + Math.round(mr.height);
+    txt += '\ntile style: opacity=' + cs.opacity + ' visibility=' + cs.visibility + ' display=' + cs.display;
+    txt += '\ntile transform=' + cs.transform;
+    var pane = mapDiv.querySelector('.leaflet-tile-pane');
+    if (pane) {
+      var pcs = window.getComputedStyle(pane);
+      txt += '\npane transform=' + pcs.transform + ' opacity=' + pcs.opacity;
+    }
+  } else {
+    txt += '\nno .leaflet-tile element found in DOM yet';
+  }
+
   _diagBox.textContent = txt;
 }
 setTimeout(_updateDiagBox, 1000);
 setTimeout(_updateDiagBox, 4000);
+setTimeout(_updateDiagBox, 8000);
 // ── diag panel end ──────────────────────────────────────────────
+
 
 // Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
