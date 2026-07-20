@@ -2174,6 +2174,11 @@ map.fitBounds(BASEMAP_BOUNDS, {
     animate: false
 });
 
+setTimeout(function() {
+  map.invalidateSize(false);
+  map.fitBounds(BASEMAP_BOUNDS, { padding: [0,0], animate: false });
+}, 200);
+  
 // Lock map to image
 map.setMaxBounds(BASEMAP_BOUNDS);
 map.options.maxBoundsViscosity = 1.0;
