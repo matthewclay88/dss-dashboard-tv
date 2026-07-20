@@ -2223,10 +2223,22 @@ const BASEMAP_BOUNDS = [
 // with the real-coordinate GeoJSON hazard zone overlay drawn on top
 // of it. Getting the hazard zones positioned correctly matters far
 // more than a cosmetic border, so this stays an exact 1:1 match.
+// IMPORTANT: imageSR must be 102100 (Web Mercator), not 4326. Leaflet's
+// default map projection is Web Mercator, and L.imageOverlay stretches
+// the image LINEARLY IN THAT PROJECTED SPACE between the two corner
+// points — not linearly in raw lat/lng degrees. Requesting imageSR=4326
+// (plain equirectangular, linear in degrees) was the actual bug behind
+// the misalignment: it produces a systematic north-south drift that
+// grows toward the edges of the bbox, since Mercator increasingly
+// stretches the north-south axis at higher latitude, while the GeoJSON
+// zone overlay (positioned using Leaflet's own correct Mercator math)
+// stayed exactly where it should. bboxSR stays 4326 purely so the bbox
+// numbers below can be given in familiar lat/lng — that part was never
+// the problem.
 var BASEMAP_IMAGE_URL =
   'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export' +
   '?bbox=' + BASEMAP_BOUNDS[0][1] + ',' + BASEMAP_BOUNDS[0][0] + ',' + BASEMAP_BOUNDS[1][1] + ',' + BASEMAP_BOUNDS[1][0] +
-  '&bboxSR=4326&imageSR=4326&size=1400,1000&format=svg&transparent=false&f=image';
+  '&bboxSR=4326&imageSR=102100&size=1400,1397&format=svg&transparent=false&f=image';
 
 var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, BASEMAP_BOUNDS, {
   attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors'
