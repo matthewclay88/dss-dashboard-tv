@@ -2191,63 +2191,33 @@ const BASEMAP_BOUNDS = [
     [45.69863777199709, -71.27929687500001]
 ];
 
-var baseTileLayer = L.tileLayer(
-    'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
-    {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-    }
-).addTo(map);
+// ── BASEMAP: single static SVG image, not a tile grid ────────────
+// The map view is permanently fixed (no pan/zoom — dragging, zoom
+// control, etc. are all disabled below), so there's no real need for
+// a tiled basemap in the first place. Tiles exist to let a map load
+// new image chunks as someone drags/zooms around; since that never
+// happens here, a tile grid was just dozens of separately-positioned
+// <img> elements that all have to composite together correctly —
+// exactly the pattern that tends to break on older/embedded WebKit
+// engines. A single image has nothing to composite; it either paints
+// or it doesn't.
+//
+// The image itself comes from Esri's public World Topo Map export
+// service, requested in genuine SVG format (confirmed supported by
+// that service's docs) for real topographic/landuse styling —
+// elevation shading, land cover, water features, roads — instead of
+// a flat street basemap. No API key required.
+var BASEMAP_IMAGE_URL =
+  'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export' +
+  '?bbox=' + BASEMAP_BOUNDS[0][1] + ',' + BASEMAP_BOUNDS[0][0] + ',' + BASEMAP_BOUNDS[1][1] + ',' + BASEMAP_BOUNDS[1][0] +
+  '&bboxSR=4326&imageSR=4326&size=1400,1000&format=svg&transparent=false&f=image';
 
-// ── Small on-screen diagnostic panel ────────────────────────────
-// Deliberately tiny and out of the way (bottom-left, low-opacity text)
-// rather than the earlier full-screen debug tool — this is meant to
-// stay on permanently as a quick "is it working" check, not something
-// that needs removing before this is considered finished. Delete the
-// whole block below (down to "diag panel end") once the map is
-// confirmed working reliably if you'd rather not have it at all.
-var _diagBox = document.createElement('div');
-_diagBox.style.cssText = 'position:fixed;bottom:6px;left:6px;z-index:99999;background:rgba(0,0,0,.85);color:#7dd3fc;font:10px monospace;padding:4px 8px;border-radius:4px;pointer-events:none;max-width:420px;line-height:1.5;white-space:pre-wrap;';
-_diagBox.textContent = 'map diag: starting…';
-document.body.appendChild(_diagBox);
-var _diagTileOk = 0, _diagTileErr = 0, _diagLastErr = '';
-baseTileLayer.on('tileload',  function() { _diagTileOk++;  _updateDiagBox(); });
-baseTileLayer.on('tileerror', function(e) { _diagTileErr++; _diagLastErr = (e.tile && e.tile.src) || '?'; _updateDiagBox(); });
-function _updateDiagBox() {
-  var mapDiv = document.getElementById('map');
-  var size = mapDiv ? mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight : 'no #map';
-  var txt = 'map diag — container:' + size + ' tiles ok:' + _diagTileOk + ' err:' + _diagTileErr;
-
-  // Where is an actual tile <img>, relative to the container that's
-  // supposed to be clipping/showing it? This is the key question once
-  // tiles report "loaded" but nothing's visible — either they're sitting
-  // correctly inside the container's box (a pure paint/compositing bug),
-  // or they're positioned way outside it (a transform/math bug).
-  var tileEl = mapDiv ? mapDiv.querySelector('.leaflet-tile') : null;
-  if (tileEl) {
-    var tr = tileEl.getBoundingClientRect();
-    var mr = mapDiv.getBoundingClientRect();
-    var cs = window.getComputedStyle(tileEl);
-    txt += '\ntile rect: L' + Math.round(tr.left) + ' T' + Math.round(tr.top) + ' ' + Math.round(tr.width) + 'x' + Math.round(tr.height);
-    txt += '\nmap  rect: L' + Math.round(mr.left) + ' T' + Math.round(mr.top) + ' ' + Math.round(mr.width) + 'x' + Math.round(mr.height);
-    txt += '\ntile style: opacity=' + cs.opacity + ' visibility=' + cs.visibility + ' display=' + cs.display;
-    txt += '\ntile transform=' + cs.transform;
-    var pane = mapDiv.querySelector('.leaflet-tile-pane');
-    if (pane) {
-      var pcs = window.getComputedStyle(pane);
-      txt += '\npane transform=' + pcs.transform + ' opacity=' + pcs.opacity;
-    }
-  } else {
-    txt += '\nno .leaflet-tile element found in DOM yet';
-  }
-
-  _diagBox.textContent = txt;
-}
-setTimeout(_updateDiagBox, 1000);
-setTimeout(_updateDiagBox, 4000);
-setTimeout(_updateDiagBox, 8000);
-// ── diag panel end ──────────────────────────────────────────────
-
+var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, BASEMAP_BOUNDS, {
+  attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors'
+}).addTo(map);
+baseImageOverlay.on('error', function() {
+  console.error('Basemap SVG failed to load from Esri export service — check network access to services.arcgisonline.com from this device.');
+});
 
 // Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
