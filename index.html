@@ -2241,13 +2241,25 @@ var IMG_HEIGHT = Math.round(IMG_WIDTH / imgAspect);
 var BASEMAP_IMAGE_URL =
   'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export' +
   '?bbox=' + IMAGE_BOUNDS[0][1] + ',' + IMAGE_BOUNDS[0][0] + ',' + IMAGE_BOUNDS[1][1] + ',' + IMAGE_BOUNDS[1][0] +
-  '&bboxSR=4326&imageSR=102100&size=' + IMG_WIDTH + ',' + IMG_HEIGHT + '&format=svg&transparent=false&f=image';
+  '&bboxSR=4326&imageSR=102100&size=' + IMG_WIDTH + ',' + IMG_HEIGHT + '&format=png32&transparent=false&f=image';
 
 var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, IMAGE_BOUNDS, {
   attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors'
 }).addTo(map);
 baseImageOverlay.on('error', function() {
-  console.error('Basemap SVG failed to load from Esri export service — check network access to services.arcgisonline.com from this device.');
+  console.error('Basemap image failed to load from Esri export service — check network access to services.arcgisonline.com from this device.');
+  var mapDiv = document.getElementById('map');
+  if (mapDiv && !document.getElementById('basemapErrorNotice')) {
+    var notice = document.createElement('div');
+    notice.id = 'basemapErrorNotice';
+    notice.style.cssText = 'position:absolute;top:8px;left:8px;z-index:1000;background:rgba(220,38,38,.92);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;pointer-events:none;';
+    notice.textContent = 'Basemap image failed to load — hazard zones/markers are still accurate.';
+    mapDiv.appendChild(notice);
+  }
+});
+baseImageOverlay.on('load', function() {
+  var notice = document.getElementById('basemapErrorNotice');
+  if (notice) notice.remove();
 });
 
 // Fit exactly to the same extent the old image covered
