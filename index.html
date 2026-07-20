@@ -2194,10 +2194,18 @@ var baseTileLayer = L.tileLayer(
 ).addTo(map);
 
 setTimeout(function() {
-  var img = document.querySelector('.leaflet-tile');
-  tileLog('opacity check: ' + (img ? getComputedStyle(img).opacity : 'no-img') +
-          ' class=' + (img ? img.className : ''));
-}, 3000);
+  var tilePane = document.querySelector('.leaflet-tile-pane');
+  var mapPane  = document.querySelector('.leaflet-map-pane');
+  var mapDiv   = document.getElementById('map');
+  tileLog('tilePane: transform=' + (tilePane ? getComputedStyle(tilePane).transform : 'MISSING') +
+          ' display=' + (tilePane ? getComputedStyle(tilePane).display : ''));
+  tileLog('mapPane: transform=' + (mapPane ? getComputedStyle(mapPane).transform : 'MISSING'));
+  tileLog('mapDiv size=' + mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight);
+  tileLog('layer count over map: ' + document.elementsFromPoint(
+    mapDiv.getBoundingClientRect().left + 20,
+    mapDiv.getBoundingClientRect().top + 20
+  ).slice(0,5).map(function(el){ return el.tagName + '.' + el.className; }).join(' | '));
+}, 3500);
 
 // ── On-screen debug overlay (temporary — remove once tiles are confirmed working) ──
 var _tileDebugBox = document.createElement('div');
