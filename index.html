@@ -4268,7 +4268,10 @@ function loadData(rows, calls) {
       : '<span style="color:var(--muted);">—</span>';
 
     var ctr = document.createElement('tr');
-    ctr.className = 'row-call';
+    // Calls have no end time, so they're a deadline just like Heads-Up
+    // Email — reuse that same status logic rather than duplicating it.
+    var callStatusClass = getDssTemporalStatusClass('Heads-up email', callTime, '', mapMode === 'today');
+    ctr.className = ['row-call', callStatusClass].filter(Boolean).join(' ');
     ctr.innerHTML =
       '<td style="white-space:nowrap;">' + escapeHtml(callDate)    + '</td>' +
       '<td class="time-chip">'           + escapeHtml(callTime)    + '</td>' +
