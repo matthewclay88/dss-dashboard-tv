@@ -2220,7 +2220,7 @@ const BASEMAP_BOUNDS = [
 // rounding — an image anchored to the exact same bounds falls short of
 // the edges, leaving a border. Overshooting the image's own extent
 // guarantees full coverage either way.
-var PAD = 0.15; // 15% padding on each side
+var PAD = 0.32; // 32% padding on each side — 15% only closed about half the gap last try
 var latSpan = BASEMAP_BOUNDS[1][0] - BASEMAP_BOUNDS[0][0];
 var lngSpan = BASEMAP_BOUNDS[1][1] - BASEMAP_BOUNDS[0][1];
 var IMAGE_BOUNDS = [
