@@ -2176,7 +2176,13 @@ map = L.map('map', {
     zoomControl: false,
     fadeAnimation: false,
     zoomAnimation: false,
-    markerZoomAnimation: false
+    markerZoomAnimation: false,
+    // Default Leaflet only zooms to whole numbers, so fitBounds() picks
+    // the largest whole zoom that fits everything WITHOUT cropping —
+    // which almost always leaves a visible margin on every side (the
+    // "border" around the map). Fractional zoom lets it fill exactly.
+    zoomSnap: 0,
+    zoomDelta: 0
 });
 
 markerLayer = L.layerGroup().addTo(map);
