@@ -2182,73 +2182,22 @@ const BASEMAP_BOUNDS = [
 // engines. A single image has nothing to composite; it either paints
 // or it doesn't.
 //
-// The image itself comes from Esri's public World Topo Map export
-// service, requested in genuine SVG format (confirmed supported by
-// that service's docs) for real topographic/landuse styling —
-// elevation shading, land cover, water features, roads — instead of
-// a flat street basemap. No API key required.
-//
-// IMPORTANT: the image bbox must match BASEMAP_BOUNDS exactly. An
-// earlier attempt padded the requested bbox to close a visual border
-// gap, but Esri's export service dynamically reprojects its cached
-// Web Mercator tiles to whatever bbox/SR is requested — a
-// significantly larger or differently-shaped bbox request introduced
-// a slight warp in the returned image, which threw off alignment
-// with the real-coordinate GeoJSON hazard zone overlay drawn on top
-// of it. Getting the hazard zones positioned correctly matters far
-// more than a cosmetic border, so this stays an exact 1:1 match.
-// IMPORTANT: imageSR must be 102100 (Web Mercator), not 4326. Leaflet's
-// default map projection is Web Mercator, and L.imageOverlay stretches
-// the image LINEARLY IN THAT PROJECTED SPACE between the two corner
-// points — not linearly in raw lat/lng degrees. Requesting imageSR=4326
-// (plain equirectangular, linear in degrees) was the actual bug behind
-// the misalignment: it produces a systematic north-south drift that
-// grows toward the edges of the bbox, since Mercator increasingly
-// stretches the north-south axis at higher latitude, while the GeoJSON
-// zone overlay (positioned using Leaflet's own correct Mercator math)
-// stayed exactly where it should. bboxSR stays 4326 purely so the bbox
-// numbers below can be given in familiar lat/lng — that part was never
-// the problem.
-//
-// Image is anchored to BASEMAP_BOUNDS with NO padding — reset to the
-// simplest possible configuration after things got confusing. Padding
-// can be reintroduced later once the basemap is confirmed genuinely
-// rendering (not just correctly positioned but invisible, which is
-// what SVG-format silently was).
-function mercatorY(latDeg) {
-  var r = latDeg * Math.PI / 180;
-  return Math.log(Math.tan(Math.PI / 4 + r / 2));
-}
-
-var imgMercXSpan = BASEMAP_BOUNDS[1][1] - BASEMAP_BOUNDS[0][1]; // longitude is already linear
-var imgMercYSpan = mercatorY(BASEMAP_BOUNDS[1][0]) - mercatorY(BASEMAP_BOUNDS[0][0]);
-var imgAspect = imgMercXSpan / Math.abs(imgMercYSpan);
-var IMG_WIDTH = 1400;
-var IMG_HEIGHT = Math.round(IMG_WIDTH / imgAspect);
-
-var BASEMAP_IMAGE_URL =
-  'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export' +
-  '?bbox=' + BASEMAP_BOUNDS[0][1] + ',' + BASEMAP_BOUNDS[0][0] + ',' + BASEMAP_BOUNDS[1][1] + ',' + BASEMAP_BOUNDS[1][0] +
-  '&bboxSR=4326&imageSR=102100&size=' + IMG_WIDTH + ',' + IMG_HEIGHT + '&format=png32&transparent=false&f=image';
-
-var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, BASEMAP_BOUNDS, {
-  attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors'
-}).addTo(map);
-baseImageOverlay.on('error', function() {
-  console.error('Basemap image failed to load from Esri export service — check network access to services.arcgisonline.com from this device.');
-  var mapDiv = document.getElementById('map');
-  if (mapDiv && !document.getElementById('basemapErrorNotice')) {
-    var notice = document.createElement('div');
-    notice.id = 'basemapErrorNotice';
-    notice.style.cssText = 'position:absolute;top:8px;left:8px;z-index:1000;background:rgba(220,38,38,.92);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;pointer-events:none;';
-    notice.textContent = 'Basemap image failed to load — hazard zones/markers are still accurate.';
-    mapDiv.appendChild(notice);
+// Basemap: Esri World Topo Map tiles — same visual source used in
+// Dashboard_v20.html, where this is already confirmed working. Switched
+// away from the single-image (imageOverlay) approach after it produced
+// a "streaky"/broken render that persisted across every bbox, padding,
+// and format change tried — pointing to something more fundamental than
+// bounds math, likely in how that specific export mechanism interacts
+// with this deployment. A plain tile layer sidesteps all of that: no
+// bbox, no aspect-ratio calculation, no SR conversion, just standard
+// {z}/{y}/{x} tiles like any other Leaflet basemap.
+L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors',
+    maxZoom: 19
   }
-});
-baseImageOverlay.on('load', function() {
-  var notice = document.getElementById('basemapErrorNotice');
-  if (notice) notice.remove();
-});
+).addTo(map);
 
 // Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
