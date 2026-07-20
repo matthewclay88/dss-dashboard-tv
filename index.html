@@ -3138,6 +3138,38 @@ function updateNextObligation(todayDssEvents, todayCalls) {
 
 }
 
+function forceMapPixelSize() {
+  var mapCard = document.getElementById('mapCard');
+  var mapDiv  = document.getElementById('map');
+  if (!mapCard || !mapDiv) return;
+
+  var rect = mapCard.getBoundingClientRect();
+  var headerH = mapCard.querySelector('.map-header') ? mapCard.querySelector('.map-header').offsetHeight : 0;
+  var legendH = mapCard.querySelector('.map-legend-bar') ? mapCard.querySelector('.map-legend-bar').offsetHeight : 0;
+
+  var targetH = Math.round(rect.height - headerH - legendH);
+  var targetW = Math.round(rect.width);
+
+  if (targetH <= 0 || targetW <= 0) return;
+
+  // Bypass flex-computed sizing entirely — pin explicit pixels instead,
+  // which sidesteps a Tizen/older-WebKit paint bug where deeply nested
+  // flex + overflow:hidden + position:absolute chains measure correctly
+  // but never actually composite/paint.
+  mapDiv.style.flex = 'none';
+  mapDiv.style.width  = targetW + 'px';
+  mapDiv.style.height = targetH + 'px';
+
+  map.invalidateSize(false);
+  map.fitBounds(BASEMAP_BOUNDS, { padding: [0,0], animate: false });
+}
+
+window.addEventListener('load', function() {
+  setTimeout(forceMapPixelSize, 800);
+  setTimeout(forceMapPixelSize, 2000);
+  setTimeout(forceMapPixelSize, 4000);
+});
+window.addEventListener('resize', forceMapPixelSize);  
 
 async function refreshSpotForecasts() {
 
@@ -4380,6 +4412,13 @@ _mapFirstFitDone = true;
   setInterval(function () { refreshDashboard(); }, 300000);
   setInterval(checkMidnightRollover, 60000);
 });
+
+window.addEventListener('load', function() {
+  setTimeout(forceMapPixelSize, 800);
+  setTimeout(forceMapPixelSize, 2000);
+  setTimeout(forceMapPixelSize, 4000);
+});
+window.addEventListener('resize', forceMapPixelSize);
 
 </script>
 </body>
