@@ -2160,9 +2160,27 @@ const BASEMAP_BOUNDS = [
 ];
 
 var baseTileLayer = L.tileLayer(
-    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }
+    'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }
 ).addTo(map);
+
+// ── On-screen debug overlay (temporary — remove once tiles are confirmed working) ──
+var _tileDebugBox = document.createElement('div');
+_tileDebugBox.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99999;background:#000;color:#0f0;font:11px monospace;padding:6px 10px;border-radius:4px;max-width:400px;max-height:150px;overflow:auto;';
+document.body.appendChild(_tileDebugBox);
+function tileLog(msg) {
+  var line = document.createElement('div');
+  line.textContent = new Date().toLocaleTimeString() + ' — ' + msg;
+  _tileDebugBox.appendChild(line);
+  while (_tileDebugBox.children.length > 12) _tileDebugBox.removeChild(_tileDebugBox.firstChild);
+}
+var _tileOkCount = 0, _tileErrCount = 0;
+baseTileLayer.on('tileload',  function() { _tileOkCount++;  tileLog('tile OK (' + _tileOkCount + ')'); });
+baseTileLayer.on('tileerror', function(e) { _tileErrCount++; tileLog('tile FAILED (' + _tileErrCount + '): ' + (e.tile ? e.tile.src : '?')); });
+tileLog('tile layer initialized');
 
 // Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
