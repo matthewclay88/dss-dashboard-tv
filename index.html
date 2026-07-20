@@ -2190,6 +2190,13 @@ var baseTileLayer = L.tileLayer(
     }
 ).addTo(map);
 
+setTimeout(function() {
+  var pane = document.querySelector('.leaflet-tile-pane');
+  var img  = document.querySelector('.leaflet-tile');
+  tileLog('css check: pane=' + (pane ? getComputedStyle(pane).position : 'MISSING') +
+          ' img-w=' + (img ? img.offsetWidth : 'no-img'));
+}, 3000);
+
 // ── On-screen debug overlay (temporary — remove once tiles are confirmed working) ──
 var _tileDebugBox = document.createElement('div');
 _tileDebugBox.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99999;background:#000;color:#0f0;font:11px monospace;padding:6px 10px;border-radius:4px;max-width:400px;max-height:150px;overflow:auto;';
