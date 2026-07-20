@@ -6,7 +6,6 @@
 <title>NWS Burlington DSS Dashboard — Static</title>
 <base target="_top">
 <style>
-<style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1703,8 +1702,6 @@ body{
     animation: lightningFadeIn 0.6s ease-out;
   }
 </style>
-
-</style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   /* Inline fallback in case leaflet.css fails to load on restrictive
@@ -1727,15 +1724,6 @@ body{
   .leaflet-popup-pane{z-index:700;}
   .leaflet-map-pane canvas{z-index:100;}
   .leaflet-map-pane svg{z-index:200;}
-</style>
-  <style id="diagCompositingTest">
-  * {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    animation: none !important;
-    box-shadow: none !important;
-    filter: none !important;
-  }
 </style>
 </head>
 <body>
@@ -2201,35 +2189,6 @@ var baseTileLayer = L.tileLayer(
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
     }
 ).addTo(map);
-
-setTimeout(function() {
-  var tilePane = document.querySelector('.leaflet-tile-pane');
-  var mapPane  = document.querySelector('.leaflet-map-pane');
-  var mapDiv   = document.getElementById('map');
-  tileLog('tilePane: transform=' + (tilePane ? getComputedStyle(tilePane).transform : 'MISSING') +
-          ' display=' + (tilePane ? getComputedStyle(tilePane).display : ''));
-  tileLog('mapPane: transform=' + (mapPane ? getComputedStyle(mapPane).transform : 'MISSING'));
-  tileLog('mapDiv size=' + mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight);
-  tileLog('layer count over map: ' + document.elementsFromPoint(
-    mapDiv.getBoundingClientRect().left + 20,
-    mapDiv.getBoundingClientRect().top + 20
-  ).slice(0,5).map(function(el){ return el.tagName + '.' + el.className; }).join(' | '));
-}, 3500);
-
-// ── On-screen debug overlay (temporary — remove once tiles are confirmed working) ──
-var _tileDebugBox = document.createElement('div');
-_tileDebugBox.style.cssText = 'position:fixed;bottom:8px;left:8px;z-index:99999;background:#000;color:#0f0;font:11px monospace;padding:6px 10px;border-radius:4px;max-width:400px;max-height:150px;overflow:auto;';
-document.body.appendChild(_tileDebugBox);
-function tileLog(msg) {
-  var line = document.createElement('div');
-  line.textContent = new Date().toLocaleTimeString() + ' — ' + msg;
-  _tileDebugBox.appendChild(line);
-  while (_tileDebugBox.children.length > 12) _tileDebugBox.removeChild(_tileDebugBox.firstChild);
-}
-var _tileOkCount = 0, _tileErrCount = 0;
-baseTileLayer.on('tileload',  function() { _tileOkCount++;  tileLog('tile OK (' + _tileOkCount + ')'); });
-baseTileLayer.on('tileerror', function(e) { _tileErrCount++; tileLog('tile FAILED (' + _tileErrCount + '): ' + (e.tile ? e.tile.src : '?')); });
-tileLog('tile layer initialized');
 
 // Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
@@ -3556,10 +3515,6 @@ function on(id, event, handler) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  DOM READY
-// ══════════════════════════════════════════════════════════════
-
-// ══════════════════════════════════════════════════════════════
 //  DATA SOURCE
 //  This is a static, read-only mirror of the live dashboard. It has
 //  no Apps Script backend — instead it reads the JSON snapshots that
@@ -3806,7 +3761,7 @@ function refreshHazards() {
 
       btvAlerts.forEach(function(alert) {
         let vtec = null;
-        const vtecArray = alert.properties.parameters?.VTEC;
+        const vtecArray = alert.properties.parameters && alert.properties.parameters.VTEC;
         if (vtecArray && vtecArray.length) {
           const parts = vtecArray[0].split(".");
           if (parts.length >= 5) vtec = parts[3] + "." + parts[4];
@@ -3823,7 +3778,7 @@ function refreshHazards() {
         // sender office (Burlington vs Albany) alone isn't a reliable
         // filter, since Albany issues warnings for a much wider area.
         var alertZoneList = [];
-        (alert.properties.geocode?.UGC || []).forEach(function(ugc) {
+        (alert.properties.geocode && alert.properties.geocode.UGC || []).forEach(function(ugc) {
           if (ugc.charAt(2) === "Z") {
             alertZoneList.push(ugc);
           } else if (ugc.charAt(2) === "C") {
@@ -3860,7 +3815,7 @@ function refreshHazards() {
           warningPolygonLayer.addLayer(gLayer);
         }
 
-        (alert.properties.geocode?.UGC || []).forEach(function(ugc) {
+        (alert.properties.geocode && alert.properties.geocode.UGC || []).forEach(function(ugc) {
           var zoneList = [];
           if (ugc.charAt(2) === "Z") {
             zoneList.push(ugc);
