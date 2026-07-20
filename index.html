@@ -2191,10 +2191,9 @@ var baseTileLayer = L.tileLayer(
 ).addTo(map);
 
 setTimeout(function() {
-  var pane = document.querySelector('.leaflet-tile-pane');
-  var img  = document.querySelector('.leaflet-tile');
-  tileLog('css check: pane=' + (pane ? getComputedStyle(pane).position : 'MISSING') +
-          ' img-w=' + (img ? img.offsetWidth : 'no-img'));
+  var img = document.querySelector('.leaflet-tile');
+  tileLog('opacity check: ' + (img ? getComputedStyle(img).opacity : 'no-img') +
+          ' class=' + (img ? img.className : ''));
 }, 3000);
 
 // ── On-screen debug overlay (temporary — remove once tiles are confirmed working) ──
