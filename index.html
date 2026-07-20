@@ -2155,6 +2155,15 @@ var BTV_COUNTIES = [
   'NYC031','NYC033','NYC089'
 ];
 
+if (typeof L === 'undefined') {
+  console.error('Leaflet library (leaflet.js) never loaded — check network access to cdn.jsdelivr.net from this device.');
+  var mapCardEl = document.getElementById('mapCard');
+  if (mapCardEl) {
+    mapCardEl.innerHTML = '<div style="padding:20px;color:#f87171;font-weight:700;text-align:center;">Map library failed to load.<br><span style="font-weight:400;color:#8899a6;font-size:12px;">This device may be blocking cdn.jsdelivr.net.</span></div>';
+  }
+  throw new Error('Leaflet not loaded — aborting map setup, rest of dashboard continues below.');
+}
+
 L.Browser.any3d = false;
   
 map = L.map('map', {
@@ -2189,6 +2198,31 @@ var baseTileLayer = L.tileLayer(
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
     }
 ).addTo(map);
+
+// ── Small on-screen diagnostic panel ────────────────────────────
+// Deliberately tiny and out of the way (bottom-left, low-opacity text)
+// rather than the earlier full-screen debug tool — this is meant to
+// stay on permanently as a quick "is it working" check, not something
+// that needs removing before this is considered finished. Delete the
+// whole block below (down to "diag panel end") once the map is
+// confirmed working reliably if you'd rather not have it at all.
+var _diagBox = document.createElement('div');
+_diagBox.style.cssText = 'position:fixed;bottom:6px;left:6px;z-index:99999;background:rgba(0,0,0,.75);color:#7dd3fc;font:10px monospace;padding:4px 8px;border-radius:4px;pointer-events:none;max-width:340px;line-height:1.5;';
+_diagBox.textContent = 'map diag: starting…';
+document.body.appendChild(_diagBox);
+var _diagTileOk = 0, _diagTileErr = 0, _diagLastErr = '';
+baseTileLayer.on('tileload',  function() { _diagTileOk++;  _updateDiagBox(); });
+baseTileLayer.on('tileerror', function(e) { _diagTileErr++; _diagLastErr = (e.tile && e.tile.src) || '?'; _updateDiagBox(); });
+function _updateDiagBox() {
+  var mapDiv = document.getElementById('map');
+  var size = mapDiv ? mapDiv.offsetWidth + 'x' + mapDiv.offsetHeight : 'no #map';
+  var txt = 'map diag — size:' + size + ' tiles ok:' + _diagTileOk + ' err:' + _diagTileErr;
+  if (_diagTileErr > 0) txt += '\\nlast fail: ' + _diagLastErr.slice(-60);
+  _diagBox.textContent = txt;
+}
+setTimeout(_updateDiagBox, 1000);
+setTimeout(_updateDiagBox, 4000);
+// ── diag panel end ──────────────────────────────────────────────
 
 // Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
