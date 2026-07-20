@@ -235,28 +235,6 @@ body{
 .nav-sep { width: 1px; background: var(--border); margin: 0 4px; align-self: stretch; }
 .nav-view-label { display: none; }
 .nav-view-label span { color: #64b5f6; font-weight: 700; }
-.nav-hazard-summary {
-  display: flex; align-items: center; gap: 7px;
-  padding: 8px 14px; border-radius: 9px;
-  font-size: 12px; font-weight: 700;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  min-width: 0;
-  cursor: pointer; transition: filter 0.15s, transform 0.15s;
-}
-.nav-hazard-summary:hover { filter: brightness(1.15); transform: translateY(-1px); }
-.nav-hazard-summary::after { content: '→'; margin-left: auto; padding-left: 8px; opacity: 0.7; flex-shrink: 0; }
-.nav-hazard-summary::before { content: '●'; font-size: 9px; flex-shrink: 0; }
-.nav-hazard-summary.clear {
-  background: rgba(22,163,74,.10); border: 1px solid rgba(74,222,128,.28);
-  color: #86efac;
-}
-.nav-hazard-summary.clear::before { color: #4ade80; }
-.nav-hazard-summary.active {
-  background: rgba(217,119,6,.14); border: 1px solid rgba(251,191,36,.35);
-  color: #fcd34d;
-}
-.nav-hazard-summary.active::before { color: #fbbf24; animation: navHazardDotPulse 2s ease-in-out infinite; }
-@keyframes navHazardDotPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
   /* ── MAIN LAYOUT ── */
   /* Two independent columns instead of one shared grid. This matters
@@ -1749,10 +1727,6 @@ body{
     <button class="refresh-btn" id="refreshBtn" title="Refresh Dashboard">↻</button>
   </div>
 
-</div>
-
-<div class="nav-hazard-summary clear" id="navHazardSummary" style="margin:8px 12px 0;">
-  <span id="navHazardText">Checking hazards…</span>
 </div>
 
 <!-- ── STATUS BAR (6 rounded glow cards) ── -->
@@ -3843,7 +3817,6 @@ function refreshHazards() {
 
       warningPolygonLayer.clearLayers();
       var legendMap = {};
-      var activeHazardNames = new Set();
 
       btvAlerts.forEach(function(alert) {
         let vtec = null;
@@ -3877,7 +3850,6 @@ function refreshHazards() {
           }
         });
         var affectsBtvZone = alertZoneList.some(function(zone) { return BTV_ZONE_SET.has(zone); });
-        if (affectsBtvZone) activeHazardNames.add(alert.properties.event);
 
         if (affectsBtvZone && alert.geometry && ["TO.W","SV.W","FF.W","FA.W","SQ.W","MA.W"].includes(vtec)) {
           let color = HAZARD_COLORS[vtec];
@@ -3957,36 +3929,10 @@ function refreshHazards() {
       renderMapLegend(
         Object.keys(legendMap).map(function(name){ return { label: name, color: legendMap[name] }; })
       );
-
-      updateNavHazardSummary(Array.from(activeHazardNames));
     })
     .catch(function(err) {
       console.error("Hazard refresh failed:", err);
-      var el = document.getElementById('navHazardText');
-      if (el) el.textContent = 'Hazard data unavailable';
     });
-}
-
-// Fills the always-visible hazard summary strip below the header — a
-// quiet preview of active watches/warnings so someone doesn't have to
-// click through to another page just to confirm there's nothing going on.
-// Clicking the strip itself opens the linked hazards dashboard.
-function updateNavHazardSummary(names) {
-  var el = document.getElementById('navHazardSummary');
-  var textEl = document.getElementById('navHazardText');
-  if (!el || !textEl) return;
-
-  if (!names || names.length === 0) {
-    el.className = 'nav-hazard-summary clear';
-    textEl.textContent = 'No active watches or warnings';
-    el.title = 'Open current hazards dashboard';
-    return;
-  }
-
-  el.className = 'nav-hazard-summary active';
-  var label = names.length + ' Active: ' + names.join(', ');
-  textEl.textContent = label;
-  el.title = label + ' — click to open hazards dashboard';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -4349,9 +4295,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   on('refreshBtn', 'click', function() { refreshDashboard(); });
-  on('navHazardSummary', 'click', function() {
-    window.open('https://script.google.com/a/macros/noaa.gov/s/AKfycbwYEZ9T08KI6OlJ8Lwg0XpOiRyaQEW50uSbG551p8_GxRUfA2Z4f_u72k8bMz3nqM8Tig/exec', '_blank');
-  });
 
   on('lightningCard', 'click', function() {
     window.open(
