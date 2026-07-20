@@ -2235,12 +2235,41 @@ const BASEMAP_BOUNDS = [
 // stayed exactly where it should. bboxSR stays 4326 purely so the bbox
 // numbers below can be given in familiar lat/lng — that part was never
 // the problem.
+//
+// Image is anchored to a padded area larger than BASEMAP_BOUNDS so it
+// has margin to spare regardless of how fitBounds() actually frames the
+// view, closing the border gap. This is safe to do now that imageSR is
+// correct — Esri is just cropping more of its already-Mercator-native
+// cache, no reprojection distortion involved. The `size` parameter's
+// aspect ratio is computed for real from the padded bounds' true
+// Mercator proportions (NOT raw lat/lng degrees, which was the other
+// bug last time) so the image isn't distorted or needlessly padded by
+// Esri itself.
+function mercatorY(latDeg) {
+  var r = latDeg * Math.PI / 180;
+  return Math.log(Math.tan(Math.PI / 4 + r / 2));
+}
+
+var IMG_PAD = 0.30; // 30% padding on each side
+var latSpanPad = BASEMAP_BOUNDS[1][0] - BASEMAP_BOUNDS[0][0];
+var lngSpanPad = BASEMAP_BOUNDS[1][1] - BASEMAP_BOUNDS[0][1];
+var IMAGE_BOUNDS = [
+  [BASEMAP_BOUNDS[0][0] - latSpanPad * IMG_PAD, BASEMAP_BOUNDS[0][1] - lngSpanPad * IMG_PAD],
+  [BASEMAP_BOUNDS[1][0] + latSpanPad * IMG_PAD, BASEMAP_BOUNDS[1][1] + lngSpanPad * IMG_PAD]
+];
+
+var imgMercXSpan = IMAGE_BOUNDS[1][1] - IMAGE_BOUNDS[0][1]; // longitude is already linear
+var imgMercYSpan = mercatorY(IMAGE_BOUNDS[1][0]) - mercatorY(IMAGE_BOUNDS[0][0]);
+var imgAspect = imgMercXSpan / Math.abs(imgMercYSpan);
+var IMG_WIDTH = 1400;
+var IMG_HEIGHT = Math.round(IMG_WIDTH / imgAspect);
+
 var BASEMAP_IMAGE_URL =
   'https://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export' +
-  '?bbox=' + BASEMAP_BOUNDS[0][1] + ',' + BASEMAP_BOUNDS[0][0] + ',' + BASEMAP_BOUNDS[1][1] + ',' + BASEMAP_BOUNDS[1][0] +
-  '&bboxSR=4326&imageSR=102100&size=1400,1397&format=svg&transparent=false&f=image';
+  '?bbox=' + IMAGE_BOUNDS[0][1] + ',' + IMAGE_BOUNDS[0][0] + ',' + IMAGE_BOUNDS[1][1] + ',' + IMAGE_BOUNDS[1][0] +
+  '&bboxSR=4326&imageSR=102100&size=' + IMG_WIDTH + ',' + IMG_HEIGHT + '&format=svg&transparent=false&f=image';
 
-var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, BASEMAP_BOUNDS, {
+var baseImageOverlay = L.imageOverlay(BASEMAP_IMAGE_URL, IMAGE_BOUNDS, {
   attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors'
 }).addTo(map);
 baseImageOverlay.on('error', function() {
