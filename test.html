@@ -327,7 +327,7 @@ body{
      scrollable card as the DSS operations table (see #dssWrapper below),
      so users can scroll straight from DSS events through calls to spot
      forecasts in one card. */
-  #spotForecastWrapper { margin-top: 18px; }
+  .data-table tr.row-spot    td:first-child { border-left: 4px solid #0d9488; }
   .data-subsection-header {
     display: flex; align-items: center; gap: 7px; margin-bottom: 8px;
     padding-top: 14px; border-top: 1px solid rgba(96,165,250,.18);
@@ -428,6 +428,7 @@ body{
   .badge-email   { background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff; border: 1px solid #60a5fa; box-shadow: 0 0 12px rgba(59,130,246,.5); }
   .badge-onsite  { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; border: 1px solid #c084fc; box-shadow: 0 0 12px rgba(147,51,234,.5); }
   .badge-call    { background: linear-gradient(135deg,#d97706,#f59e0b); color: #fff; border: 1px solid #fbbf24; box-shadow: 0 0 12px rgba(217,119,6,.5); }
+  .badge-spot    { background: linear-gradient(135deg,#0d9488,#14b8a6); color: #fff; border: 1px solid #5eead4; box-shadow: 0 0 12px rgba(13,148,136,.5); }
   .badge-default { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
   .join-btn {
     display: inline-flex; align-items: center; gap: 4px;
@@ -1863,18 +1864,6 @@ body{
         </table>
         <div class="data-section-footer" id="dssTableFooterCount"></div>
 
-        <div id="spotForecastWrapper" style="display:none;">
-          <div class="data-subsection-header">
-            <span class="section-icon">🎯</span>
-            <h2>Active Spot Forecast Requests</h2>
-          </div>
-          <table class="data-table subtable">
-            <thead><tr>
-              <th style="width:36px;"></th><th>Event Name</th><th>Type</th><th>Request Submitted</th><th>Completed</th><th>Status</th>
-            </tr></thead>
-            <tbody id="spotForecastTable"></tbody>
-          </table>
-        </div>
       </div>
     </div>
   </div>
@@ -3289,75 +3278,15 @@ async function refreshSpotForecasts() {
 }
 
 function renderSpotForecasts(spots){
-    var tbody = document.getElementById("spotForecastTable");
-    if(!tbody) return;
-    tbody.innerHTML="";
     clearSpotForecastMarkers();
-    var wrapperEl = document.getElementById("spotForecastWrapper");
-    if(spots.length===0){
-        // Nothing to show — hide the whole subsection instead of rendering
-        // an empty-state row. The table now sizes to its own content
-        // (see #dssWrapper CSS), so hiding this just naturally shrinks
-        // the table and lets the timeline below it fill the freed space.
-        if (wrapperEl) wrapperEl.style.display = "none";
-        updateSpotLegend([]);
-        return;
-    }
-    if (wrapperEl) wrapperEl.style.display = "";
-    spots.forEach(function(spot){
-        addSpotMarker(spot);
-        var row=document.createElement("tr");
-        const cleanType = (spot.type || "")
-    .replace(/\d{4}-\d{2}-\d{2}.*/, "")
-    .trim();
-
-const completed =
-    spot.posted &&
-    spot.posted !== "Incomplete"
-        ? spot.posted
-        : "--";
-
-let statusBadge;
-
-switch (spot.statusCode) {
-
-    case "P":
-        statusBadge =
-            '<span class="spot-status-pending">Pending</span>';
-        break;
-
-    case "I":
-        statusBadge =
-            '<span class="spot-status-progress">In Progress</span>';
-        break;
-
-    case "C":
-    case "F":
-        statusBadge =
-            '<span class="spot-status-complete">Completed</span>';
-        break;
-
-    default:
-        statusBadge =
-            '<span class="spot-status-other">' +
-            (spot.status || "Unknown") +
-            '</span>';
-}
-
-row.innerHTML = `
-<td style="text-align:center;"></td>
-<td><strong>${spot.incident}</strong></td>
-<td>${cleanType}</td>
-<td>${spot.requested}</td>
-<td>${completed}</td>
-<td>${statusBadge}</td>
-`;
-        row.onclick=function(){
-            map.setView([spot.lat,spot.lon],10);
-        };
-        tbody.appendChild(row);
-    });
+    spots.forEach(function(spot){ addSpotMarker(spot); });
     updateSpotLegend(spots);
+    // Spot forecasts are merged into the main DSS/Calls table (loadData
+    // builds their rows too, see finalizeDssTable) rather than shown in
+    // a separate table of their own.
+    if (dssRows && dssRows.length > 0) {
+        loadData(dssRows, callRows);
+    }
 }
 
 
@@ -4462,6 +4391,36 @@ function loadData(rows, calls) {
   // and renders the result — this is what makes "Today's DSS Operations"
   // a single table instead of two stacked ones.
   function finalizeDssTable() {
+    // ── Merge active spot forecasts into the same table ──────────
+    (activeSpotForecasts || []).forEach(function(spot) {
+      var reqTime = parseNoaaSpotDate(spot.requested);
+      var reqDate = isNaN(reqTime) ? new Date() : new Date(reqTime);
+      var spotDateStr = (reqDate.getMonth() + 1) + '/' + reqDate.getDate() + '/' + reqDate.getFullYear();
+      var spotDateIso = reqDate.getFullYear() + '-' + String(reqDate.getMonth() + 1).padStart(2, '0') + '-' + String(reqDate.getDate()).padStart(2, '0');
+      var spotTimeStr = isNaN(reqTime) ? '—' : reqDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      var cleanType = (spot.type || '').replace(/\d{4}-\d{2}-\d{2}.*/, '').trim() || 'Spot Forecast';
+      var statusLabel = spot.statusCode === 'P' ? 'Pending'
+        : spot.statusCode === 'I' ? 'In Progress'
+        : (spot.statusCode === 'C' || spot.statusCode === 'F') ? 'Completed'
+        : (spot.status || 'Unknown');
+
+      var srow = document.createElement('tr');
+      srow.className = 'row-spot';
+      srow.innerHTML =
+        '<td style="white-space:nowrap;">' + escapeHtml(spotDateStr) + '</td>' +
+        '<td class="time-chip">' + escapeHtml(spotTimeStr) + '</td>' +
+        '<td style="font-weight:600;">' + escapeHtml(spot.incident || 'Spot Forecast') + '</td>' +
+        '<td><span class="dss-type-badge badge-spot">' + escapeHtml(cleanType) + '</span></td>' +
+        '<td>' + escapeHtml(statusLabel) + '</td>' +
+        '<td style="font-size:12px;color:var(--muted);">—</td>' +
+        '<td style="text-align:center;color:var(--muted);">—</td>';
+      if (!isNaN(spot.lat) && !isNaN(spot.lon)) {
+        srow.style.cursor = 'pointer';
+        srow.onclick = function() { map.setView([spot.lat, spot.lon], 10); };
+      }
+      displayItems.push({ el: srow, sortDate: spotDateIso, sortMin: isNaN(reqTime) ? 0 : (reqDate.getHours() * 60 + reqDate.getMinutes()) });
+    });
+
     displayItems.sort(function(a, b) {
       if (a.sortDate !== b.sortDate) return a.sortDate < b.sortDate ? -1 : 1;
       return a.sortMin - b.sortMin;
