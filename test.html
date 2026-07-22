@@ -2868,7 +2868,8 @@ function renderGlanceTimeline(opts) {
         rows.push({
           kind: 'headsup', label: ev.name,
           time: formatTimeForDisplay(ev.emailTime),
-          startMin: Math.max(0, m - 120), endMin: m, isPast: opts.isToday && m < nowMinutes
+          startMin: Math.max(0, m - 120), endMin: m, isPast: opts.isToday && m < nowMinutes,
+          lat: ev.lat, lon: ev.lon
         });
       }
     }
@@ -2880,7 +2881,8 @@ function renderGlanceTimeline(opts) {
         rows.push({
           kind: 'radar', label: ev.name,
           time: formatTimeForDisplay(ev.radarTime) + (ev.radarEndTime ? ' – ' + formatTimeForDisplay(ev.radarEndTime) : ''),
-          startMin: s, endMin: endMin, isPast: opts.isToday && endMin < nowMinutes
+          startMin: s, endMin: endMin, isPast: opts.isToday && endMin < nowMinutes,
+          lat: ev.lat, lon: ev.lon
         });
       }
     }
@@ -2894,7 +2896,8 @@ function renderGlanceTimeline(opts) {
           rows.push({
             kind: 'onsite', label: ev.name,
             time: formatTimeForDisplay(ts) + (ev.dssEndTime ? ' – ' + formatTimeForDisplay(ev.dssEndTime) : ''),
-            startMin: s2, endMin: endMin2, isPast: opts.isToday && endMin2 < nowMinutes
+            startMin: s2, endMin: endMin2, isPast: opts.isToday && endMin2 < nowMinutes,
+            lat: ev.lat, lon: ev.lon
           });
         }
       }
@@ -2952,6 +2955,12 @@ function renderGlanceTimeline(opts) {
     bar.style.justifyContent = 'center';
     bar.title = row.label + ' — ' + row.time + (isActiveNow ? ' (active now)' : '');
     bar.textContent = row.allDay ? 'ALL DAY' : row.time;
+
+    var barLat = parseFloat(row.lat), barLon = parseFloat(row.lon);
+    if (!isNaN(barLat) && !isNaN(barLon)) {
+      bar.style.cursor = 'pointer';
+      bar.onclick = function() { map.setView([barLat, barLon], 11); };
+    }
 
     if (row.isPoint) {
       bar.style.left  = 'calc(' + startPct + '% - 30px)';
@@ -4207,7 +4216,8 @@ function loadData(rows, calls) {
         name: row[eventCol], type: row[typeCol],
         emailTime: row[headsUpCol],
         radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
-        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : '',
+        lat: row[latCol], lon: row[lonCol]
       });
     }
 
@@ -4216,7 +4226,8 @@ function loadData(rows, calls) {
         name: row[eventCol], type: row[typeCol],
         emailTime: row[headsUpCol],
         radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
-        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : '',
+        lat: row[latCol], lon: row[lonCol]
       });
     }
 
@@ -4276,6 +4287,14 @@ function loadData(rows, calls) {
       '<td>' + escapeHtml(row[contactCol]) + '</td>' +
       '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(row[contactInfoCol]) + '</td>' +
       '<td style="text-align:center;">' + linkCell + '</td>';
+    var evLat = parseFloat(row[latCol]), evLon = parseFloat(row[lonCol]);
+    if (!isNaN(evLat) && !isNaN(evLon)) {
+      tr.style.cursor = 'pointer';
+      tr.onclick = function(e) {
+        if (e.target.closest('a')) return;
+        map.setView([evLat, evLon], 11);
+      };
+    }
     displayItems.push({ el: tr, sortDate: eventDateString, sortMin: getDssSortMinutes(row) });
   }
 
@@ -4320,8 +4339,15 @@ function loadData(rows, calls) {
   var noCallsAtAll = !calls || calls.length <= 1;
 
   if (noCallsAtAll) {
-    document.getElementById('dssStatusValue').textContent = dssValue;
-    document.getElementById('dssStatusSub2').innerHTML = dssSub2;
+    var earlySpotCount = (activeSpotForecasts || []).length;
+    var earlyTotal = dssValue + earlySpotCount;
+    var earlySub2 = dssSub2;
+    if (earlySpotCount > 0) {
+      var earlySpotSpan = '<span style="color:#5eead4;">' + earlySpotCount + ' Spot' + (earlySpotCount !== 1 ? 's' : '') + '</span>';
+      earlySub2 = (dssSub2 === 'Active today') ? earlySpotSpan : dssSub2 + ', ' + earlySpotSpan;
+    }
+    document.getElementById('dssStatusValue').textContent = earlyTotal;
+    document.getElementById('dssStatusSub2').innerHTML = earlySub2;
     buildGlanceTimeline(todayDssItems, []);
     buildTomorrowGlanceStrip(tomorrowDssItems, []);
     updateNextObligation(todayDssItems, []);
@@ -4375,12 +4401,14 @@ function loadData(rows, calls) {
     displayItems.push({ el: ctr, sortDate: selectedDateString, sortMin: parseTimeToMinutes(callTime) });
   });
 
-  var combinedTotal = activeCount + visibleCallCount;
+  var spotCount = (activeSpotForecasts || []).length;
+  var combinedTotal = activeCount + visibleCallCount + spotCount;
   var combinedParts = [];
   if (radarCount > 0)  combinedParts.push('<span style="color:#f87171;">' + radarCount + ' Radar Watch</span>');
   if (onsiteCount > 0) combinedParts.push('<span style="color:#c4b5fd;">' + onsiteCount + ' On-Site</span>');
   if (headsUpCount > 0) combinedParts.push('<span style="color:#93c5fd;">' + headsUpCount + ' Heads-Up</span>');
   if (visibleCallCount > 0) combinedParts.push('<span style="color:#fbbf24;">' + visibleCallCount + ' Call' + (visibleCallCount !== 1 ? 's' : '') + '</span>');
+  if (spotCount > 0) combinedParts.push('<span style="color:#5eead4;">' + spotCount + ' Spot' + (spotCount !== 1 ? 's' : '') + '</span>');
   document.getElementById('dssStatusValue').textContent = combinedTotal;
   document.getElementById('dssStatusSub2').innerHTML = combinedParts.length ? combinedParts.join(', ') : 'Active today';
 
@@ -4404,6 +4432,24 @@ function loadData(rows, calls) {
         : (spot.statusCode === 'C' || spot.statusCode === 'F') ? 'Completed'
         : (spot.status || 'Unknown');
 
+      // NOAA's spot forecast feed has no contact-person/phone field — the
+      // closest useful thing it does provide is the required delivery
+      // deadline, so show that here instead of leaving the column blank.
+      var deliveryText = '—';
+      var delivTime = parseNoaaSpotDate(spot.delivery);
+      if (!isNaN(delivTime)) {
+        var delivDate = new Date(delivTime);
+        deliveryText = 'Due ' + (delivDate.getMonth() + 1) + '/' + delivDate.getDate() + ' ' +
+          delivDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      }
+
+      // Confirmed direct link: spot.weather.gov serves each incident's
+      // actual forecast page at /forecasts/<snumunum id>.
+      var spotMonitorHref = spot.id
+        ? 'https://spot.weather.gov/forecasts/' + encodeURIComponent(spot.id)
+        : 'https://spot.weather.gov';
+      var spotLinkCell = '<a href="' + spotMonitorHref + '" target="_blank" title="Open forecast on spot.weather.gov" style="color:#5eead4;font-size:15px;text-decoration:none;">🔗</a>';
+
       var srow = document.createElement('tr');
       srow.className = 'row-spot';
       srow.innerHTML =
@@ -4412,11 +4458,14 @@ function loadData(rows, calls) {
         '<td style="font-weight:600;">' + escapeHtml(spot.incident || 'Spot Forecast') + '</td>' +
         '<td><span class="dss-type-badge badge-spot">' + escapeHtml(cleanType) + '</span></td>' +
         '<td>' + escapeHtml(statusLabel) + '</td>' +
-        '<td style="font-size:12px;color:var(--muted);">—</td>' +
-        '<td style="text-align:center;color:var(--muted);">—</td>';
+        '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(deliveryText) + '</td>' +
+        '<td style="text-align:center;">' + spotLinkCell + '</td>';
       if (!isNaN(spot.lat) && !isNaN(spot.lon)) {
         srow.style.cursor = 'pointer';
-        srow.onclick = function() { map.setView([spot.lat, spot.lon], 10); };
+        srow.onclick = function(e) {
+          if (e.target.closest('a')) return;
+          map.setView([spot.lat, spot.lon], 10);
+        };
       }
       displayItems.push({ el: srow, sortDate: spotDateIso, sortMin: isNaN(reqTime) ? 0 : (reqDate.getHours() * 60 + reqDate.getMinutes()) });
     });
