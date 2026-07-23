@@ -261,7 +261,13 @@
 // getOneStationData_'s existing fault isolation already falls back to mock for
 // just this one station on any single failed fetch, and recovers automatically
 // on the next 5-minute refresh.
-var NDBC_PROXY_URL = 'https://corsproxy.io/?url=' + encodeURIComponent('https://www.ndbc.noaa.gov/data/realtime2/');
+// Self-hosted Cloudflare Worker (see ndbc-cors-proxy-worker.js) — more reliable
+// than a public proxy service like corsproxy.io, since ad-blockers/privacy
+// extensions commonly flag and block known third-party proxy domains by
+// category, but have no reason to block a domain you own outright. Confirmed
+// working directly: HTTP 200, correct data, and the necessary
+// access-control-allow-origin: * header present.
+var NDBC_PROXY_URL = 'https://ndbc-proxy.jusmessinwityah1.workers.dev/';
 
 // ====== CONFIG ==============================================================
 
