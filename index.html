@@ -89,12 +89,30 @@ body{
   .top-header {
     background: linear-gradient(180deg, #0b1524 0%, #080f1b 100%);
     border-bottom: 1px solid var(--border);
-    padding: 10px 16px;
-    display: flex;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 640px) 1fr;
     align-items: center;
     gap: 12px;
   }
   .header-brand { display: flex; align-items: center; gap: 11px; flex-shrink: 0; }
+  .brand-text-stack { display: flex; flex-direction: column; gap: 6px; }
+  .brand-text-stack h1 { margin: 0; }
+  .nav-hazard-summary {
+    display: flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 9px;
+    font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; min-width: 0; cursor: pointer;
+    transition: filter 0.15s, transform 0.15s; align-self: flex-start;
+  }
+  .nav-hazard-summary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+  .nav-hazard-summary::after { content: '→'; margin-left: auto; padding-left: 8px; opacity: 0.7; flex-shrink: 0; }
+  .nav-hazard-summary::before { content: '●'; font-size: 9px; flex-shrink: 0; }
+  .nav-hazard-summary.clear { background: rgba(22,163,74,.10); border: 1px solid rgba(74,222,128,.28); color: #86efac; }
+  .nav-hazard-summary.clear::before { color: #4ade80; }
+  .nav-hazard-summary.active { background: rgba(217,119,6,.14); border: 1px solid rgba(251,191,36,.35); color: #fcd34d; }
+  .nav-hazard-summary.active::before { color: #fbbf24; animation: navHazardDotPulse 2s ease-in-out infinite; }
+  @keyframes navHazardDotPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+  .daylight-arc-clock { width: 100%; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .header-brand .nws-logo {
     width: 46px; height: 46px; display: block; object-fit: cover;
     border-radius: 50%; border: 2px solid #1d6fa4;
@@ -142,10 +160,10 @@ body{
   }
   .refresh-btn:hover { background: #1a3a55; transform: rotate(90deg); }
 
-  /* ── STATUS BAR (6 neon glass glow cards) ── */
+  /* ── STATUS BAR (5 neon glass glow cards) ── */
   .status-bar {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 10px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--border);
@@ -309,7 +327,7 @@ body{
      scrollable card as the DSS operations table (see #dssWrapper below),
      so users can scroll straight from DSS events through calls to spot
      forecasts in one card. */
-  #spotForecastWrapper { margin-top: 18px; }
+  .data-table tr.row-spot    td:first-child { border-left: 4px solid #0d9488; }
   .data-subsection-header {
     display: flex; align-items: center; gap: 7px; margin-bottom: 8px;
     padding-top: 14px; border-top: 1px solid rgba(96,165,250,.18);
@@ -410,6 +428,7 @@ body{
   .badge-email   { background: linear-gradient(135deg,#2563eb,#3b82f6); color: #fff; border: 1px solid #60a5fa; box-shadow: 0 0 12px rgba(59,130,246,.5); }
   .badge-onsite  { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; border: 1px solid #c084fc; box-shadow: 0 0 12px rgba(147,51,234,.5); }
   .badge-call    { background: linear-gradient(135deg,#d97706,#f59e0b); color: #fff; border: 1px solid #fbbf24; box-shadow: 0 0 12px rgba(217,119,6,.5); }
+  .badge-spot    { background: linear-gradient(135deg,#0d9488,#14b8a6); color: #fff; border: 1px solid #5eead4; box-shadow: 0 0 12px rgba(13,148,136,.5); }
   .badge-default { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
   .join-btn {
     display: inline-flex; align-items: center; gap: 4px;
@@ -1659,6 +1678,17 @@ body{
     animation: markerPulse 1.6s ease-out infinite;
   }
 
+  /* Slow breathing pulse on the arc clock's current-time dot */
+  @keyframes arcNowPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.7; }
+  }
+  .arc-now-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: arcNowPulse 2.6s ease-in-out infinite;
+  }
+
   /* Lightning strike animated entrance */
   @keyframes lightningPulse {
     0%   { opacity: 0; transform: scale(0.3); }
@@ -1714,10 +1744,15 @@ body{
 <div class="top-header">
 
   <div class="header-brand">
-    <div>
+    <div class="brand-text-stack">
       <h1>NWS Burlington DSS Dashboard V3.0 <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0;">— Static</span></h1>
+      <div class="nav-hazard-summary clear" id="navHazardSummary">
+        <span id="navHazardText">Checking hazards…</span>
+      </div>
     </div>
   </div>
+
+  <div id="daylightArcClock" class="daylight-arc-clock"></div>
 
   <div class="header-right">
     <div class="last-updated-box">
@@ -1729,27 +1764,18 @@ body{
 
 </div>
 
-<!-- ── STATUS BAR (6 rounded glow cards) ── -->
+<!-- ── STATUS BAR (5 rounded glow cards) ── -->
 <div class="status-bar" id="statusBar">
-  <!-- Card 1: DSS Events -->
+  <!-- Card 1: DSS Events + Coordination Calls (combined) -->
   <div class="status-card" id="dssStatusCard">
-    <div class="status-icon red" id="dssStatusIcon">◎</div>
+    <div class="status-icon teal" id="dssStatusIcon">◎</div>
     <div style="min-width:0;">
-      <div class="status-label">DSS Events</div>
-      <div class="status-value" id="dssStatusValue" style="color:#ef4444;">0</div>
+      <div class="status-label">Today's DSS Events</div>
+      <div class="status-value" id="dssStatusValue" style="color:#5eead4;">0</div>
       <div class="status-sub" id="dssStatusSub2">Active today</div>
     </div>
   </div>
-  <!-- Card 2: Coordination Calls -->
-  <div class="status-card" id="callsStatusCard">
-    <div class="status-icon green" id="callStatusIcon">☎</div>
-    <div style="min-width:0;">
-      <div class="status-label">Coordination Calls</div>
-      <div class="status-value" id="callStatusValue" style="color:#4ade80;">0</div>
-      <div class="status-sub" id="callStatusSub2">Active today</div>
-    </div>
-  </div>
-  <!-- Card 3: Next Obligation countdown -->
+  <!-- Card 2: Next Obligation countdown -->
   <div class="status-card">
     <div class="status-icon blue" id="nextObligationIcon">📅</div>
     <div style="min-width:0;">
@@ -1838,18 +1864,6 @@ body{
         </table>
         <div class="data-section-footer" id="dssTableFooterCount"></div>
 
-        <div id="spotForecastWrapper" style="display:none;">
-          <div class="data-subsection-header">
-            <span class="section-icon">🎯</span>
-            <h2>Active Spot Forecast Requests</h2>
-          </div>
-          <table class="data-table subtable">
-            <thead><tr>
-              <th style="width:36px;"></th><th>Event Name</th><th>Type</th><th>Request Submitted</th><th>Completed</th><th>Status</th>
-            </tr></thead>
-            <tbody id="spotForecastTable"></tbody>
-          </table>
-        </div>
       </div>
     </div>
   </div>
@@ -1933,10 +1947,17 @@ body{
 <!-- END MAIN LAYOUT -->
 
 <div id="outageModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999;">
-  <div class="modal-box" style="width:420px;">
+  <div class="modal-box" style="width:960px; max-width:95vw; max-height:85vh; overflow-y:auto;">
     <h2>🗼 BTV Power Outages — County Breakdown</h2>
     <div id="outageModalTotal" class="outage-modal-total"></div>
-    <div id="outageModalList" style="max-height:380px; overflow-y:auto;"></div>
+    <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+      <div style="flex:1 1 380px; min-width:300px;">
+        <div id="outageModalList" style="max-height:440px; overflow-y:auto;"></div>
+      </div>
+      <div style="flex:1 1 380px; min-width:300px;">
+        <div id="outageCountyMap" style="width:100%; height:440px; border-radius:10px; overflow:hidden; border:1px solid rgba(96,165,250,.2);"></div>
+      </div>
+    </div>
     <button class="modal-close" id="outageModalCloseBtn">Close</button>
   </div>
 </div>
@@ -2847,7 +2868,8 @@ function renderGlanceTimeline(opts) {
         rows.push({
           kind: 'headsup', label: ev.name,
           time: formatTimeForDisplay(ev.emailTime),
-          startMin: Math.max(0, m - 120), endMin: m, isPast: opts.isToday && m < nowMinutes
+          startMin: Math.max(0, m - 120), endMin: m, isPast: opts.isToday && m < nowMinutes,
+          lat: ev.lat, lon: ev.lon
         });
       }
     }
@@ -2859,7 +2881,8 @@ function renderGlanceTimeline(opts) {
         rows.push({
           kind: 'radar', label: ev.name,
           time: formatTimeForDisplay(ev.radarTime) + (ev.radarEndTime ? ' – ' + formatTimeForDisplay(ev.radarEndTime) : ''),
-          startMin: s, endMin: endMin, isPast: opts.isToday && endMin < nowMinutes
+          startMin: s, endMin: endMin, isPast: opts.isToday && endMin < nowMinutes,
+          lat: ev.lat, lon: ev.lon
         });
       }
     }
@@ -2873,7 +2896,8 @@ function renderGlanceTimeline(opts) {
           rows.push({
             kind: 'onsite', label: ev.name,
             time: formatTimeForDisplay(ts) + (ev.dssEndTime ? ' – ' + formatTimeForDisplay(ev.dssEndTime) : ''),
-            startMin: s2, endMin: endMin2, isPast: opts.isToday && endMin2 < nowMinutes
+            startMin: s2, endMin: endMin2, isPast: opts.isToday && endMin2 < nowMinutes,
+            lat: ev.lat, lon: ev.lon
           });
         }
       }
@@ -2931,6 +2955,12 @@ function renderGlanceTimeline(opts) {
     bar.style.justifyContent = 'center';
     bar.title = row.label + ' — ' + row.time + (isActiveNow ? ' (active now)' : '');
     bar.textContent = row.allDay ? 'ALL DAY' : row.time;
+
+    var barLat = parseFloat(row.lat), barLon = parseFloat(row.lon);
+    if (!isNaN(barLat) && !isNaN(barLon)) {
+      bar.style.cursor = 'pointer';
+      bar.onclick = function() { map.setView([barLat, barLon], 11); };
+    }
 
     if (row.isPoint) {
       bar.style.left  = 'calc(' + startPct + '% - 30px)';
@@ -3148,6 +3178,31 @@ window.addEventListener('load', function() {
 });
 window.addEventListener('resize', forceMapPixelSize);  
 
+// NOAA's spot forecast feed is inconsistent about time format in the
+// "posted" field — some entries use standard 12-hour clock with a correct
+// AM/PM suffix (e.g. "2026-07-17 02:40:05 AM EDT"), while others use a
+// 24-hour clock but STILL append a (meaningless, incorrect) AM/PM suffix
+// (e.g. "2026-07-21 21:21:57 PM EDT" — hour 21 is already unambiguous,
+// but the trailing "PM" makes the whole string unparseable by a plain
+// `new Date(...)` call, which silently returns Invalid Date/NaN and
+// causes otherwise-valid, recently-completed requests to be dropped).
+// This parser detects which format it's looking at and handles both.
+function parseNoaaSpotDate(str) {
+  if (!str) return NaN;
+  var s = str.replace(/\s[A-Z]{3,4}$/, ''); // strip trailing tz abbreviation
+  var m = s.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2}):(\d{2})(?:\s*(AM|PM))?$/i);
+  if (!m) return new Date(s).getTime();
+  var year = +m[1], month = +m[2] - 1, day = +m[3];
+  var hour = +m[4], min = +m[5], sec = +m[6];
+  var ampm = m[7] ? m[7].toUpperCase() : null;
+  if (ampm && hour <= 12) {
+    if (ampm === 'PM' && hour < 12) hour += 12;
+    if (ampm === 'AM' && hour === 12) hour = 0;
+  }
+  // if hour > 12, it's already 24-hour format — ignore any bogus AM/PM suffix
+  return new Date(year, month, day, hour, min, sec).getTime();
+}
+
 async function refreshSpotForecasts() {
 
     console.log("Refreshing Spot Forecasts...");
@@ -3200,9 +3255,7 @@ async function refreshSpotForecasts() {
                     spot.posted !== "Incomplete"
                 ) {
 
-                    const postedTime = new Date(
-                        spot.posted.replace(/\s[A-Z]{3,4}$/, "")
-                    ).getTime();
+                    const postedTime = parseNoaaSpotDate(spot.posted);
 
                     if (!isNaN(postedTime)) {
                         return (now - postedTime) < SPOT_FORECAST_WINDOW_MS;
@@ -3234,75 +3287,15 @@ async function refreshSpotForecasts() {
 }
 
 function renderSpotForecasts(spots){
-    var tbody = document.getElementById("spotForecastTable");
-    if(!tbody) return;
-    tbody.innerHTML="";
     clearSpotForecastMarkers();
-    var wrapperEl = document.getElementById("spotForecastWrapper");
-    if(spots.length===0){
-        // Nothing to show — hide the whole subsection instead of rendering
-        // an empty-state row. The table now sizes to its own content
-        // (see #dssWrapper CSS), so hiding this just naturally shrinks
-        // the table and lets the timeline below it fill the freed space.
-        if (wrapperEl) wrapperEl.style.display = "none";
-        updateSpotLegend([]);
-        return;
-    }
-    if (wrapperEl) wrapperEl.style.display = "";
-    spots.forEach(function(spot){
-        addSpotMarker(spot);
-        var row=document.createElement("tr");
-        const cleanType = (spot.type || "")
-    .replace(/\d{4}-\d{2}-\d{2}.*/, "")
-    .trim();
-
-const completed =
-    spot.posted &&
-    spot.posted !== "Incomplete"
-        ? spot.posted
-        : "--";
-
-let statusBadge;
-
-switch (spot.statusCode) {
-
-    case "P":
-        statusBadge =
-            '<span class="spot-status-pending">Pending</span>';
-        break;
-
-    case "I":
-        statusBadge =
-            '<span class="spot-status-progress">In Progress</span>';
-        break;
-
-    case "C":
-    case "F":
-        statusBadge =
-            '<span class="spot-status-complete">Completed</span>';
-        break;
-
-    default:
-        statusBadge =
-            '<span class="spot-status-other">' +
-            (spot.status || "Unknown") +
-            '</span>';
-}
-
-row.innerHTML = `
-<td style="text-align:center;"></td>
-<td><strong>${spot.incident}</strong></td>
-<td>${cleanType}</td>
-<td>${spot.requested}</td>
-<td>${completed}</td>
-<td>${statusBadge}</td>
-`;
-        row.onclick=function(){
-            map.setView([spot.lat,spot.lon],10);
-        };
-        tbody.appendChild(row);
-    });
+    spots.forEach(function(spot){ addSpotMarker(spot); });
     updateSpotLegend(spots);
+    // Spot forecasts are merged into the main DSS/Calls table (loadData
+    // builds their rows too, see finalizeDssTable) rather than shown in
+    // a separate table of their own.
+    if (dssRows && dssRows.length > 0) {
+        loadData(dssRows, callRows);
+    }
 }
 
 
@@ -3324,7 +3317,7 @@ function getSpotIcon(type){
 
     let icon = "🔥";
 
-    if (type.includes("hazmat")){
+    if (type.includes("hazmat") || type.includes("hazardous")){
         icon = "☣️";
     }
     else if (type.includes("sar") || type.includes("search")){
@@ -3460,6 +3453,70 @@ function renderOutageModal(data) {
   }
 
   document.getElementById('outageModal').style.display = 'block';
+  renderOutageMap(data);
+}
+
+// ── COUNTY OUTAGE MAP (right half of the outage modal) ────────────
+// Approximate geographic centroids — good enough for a visualization
+// aid, not intended for precise GIS use.
+var COUNTY_CENTROIDS = {
+  'VT_Addison': [44.05, -73.15], 'VT_Bennington': [42.93, -73.10],
+  'VT_Caledonia': [44.42, -72.05], 'VT_Chittenden': [44.47, -72.95],
+  'VT_Essex': [44.75, -71.75], 'VT_Franklin': [44.85, -72.85],
+  'VT_Grand Isle': [44.75, -73.25], 'VT_Lamoille': [44.55, -72.60],
+  'VT_Orange': [44.05, -72.35], 'VT_Orleans': [44.75, -72.20],
+  'VT_Rutland': [43.60, -72.95], 'VT_Washington': [44.25, -72.55],
+  'VT_Windham': [42.95, -72.65], 'VT_Windsor': [43.55, -72.50],
+  'NY_St. Lawrence': [44.55, -75.15], 'NY_Franklin': [44.65, -74.35],
+  'NY_Essex': [44.15, -73.75], 'NY_Clinton': [44.70, -73.65]
+};
+
+function outageCountyColor(count) {
+  if (count <= 0) return '#4b5563';
+  if (count <= 25) return '#facc15';
+  if (count <= 100) return '#f97316';
+  if (count <= 500) return '#dc2626';
+  return '#a855f7';
+}
+
+var _outageMapInstance = null;
+var _outageMapLayer = null;
+
+function renderOutageMap(data) {
+  var mapEl = document.getElementById('outageCountyMap');
+  if (!mapEl) return;
+
+  if (!_outageMapInstance) {
+    _outageMapInstance = L.map('outageCountyMap', { zoomControl: true, attributionControl: false })
+      .setView([44.2, -73.4], 6.4);
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+      { maxZoom: 12, attribution: 'Esri' }
+    ).addTo(_outageMapInstance);
+    _outageMapLayer = L.layerGroup().addTo(_outageMapInstance);
+  }
+  _outageMapLayer.clearLayers();
+
+  (data.counties || []).forEach(function(c) {
+    var coords = COUNTY_CENTROIDS[c.state + '_' + c.name];
+    if (!coords) return;
+    var color = outageCountyColor(c.count);
+    var radius = c.count > 0 ? Math.max(8, Math.min(30, 8 + Math.sqrt(c.count) * 1.6)) : 5;
+    var marker = L.circleMarker(coords, {
+      radius: radius,
+      color: '#fff',
+      weight: 1.5,
+      fillColor: color,
+      fillOpacity: c.count > 0 ? 0.78 : 0.32
+    });
+    marker.bindPopup(
+      '<b>' + escapeHtml(c.name) + ', ' + escapeHtml(c.state) + '</b><br>' +
+      c.count.toLocaleString() + ' customer' + (c.count === 1 ? '' : 's') + ' out'
+    );
+    marker.addTo(_outageMapLayer);
+  });
+
+  setTimeout(function() { if (_outageMapInstance) _outageMapInstance.invalidateSize(); }, 120);
 }
 
 
@@ -3766,6 +3823,7 @@ function refreshHazards() {
 
       warningPolygonLayer.clearLayers();
       var legendMap = {};
+      var activeHazardNames = new Set();
 
       btvAlerts.forEach(function(alert) {
         let vtec = null;
@@ -3799,6 +3857,7 @@ function refreshHazards() {
           }
         });
         var affectsBtvZone = alertZoneList.some(function(zone) { return BTV_ZONE_SET.has(zone); });
+        if (affectsBtvZone) activeHazardNames.add(alert.properties.event);
 
         if (affectsBtvZone && alert.geometry && ["TO.W","SV.W","FF.W","FA.W","SQ.W","MA.W"].includes(vtec)) {
           let color = HAZARD_COLORS[vtec];
@@ -3878,10 +3937,29 @@ function refreshHazards() {
       renderMapLegend(
         Object.keys(legendMap).map(function(name){ return { label: name, color: legendMap[name] }; })
       );
+      updateNavHazardSummary(Array.from(activeHazardNames));
     })
     .catch(function(err) {
       console.error("Hazard refresh failed:", err);
+      var el = document.getElementById('navHazardText');
+      if (el) el.textContent = 'Hazard data unavailable';
     });
+}
+
+function updateNavHazardSummary(names) {
+  var el = document.getElementById('navHazardSummary');
+  var textEl = document.getElementById('navHazardText');
+  if (!el || !textEl) return;
+  if (!names || names.length === 0) {
+    el.className = 'nav-hazard-summary clear';
+    textEl.textContent = 'No active watches or warnings';
+    el.title = 'Open current hazards dashboard';
+    return;
+  }
+  el.className = 'nav-hazard-summary active';
+  var label = names.length + ' Active: ' + names.join(', ');
+  textEl.textContent = label;
+  el.title = label + ' — click to open hazards dashboard';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3895,6 +3973,133 @@ function checkMidnightRollover() {
     _lastKnownDateIso = iso;
     refreshDashboard();
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  24-HOUR DAYLIGHT ARC CLOCK
+//  Real sunrise/solar-noon/sunset for Burlington, VT (KBTV coords),
+//  computed locally with the standard NOAA solar position algorithm —
+//  no external API, recalculated fresh each day so it's always
+//  correct for today's actual date rather than a fixed approximation.
+// ══════════════════════════════════════════════════════════════
+var BTV_LAT = 44.4759, BTV_LNG = -73.2121;
+
+function getSunTimes(date, lat, lng) {
+  var rad = Math.PI / 180;
+  var start = new Date(date.getFullYear(), 0, 0);
+  var dayOfYear = Math.floor((date - start) / 86400000);
+  var gamma = (2 * Math.PI / 365) * (dayOfYear - 1 + (date.getHours() - 12) / 24);
+
+  var eqTime = 229.18 * (0.000075 + 0.001868 * Math.cos(gamma) - 0.032077 * Math.sin(gamma)
+             - 0.014615 * Math.cos(2 * gamma) - 0.040849 * Math.sin(2 * gamma));
+
+  var decl = 0.006918 - 0.399912 * Math.cos(gamma) + 0.070257 * Math.sin(gamma)
+           - 0.006758 * Math.cos(2 * gamma) + 0.000907 * Math.sin(2 * gamma)
+           - 0.002697 * Math.cos(3 * gamma) + 0.00148 * Math.sin(3 * gamma);
+
+  var zenith = 90.833 * rad;
+  var latRad = lat * rad;
+  var cosH = (Math.cos(zenith) / (Math.cos(latRad) * Math.cos(decl))) - Math.tan(latRad) * Math.tan(decl);
+  var hourAngle = Math.acos(Math.max(-1, Math.min(1, cosH))) / rad;
+
+  var solarNoonUTC = 720 - 4 * lng - eqTime;
+  var sunriseUTC = solarNoonUTC - 4 * hourAngle;
+  var sunsetUTC = solarNoonUTC + 4 * hourAngle;
+
+  function toLocalDate(utcMinutes) {
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, Math.round(utcMinutes)));
+  }
+
+  return { sunrise: toLocalDate(sunriseUTC), solarNoon: toLocalDate(solarNoonUTC), sunset: toLocalDate(sunsetUTC) };
+}
+
+function minutesOfDay(d) { return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; }
+function fmtClock(d) { return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+
+var _arcClockSunTimesDate = null;
+var _arcClockSunTimes = null;
+
+function renderDaylightArcClock() {
+  var container = document.getElementById('daylightArcClock');
+  if (!container) return;
+
+  var now = new Date();
+  var todayKey = now.toDateString();
+  if (_arcClockSunTimesDate !== todayKey) {
+    _arcClockSunTimes = getSunTimes(now, BTV_LAT, BTV_LNG);
+    _arcClockSunTimesDate = todayKey;
+  }
+  var sun = _arcClockSunTimes;
+
+  var W = 640, H = 96, padX = 36, baseY = 74, peakY = 24;
+  function xFor(mins) { return padX + (mins / 1440) * (W - padX * 2); }
+  function yFor(mins) { return baseY - (baseY - peakY) * Math.sin(Math.PI * Math.min(Math.max(mins, 0), 1440) / 1440); }
+
+  var pathPts = [];
+  for (var m = 0; m <= 1440; m += 40) pathPts.push(xFor(m).toFixed(1) + ',' + yFor(m).toFixed(1));
+  var pathD = 'M' + pathPts.join(' L');
+
+  var nowMin = minutesOfDay(now);
+  var sunriseMin = minutesOfDay(sun.sunrise);
+  var noonMin = minutesOfDay(sun.solarNoon);
+  var sunsetMin = minutesOfDay(sun.sunset);
+
+  var nowX = xFor(nowMin), nowY = yFor(nowMin);
+  var sunriseX = xFor(sunriseMin), sunriseY = yFor(sunriseMin);
+  var noonX = xFor(noonMin), noonY = yFor(noonMin);
+  var sunsetX = xFor(sunsetMin), sunsetY = yFor(sunsetMin);
+
+  var dayLenMin = Math.max(0, sunsetMin - sunriseMin);
+  var dayLenH = Math.floor(dayLenMin / 60), dayLenM = Math.round(dayLenMin % 60);
+  var dayLenText = dayLenH + 'h ' + dayLenM + 'm of daylight';
+
+  function fmtDur(mins) {
+    var h = Math.floor(mins / 60), m = Math.round(mins % 60);
+    return (h > 0 ? h + 'h ' : '') + m + 'm';
+  }
+  var untilText;
+  if (nowMin < sunriseMin) {
+    untilText = fmtDur(sunriseMin - nowMin) + ' until sunrise';
+  } else if (nowMin < sunsetMin) {
+    untilText = fmtDur(sunsetMin - nowMin) + ' until sunset';
+  } else {
+    var tomorrow = new Date(now.getTime() + 86400000);
+    var tomorrowSun = getSunTimes(tomorrow, BTV_LAT, BTV_LNG);
+    var tomorrowSunriseMin = minutesOfDay(tomorrowSun.sunrise) + 1440;
+    untilText = fmtDur(tomorrowSunriseMin - nowMin) + ' until sunrise';
+  }
+
+  var labelRowY = H - 22, timeRowY = H - 8;
+
+  container.innerHTML =
+    '<div style="text-align:center;font-size:10px;font-weight:700;letter-spacing:.04em;color:#7dd3fc;opacity:.85;margin-bottom:2px;">' + dayLenText + '  ·  ' + untilText + '</div>' +
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" preserveAspectRatio="xMidYMid meet" style="max-width:640px;">' +
+      '<defs>' +
+        '<linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">' +
+          '<stop offset="0%" stop-color="#6d5acd"/>' +
+          '<stop offset="22%" stop-color="#3b82f6"/>' +
+          '<stop offset="45%" stop-color="#38bdf8"/>' +
+          '<stop offset="55%" stop-color="#facc15"/>' +
+          '<stop offset="78%" stop-color="#f97316"/>' +
+          '<stop offset="100%" stop-color="#6d5acd"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+      '<path d="' + pathD + '" fill="none" stroke="url(#arcGrad)" stroke-width="3" stroke-linecap="round" opacity="0.9"/>' +
+      Array.from({length:9}, function(_, i){ var m=i*180; var x=xFor(m), y=yFor(m); return '<line x1="'+x+'" y1="'+(y-4)+'" x2="'+x+'" y2="'+(y+4)+'" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/>'; }).join('') +
+      '<circle cx="' + sunriseX + '" cy="' + sunriseY + '" r="4" fill="#60a5fa" stroke="#0b1524" stroke-width="1.5"/>' +
+      '<text x="' + sunriseX + '" y="' + labelRowY + '" text-anchor="middle" font-size="8" font-weight="800" letter-spacing="0.06em" fill="#60a5fa">☀ SUNRISE</text>' +
+      '<text x="' + sunriseX + '" y="' + timeRowY + '" text-anchor="middle" font-size="10" font-weight="800" fill="#93c5fd">' + fmtClock(sun.sunrise) + '</text>' +
+      '<circle cx="' + noonX + '" cy="' + noonY + '" r="3.5" fill="#facc15" stroke="#0b1524" stroke-width="1.5"/>' +
+      '<text x="' + noonX + '" y="' + labelRowY + '" text-anchor="middle" font-size="8" font-weight="800" letter-spacing="0.06em" fill="#facc15">☼ SOLAR NOON</text>' +
+      '<text x="' + noonX + '" y="' + timeRowY + '" text-anchor="middle" font-size="10" font-weight="800" fill="#fde68a">' + fmtClock(sun.solarNoon) + '</text>' +
+      '<circle cx="' + sunsetX + '" cy="' + sunsetY + '" r="4" fill="#fb923c" stroke="#0b1524" stroke-width="1.5"/>' +
+      '<text x="' + sunsetX + '" y="' + labelRowY + '" text-anchor="middle" font-size="8" font-weight="800" letter-spacing="0.06em" fill="#fb923c">🌇 SUNSET</text>' +
+      '<text x="' + sunsetX + '" y="' + timeRowY + '" text-anchor="middle" font-size="10" font-weight="800" fill="#fdba74">' + fmtClock(sun.sunset) + '</text>' +
+      (nowMin >= 0 && nowMin <= 1440 ?
+        '<circle class="arc-now-dot" cx="' + nowX + '" cy="' + nowY + '" r="5.5" fill="#fff" stroke="#0d9488" stroke-width="2"/>' +
+        '<text x="' + nowX + '" y="' + (peakY - 10) + '" text-anchor="middle" font-size="11" font-weight="800" fill="#5eead4">' + fmtClock(now) + '</text>'
+        : '') +
+    '</svg>';
 }
 
 function updateLastUpdated() {
@@ -3926,6 +4131,7 @@ function refreshDashboard() {
   refreshLightningLayer();
   refreshSpotForecasts();
   updateLastUpdated();
+  renderDaylightArcClock();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -4010,7 +4216,8 @@ function loadData(rows, calls) {
         name: row[eventCol], type: row[typeCol],
         emailTime: row[headsUpCol],
         radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
-        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : '',
+        lat: row[latCol], lon: row[lonCol]
       });
     }
 
@@ -4019,7 +4226,8 @@ function loadData(rows, calls) {
         name: row[eventCol], type: row[typeCol],
         emailTime: row[headsUpCol],
         radarTime: row[radarWatchCol], radarEndTime: radarEndCol !== -1 ? row[radarEndCol] : '',
-        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : ''
+        dssTime: dssTimeCol !== -1 ? row[dssTimeCol] : '', dssEndTime: dssEndCol !== -1 ? row[dssEndCol] : '',
+        lat: row[latCol], lon: row[lonCol]
       });
     }
 
@@ -4079,6 +4287,14 @@ function loadData(rows, calls) {
       '<td>' + escapeHtml(row[contactCol]) + '</td>' +
       '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(row[contactInfoCol]) + '</td>' +
       '<td style="text-align:center;">' + linkCell + '</td>';
+    var evLat = parseFloat(row[latCol]), evLon = parseFloat(row[lonCol]);
+    if (!isNaN(evLat) && !isNaN(evLon)) {
+      tr.style.cursor = 'pointer';
+      tr.onclick = function(e) {
+        if (e.target.closest('a')) return;
+        map.setView([evLat, evLon], 11);
+      };
+    }
     displayItems.push({ el: tr, sortDate: eventDateString, sortMin: getDssSortMinutes(row) });
   }
 
@@ -4107,13 +4323,13 @@ function loadData(rows, calls) {
   var dssValue = activeCount, dssSub2 = 'Active today';
   if (activeCount > 0) {
     var subParts = [];
-    if (radarCount > 0)  subParts.push(radarCount + ' Radar Watch');
-    if (onsiteCount > 0) subParts.push(onsiteCount + ' On-Site');
-    if (headsUpCount > 0) subParts.push(headsUpCount + ' Heads-Up');
+    if (radarCount > 0)  subParts.push('<span style="color:#f87171;">' + radarCount + ' Radar Watch</span>');
+    if (onsiteCount > 0) subParts.push('<span style="color:#c4b5fd;">' + onsiteCount + ' On-Site</span>');
+    if (headsUpCount > 0) subParts.push('<span style="color:#93c5fd;">' + headsUpCount + ' Heads-Up</span>');
     dssSub2 = subParts.length ? subParts.join(', ') : 'Active today';
   }
-  document.getElementById('dssStatusValue').textContent = dssValue;
-  document.getElementById('dssStatusSub2').textContent  = dssSub2;
+  // NOTE: dssStatusValue/dssStatusSub2 are set further below, once calls
+  // have also been tallied — the card is a combined "Today's DSS Events" total.
   var dssStatusCardEl = document.getElementById('dssStatusCard');
   if (dssStatusCardEl) dssStatusCardEl.classList.toggle('pulse-active', anyRowActiveNow);
   document.getElementById('dssWrapper').style.display   = 'block';
@@ -4123,8 +4339,15 @@ function loadData(rows, calls) {
   var noCallsAtAll = !calls || calls.length <= 1;
 
   if (noCallsAtAll) {
-    document.getElementById('callStatusValue').textContent = '0';
-    document.getElementById('callStatusSub2').textContent  = 'Active today';
+    var earlySpotCount = (activeSpotForecasts || []).length;
+    var earlyTotal = dssValue + earlySpotCount;
+    var earlySub2 = dssSub2;
+    if (earlySpotCount > 0) {
+      var earlySpotSpan = '<span style="color:#5eead4;">' + earlySpotCount + ' Spot' + (earlySpotCount !== 1 ? 's' : '') + '</span>';
+      earlySub2 = (dssSub2 === 'Active today') ? earlySpotSpan : dssSub2 + ', ' + earlySpotSpan;
+    }
+    document.getElementById('dssStatusValue').textContent = earlyTotal;
+    document.getElementById('dssStatusSub2').innerHTML = earlySub2;
     buildGlanceTimeline(todayDssItems, []);
     buildTomorrowGlanceStrip(tomorrowDssItems, []);
     updateNextObligation(todayDssItems, []);
@@ -4178,9 +4401,16 @@ function loadData(rows, calls) {
     displayItems.push({ el: ctr, sortDate: selectedDateString, sortMin: parseTimeToMinutes(callTime) });
   });
 
-  document.getElementById('callStatusValue').style.color = '#4ade80';
-  document.getElementById('callStatusValue').textContent  = visibleCallCount;
-  document.getElementById('callStatusSub2').textContent   = 'Active today';
+  var spotCount = (activeSpotForecasts || []).length;
+  var combinedTotal = activeCount + visibleCallCount + spotCount;
+  var combinedParts = [];
+  if (radarCount > 0)  combinedParts.push('<span style="color:#f87171;">' + radarCount + ' Radar Watch</span>');
+  if (onsiteCount > 0) combinedParts.push('<span style="color:#c4b5fd;">' + onsiteCount + ' On-Site</span>');
+  if (headsUpCount > 0) combinedParts.push('<span style="color:#93c5fd;">' + headsUpCount + ' Heads-Up</span>');
+  if (visibleCallCount > 0) combinedParts.push('<span style="color:#fbbf24;">' + visibleCallCount + ' Call' + (visibleCallCount !== 1 ? 's' : '') + '</span>');
+  if (spotCount > 0) combinedParts.push('<span style="color:#5eead4;">' + spotCount + ' Spot' + (spotCount !== 1 ? 's' : '') + '</span>');
+  document.getElementById('dssStatusValue').textContent = combinedTotal;
+  document.getElementById('dssStatusSub2').innerHTML = combinedParts.length ? combinedParts.join(', ') : 'Active today';
 
   finalizeDssTable();
 
@@ -4189,6 +4419,57 @@ function loadData(rows, calls) {
   // and renders the result — this is what makes "Today's DSS Operations"
   // a single table instead of two stacked ones.
   function finalizeDssTable() {
+    // ── Merge active spot forecasts into the same table ──────────
+    (activeSpotForecasts || []).forEach(function(spot) {
+      var reqTime = parseNoaaSpotDate(spot.requested);
+      var reqDate = isNaN(reqTime) ? new Date() : new Date(reqTime);
+      var spotDateStr = (reqDate.getMonth() + 1) + '/' + reqDate.getDate() + '/' + reqDate.getFullYear();
+      var spotDateIso = reqDate.getFullYear() + '-' + String(reqDate.getMonth() + 1).padStart(2, '0') + '-' + String(reqDate.getDate()).padStart(2, '0');
+      var spotTimeStr = isNaN(reqTime) ? '—' : reqDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      var cleanType = (spot.type || '').replace(/\d{4}-\d{2}-\d{2}.*/, '').trim() || 'Spot Forecast';
+      var statusLabel = spot.statusCode === 'P' ? 'Pending'
+        : spot.statusCode === 'I' ? 'In Progress'
+        : (spot.statusCode === 'C' || spot.statusCode === 'F') ? 'Completed'
+        : (spot.status || 'Unknown');
+
+      // NOAA's spot forecast feed has no contact-person/phone field — the
+      // closest useful thing it does provide is the required delivery
+      // deadline, so show that here instead of leaving the column blank.
+      var deliveryText = '—';
+      var delivTime = parseNoaaSpotDate(spot.delivery);
+      if (!isNaN(delivTime)) {
+        var delivDate = new Date(delivTime);
+        deliveryText = 'Due ' + (delivDate.getMonth() + 1) + '/' + delivDate.getDate() + ' ' +
+          delivDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      }
+
+      // Confirmed direct link: spot.weather.gov serves each incident's
+      // actual forecast page at /forecasts/<snumunum id>.
+      var spotMonitorHref = spot.id
+        ? 'https://spot.weather.gov/forecasts/' + encodeURIComponent(spot.id)
+        : 'https://spot.weather.gov';
+      var spotLinkCell = '<a href="' + spotMonitorHref + '" target="_blank" title="Open forecast on spot.weather.gov" style="color:#5eead4;font-size:15px;text-decoration:none;">🔗</a>';
+
+      var srow = document.createElement('tr');
+      srow.className = 'row-spot';
+      srow.innerHTML =
+        '<td style="white-space:nowrap;">' + escapeHtml(spotDateStr) + '</td>' +
+        '<td class="time-chip">' + escapeHtml(spotTimeStr) + '</td>' +
+        '<td style="font-weight:600;">' + escapeHtml(spot.incident || 'Spot Forecast') + '</td>' +
+        '<td><span class="dss-type-badge badge-spot">' + escapeHtml(cleanType) + '</span></td>' +
+        '<td>' + escapeHtml(statusLabel) + '</td>' +
+        '<td style="font-size:12px;color:var(--muted);">' + escapeHtml(deliveryText) + '</td>' +
+        '<td style="text-align:center;">' + spotLinkCell + '</td>';
+      if (!isNaN(spot.lat) && !isNaN(spot.lon)) {
+        srow.style.cursor = 'pointer';
+        srow.onclick = function(e) {
+          if (e.target.closest('a')) return;
+          map.setView([spot.lat, spot.lon], 10);
+        };
+      }
+      displayItems.push({ el: srow, sortDate: spotDateIso, sortMin: isNaN(reqTime) ? 0 : (reqDate.getHours() * 60 + reqDate.getMinutes()) });
+    });
+
     displayItems.sort(function(a, b) {
       if (a.sortDate !== b.sortDate) return a.sortDate < b.sortDate ? -1 : 1;
       return a.sortMin - b.sortMin;
@@ -4230,6 +4511,8 @@ function loadData(rows, calls) {
 document.addEventListener('DOMContentLoaded', function() {
 
   startAmbientFlash();
+  renderDaylightArcClock();
+  setInterval(renderDaylightArcClock, 60000);
 
   on('envThreatPanel', 'click', function(e) {
     var card = e.target.closest('.env-gauge-card');
@@ -4266,11 +4549,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById('dssWrapper');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
-  on('callsStatusCard', 'click', function() {
-    var el = document.getElementById('dssWrapper');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  });
 
+  on('navHazardSummary', 'click', function() {
+    window.open('https://script.google.com/a/macros/noaa.gov/s/AKfycbwYEZ9T08KI6OlJ8Lwg0XpOiRyaQEW50uSbG551p8_GxRUfA2Z4f_u72k8bMz3nqM8Tig/exec', '_blank');
+  });
   on('hazardToggle', 'change', function () {
     hazardsVisible = this.checked;
     if (hazardsVisible) map.addLayer(warningPolygonLayer);
