@@ -342,14 +342,19 @@ function pad2_(n) { return (n < 10 ? '0' : '') + n; }
 // ====== ENTRY POINT ==========================================================
 
 async function getDashboardData() {
-  var forecast = await safeCall_(getRecreationalForecast_, MOCK_REC_FORECAST);
-  var hazards = await safeCall_(getHazards_, MOCK_HAZARDS);
-  var stations = await safeCall_(getStationData_, STATIONS.map(function (s) { return Object.assign({}, s, MOCK_STATIONS[s.id] || {}); }));
+  // These three are fully independent — running them concurrently instead of one
+  // after another is the single biggest speed win available here (previously this
+  // waited for forecast, then hazards, then stations in sequence for no reason).
+  var results = await Promise.all([
+    safeCall_(getRecreationalForecast_, MOCK_REC_FORECAST),
+    safeCall_(getHazards_, MOCK_HAZARDS),
+    safeCall_(getStationData_, STATIONS.map(function (s) { return Object.assign({}, s, MOCK_STATIONS[s.id] || {}); }))
+  ]);
   return {
     updated: new Date().toISOString(),
-    hazards: hazards,
-    stations: stations,
-    recreationalForecast: forecast
+    recreationalForecast: results[0],
+    hazards: results[1],
+    stations: results[2]
   };
 }
 
@@ -359,6 +364,19 @@ async function safeCall_(fn, fallback) {
   } catch (err) {
     console.warn('getDashboardData: ' + fn.name + ' failed:', err);
     return fallback;
+  }
+}
+
+// Wraps fetch() with a timeout, so one slow/unreachable source (e.g. if Whiteface's
+// port is blocked on a given network) can't hold up the whole page — it fails fast
+// and falls back to mock instead of hanging for the browser's full default timeout.
+async function fetchWithTimeout_(url, options, timeoutMs) {
+  var controller = new AbortController();
+  var timer = setTimeout(function () { controller.abort(); }, timeoutMs || 8000);
+  try {
+    return await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -394,7 +412,7 @@ async function getHazards_() {
 
 async function fetchActiveAlertsForPoint_(lat, lon) {
   var url = 'https://api.weather.gov/alerts/active?point=' + lat + ',' + lon;
-  var resp = await fetch(url, { headers: { 'Accept': 'application/geo+json' } });
+  var resp = await fetchWithTimeout_(url, { headers: { 'Accept': 'application/geo+json' } });
   if (!resp.ok) throw new Error('alerts/active HTTP ' + resp.status + ' for ' + lat + ',' + lon);
   var json = await resp.json();
   var features = json.features || [];
@@ -451,11 +469,11 @@ async function getStationData_() {
 async function discoverNearestStationId_(lat, lon, label) {
   if (lat == null || lon == null) return null;
   try {
-    var pointResp = await fetch('https://api.weather.gov/points/' + lat.toFixed(4) + ',' + lon.toFixed(4));
+    var pointResp = await fetchWithTimeout_('https://api.weather.gov/points/' + lat.toFixed(4) + ',' + lon.toFixed(4));
     if (!pointResp.ok) return null;
     var pointJson = await pointResp.json();
 
-    var stationsResp = await fetch(pointJson.properties.observationStations);
+    var stationsResp = await fetchWithTimeout_(pointJson.properties.observationStations);
     if (!stationsResp.ok) return null;
     var stationsJson = await stationsResp.json();
 
@@ -473,7 +491,7 @@ async function discoverNearestStationId_(lat, lon, label) {
 
 async function fetchNoaaObservation_(noaaId) {
   try {
-    var resp = await fetch('https://api.weather.gov/stations/' + encodeURIComponent(noaaId) + '/observations/latest');
+    var resp = await fetchWithTimeout_('https://api.weather.gov/stations/' + encodeURIComponent(noaaId) + '/observations/latest');
     if (!resp.ok) { console.warn('NOAA fetch failed for ' + noaaId + ': HTTP ' + resp.status); return null; }
     var p = (await resp.json()).properties;
 
@@ -499,7 +517,7 @@ async function fetchIemObservation_(stationId, network) {
   try {
     var url = 'https://mesonet.agron.iastate.edu/json/current.py?station=' + encodeURIComponent(stationId) +
       '&network=' + encodeURIComponent(network);
-    var resp = await fetch(url);
+    var resp = await fetchWithTimeout_(url);
     if (!resp.ok) { console.warn('IEM fetch failed for ' + stationId + '/' + network + ': HTTP ' + resp.status); return null; }
     var ob = (await resp.json()).last_ob;
     if (!ob) return null;
@@ -521,7 +539,7 @@ async function fetchIemObservation_(stationId, network) {
 
 async function fetchWhitefaceObservation_() {
   try {
-    var resp = await fetch('https://api.asrc.albany.edu:3000/wfmsapi');
+    var resp = await fetchWithTimeout_('https://api.asrc.albany.edu:3000/wfmsapi');
     if (!resp.ok) { console.warn('Whiteface (WFMS) fetch failed: HTTP ' + resp.status); return null; }
     var d = await resp.json();
 
@@ -600,16 +618,26 @@ async function fetchIemCoopObservation_(stationId, network) {
 // at all (its sensor's reporting cadence didn't line up with that particular hour's
 // snapshot) while the previous few hours' editions do have it. Retrying only on HTTP
 // failure (the original design) would silently return nothing in that case.
+//
+// All candidate hours are fetched IN PARALLEL (not one-by-one) since they're
+// independent requests — this was previously sequential, which made Mt. Mansfield's
+// wind data the slowest single thing on the page whenever the newest edition or two
+// lacked this station. Picks the freshest (smallest hoursBack) edition that actually
+// has the station's data.
 async function fetchRrsWindObservation_(pil, stationId) {
-  for (var hoursBack = 0; hoursBack <= 6; hoursBack++) {
-    var stamp = rrsStampForHoursBack_(hoursBack);
-    var text = await fetchRrsProductTextForStamp_(pil, stamp);
+  var hoursBackOptions = [0, 1, 2, 3, 4, 5, 6];
+  var texts = await Promise.all(hoursBackOptions.map(function (hoursBack) {
+    return fetchRrsProductTextForStamp_(pil, rrsStampForHoursBack_(hoursBack));
+  }));
+
+  for (var i = 0; i < texts.length; i++) {
+    var text = texts[i];
     if (!text) continue;
 
     var sustained = parseRrsSeries_(text, stationId, 'USIRG');
     var gust = parseRrsSeries_(text, stationId, 'UPERG');
     var dir = parseRrsSeries_(text, stationId, 'UDIRG');
-    if (!sustained && !gust) continue; // fetched fine, but this edition lacks this station — try an hour further back
+    if (!sustained && !gust) continue; // this edition lacks this station — check the next (older) one
 
     var timestamps = [];
     if (sustained) timestamps.push(new Date(sustained.timestamp).getTime());
@@ -641,7 +669,7 @@ function rrsStampForHoursBack_(hoursBack) {
 async function fetchRrsProductTextForStamp_(pil, stamp) {
   try {
     var url = 'https://mesonet.agron.iastate.edu/wx/afos/p.php?pil=' + encodeURIComponent(pil) + '&e=' + stamp;
-    var resp = await fetch(url);
+    var resp = await fetchWithTimeout_(url);
     if (!resp.ok) return null;
     var html = await resp.text();
     return extractAfosPreText_(html);
@@ -706,7 +734,7 @@ async function fetchIemObhistoryRows_(stationId, network, dateStr) {
   try {
     var url = 'https://mesonet.agron.iastate.edu/api/1/obhistory.json?station=' + encodeURIComponent(stationId) +
       '&network=' + encodeURIComponent(network) + '&date=' + dateStr;
-    var resp = await fetch(url);
+    var resp = await fetchWithTimeout_(url);
     if (!resp.ok) {
       console.warn('IEM obhistory fetch failed for ' + stationId + '/' + network + '/' + dateStr + ': HTTP ' + resp.status);
       return null;
@@ -818,7 +846,7 @@ function degreesToCompass_(deg) {
 async function fetchUsgsWaterTemp_(siteId) {
   try {
     var url = 'https://waterservices.usgs.gov/nwis/iv/?sites=' + encodeURIComponent(siteId) + '&parameterCd=00010&format=json';
-    var resp = await fetch(url);
+    var resp = await fetchWithTimeout_(url);
     if (!resp.ok) { console.warn('USGS water temp fetch failed for ' + siteId + ': HTTP ' + resp.status); return null; }
     var series = (await resp.json()).value.timeSeries;
     if (!series || !series.length) return null;
@@ -869,7 +897,7 @@ async function fetchNdbcObservation_(ndbcId) {
   try {
     var base = NDBC_PROXY_URL || 'https://www.ndbc.noaa.gov/data/realtime2/';
     var url = base + ndbcId + '.txt';
-    var resp = await fetch(url);
+    var resp = await fetchWithTimeout_(url);
     if (!resp.ok) { console.warn('NDBC fetch failed for ' + ndbcId + ': HTTP ' + resp.status); return null; }
     var lines = (await resp.text()).split('\n');
     var dataLine = lines[2];
@@ -933,14 +961,14 @@ function humanizeAge_(ageMinutes) {
 
 async function getRecreationalForecast_() {
   try {
-    var listResp = await fetch('https://api.weather.gov/products/types/REC/locations/' + REC_ISSUEDBY);
+    var listResp = await fetchWithTimeout_('https://api.weather.gov/products/types/REC/locations/' + REC_ISSUEDBY);
     if (!listResp.ok) return MOCK_REC_FORECAST;
 
     var graph = (await listResp.json())['@graph'];
     if (!graph || !graph.length) return MOCK_REC_FORECAST;
 
     var latestId = graph[0].id;
-    var productResp = await fetch('https://api.weather.gov/products/' + latestId);
+    var productResp = await fetchWithTimeout_('https://api.weather.gov/products/' + latestId);
     if (!productResp.ok) return MOCK_REC_FORECAST;
 
     var product = await productResp.json();
