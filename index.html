@@ -2250,13 +2250,50 @@ const BASEMAP_BOUNDS = [
 // with this deployment. A plain tile layer sidesteps all of that: no
 // bbox, no aspect-ratio calculation, no SR conversion, just standard
 // {z}/{y}/{x} tiles like any other Leaflet basemap.
-L.tileLayer(
+var _basemapTileLoadCount = 0;
+var _basemapTileErrorCount = 0;
+
+var basemapLayer = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
   {
     attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors',
     maxZoom: 19
   }
 ).addTo(map);
+
+basemapLayer.on('tileload', function() { _basemapTileLoadCount++; });
+basemapLayer.on('tileerror', function() { _basemapTileErrorCount++; });
+
+// ── SELF-DIAGNOSING TV BANNER ─────────────────────────────────────
+// This dashboard often runs unattended on a TV with no keyboard, no
+// remote browser access, and no way for anyone to open dev tools —
+// so if the map ever shows up blank, there's normally no way to find
+// out why without physically being at the TV with debugging gear.
+// This checks itself a few seconds after load: if zero basemap tiles
+// ever loaded successfully, it prints the reason directly on screen
+// so whoever can SEE the TV (even without touching it) can read off
+// what's wrong and relay it back, instead of just reporting "it's
+// white" with no further information to go on.
+setTimeout(function() {
+  if (_basemapTileLoadCount > 0) return; // tiles are loading fine — no banner needed
+  var mapEl = document.getElementById('map');
+  if (!mapEl) return;
+  var reason = _basemapTileErrorCount > 0
+    ? 'Map tiles failed to load (' + _basemapTileErrorCount + ' error' + (_basemapTileErrorCount !== 1 ? 's' : '') + '). ' +
+      'This usually means this device/network is blocking access to server.arcgisonline.com — ' +
+      'check any content filtering, DNS blocking, or firewall rules on this TV or its network.'
+    : 'No map tiles have loaded and no errors were reported either — this points to the tile ' +
+      'requests never completing at all (e.g. no network access, or the map container had zero size ' +
+      'when it initialized).';
+  var banner = document.createElement('div');
+  banner.style.cssText =
+    'position:absolute; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; ' +
+    'text-align:center; padding:20px; background:rgba(10,14,24,.95); color:#fca5a5; font-size:13px; ' +
+    'font-weight:600; line-height:1.5;';
+  banner.textContent = '⚠ ' + reason;
+  mapEl.style.position = 'relative';
+  mapEl.appendChild(banner);
+}, 6000);
 
 // Fit exactly to the same extent the old image covered
 map.fitBounds(BASEMAP_BOUNDS, {
