@@ -277,7 +277,7 @@ var STATIONS = [
   { id: 'colchester_reef', name: 'Colchester Reef', region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM02', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294500', ndbcId: null,    lat: 44.548,  lon: -73.34 },
   { id: 'burton_island',   name: 'Burton Island',    region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM01', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04295000', ndbcId: null,    lat: 44.795,  lon: -73.298 },
   { id: 'diamond_island',  name: 'Diamond Island',   region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM03', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294413', ndbcId: null,    lat: 44.03,   lon: -73.43 },
-  { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: 'VT_COOP', source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', lat: 44.5437, lon: -72.8092 },
+  { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: null, source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', rr2Pil: 'RR2BTV', lat: 44.5437, lon: -72.8092 },
   { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 },
   { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 }
 ];
@@ -477,16 +477,27 @@ async function getOneStationData_(s) {
   var iemP = s.iemNetwork ? fetchIemObservation_(resolvedId, s.iemNetwork) : Promise.resolve(null);
   var coopTempP = s.iemCoopNetwork ? fetchIemCoopObservation_(resolvedId, s.iemCoopNetwork) : Promise.resolve(null);
   var rrsWindP = s.rrsPil ? fetchRrsWindObservation_(s.rrsPil, resolvedId) : Promise.resolve(null);
+  var rr2TempP = s.rr2Pil ? fetchRr2TempObservation_(s.rr2Pil, resolvedId) : Promise.resolve(null);
   var usgsP = s.usgsSite ? fetchUsgsWaterTemp_(s.usgsSite) : Promise.resolve(null);
 
-  var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, usgsP]);
+  var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, rr2TempP, usgsP]);
   var noaa = results[0].status === 'fulfilled' ? results[0].value : null;
   var iem = results[1].status === 'fulfilled' ? results[1].value : null;
   var coopTemp = results[2].status === 'fulfilled' ? results[2].value : null;
   var rrsWind = results[3].status === 'fulfilled' ? results[3].value : null;
-  var usgs = results[4].status === 'fulfilled' ? results[4].value : null;
+  var rr2Temp = results[4].status === 'fulfilled' ? results[4].value : null;
+  var usgs = results[5].status === 'fulfilled' ? results[5].value : null;
 
-  var coopWind = (coopTemp || rrsWind) ? Object.assign({}, coopTemp, rrsWind) : null;
+  var coopWind = (coopTemp || rrsWind || rr2Temp) ? Object.assign({}, coopTemp, rrsWind, rr2Temp) : null;
+  // Mt. Mansfield's main NOAA/MADIS sensor is currently down and its temp
+  // readings can't be trusted (even a stale/bad value can still carry a
+  // fresh-looking timestamp and win the freshness sort in mergeObservations_).
+  // Strip only the temp field here — sustainedMph/gustMph/direction from this
+  // same noaa fetch are still good and stay untouched. Revert once the
+  // sensor's confirmed fixed.
+  if (s.id === 'mt_mansfield' && noaa) {
+    noaa = Object.assign({}, noaa, { tempF: null });
+  }
   if (s.source === 'wfms') {
     try { iem = await fetchWhitefaceObservation_(); } catch (err) { console.warn('Whiteface fetch failed:', err); iem = null; }
   }
@@ -797,6 +808,53 @@ async function fetchIemObhistoryRows_(stationId, network, dateStr) {
     console.warn('fetchIemObhistoryRows_ error for ' + stationId + '/' + network + '/' + dateStr + ':', err);
     return null;
   }
+}
+
+// Fetches the latest RR2 product directly (e.g. RR2BTV) and pulls a single
+// point-observation temperature (SHEF ".A" line, not the ".E" time-series
+// format RRS uses) for the given station. This is the same raw bulletin
+// visible at https://mesonet.agron.iastate.edu/wx/afos/p.php?pil=RR2BTV —
+// fetching it directly instead of going through IEM's obhistory.json avoids
+// relying on that endpoint's network/field-name assumptions, which don't
+// hold for MMNV1 (a DCP/SHEF-reporting station, not a standard ASOS-style one).
+async function fetchRr2TempObservation_(pil, stationId) {
+  try {
+    var url = 'https://mesonet.agron.iastate.edu/wx/afos/p.php?pil=' + encodeURIComponent(pil);
+    var resp = await fetchWithTimeout_(url);
+    if (!resp.ok) return null;
+    var html = await resp.text();
+    var text = extractAfosPreText_(html);
+    if (!text) return null;
+    return parseRr2Temp_(text, stationId);
+  } catch (err) {
+    console.warn('fetchRr2TempObservation_ error for ' + pil + ':', err);
+    return null;
+  }
+}
+
+// Parses a line like: .A MMNV1 260723 Z DH1933/TAIRGZZ 59.5
+// (station, YYMMDD, timezone code, DHHHMM/ then one or more "CODE value" pairs
+// separated by "/"). We only care about the TAIRGZZ (air temp) element.
+function parseRr2Temp_(text, stationId) {
+  var lines = text.split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    var m = lines[i].match(/^\.A\s+(\S+)\s+(\d{6})\s+([A-Z])\s+DH(\d{2})(\d{2})\/(.+)$/);
+    if (!m || m[1] !== stationId) continue;
+
+    var yy = Number(m[2].slice(0, 2)), mo = Number(m[2].slice(2, 4)), dd = Number(m[2].slice(4, 6));
+    var hh = Number(m[4]), mi = Number(m[5]);
+
+    var segments = m[6].split('/');
+    for (var j = 0; j < segments.length; j++) {
+      var seg = segments[j].trim().split(/\s+/);
+      if (seg.length < 2 || seg[0] !== 'TAIRGZZ') continue;
+      var value = parseFloat(seg[1]);
+      if (isNaN(value)) continue;
+      var timestamp = new Date(Date.UTC(2000 + yy, mo - 1, dd, hh, mi)).toISOString();
+      return { tempF: Math.round(value), tempTimestamp: timestamp };
+    }
+  }
+  return null;
 }
 
 function findLatestNonNullRow_(rows, fieldNames) {
