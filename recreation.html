@@ -1191,14 +1191,20 @@ function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
   return svg;
 }
 
-// "250° 24G32 mph" — same shorthand a coded METAR uses (e.g. 25024G32KT), in mph
-// instead of knots to match the rest of the dashboard. Gust only appended when
-// present, same as METAR omits the G-group entirely when there's no gust.
+// "250° 21G28 kt" — same shorthand a coded METAR uses (e.g. 25021G28KT), now in
+// knots to match real METAR convention. Everything upstream (merge logic, the
+// gust-can't-be-lower-than-sustained sanity check, the barb's own geometry, the
+// color thresholds) stays in mph internally — this is purely the final display
+// conversion, so converting both sustained and gust by the same factor can't
+// introduce a new inconsistency between them. Gust only appended when present,
+// same as METAR omits the G-group entirely when there's no gust.
 function metarLineHTML(sustainedMph, directionDeg, gustMph) {
   var dirStr = (directionDeg != null) ? Math.round(directionDeg) : '---';
-  var sustStr = (sustainedMph != null) ? sustainedMph : '--';
-  var gustHtml = (gustMph != null) ? ('<span class="metar-gust">G' + gustMph + '</span>') : '';
-  return dirStr + '&deg; ' + sustStr + gustHtml + ' mph';
+  var sustKt = (sustainedMph != null) ? Math.round(sustainedMph * 0.868976) : null;
+  var gustKt = (gustMph != null) ? Math.round(gustMph * 0.868976) : null;
+  var sustStr = (sustKt != null) ? sustKt : '--';
+  var gustHtml = (gustKt != null) ? ('<span class="metar-gust">G' + gustKt + '</span>') : '';
+  return dirStr + '&deg; ' + sustStr + gustHtml + ' kt';
 }
 
 function fmtVal(v) { return (v == null) ? '--' : v; }
