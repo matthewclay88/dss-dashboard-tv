@@ -301,13 +301,36 @@ body{
 }
   #dssWrapper.expanded { max-height: none; flex: 1; }
 
-  /* Timeline absorbs whatever vertical space the table doesn't use —
-     this is what actually closes the gap, rather than guessing a ratio. */
+  /* Timeline sizes to its own content now; the calendar heatmap below
+     it absorbs whatever vertical space is left over. */
   #glanceSection.glance-section {
-    flex: 1;
-    min-height: 140px;
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
     min-width: 0;
 }
+
+  #calendarHeatSection.glance-section {
+    flex: 1;
+    min-height: 200px;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg, rgba(46,16,101,.55) 0%, rgba(10,8,20,.94) 100%);
+    border: 1px solid rgba(139,92,246,.32);
+    border-top: 3px solid rgba(139,92,246,.55);
+    box-shadow: 0 0 26px rgba(124,58,237,.14);
+  }
+  #calendarHeatSection .glance-title { color: #c4b5fd; }
+  #calendarHeatSection .glance-title::after { background: rgba(139,92,246,.25); }
+  #calendarHeatGrid { display: flex; flex-direction: column; justify-content: stretch; gap: 3px; flex: 1; min-height: 0; overflow: hidden; padding-top: 4px; }
+  .cal-heat-row { display: flex; align-items: stretch; justify-content: flex-start; gap: 3px; flex: 1 1 0; min-height: 0; }
+  .cal-heat-month-label { width: 30px; flex-shrink: 0; font-size: 9px; line-height: 1; color: var(--muted); font-weight: 700; overflow: hidden; display: flex; align-items: center; }
+  .cal-heat-cell { flex: 1 1 0; min-width: 0; border-radius: 2px; cursor: default; }
+  .cal-heat-cell.empty { background: transparent; }
+  .cal-heat-legend { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 10px; color: var(--muted); }
+  .cal-heat-swatch { width: 12px; height: 12px; border-radius: 2px; }
 
   #mapCard {
     flex: 1;
@@ -1886,6 +1909,21 @@ body{
   <div class="tomorrow-glance-bar" id="tomorrowGlanceSection" style="display:none;">
     <span class="tomorrow-glance-label">Tomorrow</span>
     <div class="tomorrow-glance-list" id="tomorrowGlanceRows"></div>
+  </div>
+
+  <!-- DSS CALENDAR HEATMAP -->
+  <div class="glance-section" id="calendarHeatSection">
+    <div class="glance-title">DSS &amp; Call Calendar Heatmap</div>
+    <div id="calendarHeatGrid"></div>
+    <div class="cal-heat-legend">
+      <span>Fewer</span>
+      <div class="cal-heat-swatch" style="background:hsl(200,70%,45%)"></div>
+      <div class="cal-heat-swatch" style="background:hsl(150,70%,45%)"></div>
+      <div class="cal-heat-swatch" style="background:hsl(100,70%,45%)"></div>
+      <div class="cal-heat-swatch" style="background:hsl(50,70%,45%)"></div>
+      <div class="cal-heat-swatch" style="background:hsl(0,70%,45%)"></div>
+      <span>More</span>
+    </div>
   </div>
 </div>
 
@@ -4138,6 +4176,89 @@ function refreshDashboard() {
 //  LOAD DATA — always "today"; no tomorrow/week/month/calendar
 //  branching since this static build only ever shows today.
 // ══════════════════════════════════════════════════════════════
+// ── DSS CALENDAR HEATMAP ─────────────────────────────────────
+var CAL_HEAT_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var CAL_HEAT_DAYS_IN_MONTH = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]; // 29 to allow Feb 29
+
+function buildCalendarHeat(rows, calls) {
+  var grid = document.getElementById('calendarHeatGrid');
+  if (!grid) return;
+
+  var headers = rows[0] || [];
+  var eventDateCol = headers.indexOf('Event Date');
+  var cancelledCol = headers.indexOf('Cancelled');
+  var counts = {}; // "MM-DD" -> count
+
+  function bump(m, d) {
+    if (!m || !d) return;
+    var key = String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    counts[key] = (counts[key] || 0) + 1;
+  }
+
+  for (var i = 1; i < rows.length; i++) {
+    var row = rows[i];
+    if (!row) continue;
+    if (cancelledCol !== -1 && String(row[cancelledCol]).trim().toUpperCase() === 'TRUE') continue;
+    var parts = String(row[eventDateCol] || '').split('/');
+    if (parts.length !== 3) continue;
+    bump(parseInt(parts[0], 10), parseInt(parts[1], 10));
+  }
+
+  for (var j = 1; j < (calls || []).length; j++) {
+    var call = calls[j];
+    if (!call) continue;
+    var cparts = String(call[0] || '').split('/');
+    if (cparts.length !== 3) continue;
+    bump(parseInt(cparts[0], 10), parseInt(cparts[1], 10));
+  }
+
+  renderCalendarHeat(counts);
+}
+
+function calHeatColor(count, max) {
+  if (!count) return 'rgba(255,255,255,.05)';
+  var ratio = max > 0 ? count / max : 0;
+  var hue = 200 - ratio * 200; // blue (low) -> red (high)
+  var light = 55 - ratio * 15;
+  return 'hsl(' + hue.toFixed(0) + ', 70%, ' + light.toFixed(0) + '%)';
+}
+
+function renderCalendarHeat(counts) {
+  var container = document.getElementById('calendarHeatGrid');
+  if (!container) return;
+  container.innerHTML = '';
+
+  var max = 0;
+  Object.keys(counts).forEach(function(k) { if (counts[k] > max) max = counts[k]; });
+
+  for (var m = 1; m <= 12; m++) {
+    var row = document.createElement('div');
+    row.className = 'cal-heat-row';
+
+    var label = document.createElement('div');
+    label.className = 'cal-heat-month-label';
+    label.textContent = CAL_HEAT_MONTH_NAMES[m - 1];
+    row.appendChild(label);
+
+    var daysThisMonth = CAL_HEAT_DAYS_IN_MONTH[m - 1];
+    for (var d = 1; d <= 31; d++) {
+      var cell = document.createElement('div');
+      if (d > daysThisMonth) {
+        cell.className = 'cal-heat-cell empty';
+      } else {
+        var key = String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var count = counts[key] || 0;
+        cell.className = 'cal-heat-cell';
+        cell.style.background = calHeatColor(count, max);
+        cell.title = CAL_HEAT_MONTH_NAMES[m - 1] + ' ' + d + ': ' + count.toLocaleString() + ' event' + (count === 1 ? '' : 's');
+      }
+      row.appendChild(cell);
+    }
+
+    container.appendChild(row);
+  }
+}
+
 function loadData(rows, calls) {
   dssRows  = rows;
   callRows = calls || [];
@@ -4352,6 +4473,7 @@ function loadData(rows, calls) {
     buildTomorrowGlanceStrip(tomorrowDssItems, []);
     updateNextObligation(todayDssItems, []);
     finalizeDssTable();
+    buildCalendarHeat(rows, calls);
     return;
   }
 
@@ -4413,6 +4535,7 @@ function loadData(rows, calls) {
   document.getElementById('dssStatusSub2').innerHTML = combinedParts.length ? combinedParts.join(', ') : 'Active today';
 
   finalizeDssTable();
+  buildCalendarHeat(rows, calls);
 
   // Sorts the merged DSS + coordination-call rows chronologically, applies
   // one shared "view N more" pagination limit across the combined table,
