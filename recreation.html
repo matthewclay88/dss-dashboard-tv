@@ -117,12 +117,8 @@
     .region.purple { color: var(--purple); }
     .region.green { color: var(--green); }
 
-    .gauge-readout { display: flex; justify-content: center; align-items: baseline; gap: 18px; margin-top: -5px; }
-    .gauge-readout .val { font-size: 24px; font-weight: 800; color: #1a1a1a; }
-    .gauge-readout .unit { font-size: 10px; color: var(--text-dim); display: block; }
-    .gauge-readout .gust-val { font-size: 18px; font-weight: 800; color: var(--red); }
-
-    .wind-dir-row { font-size: 10px; color: var(--text-dim); margin-top: 3px; }
+    .metar-line { font-family: 'Courier New', Courier, monospace; font-size: 17px; font-weight: 800; color: #1a1a1a; margin-top: -2px; letter-spacing: 0.5px; }
+    .metar-gust { color: var(--red); }
 
     .temp-row {
       border-top: 1px solid var(--border); margin-top: 10px; padding-top: 8px;
@@ -779,6 +775,23 @@ function mergeObservations_(noaa, iem, coopWind) {
     gustTimestamp = coopWind.windTimestamp;
   }
 
+  // Physical sanity check: gust can never legitimately be lower than sustained.
+  // Confirmed live cause for Colchester Reef: NOAA's gust field is sparse (often
+  // null for several consecutive 10-min readings), so its /latest snapshot can be
+  // from a calmer moment than IEM's fresher sustained reading, producing a
+  // self-contradictory pair like "17 sustained, G15". Rather than display that,
+  // keep only whichever of the two is actually fresher and drop the other.
+  if (sustainedMph != null && gustMph != null && gustMph < sustainedMph) {
+    var sustainedMsCheck = sustainedTimestamp ? new Date(sustainedTimestamp).getTime() : null;
+    var gustMsCheck = gustTimestamp ? new Date(gustTimestamp).getTime() : null;
+    if (sustainedMsCheck != null && gustMsCheck != null) {
+      if (sustainedMsCheck > gustMsCheck) { gustMph = null; gustTimestamp = null; }
+      else { sustainedMph = null; sustainedTimestamp = null; }
+    } else {
+      gustMph = null; gustTimestamp = null;
+    }
+  }
+
   var directionDeg = (iem && iem.sustainedMph != null && iem.directionDeg != null) ? iem.directionDeg
                     : (noaa && noaa.directionDeg != null) ? noaa.directionDeg
                     : (coopWind && coopWind.directionDeg != null) ? coopWind.directionDeg : null;
@@ -1016,57 +1029,108 @@ function parseRecProduct_(rawText) {
 // FRONT-END RENDERING (unchanged from the Apps Script version)
 // =============================================================================
 
-var DEFAULT_GAUGE_MAX = 50;
-
-function gaugeBandColor(pct) {
-  if (pct < 0.35) return '#3fae4a';
-  if (pct < 0.55) return '#f0c419';
-  if (pct < 0.75) return '#e07b1a';
+// Standard meteorological wind barb: shaft points toward where the wind is
+// blowing FROM (rotated by directionDeg, 0=N=up), with ticks encoding speed in
+// 5-knot increments — half barb=5kt, full barb=10kt, pennant (triangle)=50kt.
+// Requires BOTH sustained speed and direction to draw a real barb — falls back
+// to a plain unoriented dot otherwise rather than misrepresent missing data.
+// Color the barb by severity: lake stations use <15/15-25/>25 mph, mountain
+// stations get raised thresholds (<30/30-45/>45) since exposed summits run much
+// windier in normal conditions.
+function windSpeedColor_(speedMph, isMountain) {
+  if (speedMph == null) return '#8a8f98';
+  var lowMax = isMountain ? 30 : 15;
+  var midMax = isMountain ? 45 : 25;
+  if (speedMph < lowMax) return '#3fae4a';
+  if (speedMph <= midMax) return '#b8860b'; // deeper goldenrod — better contrast on white than a lighter yellow
   return '#c0392b';
 }
 
-function gaugeSVG(sustained, maxValue) {
-  maxValue = maxValue || DEFAULT_GAUGE_MAX;
-  var cx = 110, cy = 118, r = 88, strokeW = 20;
-  function pt(t, radius) {
-    var angle = (180 - t * 180) * Math.PI / 180;
-    return { x: cx + radius * Math.cos(angle), y: cy - radius * Math.sin(angle) };
+// Standard meteorological wind barb: shaft points toward where the wind is
+// blowing FROM (rotated by directionDeg, 0=N=up), with ticks encoding speed in
+// 5-knot increments — half barb=5kt, full barb=10kt, pennant (triangle)=50kt.
+// Requires BOTH sustained speed and direction to draw a real barb — falls back
+// to a plain unoriented dot otherwise rather than misrepresent missing data.
+function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
+  // cy moved up from the box's visual center: a southerly wind rotates the shaft
+  // to point DOWNWARD from the dot, and centered at 78 that left only ~2 units of
+  // clearance before the METAR text sitting right below this SVG — now ~12.
+  var cx = 110, cy = 62, staffLen = 50;
+  var colorBasis = sustainedMph != null ? sustainedMph : gustMph;
+  var color = windSpeedColor_(colorBasis, isMountain);
+
+  if (sustainedMph == null || directionDeg == null || isNaN(sustainedMph) || isNaN(directionDeg)) {
+    return '<svg viewBox="0 0 220 130" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="none" stroke="' + color + '" stroke-width="2" /></svg>';
   }
 
-  var bands = [
-    { from: 0, to: 0.35 }, { from: 0.35, to: 0.55 },
-    { from: 0.55, to: 0.75 }, { from: 0.75, to: 1 }
-  ];
-  var bandPaths = bands.map(function (b) {
-    var steps = 24, d = '';
-    for (var i = 0; i <= steps; i++) {
-      var t = b.from + (b.to - b.from) * (i / steps);
-      var p = pt(t, r);
-      d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' ';
+  var knots = sustainedMph * 0.868976;
+  var rounded = Math.round(knots / 5) * 5;
+  var isCalm = rounded < 3;
+
+  var svg = '<svg viewBox="0 0 220 130" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="' + color + '" />';
+
+  if (!isCalm) {
+    var tipY = cy - staffLen;
+    var inner = '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + tipY + '" stroke="' + color + '" stroke-width="2.5" />';
+
+    var remaining = rounded;
+    var pennants = Math.floor(remaining / 50); remaining -= pennants * 50;
+    var fullBarbs = Math.floor(remaining / 10); remaining -= fullBarbs * 10;
+    var halfBarb = remaining >= 5 ? 1 : 0;
+
+    // Angle measured directly from NWS's own reference gifs (see
+    // weather.gov/hfo/windbarbinfo): each tick leans toward the TIP at
+    // atan(3) ≈ 71.6° from the shaft. Length/spacing/half-barb ratio are
+    // scaled up from that reference's own proportions — at this card's small
+    // render size (~100px), the reference's tighter spacing and half-barb
+    // ratio read as one indistinct blob rather than clearly separate,
+    // clearly-graduated strokes.
+    var tickLen = 20;
+    var tickSpacing = tickLen * 0.45;
+    var theta = Math.atan(3);
+    var leanDx = Math.sin(theta), leanDy = -Math.cos(theta);
+    var perpDx = Math.cos(theta), perpDy = Math.sin(theta);
+    var pos = tipY;
+
+    for (var p = 0; p < pennants; p++) {
+      var pennantLen = tickLen, pennantHalfW = tickLen * 0.285;
+      var apexX = cx + leanDx * pennantLen, apexY = pos + leanDy * pennantLen;
+      var b1x = cx + perpDx * pennantHalfW, b1y = pos + perpDy * pennantHalfW;
+      var b2x = cx - perpDx * pennantHalfW, b2y = pos - perpDy * pennantHalfW;
+      inner += '<polygon points="' + apexX + ',' + apexY + ' ' + b1x + ',' + b1y + ' ' + b2x + ',' + b2y + '" fill="' + color + '" />';
+      pos += tickLen * 0.85;
     }
-    return '<path d="' + d + '" fill="none" stroke="' + gaugeBandColor(b.from) + '" stroke-width="' + strokeW + '" />';
-  }).join('');
+    for (var b = 0; b < fullBarbs; b++) {
+      var ex = cx + leanDx * tickLen, ey = pos + leanDy * tickLen;
+      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + ex + '" y2="' + ey + '" stroke="' + color + '" stroke-width="2.4" />';
+      pos += tickSpacing;
+    }
+    if (halfBarb) {
+      // Deliberately much shorter (0.4x, not 0.5x) AND thinner than a full
+      // barb — makes "half" read unambiguously smaller at a glance instead
+      // of a subtle length difference that's easy to miss at card scale.
+      var hl = tickLen * 0.4;
+      var hex = cx + leanDx * hl, hey = pos + leanDy * hl;
+      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + hex + '" y2="' + hey + '" stroke="' + color + '" stroke-width="1.8" />';
+    }
 
-  var pct = Math.max(0, Math.min(1, sustained / maxValue));
-  var angle = (180 - pct * 180) * Math.PI / 180;
-  var needleLen = r * 0.8;
-  var nx = cx + needleLen * Math.cos(angle);
-  var ny = cy - needleLen * Math.sin(angle);
+    svg += '<g transform="rotate(' + directionDeg + ' ' + cx + ' ' + cy + ')">' + inner + '</g>';
+  }
 
-  var tickStep = maxValue <= 50 ? 10 : 20;
-  var tickValues = [];
-  for (var v = 0; v <= maxValue + 0.001; v += tickStep) tickValues.push(Math.round(v));
+  svg += '</svg>';
+  return svg;
+}
 
-  var ticks = tickValues.map(function (v) {
-    var p = pt(v / maxValue, r * 1.2);
-    return '<text x="' + p.x.toFixed(1) + '" y="' + (p.y + 4).toFixed(1) + '" font-size="11" fill="#8a8f98" text-anchor="middle">' + v + '</text>';
-  }).join('');
-
-  return '<svg viewBox="0 0 220 138" width="100%" height="104" xmlns="http://www.w3.org/2000/svg">' +
-    bandPaths + ticks +
-    '<line x1="' + cx + '" y1="' + cy + '" x2="' + nx.toFixed(1) + '" y2="' + ny.toFixed(1) + '" stroke="#222" stroke-width="3" stroke-linecap="round" />' +
-    '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="#222" />' +
-    '</svg>';
+// "250° 24G32 mph" — same shorthand a coded METAR uses (e.g. 25024G32KT), in mph
+// instead of knots to match the rest of the dashboard. Gust only appended when
+// present, same as METAR omits the G-group entirely when there's no gust.
+function metarLineHTML(sustainedMph, directionDeg, gustMph) {
+  var dirStr = (directionDeg != null) ? Math.round(directionDeg) : '---';
+  var sustStr = (sustainedMph != null) ? sustainedMph : '--';
+  var gustHtml = (gustMph != null) ? ('<span class="metar-gust">G' + gustMph + '</span>') : '';
+  return dirStr + '&deg; ' + sustStr + gustHtml + ' mph';
 }
 
 function fmtVal(v) { return (v == null) ? '--' : v; }
@@ -1077,17 +1141,11 @@ function buildGaugeCard(station) {
   var staleBadge = station.stale
     ? '<div class="stale-badge">&#9888; STALE &middot; ' + station.staleAge + ' old</div>'
     : '';
-  var needleValue = station.sustained != null ? station.sustained : (station.gust || 0);
   var gustOnlyNote = station.gustOnly
     ? '<div class="gust-only-note">This station reports gust only — no sustained wind speed</div>'
     : '';
   var sustainedAsOfNote = station.sustainedAsOf
     ? '<div class="gust-only-note">Sustained as of ' + station.sustainedAsOf + '</div>'
-    : '';
-  var directionRow = (station.directionDeg != null)
-    ? '<div class="wind-dir-row">Wind: ' + Math.round(station.directionDeg) + '&deg;' +
-        (station.direction ? ' (' + station.direction + ')' : '') +
-      '</div>'
     : '';
   var waterRow = (station.waterTemp != null)
     ? '<div class="water-row">&#127754; Water <span class="water-temp">' + fmtVal(station.waterTemp) + '&deg;F</span></div>'
@@ -1099,12 +1157,8 @@ function buildGaugeCard(station) {
     '<h3>' + station.name + '</h3>' +
     '<div class="region ' + station.regionColor + '">' + station.region + '</div>' +
     staleBadge +
-    gaugeSVG(needleValue, station.gaugeMax) +
-    '<div class="gauge-readout">' +
-      '<div><div class="val">' + fmtVal(station.sustained) + '</div><span class="unit">mph<br>Sustained</span></div>' +
-      '<div><div class="gust-val">&#8599; ' + fmtVal(station.gust) + '</div><span class="unit">mph<br>Gust</span></div>' +
-    '</div>' +
-    directionRow +
+    windBarbSVG(station.sustained, station.directionDeg, station.gust, station.region !== 'Lake Champlain') +
+    '<div class="metar-line">' + metarLineHTML(station.sustained, station.directionDeg, station.gust) + '</div>' +
     gustOnlyNote +
     sustainedAsOfNote +
     '<div class="temp-row">&#127777;&#65039; <span class="temp">' + fmtVal(station.temp) + '&deg;F</span>' +
@@ -1169,7 +1223,7 @@ function renderGlerlImages() {
   var tempCard = document.createElement('div');
   tempCard.className = 'glerl-card';
   tempCard.innerHTML =
-    '<img src="https://lcri99.github.io/temp_profile.png?t=' + cacheBust + '" alt="Temperature Profile">';
+    '<img src="https://lh3.googleusercontent.com/d/15QyC0yqn5Q-wFTZwQ-Qcm-Be252JwFnx?t=' + cacheBust + '" alt="Thermocline Profile">';
   grid.appendChild(tempCard);
 }
 
