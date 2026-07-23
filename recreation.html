@@ -1296,6 +1296,19 @@ setInterval(renderGlerlImages, REFRESH_INTERVAL_MS);
 
 refresh();
 setInterval(refresh, REFRESH_INTERVAL_MS);
+
+// Browsers throttle timers in background/inactive tabs — setInterval above can
+// silently stall for a long time if this tab sits unfocused (confirmed: our own
+// fetch logic is correct and returns fresh data on demand, so a stale-looking
+// page is almost always this, not a data bug). Refresh immediately whenever the
+// tab becomes visible again, rather than waiting for the next throttled tick.
+var lastVisibilityRefresh = Date.now();
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'visible' && Date.now() - lastVisibilityRefresh > 30000) {
+    lastVisibilityRefresh = Date.now();
+    refresh();
+  }
+});
 </script>
 </body>
 </html>
