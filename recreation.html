@@ -277,7 +277,7 @@ var STATIONS = [
   { id: 'colchester_reef', name: 'Colchester Reef', region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM02', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294500', ndbcId: null,    lat: 44.548,  lon: -73.34 },
   { id: 'burton_island',   name: 'Burton Island',    region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM01', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04295000', ndbcId: null,    lat: 44.795,  lon: -73.298 },
   { id: 'diamond_island',  name: 'Diamond Island',   region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM03', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294413', ndbcId: null,    lat: 44.03,   lon: -73.43 },
-  { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: null, source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', rr2Pil: 'RR2BTV', lat: 44.5437, lon: -72.8092 },
+  { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: null, source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', rr2Url: 'https://forecast.weather.gov/product.php?site=NWS&product=RR2&issuedby=BTV', lat: 44.5437, lon: -72.8092 },
   { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 },
   { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 }
 ];
@@ -477,7 +477,7 @@ async function getOneStationData_(s) {
   var iemP = s.iemNetwork ? fetchIemObservation_(resolvedId, s.iemNetwork) : Promise.resolve(null);
   var coopTempP = s.iemCoopNetwork ? fetchIemCoopObservation_(resolvedId, s.iemCoopNetwork) : Promise.resolve(null);
   var rrsWindP = s.rrsPil ? fetchRrsWindObservation_(s.rrsPil, resolvedId) : Promise.resolve(null);
-  var rr2TempP = s.rr2Pil ? fetchRr2TempObservation_(s.rr2Pil, resolvedId) : Promise.resolve(null);
+  var rr2TempP = s.rr2Url ? fetchRr2TempObservation_(s.rr2Url, resolvedId) : Promise.resolve(null);
   var usgsP = s.usgsSite ? fetchUsgsWaterTemp_(s.usgsSite) : Promise.resolve(null);
 
   var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, rr2TempP, usgsP]);
@@ -810,24 +810,22 @@ async function fetchIemObhistoryRows_(stationId, network, dateStr) {
   }
 }
 
-// Fetches the latest RR2 product directly (e.g. RR2BTV) and pulls a single
-// point-observation temperature (SHEF ".A" line, not the ".E" time-series
-// format RRS uses) for the given station. This is the same raw bulletin
-// visible at https://mesonet.agron.iastate.edu/wx/afos/p.php?pil=RR2BTV —
-// fetching it directly instead of going through IEM's obhistory.json avoids
-// relying on that endpoint's network/field-name assumptions, which don't
-// hold for MMNV1 (a DCP/SHEF-reporting station, not a standard ASOS-style one).
-async function fetchRr2TempObservation_(pil, stationId) {
+// Fetches the latest RR2 product from forecast.weather.gov's product.php,
+// which — unlike mesonet's timestamped AFOS archive URL — always serves the
+// current version at a stable URL (no hourly stamp to guess). Rather than
+// depend on that page's exact HTML wrapper/class (which we can't verify from
+// here and which differs from mesonet's), we search the raw response text
+// directly for the SHEF ".A" line — a pattern specific enough to be safe
+// without needing to isolate a particular tag first.
+async function fetchRr2TempObservation_(url, stationId) {
   try {
-    var url = 'https://mesonet.agron.iastate.edu/wx/afos/p.php?pil=' + encodeURIComponent(pil);
     var resp = await fetchWithTimeout_(url);
     if (!resp.ok) return null;
     var html = await resp.text();
-    var text = extractAfosPreText_(html);
-    if (!text) return null;
+    var text = html.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
     return parseRr2Temp_(text, stationId);
   } catch (err) {
-    console.warn('fetchRr2TempObservation_ error for ' + pil + ':', err);
+    console.warn('fetchRr2TempObservation_ error for ' + url + ':', err);
     return null;
   }
 }
