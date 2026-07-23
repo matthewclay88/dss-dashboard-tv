@@ -574,6 +574,18 @@ async function fetchIemObservation_(stationId, network) {
 
 async function fetchWhitefaceObservation_() {
   try {
+    // NOT routed through a proxy — tested and confirmed this doesn't help.
+    // corsproxy.io's own server (presumably on an unrestricted network) ALSO
+    // times out reaching this endpoint ("522: Connection timed out"), meaning
+    // the problem isn't CORS or one specific network being restrictive — this
+    // port may simply be unreachable from arbitrary external sources (possibly
+    // IP-allowlisted on ASRC's end). A proxy can't fix that, and routing through
+    // one would risk breaking this for visitors on normal networks where direct
+    // access might currently work fine. If your network specifically blocks
+    // outbound port 3000 (confirmed via ERR_CONNECTION_TIMED_OUT on a corporate
+    // network/VPN), this card will fall back to mock for you specifically —
+    // that's a network limitation, not a bug, and worth re-testing from a
+    // different network to confirm.
     var resp = await fetchWithTimeout_('https://api.asrc.albany.edu:3000/wfmsapi');
     if (!resp.ok) { console.warn('Whiteface (WFMS) fetch failed: HTTP ' + resp.status); return null; }
     var d = await resp.json();
