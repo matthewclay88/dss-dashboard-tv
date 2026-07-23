@@ -757,7 +757,13 @@ body{
     flex: 1;
     width: 100%;
     min-height: 0;
-    background: #eceae0; /* matches the light CARTO Voyager basemap tone so any edge gap between the image and container is invisible */
+    /* Was #eceae0 (a light cream tone matching an older CartoDB Voyager
+       basemap this dashboard no longer uses). The current basemap is
+       Esri World Topo tiles, which are darker/muted, not light — so
+       that leftover value made any thin gap or slow-loading tile seam
+       show up as a bright wash instead of blending in. Dark now matches
+       the actual current basemap and the rest of the dashboard's theme. */
+    background: var(--surface2);
 }
   .map-legend {
     background: rgba(15,25,35,.88); color: white;
