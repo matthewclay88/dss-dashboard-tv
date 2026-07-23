@@ -1,1 +1,1220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lake Champlain & Mountains Recreational Dashboard</title>
+  <style>
+    :root {
+      --navy: #0f2a4a;
+      --navy-dark: #0a1f38;
+      --blue: #1a56c4;
+      --purple: #6b3fa0;
+      --green: #1a7a3c;
+      --red: #c0392b;
+      --orange: #e07b1a;
+      --gray-bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --border: #e2e6ec;
+      --text-dim: #6b7684;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--gray-bg);
+      color: #1a1a1a;
+    }
 
+    /* ---------- HEADER ---------- */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 24px;
+      background: linear-gradient(90deg, #dce8f5, #eef3f8);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo-circle {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7px; font-weight: 700; color: var(--navy); text-align: center;
+      flex-shrink: 0;
+    }
+    .title h1 {
+      margin: 0; font-size: 16px; letter-spacing: 0.3px; line-height: 1.2;
+      color: var(--navy-dark); font-weight: 800;
+    }
+    .title p { margin: 0; color: var(--text-dim); font-size: 11px; }
+    .header-right { text-align: right; font-size: 12px; color: var(--navy); white-space: nowrap; }
+    .header-right .refresh-row { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+
+    /* ---------- HAZARDS BANNER ---------- */
+    .hazards {
+      display: flex; align-items: center; gap: 22px;
+      background: #fdeeee; border-bottom: 1px solid #f6cccc;
+      padding: 8px 24px; flex-wrap: wrap;
+    }
+    .hazards.is-clear { background: #eef7f0; border-bottom-color: #cfe9d6; }
+    .hazards .icon { color: var(--red); font-size: 16px; }
+    .hazards.is-clear .icon { color: var(--green); }
+    .hazards-label { color: var(--red); font-weight: 700; font-size: 12px; white-space: nowrap; }
+    .hazards.is-clear .hazards-label { color: var(--green); }
+    .hazard-item { border-left: 1px solid #f0c4c4; padding-left: 18px; font-size: 11px; }
+    .hazard-item b { display: block; color: #222; font-size: 12px; }
+    .hazard-item span { color: var(--text-dim); }
+    .hazards-empty { color: var(--text-dim); font-size: 11px; font-style: italic; }
+    .view-text-btn {
+      margin-left: auto; border: 1px solid var(--red); color: var(--red);
+      background: #fff; padding: 5px 12px; border-radius: 6px; font-size: 11px;
+      font-weight: 600; cursor: pointer;
+    }
+
+    /* ---------- SECTION HEADERS ---------- */
+    .section-title {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 28px 6px; font-weight: 700; color: var(--navy-dark);
+      font-size: 13px;
+    }
+    .section-title .tag { margin-left: auto; font-weight: 400; font-size: 11px; color: var(--text-dim); }
+
+    /* ---------- GAUGE GRID (grouped: lake stations | mountain stations) ---------- */
+    .gauge-section { display: flex; gap: 14px; padding: 0 28px 6px; align-items: stretch; }
+    .gauge-grid { display: grid; gap: 10px; }
+    .gauge-grid.lake-group { flex: 4 1 0; grid-template-columns: repeat(4, 1fr); }
+    .gauge-grid.mountain-group { flex: 2 1 0; grid-template-columns: repeat(2, 1fr); }
+    .gauge-divider { width: 1px; background: var(--border); align-self: stretch; flex-shrink: 0; }
+    @media (max-width: 1300px) {
+      .gauge-grid.lake-group { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .gauge-section { flex-direction: column; }
+      .gauge-divider { width: 100%; height: 1px; }
+      .gauge-grid.mountain-group { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .gauge-grid.lake-group, .gauge-grid.mountain-group { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .gauge-card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px; text-align: center;
+    }
+    .gauge-card.is-stale { background: #fdf8ee; border-color: #f0dfb0; }
+    .gauge-card.is-stale .updated-row { color: var(--orange); font-weight: 600; }
+    .stale-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--red); color: #fff; font-size: 9px; font-weight: 800;
+      letter-spacing: 0.3px; padding: 2px 7px; border-radius: 999px;
+      margin: 2px 0 6px;
+    }
+    .gust-only-note { font-size: 9px; color: var(--text-dim); font-style: italic; margin-top: -3px; margin-bottom: 5px; }
+    .gauge-card h3 { margin: 0; font-size: 12px; color: #1a1a1a; }
+    .gauge-card .region { font-size: 10px; font-weight: 700; margin: 2px 0 5px; }
+    .region.blue { color: var(--blue); }
+    .region.purple { color: var(--purple); }
+    .region.green { color: var(--green); }
+
+    .gauge-readout { display: flex; justify-content: center; align-items: baseline; gap: 18px; margin-top: -5px; }
+    .gauge-readout .val { font-size: 24px; font-weight: 800; color: #1a1a1a; }
+    .gauge-readout .unit { font-size: 10px; color: var(--text-dim); display: block; }
+    .gauge-readout .gust-val { font-size: 18px; font-weight: 800; color: var(--red); }
+
+    .wind-dir-row { font-size: 10px; color: var(--text-dim); margin-top: 3px; }
+
+    .temp-row {
+      border-top: 1px solid var(--border); margin-top: 10px; padding-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .temp-row .temp { font-size: 16px; font-weight: 700; color: var(--blue); }
+    .temp-row .feels { font-size: 10px; color: var(--text-dim); }
+    .water-row {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      font-size: 11px; color: var(--text-dim); margin-top: 5px;
+    }
+    .water-row .water-temp { font-weight: 700; color: #1a7ac9; }
+    .wave-row {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      font-size: 11px; color: var(--text-dim); margin-top: 2px;
+    }
+    .wave-row .wave-height { font-weight: 700; color: #1a7ac9; }
+    .updated-row { font-size: 9px; color: var(--text-dim); margin-top: 6px; }
+
+    /* ---------- ABOVE-FOLD WRAPPER ---------- */
+    .above-fold { display: flex; flex-direction: column; height: 100vh; }
+
+    /* ---------- GLERL WAVE HEIGHT + TEMP PROFILE (side by side, fill remaining space) ---------- */
+    .glerl-full { flex: 1 1 auto; min-height: 0; padding: 4px 20px 12px; display: flex; flex-direction: row; gap: 10px; }
+    .glerl-card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 6px; min-width: 0; min-height: 0;
+      display: flex; flex-direction: column;
+    }
+    .glerl-card.wave-card { flex: 3 1 0; }
+    .glerl-card:not(.wave-card) { flex: 1 1 0; }
+    .glerl-card img {
+      flex: 1 1 auto; min-height: 0; width: 100%; height: 100%;
+      object-fit: contain; border-radius: 6px;
+    }
+    .glerl-card.wave-card img { object-position: left center; }
+
+    /* ---------- RECREATIONAL TEXT FORECAST ---------- */
+    .rec-forecast {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px; padding: 0 28px 28px;
+    }
+    .rec-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .rec-card h4 { margin: 0 0 8px; font-size: 13px; color: var(--navy-dark); line-height: 1.4; }
+    .rec-period { margin-bottom: 8px; }
+    .rec-period .lbl { font-size: 11px; font-weight: 700; color: var(--blue); text-transform: uppercase; }
+    .rec-period .txt { font-size: 12.5px; color: #333; line-height: 1.5; margin: 2px 0 0; }
+    .rec-notes { font-size: 11.5px; color: var(--text-dim); border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; }
+
+    /* ---------- FOOTER ---------- */
+    .footer {
+      background: var(--navy-dark); color: #cfd9e6; text-align: center;
+      font-size: 12px; padding: 12px; letter-spacing: 0.3px;
+    }
+
+    /* ---------- ERROR BANNER ---------- */
+    #errorBanner {
+      background: #fdeeee; border: 1px solid #f6cccc; color: #c0392b;
+      padding: 12px 28px; font-size: 13px; font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="above-fold">
+    <div class="header">
+      <div class="header-left">
+        <div class="logo-circle">VT<br>WX</div>
+        <div class="title">
+          <h1>LAKE CHAMPLAIN &amp; MOUNTAINS RECREATIONAL DASHBOARD</h1>
+          <p>Real-time conditions for outdoor recreation</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="refresh-row">&#8635; <span id="updatedLabel">Updated: --</span> &middot; <span id="nextUpdateLabel">Next: --</span></div>
+      </div>
+    </div>
+
+    <div class="hazards" id="hazardsBar">
+      <span class="icon" id="hazardsIcon">&#9888;</span>
+      <span class="hazards-label" id="hazardsLabel">ACTIVE HAZARDS</span>
+      <div id="hazardsList" style="display:flex; gap:24px; flex-wrap:wrap;"></div>
+      <button class="view-text-btn">View RECBTV Text</button>
+    </div>
+
+    <div class="section-title">
+      &#128168; CURRENT WIND &amp; TEMPERATURE <span class="tag">All times EDT</span>
+    </div>
+    <div class="gauge-section">
+      <div class="gauge-grid lake-group" id="gaugeGridLake"></div>
+      <div class="gauge-divider"></div>
+      <div class="gauge-grid mountain-group" id="gaugeGridMountain"></div>
+    </div>
+
+    <div class="glerl-full" id="glerlGrid"></div>
+  </div>
+
+  <div class="section-title">&#128196; RECREATIONAL TEXT FORECAST <span class="tag" id="recIssuedLabel"></span></div>
+  <div class="rec-forecast" id="recForecast"></div>
+
+  <div class="footer">
+    Data provided by NWS &amp; NOAA GLERL &nbsp;|&nbsp; Refreshes automatically every 5 minutes
+  </div>
+
+<script>
+/* =============================================================================
+ * LAKE CHAMPLAIN & MOUNTAINS RECREATIONAL DASHBOARD — STATIC (NO BACKEND) BUILD
+ * =============================================================================
+ * Everything that used to run server-side in Google Apps Script (Code.gs) now
+ * runs directly in the visitor's browser via fetch(). No Apps Script, no
+ * deployment step beyond hosting this one file (e.g. GitHub Pages).
+ *
+ * CORS STATUS (checked directly against each API, see conversation notes):
+ *   api.weather.gov            -> OK (Access-Control-Allow-Origin: *)
+ *   mesonet.agron.iastate.edu  -> OK, all three endpoints used here (current.py,
+ *                                  obhistory.json, wx/afos/p.php)
+ *   waterservices.usgs.gov     -> OK
+ *   www.ndbc.noaa.gov          -> NOT OK. No CORS header at all — the browser will
+ *                                  block this fetch regardless of network access.
+ *                                  The buoy card will fall back to mock data in this
+ *                                  static build. To fix: stand up a tiny CORS proxy
+ *                                  (e.g. a Cloudflare Worker) in front of the NDBC
+ *                                  text file and point NDBC_PROXY_URL below at it.
+ *   api.asrc.albany.edu:3000   -> UNTESTED. Could not reach this port from the dev
+ *                                  sandbox at all (even via plain curl), so CORS
+ *                                  support is unconfirmed either way. Test this in
+ *                                  an actual browser once deployed — open DevTools
+ *                                  Console and look for a CORS error on Whiteface's
+ *                                  card specifically. If it fails, Whiteface falls
+ *                                  back to mock data the same graceful way as NDBC.
+ *
+ * Optional: if you set up a CORS proxy for NDBC, put its URL prefix here (the
+ * buoy path gets appended to it). Leave blank to skip live buoy data entirely.
+ * Example if using a Cloudflare Worker: 'https://your-worker.your-name.workers.dev/'
+ */
+var NDBC_PROXY_URL = '';
+
+// ====== CONFIG ==============================================================
+
+var REC_ISSUEDBY = 'BTV';
+
+var STATIONS = [
+  { id: 'colchester_reef', name: 'Colchester Reef', region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM02', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294500', ndbcId: null,    lat: 44.548,  lon: -73.34 },
+  { id: 'burton_island',   name: 'Burton Island',    region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM01', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04295000', ndbcId: null,    lat: 44.795,  lon: -73.298 },
+  { id: 'diamond_island',  name: 'Diamond Island',   region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM03', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294413', ndbcId: null,    lat: 44.03,   lon: -73.43 },
+  { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: 'VT_COOP', source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', lat: 44.5437, lon: -72.8092 },
+  { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 },
+  { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 }
+];
+
+var HAZARD_EVENT_TYPES = [
+  'Wind Advisory',
+  'High Wind Warning',
+  'Lake Wind Advisory',
+  'Winter Weather Advisory',
+  'Winter Storm Warning'
+];
+
+var STALE_OBSERVATION_MINUTES = 90;
+
+var MOCK_HAZARDS = [
+  { title: 'Lake Wind Advisory', location: 'Lake Champlain' },
+  { title: 'High Wind Warning', location: 'Whiteface Mountain' },
+  { title: 'Winter Storm Watch', location: 'Northern Adirondacks' }
+];
+
+var MOCK_STATIONS = {
+  colchester_reef: { sustained: 14, gust: 20, direction: 'SW', directionDeg: 225, temp: 74, feelsLike: 74, updated: '9:58 AM', waterTemp: 70, waterTempUpdated: '9:00 AM' },
+  burton_island:   { sustained: 12, gust: 18, direction: 'SW', directionDeg: 225, temp: 75, feelsLike: 75, updated: '9:58 AM', waterTemp: 68, waterTempUpdated: '9:00 AM' },
+  diamond_island:  { sustained: 16, gust: 22, direction: 'S',  directionDeg: 180, temp: 73, feelsLike: 73, updated: '9:58 AM', waterTemp: 66, waterTempUpdated: '9:00 AM' },
+  mt_mansfield:    { sustained: 18, gust: 27, direction: 'W',  directionDeg: 270, temp: 60, feelsLike: 55, updated: '9:57 AM' },
+  whiteface:       { sustained: 21, gust: 31, direction: 'SW', directionDeg: 225, temp: 58, feelsLike: 52, updated: '9:56 AM' },
+  valcour_buoy:    { sustained: 8,  gust: null, direction: 'N', directionDeg: 350, temp: 65, feelsLike: 65, updated: '9:40 AM', waterTemp: 68, waveHeightFt: 0.3 }
+};
+
+var MOCK_REC_FORECAST = {
+  issued: null,
+  regions: [
+    {
+      title: 'The Forecast for the Broad Waters of Lake Champlain, including Colchester Reef, Valcour Island, and Cumberland Bay',
+      periods: [{ label: 'TODAY', text: 'Mock data — live REC product unavailable.' }],
+      notes: ''
+    }
+  ]
+};
+
+// ====== TIME/DATE HELPERS ====================================================
+// Browser equivalents of Apps Script's Utilities.formatDate(date, timeZone, pattern).
+
+function tzParts_(date, timeZone) {
+  var fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: timeZone, hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  var parts = {};
+  fmt.formatToParts(date).forEach(function (p) { parts[p.type] = p.value; });
+  return parts;
+}
+
+function formatDateYMD_(date, timeZone) {
+  var p = tzParts_(date, timeZone);
+  return p.year + '-' + p.month + '-' + p.day;
+}
+
+function formatTime12_(date, timeZone) {
+  return new Intl.DateTimeFormat('en-US', { timeZone: timeZone, hour: 'numeric', minute: '2-digit', hour12: true }).format(date);
+}
+
+function formatTimeWithDate_(date, timeZone) {
+  var p = tzParts_(date, timeZone);
+  return formatTime12_(date, timeZone) + ' ' + Number(p.month) + '/' + Number(p.day);
+}
+
+function pad2_(n) { return (n < 10 ? '0' : '') + n; }
+
+// ====== ENTRY POINT ==========================================================
+
+async function getDashboardData() {
+  var forecast = await safeCall_(getRecreationalForecast_, MOCK_REC_FORECAST);
+  var hazards = await safeCall_(getHazards_, MOCK_HAZARDS);
+  var stations = await safeCall_(getStationData_, STATIONS.map(function (s) { return Object.assign({}, s, MOCK_STATIONS[s.id] || {}); }));
+  return {
+    updated: new Date().toISOString(),
+    hazards: hazards,
+    stations: stations,
+    recreationalForecast: forecast
+  };
+}
+
+async function safeCall_(fn, fallback) {
+  try {
+    return await fn();
+  } catch (err) {
+    console.warn('getDashboardData: ' + fn.name + ' failed:', err);
+    return fallback;
+  }
+}
+
+// ====== HAZARDS ==============================================================
+
+async function getHazards_() {
+  var results = [];
+  var seenAlertIds = {};
+  var anySuccess = false;
+
+  var pointStations = STATIONS.filter(function (s) { return s.lat != null && s.lon != null; });
+  var alertResults = await Promise.allSettled(
+    pointStations.map(function (s) { return fetchActiveAlertsForPoint_(s.lat, s.lon); })
+  );
+
+  alertResults.forEach(function (result, i) {
+    if (result.status !== 'fulfilled') {
+      console.warn('getHazards_ point query failed for ' + pointStations[i].name + ':', result.reason);
+      return;
+    }
+    anySuccess = true;
+    result.value.forEach(function (a) {
+      if (HAZARD_EVENT_TYPES.indexOf(a.event) === -1) return;
+      if (seenAlertIds[a.id]) return;
+      seenAlertIds[a.id] = true;
+      results.push({ title: a.event, location: a.areaDesc });
+    });
+  });
+
+  if (anySuccess) return results;
+  return MOCK_HAZARDS;
+}
+
+async function fetchActiveAlertsForPoint_(lat, lon) {
+  var url = 'https://api.weather.gov/alerts/active?point=' + lat + ',' + lon;
+  var resp = await fetch(url, { headers: { 'Accept': 'application/geo+json' } });
+  if (!resp.ok) throw new Error('alerts/active HTTP ' + resp.status + ' for ' + lat + ',' + lon);
+  var json = await resp.json();
+  var features = json.features || [];
+  return features.map(function (f) {
+    return { id: f.properties.id, event: f.properties.event, areaDesc: f.properties.areaDesc };
+  });
+}
+
+// ====== STATION WIND / TEMP DATA =============================================
+
+async function getStationData_() {
+  return Promise.all(STATIONS.map(async function (s) {
+    if (s.source === 'ndbc') return buildNdbcStation_(s);
+
+    var resolvedId = null;
+    if (s.noaaId === 'TODO') resolvedId = await discoverNearestStationId_(s.lat, s.lon, s.name);
+    else if (s.noaaId) resolvedId = s.noaaId;
+
+    var noaaP = resolvedId ? fetchNoaaObservation_(resolvedId) : Promise.resolve(null);
+    var iemP = s.iemNetwork ? fetchIemObservation_(resolvedId, s.iemNetwork) : Promise.resolve(null);
+    var coopTempP = s.iemCoopNetwork ? fetchIemCoopObservation_(resolvedId, s.iemCoopNetwork) : Promise.resolve(null);
+    var rrsWindP = s.rrsPil ? fetchRrsWindObservation_(s.rrsPil, resolvedId) : Promise.resolve(null);
+    var usgsP = s.usgsSite ? fetchUsgsWaterTemp_(s.usgsSite) : Promise.resolve(null);
+
+    var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, usgsP]);
+    var noaa = results[0].status === 'fulfilled' ? results[0].value : null;
+    var iem = results[1].status === 'fulfilled' ? results[1].value : null;
+    var coopTemp = results[2].status === 'fulfilled' ? results[2].value : null;
+    var rrsWind = results[3].status === 'fulfilled' ? results[3].value : null;
+    var usgs = results[4].status === 'fulfilled' ? results[4].value : null;
+
+    var coopWind = (coopTemp || rrsWind) ? Object.assign({}, coopTemp, rrsWind) : null;
+    if (s.source === 'wfms') {
+      try { iem = await fetchWhitefaceObservation_(); } catch (err) { console.warn('Whiteface fetch failed:', err); iem = null; }
+    }
+
+    var merged = mergeObservations_(noaa, iem, coopWind);
+    var result = Object.assign({}, s, merged || MOCK_STATIONS[s.id] || {});
+
+    if (s.usgsSite) {
+      if (usgs) {
+        result.waterTemp = usgs.waterTempF;
+        result.waterTempUpdated = formatTime12_(new Date(usgs.timestamp), 'America/New_York');
+      } else if (MOCK_STATIONS[s.id] && MOCK_STATIONS[s.id].waterTemp != null) {
+        result.waterTemp = MOCK_STATIONS[s.id].waterTemp;
+        result.waterTempUpdated = MOCK_STATIONS[s.id].waterTempUpdated || null;
+      }
+    }
+
+    return result;
+  }));
+}
+
+async function discoverNearestStationId_(lat, lon, label) {
+  if (lat == null || lon == null) return null;
+  try {
+    var pointResp = await fetch('https://api.weather.gov/points/' + lat.toFixed(4) + ',' + lon.toFixed(4));
+    if (!pointResp.ok) return null;
+    var pointJson = await pointResp.json();
+
+    var stationsResp = await fetch(pointJson.properties.observationStations);
+    if (!stationsResp.ok) return null;
+    var stationsJson = await stationsResp.json();
+
+    var features = stationsJson.features || [];
+    if (!features.length) return null;
+
+    var nearestId = features[0].properties.stationIdentifier;
+    console.log('discoverNearestStationId_: ' + (label || '') + ' (' + lat + ',' + lon + ') -> ' + nearestId);
+    return nearestId;
+  } catch (err) {
+    console.warn('discoverNearestStationId_ error for ' + label + ':', err);
+    return null;
+  }
+}
+
+async function fetchNoaaObservation_(noaaId) {
+  try {
+    var resp = await fetch('https://api.weather.gov/stations/' + encodeURIComponent(noaaId) + '/observations/latest');
+    if (!resp.ok) { console.warn('NOAA fetch failed for ' + noaaId + ': HTTP ' + resp.status); return null; }
+    var p = (await resp.json()).properties;
+
+    var sustainedMph = speedToMph_(p.windSpeed);
+    var gustMph = speedToMph_(p.windGust);
+    var tempF = cToF_(p.temperature && p.temperature.value);
+    var feelsC = (p.heatIndex && p.heatIndex.value != null) ? p.heatIndex.value
+               : (p.windChill && p.windChill.value != null) ? p.windChill.value
+               : (p.temperature && p.temperature.value);
+    var feelsF = cToF_(feelsC);
+    var directionDeg = (p.windDirection && p.windDirection.value != null) ? p.windDirection.value : null;
+
+    if (sustainedMph == null && gustMph == null && tempF == null) return null;
+
+    return { sustainedMph: sustainedMph, gustMph: gustMph, tempF: tempF, feelsF: feelsF, directionDeg: directionDeg, timestamp: p.timestamp };
+  } catch (err) {
+    console.warn('fetchNoaaObservation_ error for ' + noaaId + ':', err);
+    return null;
+  }
+}
+
+async function fetchIemObservation_(stationId, network) {
+  try {
+    var url = 'https://mesonet.agron.iastate.edu/json/current.py?station=' + encodeURIComponent(stationId) +
+      '&network=' + encodeURIComponent(network);
+    var resp = await fetch(url);
+    if (!resp.ok) { console.warn('IEM fetch failed for ' + stationId + '/' + network + ': HTTP ' + resp.status); return null; }
+    var ob = (await resp.json()).last_ob;
+    if (!ob) return null;
+
+    var sustainedKt = ob['windspeed[kt]'];
+    var sustainedMph = sustainedKt != null ? Math.round(sustainedKt * 1.15078) : null;
+    var tempF = ob['airtemp[F]'] != null ? Math.round(ob['airtemp[F]']) : null;
+    var feelsF = ob['feelslike[F]'] != null ? Math.round(ob['feelslike[F]']) : null;
+    var directionDeg = ob['winddirection[deg]'] != null ? ob['winddirection[deg]'] : null;
+
+    if (sustainedMph == null && tempF == null) return null;
+
+    return { sustainedMph: sustainedMph, tempF: tempF, feelsF: feelsF, directionDeg: directionDeg, timestamp: ob.utc_valid };
+  } catch (err) {
+    console.warn('fetchIemObservation_ error for ' + stationId + '/' + network + ':', err);
+    return null;
+  }
+}
+
+async function fetchWhitefaceObservation_() {
+  try {
+    var resp = await fetch('https://api.asrc.albany.edu:3000/wfmsapi');
+    if (!resp.ok) { console.warn('Whiteface (WFMS) fetch failed: HTTP ' + resp.status); return null; }
+    var d = await resp.json();
+
+    var sustainedMph = (d.WS_mph && d.WS_mph.value != null) ? Math.round(Number(d.WS_mph.value)) : null;
+    var tempF = (d.Temp_degF && d.Temp_degF.value != null) ? Math.round(Number(d.Temp_degF.value)) : null;
+    var windChillF = (d.WindChill_F && d.WindChill_F.value != null) ? Math.round(Number(d.WindChill_F.value)) : null;
+    var directionLabel = (d.WindDir && d.WindDir.value) ? d.WindDir.value : null;
+    var directionDeg = (d.WindDir && d.WindDir.units != null && d.WindDir.units !== '-') ? Number(d.WindDir.units) : null;
+
+    if (sustainedMph == null && tempF == null) return null;
+
+    var timestamp = parseWfmsDateTime_(d.DateTime && d.DateTime.value);
+
+    return {
+      sustainedMph: sustainedMph,
+      tempF: tempF,
+      feelsF: windChillF != null ? windChillF : tempF,
+      directionDeg: directionDeg,
+      directionLabel: directionLabel,
+      timestamp: timestamp
+    };
+  } catch (err) {
+    console.warn('fetchWhitefaceObservation_ error:', err);
+    return null;
+  }
+}
+
+function parseWfmsDateTime_(str) {
+  if (!str) return null;
+  var m = String(str).match(/(\w+)\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!m) return null;
+
+  var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+  var month = months.indexOf(m[1]) + 1;
+  if (month === 0) return null;
+
+  var day = parseInt(m[2], 10);
+  var year = parseInt(m[3], 10);
+  var hour = parseInt(m[4], 10) % 12;
+  if (m[6].toUpperCase() === 'PM') hour += 12;
+  var minute = parseInt(m[5], 10);
+
+  var offsetHours = usEasternOffsetHours_(year, month, day);
+  var utcMs = Date.UTC(year, month - 1, day, hour - offsetHours, minute);
+  return new Date(utcMs).toISOString();
+}
+
+function usEasternOffsetHours_(year, month, day) {
+  var dstStart = nthSundayOfMonthUTC_(year, 3, 2);
+  var dstEnd = nthSundayOfMonthUTC_(year, 11, 1);
+  var d = new Date(Date.UTC(year, month - 1, day));
+  return (d >= dstStart && d < dstEnd) ? -4 : -5;
+}
+
+function nthSundayOfMonthUTC_(year, month, n) {
+  var first = new Date(Date.UTC(year, month - 1, 1));
+  var firstSunday = 1 + ((7 - first.getUTCDay()) % 7);
+  var day = firstSunday + (n - 1) * 7;
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+async function fetchIemCoopObservation_(stationId, network) {
+  var rows = await fetchIemCoopRows_(stationId, network);
+  if (!rows.length) return null;
+
+  var tempRow = findLatestNonNullRow_(rows, ['TAIRGZZ']);
+  if (!tempRow || tempRow.TAIRGZZ == null) return null;
+
+  return { tempF: Math.round(tempRow.TAIRGZZ), tempTimestamp: tempRow.utc_valid };
+}
+
+// Tries successive hourly RRS editions until one actually contains this station's
+// wind data — NOT just until a fetch succeeds. Confirmed live: the current hour's
+// edition can fetch fine (HTTP 200) but simply not include a given station's lines
+// at all (its sensor's reporting cadence didn't line up with that particular hour's
+// snapshot) while the previous few hours' editions do have it. Retrying only on HTTP
+// failure (the original design) would silently return nothing in that case.
+async function fetchRrsWindObservation_(pil, stationId) {
+  for (var hoursBack = 0; hoursBack <= 6; hoursBack++) {
+    var stamp = rrsStampForHoursBack_(hoursBack);
+    var text = await fetchRrsProductTextForStamp_(pil, stamp);
+    if (!text) continue;
+
+    var sustained = parseRrsSeries_(text, stationId, 'USIRG');
+    var gust = parseRrsSeries_(text, stationId, 'UPERG');
+    var dir = parseRrsSeries_(text, stationId, 'UDIRG');
+    if (!sustained && !gust) continue; // fetched fine, but this edition lacks this station — try an hour further back
+
+    var timestamps = [];
+    if (sustained) timestamps.push(new Date(sustained.timestamp).getTime());
+    if (gust) timestamps.push(new Date(gust.timestamp).getTime());
+    var windTimestamp = timestamps.length ? new Date(Math.max.apply(null, timestamps)).toISOString() : null;
+
+    return {
+      sustainedMph: sustained ? Math.round(sustained.value) : null,
+      gustMph: gust ? Math.round(gust.value) : null,
+      directionDeg: dir ? Math.round(dir.value) : null,
+      windTimestamp: windTimestamp
+    };
+  }
+  return null;
+}
+
+// RRS editions are issued at :12 past each UTC hour. hoursBack=0 means "the most
+// recent edition that should already exist" (steps back one hour first if we're not
+// past :12 yet this hour), hoursBack=1,2,3... step further back from there.
+function rrsStampForHoursBack_(hoursBack) {
+  var now = new Date();
+  var nowUtcMinute = now.getUTCMinutes();
+  var baseHour = (nowUtcMinute < 12) ? new Date(now.getTime() - 3600000) : now;
+  var candidate = new Date(baseHour.getTime() - hoursBack * 3600000);
+  return candidate.getUTCFullYear() + pad2_(candidate.getUTCMonth() + 1) + pad2_(candidate.getUTCDate()) +
+    pad2_(candidate.getUTCHours()) + '12';
+}
+
+async function fetchRrsProductTextForStamp_(pil, stamp) {
+  try {
+    var url = 'https://mesonet.agron.iastate.edu/wx/afos/p.php?pil=' + encodeURIComponent(pil) + '&e=' + stamp;
+    var resp = await fetch(url);
+    if (!resp.ok) return null;
+    var html = await resp.text();
+    return extractAfosPreText_(html);
+  } catch (err) {
+    console.warn('fetchRrsProductTextForStamp_ error for ' + pil + ' at ' + stamp + ':', err);
+    return null;
+  }
+}
+
+function extractAfosPreText_(html) {
+  var matches = html.match(/<pre class="afos-pre">([\s\S]*?)<\/pre>/g);
+  if (!matches || !matches.length) return null;
+  var last = matches[matches.length - 1]
+    .replace(/^<pre class="afos-pre">/, '')
+    .replace(/<\/pre>$/, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  return last;
+}
+
+function parseRrsSeries_(text, stationId, code) {
+  var lines = text.split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    var m = lines[i].match(/^\.E\s+(\S+)\s+(\d{8})\s+DH(\d{2})(\d{2})\/([A-Z0-9]+)\/DIN(\d+)\/(.+)$/);
+    if (!m) continue;
+    if (m[1] !== stationId || m[5] !== code) continue;
+
+    var dateStr = m[2], startHour = Number(m[3]), startMin = Number(m[4]), durMin = Number(m[6]);
+    var values = m[7].split('/').filter(function (v) { return v.length > 0; });
+
+    var j = i + 1;
+    while (j < lines.length) {
+      var cont = lines[j].match(/^\.E\d+\s+(.+)$/);
+      if (!cont) break;
+      values = values.concat(cont[1].split('/').filter(function (v) { return v.length > 0; }));
+      j++;
+    }
+
+    for (var k = values.length - 1; k >= 0; k--) {
+      if (values[k] === 'M') continue;
+      var num = parseFloat(values[k]);
+      if (isNaN(num)) continue;
+      var year = Number(dateStr.substr(0, 4)), month = Number(dateStr.substr(4, 2)), day = Number(dateStr.substr(6, 2));
+      var ts = new Date(Date.UTC(year, month - 1, day, startHour, startMin + k * durMin));
+      return { value: num, timestamp: ts.toISOString() };
+    }
+    return null;
+  }
+  return null;
+}
+
+async function fetchIemCoopRows_(stationId, network) {
+  var today = formatDateYMD_(new Date(), 'America/New_York');
+  var rows = await fetchIemObhistoryRows_(stationId, network, today);
+  if (!rows || !rows.length) {
+    var yesterday = formatDateYMD_(new Date(Date.now() - 86400000), 'America/New_York');
+    rows = await fetchIemObhistoryRows_(stationId, network, yesterday);
+  }
+  return rows || [];
+}
+
+async function fetchIemObhistoryRows_(stationId, network, dateStr) {
+  try {
+    var url = 'https://mesonet.agron.iastate.edu/api/1/obhistory.json?station=' + encodeURIComponent(stationId) +
+      '&network=' + encodeURIComponent(network) + '&date=' + dateStr;
+    var resp = await fetch(url);
+    if (!resp.ok) {
+      console.warn('IEM obhistory fetch failed for ' + stationId + '/' + network + '/' + dateStr + ': HTTP ' + resp.status);
+      return null;
+    }
+    return (await resp.json()).data || [];
+  } catch (err) {
+    console.warn('fetchIemObhistoryRows_ error for ' + stationId + '/' + network + '/' + dateStr + ':', err);
+    return null;
+  }
+}
+
+function findLatestNonNullRow_(rows, fieldNames) {
+  for (var i = rows.length - 1; i >= 0; i--) {
+    for (var j = 0; j < fieldNames.length; j++) {
+      if (rows[i][fieldNames[j]] != null) return rows[i];
+    }
+  }
+  return null;
+}
+
+function mergeObservations_(noaa, iem, coopWind) {
+  if (!noaa && !iem && !coopWind) return null;
+
+  var sustainedMph = null, sustainedTimestamp = null;
+  if (iem && iem.sustainedMph != null) {
+    sustainedMph = iem.sustainedMph;
+    sustainedTimestamp = iem.timestamp;
+  } else if (coopWind && coopWind.sustainedMph != null) {
+    sustainedMph = coopWind.sustainedMph;
+    sustainedTimestamp = coopWind.windTimestamp;
+  } else if (noaa && noaa.sustainedMph != null) {
+    sustainedMph = noaa.sustainedMph;
+    sustainedTimestamp = noaa.timestamp;
+  }
+
+  var gustMph = null, gustTimestamp = null;
+  if (noaa && noaa.gustMph != null) {
+    gustMph = noaa.gustMph;
+    gustTimestamp = noaa.timestamp;
+  } else if (coopWind && coopWind.gustMph != null) {
+    gustMph = coopWind.gustMph;
+    gustTimestamp = coopWind.windTimestamp;
+  }
+
+  var directionDeg = (iem && iem.sustainedMph != null && iem.directionDeg != null) ? iem.directionDeg
+                    : (noaa && noaa.directionDeg != null) ? noaa.directionDeg
+                    : (coopWind && coopWind.directionDeg != null) ? coopWind.directionDeg : null;
+  var directionLabel = (iem && iem.directionLabel) ? iem.directionLabel
+                      : (directionDeg != null ? degreesToCompass_(directionDeg) : null);
+
+  var tempCandidates = [];
+  if (coopWind && coopWind.tempF != null && coopWind.tempTimestamp) {
+    tempCandidates.push({ v: coopWind.tempF, t: new Date(coopWind.tempTimestamp).getTime() });
+  }
+  if (iem && iem.tempF != null && iem.timestamp) {
+    tempCandidates.push({ v: iem.tempF, t: new Date(iem.timestamp).getTime() });
+  }
+  if (noaa && noaa.tempF != null && noaa.timestamp) {
+    tempCandidates.push({ v: noaa.tempF, t: new Date(noaa.timestamp).getTime() });
+  }
+  tempCandidates.sort(function (a, b) { return b.t - a.t; });
+  var tempF = tempCandidates.length ? tempCandidates[0].v : null;
+  var tempTimestampMs = tempCandidates.length ? tempCandidates[0].t : null;
+
+  var feelsF = (iem && iem.feelsF != null) ? iem.feelsF : (noaa && noaa.feelsF != null ? noaa.feelsF : tempF);
+
+  if (sustainedMph == null && gustMph == null && tempF == null) return null;
+
+  var candidateTimestamps = [];
+  if (gustTimestamp) candidateTimestamps.push(new Date(gustTimestamp).getTime());
+  if (sustainedTimestamp) candidateTimestamps.push(new Date(sustainedTimestamp).getTime());
+  if (tempTimestampMs) candidateTimestamps.push(tempTimestampMs);
+  if (!candidateTimestamps.length) return null;
+
+  var primaryMs = Math.max.apply(null, candidateTimestamps);
+  var ageMinutes = (Date.now() - primaryMs) / 60000;
+  var isStale = ageMinutes > STALE_OBSERVATION_MINUTES;
+
+  var sustainedAsOf = null;
+  if (sustainedTimestamp) {
+    var sustainedMs = new Date(sustainedTimestamp).getTime();
+    if (primaryMs - sustainedMs > 30 * 60000) {
+      sustainedAsOf = formatTimeWithDate_(new Date(sustainedMs), 'America/New_York');
+    }
+  }
+
+  return {
+    sustained: sustainedMph,
+    sustainedAsOf: sustainedAsOf,
+    gust: gustMph,
+    gustOnly: sustainedMph == null && gustMph != null,
+    direction: directionLabel,
+    directionDeg: directionDeg,
+    temp: tempF,
+    feelsLike: feelsF,
+    updated: formatTime12_(new Date(primaryMs), 'America/New_York'),
+    stale: isStale,
+    staleAge: isStale ? humanizeAge_(ageMinutes) : null
+  };
+}
+
+function degreesToCompass_(deg) {
+  if (deg == null) return null;
+  var dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  var idx = Math.round(deg / 22.5) % 16;
+  return dirs[idx];
+}
+
+async function fetchUsgsWaterTemp_(siteId) {
+  try {
+    var url = 'https://waterservices.usgs.gov/nwis/iv/?sites=' + encodeURIComponent(siteId) + '&parameterCd=00010&format=json';
+    var resp = await fetch(url);
+    if (!resp.ok) { console.warn('USGS water temp fetch failed for ' + siteId + ': HTTP ' + resp.status); return null; }
+    var series = (await resp.json()).value.timeSeries;
+    if (!series || !series.length) return null;
+
+    var values = series[0].values[0].value;
+    if (!values || !values.length) return null;
+
+    var latest = values[values.length - 1];
+    var tempC = parseFloat(latest.value);
+    if (isNaN(tempC)) return null;
+
+    return { waterTempF: Math.round(tempC * 9 / 5 + 32), timestamp: latest.dateTime };
+  } catch (err) {
+    console.warn('fetchUsgsWaterTemp_ error for ' + siteId + ':', err);
+    return null;
+  }
+}
+
+async function buildNdbcStation_(s) {
+  var ndbc = await fetchNdbcObservation_(s.ndbcId);
+  if (!ndbc) return Object.assign({}, s, MOCK_STATIONS[s.id] || {});
+
+  var threshold = s.staleThresholdMin || STALE_OBSERVATION_MINUTES;
+  var ageMinutes = (Date.now() - new Date(ndbc.timestamp).getTime()) / 60000;
+  var isStale = ageMinutes > threshold;
+
+  return Object.assign({}, s, {
+    sustained: ndbc.sustainedMph,
+    gust: ndbc.gustMph,
+    gustOnly: ndbc.sustainedMph == null && ndbc.gustMph != null,
+    direction: degreesToCompass_(ndbc.directionDeg),
+    directionDeg: ndbc.directionDeg,
+    temp: ndbc.tempF,
+    feelsLike: ndbc.tempF,
+    waterTemp: ndbc.waterTempF,
+    waveHeightFt: ndbc.waveHeightFt,
+    updated: formatTime12_(new Date(ndbc.timestamp), 'America/New_York'),
+    stale: isStale,
+    staleAge: isStale ? humanizeAge_(ageMinutes) : null
+  });
+}
+
+// NDBC does not send CORS headers (confirmed), so this fetch will likely fail with
+// a CORS error in the browser console — that's expected, not a bug in this code.
+// Set NDBC_PROXY_URL above to a working proxy to fix; until then this gracefully
+// returns null and the station falls back to mock data, same as any other outage.
+async function fetchNdbcObservation_(ndbcId) {
+  try {
+    var base = NDBC_PROXY_URL || 'https://www.ndbc.noaa.gov/data/realtime2/';
+    var url = base + ndbcId + '.txt';
+    var resp = await fetch(url);
+    if (!resp.ok) { console.warn('NDBC fetch failed for ' + ndbcId + ': HTTP ' + resp.status); return null; }
+    var lines = (await resp.text()).split('\n');
+    var dataLine = lines[2];
+    if (!dataLine || !dataLine.trim()) return null;
+
+    var cols = dataLine.trim().split(/\s+/);
+    var mm = function (v) { return (v == null || v === 'MM') ? null : Number(v); };
+
+    var year = Number(cols[0]), month = Number(cols[1]), day = Number(cols[2]),
+        hour = Number(cols[3]), minute = Number(cols[4]);
+    var wdir = mm(cols[5]);
+    var wspdMs = mm(cols[6]);
+    var gstMs = mm(cols[7]);
+    var wvhtM = mm(cols[8]);
+    var atmpC = mm(cols[13]);
+    var wtmpC = mm(cols[14]);
+
+    if (wspdMs == null && gstMs == null && atmpC == null) return null;
+
+    return {
+      sustainedMph: wspdMs != null ? Math.round(wspdMs * 2.23694) : null,
+      gustMph: gstMs != null ? Math.round(gstMs * 2.23694) : null,
+      directionDeg: wdir,
+      tempF: atmpC != null ? Math.round(atmpC * 9 / 5 + 32) : null,
+      waterTempF: wtmpC != null ? Math.round(wtmpC * 9 / 5 + 32) : null,
+      waveHeightFt: wvhtM != null ? Math.round(wvhtM * 3.28084 * 10) / 10 : null,
+      timestamp: new Date(Date.UTC(year, month - 1, day, hour, minute)).toISOString()
+    };
+  } catch (err) {
+    console.warn('fetchNdbcObservation_ error for ' + ndbcId + ' (likely CORS — see notes at top of file):', err);
+    return null;
+  }
+}
+
+function speedToMph_(measurement) {
+  if (!measurement || measurement.value == null) return null;
+  var v = measurement.value;
+  var unit = measurement.unitCode || '';
+  if (unit.indexOf('km_h') > -1) return Math.round(v * 0.621371);
+  if (unit.indexOf('m_s') > -1) return Math.round(v * 2.23694);
+  if (unit.indexOf('mi_h') > -1) return Math.round(v);
+  console.warn('speedToMph_: unrecognized unitCode "' + unit + '", assuming km/h');
+  return Math.round(v * 0.621371);
+}
+
+function cToF_(c) {
+  if (c == null) return null;
+  return Math.round(c * 9 / 5 + 32);
+}
+
+function humanizeAge_(ageMinutes) {
+  var mins = Math.round(ageMinutes);
+  if (mins < 60) return mins + ' min';
+  var hours = Math.round(mins / 60);
+  if (hours < 24) return hours + ' hr';
+  var days = Math.round(hours / 24);
+  return days + (days === 1 ? ' day' : ' days');
+}
+
+// ====== RECREATIONAL FORECAST (NWS "REC" text product) =======================
+
+async function getRecreationalForecast_() {
+  try {
+    var listResp = await fetch('https://api.weather.gov/products/types/REC/locations/' + REC_ISSUEDBY);
+    if (!listResp.ok) return MOCK_REC_FORECAST;
+
+    var graph = (await listResp.json())['@graph'];
+    if (!graph || !graph.length) return MOCK_REC_FORECAST;
+
+    var latestId = graph[0].id;
+    var productResp = await fetch('https://api.weather.gov/products/' + latestId);
+    if (!productResp.ok) return MOCK_REC_FORECAST;
+
+    var product = await productResp.json();
+    var parsed = parseRecProduct_(product.productText);
+    parsed.issued = product.issuanceTime;
+    return parsed;
+  } catch (err) {
+    console.warn('getRecreationalForecast_ error:', err);
+    return MOCK_REC_FORECAST;
+  }
+}
+
+function parseRecProduct_(rawText) {
+  var body = rawText || '';
+  var firstTitleIdx = body.indexOf('.The ');
+  if (firstTitleIdx === -1) return { issued: null, regions: [] };
+  body = body.slice(firstTitleIdx);
+  body = body.replace(/\n\$\$[\s\S]*$/, '');
+  body = body.replace(/\n&&\n/g, '\n\n');
+
+  var blocks = body.split(/\n(?=\.The )/).map(function (b) { return b.trim(); }).filter(Boolean);
+
+  var regions = blocks.map(function (block) {
+    var titleMatch = block.match(/^\.(.+?)\.\.\./s);
+    var title = titleMatch ? titleMatch[1].replace(/\s+/g, ' ').trim() : 'Forecast';
+    var rest = titleMatch ? block.slice(titleMatch[0].length) : block;
+
+    var periodMatches = rest.match(/\.[A-Z][A-Z /]*\.\.\.[\s\S]*?(?=\n\.[A-Z][A-Z /]*\.\.\.|\n\n[A-Z]|$)/g) || [];
+    var periods = periodMatches.map(function (chunk) {
+      var m = chunk.match(/^\.([A-Z][A-Z /]*)\.\.\.([\s\S]*)$/);
+      return m ? { label: m[1].trim(), text: m[2].replace(/\s+/g, ' ').trim() } : null;
+    }).filter(Boolean);
+
+    var lastChunk = periodMatches[periodMatches.length - 1] || '';
+    var lastIdx = lastChunk ? rest.indexOf(lastChunk) + lastChunk.length : 0;
+    var notes = rest.slice(lastIdx).replace(/\s+/g, ' ').trim();
+
+    return { title: title, periods: periods, notes: notes };
+  });
+
+  return { issued: null, regions: regions };
+}
+
+// =============================================================================
+// FRONT-END RENDERING (unchanged from the Apps Script version)
+// =============================================================================
+
+var DEFAULT_GAUGE_MAX = 50;
+
+function gaugeBandColor(pct) {
+  if (pct < 0.35) return '#3fae4a';
+  if (pct < 0.55) return '#f0c419';
+  if (pct < 0.75) return '#e07b1a';
+  return '#c0392b';
+}
+
+function gaugeSVG(sustained, maxValue) {
+  maxValue = maxValue || DEFAULT_GAUGE_MAX;
+  var cx = 110, cy = 118, r = 88, strokeW = 20;
+  function pt(t, radius) {
+    var angle = (180 - t * 180) * Math.PI / 180;
+    return { x: cx + radius * Math.cos(angle), y: cy - radius * Math.sin(angle) };
+  }
+
+  var bands = [
+    { from: 0, to: 0.35 }, { from: 0.35, to: 0.55 },
+    { from: 0.55, to: 0.75 }, { from: 0.75, to: 1 }
+  ];
+  var bandPaths = bands.map(function (b) {
+    var steps = 24, d = '';
+    for (var i = 0; i <= steps; i++) {
+      var t = b.from + (b.to - b.from) * (i / steps);
+      var p = pt(t, r);
+      d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' ';
+    }
+    return '<path d="' + d + '" fill="none" stroke="' + gaugeBandColor(b.from) + '" stroke-width="' + strokeW + '" />';
+  }).join('');
+
+  var pct = Math.max(0, Math.min(1, sustained / maxValue));
+  var angle = (180 - pct * 180) * Math.PI / 180;
+  var needleLen = r * 0.8;
+  var nx = cx + needleLen * Math.cos(angle);
+  var ny = cy - needleLen * Math.sin(angle);
+
+  var tickStep = maxValue <= 50 ? 10 : 20;
+  var tickValues = [];
+  for (var v = 0; v <= maxValue + 0.001; v += tickStep) tickValues.push(Math.round(v));
+
+  var ticks = tickValues.map(function (v) {
+    var p = pt(v / maxValue, r * 1.2);
+    return '<text x="' + p.x.toFixed(1) + '" y="' + (p.y + 4).toFixed(1) + '" font-size="11" fill="#8a8f98" text-anchor="middle">' + v + '</text>';
+  }).join('');
+
+  return '<svg viewBox="0 0 220 138" width="100%" height="104" xmlns="http://www.w3.org/2000/svg">' +
+    bandPaths + ticks +
+    '<line x1="' + cx + '" y1="' + cy + '" x2="' + nx.toFixed(1) + '" y2="' + ny.toFixed(1) + '" stroke="#222" stroke-width="3" stroke-linecap="round" />' +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="#222" />' +
+    '</svg>';
+}
+
+function fmtVal(v) { return (v == null) ? '--' : v; }
+
+function buildGaugeCard(station) {
+  var card = document.createElement('div');
+  card.className = 'gauge-card' + (station.stale ? ' is-stale' : '');
+  var staleBadge = station.stale
+    ? '<div class="stale-badge">&#9888; STALE &middot; ' + station.staleAge + ' old</div>'
+    : '';
+  var needleValue = station.sustained != null ? station.sustained : (station.gust || 0);
+  var gustOnlyNote = station.gustOnly
+    ? '<div class="gust-only-note">This station reports gust only — no sustained wind speed</div>'
+    : '';
+  var sustainedAsOfNote = station.sustainedAsOf
+    ? '<div class="gust-only-note">Sustained as of ' + station.sustainedAsOf + '</div>'
+    : '';
+  var directionRow = (station.directionDeg != null)
+    ? '<div class="wind-dir-row">Wind: ' + Math.round(station.directionDeg) + '&deg;' +
+        (station.direction ? ' (' + station.direction + ')' : '') +
+      '</div>'
+    : '';
+  var waterRow = (station.waterTemp != null)
+    ? '<div class="water-row">&#127754; Water <span class="water-temp">' + fmtVal(station.waterTemp) + '&deg;F</span></div>'
+    : '';
+  var waveRow = (station.waveHeightFt != null)
+    ? '<div class="wave-row">&#127754; Waves <span class="wave-height">' + fmtVal(station.waveHeightFt) + ' ft</span></div>'
+    : '';
+  card.innerHTML =
+    '<h3>' + station.name + '</h3>' +
+    '<div class="region ' + station.regionColor + '">' + station.region + '</div>' +
+    staleBadge +
+    gaugeSVG(needleValue, station.gaugeMax) +
+    '<div class="gauge-readout">' +
+      '<div><div class="val">' + fmtVal(station.sustained) + '</div><span class="unit">mph<br>Sustained</span></div>' +
+      '<div><div class="gust-val">&#8599; ' + fmtVal(station.gust) + '</div><span class="unit">mph<br>Gust</span></div>' +
+    '</div>' +
+    directionRow +
+    gustOnlyNote +
+    sustainedAsOfNote +
+    '<div class="temp-row">&#127777;&#65039; <span class="temp">' + fmtVal(station.temp) + '&deg;F</span>' +
+    '<span class="feels">' + station.tempLabel + ' ' + fmtVal(station.feelsLike) + '&deg;F</span></div>' +
+    waterRow +
+    waveRow +
+    '<div class="updated-row">Updated: ' + station.updated + '</div>';
+  return card;
+}
+
+function renderGauges(stations) {
+  var lakeGrid = document.getElementById('gaugeGridLake');
+  var mountainGrid = document.getElementById('gaugeGridMountain');
+  lakeGrid.innerHTML = '';
+  mountainGrid.innerHTML = '';
+  stations.forEach(function (s) {
+    var target = (s.region === 'Lake Champlain') ? lakeGrid : mountainGrid;
+    target.appendChild(buildGaugeCard(s));
+  });
+}
+
+function renderHazards(hazards) {
+  var bar = document.getElementById('hazardsBar');
+  var icon = document.getElementById('hazardsIcon');
+  var label = document.getElementById('hazardsLabel');
+  var list = document.getElementById('hazardsList');
+  list.innerHTML = '';
+
+  if (!hazards || hazards.length === 0) {
+    bar.classList.add('is-clear');
+    icon.innerHTML = '&#10003;';
+    label.textContent = 'NO HAZARDS';
+    var d = document.createElement('div');
+    d.className = 'hazards-empty';
+    d.textContent = 'No hazards currently in effect.';
+    list.appendChild(d);
+    return;
+  }
+
+  bar.classList.remove('is-clear');
+  icon.innerHTML = '&#9888;';
+  label.textContent = 'ACTIVE HAZARDS';
+  hazards.forEach(function (h) {
+    var d = document.createElement('div');
+    d.className = 'hazard-item';
+    d.innerHTML = '<b>' + h.title + '</b><span>' + h.location + '</span>';
+    list.appendChild(d);
+  });
+}
+
+function renderGlerlImages() {
+  var grid = document.getElementById('glerlGrid');
+  grid.innerHTML = '';
+  var cacheBust = Date.now();
+
+  var waveCard = document.createElement('div');
+  waveCard.className = 'glerl-card wave-card';
+  waveCard.innerHTML =
+    '<img src="https://www.glerl.noaa.gov/res/champlain/fig/wvht_1d_8station.png?t=' + cacheBust + '" alt="Wave Height (8 Station)">';
+  grid.appendChild(waveCard);
+
+  var tempCard = document.createElement('div');
+  tempCard.className = 'glerl-card';
+  tempCard.innerHTML =
+    '<img src="https://lcri99.github.io/temp_profile.png?t=' + cacheBust + '" alt="Temperature Profile">';
+  grid.appendChild(tempCard);
+}
+
+function renderRecForecast(forecast) {
+  var wrap = document.getElementById('recForecast');
+  wrap.innerHTML = '';
+  if (!forecast || !forecast.regions || !forecast.regions.length) return;
+
+  if (forecast.issued) {
+    document.getElementById('recIssuedLabel').textContent =
+      'Issued ' + new Date(forecast.issued).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  forecast.regions.forEach(function (region) {
+    var card = document.createElement('div');
+    card.className = 'rec-card';
+    var periodsHtml = region.periods.map(function (p) {
+      return '<div class="rec-period"><div class="lbl">' + p.label + '</div><p class="txt">' + p.text + '</p></div>';
+    }).join('');
+    card.innerHTML = '<h4>' + region.title + '</h4>' + periodsHtml +
+      (region.notes ? '<div class="rec-notes">' + region.notes + '</div>' : '');
+    wrap.appendChild(card);
+  });
+}
+
+var REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+function renderMeta(data) {
+  var updated = new Date(data.updated);
+  document.getElementById('updatedLabel').textContent = 'Updated ' + updated.toLocaleString('en-US', {
+    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+  });
+  var next = new Date(updated.getTime() + REFRESH_INTERVAL_MS);
+  document.getElementById('nextUpdateLabel').textContent = 'Next ' +
+    next.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function renderAll(data) {
+  renderMeta(data);
+  renderHazards(data.hazards);
+  renderGauges(data.stations);
+  renderRecForecast(data.recreationalForecast);
+}
+
+function showError(err) {
+  var msg = (err && err.message) ? err.message : String(err);
+  console.error('Dashboard load failed:', err);
+  var banner = document.getElementById('errorBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'errorBanner';
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+  banner.textContent = 'Dashboard failed to load: ' + msg;
+}
+
+async function refresh() {
+  try {
+    var data = await getDashboardData();
+    var banner = document.getElementById('errorBanner');
+    if (banner) banner.remove();
+    renderAll(data);
+  } catch (err) {
+    showError(err);
+  }
+}
+
+// GLERL/temp-profile imagery is static/public — render immediately, don't wait on fetches.
+renderGlerlImages();
+setInterval(renderGlerlImages, REFRESH_INTERVAL_MS);
+
+refresh();
+setInterval(refresh, REFRESH_INTERVAL_MS);
+</script>
+</body>
+</html>
