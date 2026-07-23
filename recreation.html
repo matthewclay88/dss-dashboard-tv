@@ -775,21 +775,20 @@ function mergeObservations_(noaa, iem, coopWind) {
     gustTimestamp = coopWind.windTimestamp;
   }
 
-  // Physical sanity check: gust can never legitimately be lower than sustained.
-  // Confirmed live cause for Colchester Reef: NOAA's gust field is sparse (often
-  // null for several consecutive 10-min readings), so its /latest snapshot can be
-  // from a calmer moment than IEM's fresher sustained reading, producing a
-  // self-contradictory pair like "17 sustained, G15". Rather than display that,
-  // keep only whichever of the two is actually fresher and drop the other.
+  // Physical sanity check: gust can never legitimately be lower than sustained
+  // AT THE SAME MOMENT. But sustained and gust here come from two independently
+  // timed sources, and wind is naturally turbulent — a fresher gust reading
+  // simply CAN be lower than a slightly-older sustained reading with no error
+  // involved at all. An earlier version of this check picked "whichever
+  // timestamp is fresher" to keep, which meant a fresher-but-lower gust would
+  // delete a perfectly good, still-current sustained reading — confirmed live
+  // on Colchester Reef, and the actual cause of "several lake gauges showing
+  // zero/blank sustained wind and only gusts". Sustained drives the barb itself
+  // and matters more, so it's never the one dropped: on conflict, keep
+  // sustained and suppress gust instead.
   if (sustainedMph != null && gustMph != null && gustMph < sustainedMph) {
-    var sustainedMsCheck = sustainedTimestamp ? new Date(sustainedTimestamp).getTime() : null;
-    var gustMsCheck = gustTimestamp ? new Date(gustTimestamp).getTime() : null;
-    if (sustainedMsCheck != null && gustMsCheck != null) {
-      if (sustainedMsCheck > gustMsCheck) { gustMph = null; gustTimestamp = null; }
-      else { sustainedMph = null; sustainedTimestamp = null; }
-    } else {
-      gustMph = null; gustTimestamp = null;
-    }
+    gustMph = null;
+    gustTimestamp = null;
   }
 
   var directionDeg = (iem && iem.sustainedMph != null && iem.directionDeg != null) ? iem.directionDeg
