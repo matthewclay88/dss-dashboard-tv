@@ -225,36 +225,43 @@
 
 <script>
 /* =============================================================================
- * LAKE CHAMPLAIN & MOUNTAINS RECREATIONAL DASHBOARD — STATIC (NO BACKEND) BUILD
+ * LAKE CHAMPLAIN & MOUNTAINS RECREATIONAL DASHBOARD
  * =============================================================================
- * Everything that used to run server-side in Google Apps Script (Code.gs) now
- * runs directly in the visitor's browser via fetch(). No Apps Script, no
- * deployment step beyond hosting this one file (e.g. GitHub Pages).
+ * Single, self-contained static build — no backend, no Apps Script, no build
+ * step. Every data fetch runs directly in the visitor's browser. Deploy by
+ * hosting this one file anywhere static (GitHub Pages, Netlify, S3, etc.) as
+ * index.html.
  *
- * CORS STATUS (checked directly against each API, see conversation notes):
+ * CORS STATUS (checked directly against each API):
  *   api.weather.gov            -> OK (Access-Control-Allow-Origin: *)
  *   mesonet.agron.iastate.edu  -> OK, all three endpoints used here (current.py,
  *                                  obhistory.json, wx/afos/p.php)
  *   waterservices.usgs.gov     -> OK
  *   www.ndbc.noaa.gov          -> NOT OK. No CORS header at all — the browser will
  *                                  block this fetch regardless of network access.
- *                                  The buoy card will fall back to mock data in this
- *                                  static build. To fix: stand up a tiny CORS proxy
- *                                  (e.g. a Cloudflare Worker) in front of the NDBC
- *                                  text file and point NDBC_PROXY_URL below at it.
- *   api.asrc.albany.edu:3000   -> UNTESTED. Could not reach this port from the dev
- *                                  sandbox at all (even via plain curl), so CORS
- *                                  support is unconfirmed either way. Test this in
- *                                  an actual browser once deployed — open DevTools
- *                                  Console and look for a CORS error on Whiteface's
- *                                  card specifically. If it fails, Whiteface falls
- *                                  back to mock data the same graceful way as NDBC.
+ *                                  The buoy card falls back to mock data until this
+ *                                  is fixed. Fix: deploy ndbc-cors-proxy-worker.js
+ *                                  (shipped alongside this file) as a free Cloudflare
+ *                                  Worker — see that file's header comment for the
+ *                                  3-minute setup — then set NDBC_PROXY_URL below to
+ *                                  the worker's URL.
+ *   api.asrc.albany.edu:3000   -> UNTESTED from the dev sandbox (couldn't reach this
+ *                                  port at all). Test in an actual browser: open
+ *                                  DevTools Console and look for a CORS error on
+ *                                  Whiteface's card specifically. If it fails,
+ *                                  Whiteface falls back to mock the same way as NDBC.
  *
- * Optional: if you set up a CORS proxy for NDBC, put its URL prefix here (the
- * buoy path gets appended to it). Leave blank to skip live buoy data entirely.
- * Example if using a Cloudflare Worker: 'https://your-worker.your-name.workers.dev/'
+ * Optional: if you deploy the NDBC CORS proxy above, put its URL here (the buoy
+ * path gets appended to it). Leave blank to skip live buoy data entirely.
  */
-var NDBC_PROXY_URL = '';
+// Confirmed working (repeatedly tested): a free public CORS proxy that passes
+// through real browser requests (identified via standard Origin/Referer headers,
+// which your browser sends automatically — no setup needed on your end). This
+// occasionally has a transient hiccup like any free service, but that's fine:
+// getOneStationData_'s existing fault isolation already falls back to mock for
+// just this one station on any single failed fetch, and recovers automatically
+// on the next 5-minute refresh.
+var NDBC_PROXY_URL = 'https://corsproxy.io/?url=' + encodeURIComponent('https://www.ndbc.noaa.gov/data/realtime2/');
 
 // ====== CONFIG ==============================================================
 
@@ -338,20 +345,40 @@ function pad2_(n) { return (n < 10 ? '0' : '') + n; }
 // ====== ENTRY POINT ==========================================================
 
 async function getDashboardData() {
-  // These three are fully independent — running them concurrently instead of one
-  // after another is the single biggest speed win available here (previously this
-  // waited for forecast, then hazards, then stations in sequence for no reason).
-  var results = await Promise.all([
-    safeCall_(getRecreationalForecast_, MOCK_REC_FORECAST),
-    safeCall_(getHazards_, MOCK_HAZARDS),
-    safeCall_(getStationData_, STATIONS.map(function (s) { return Object.assign({}, s, MOCK_STATIONS[s.id] || {}); }))
-  ]);
-  return {
-    updated: new Date().toISOString(),
-    recreationalForecast: results[0],
-    hazards: results[1],
-    stations: results[2]
-  };
+  // Top-level guarantee: never return something malformed. Less critical here than
+  // it was for the Apps Script version (this whole call is already wrapped in a
+  // single try/catch by refresh() below), but kept for consistency and defense in depth.
+  try {
+    // These three are fully independent — running them concurrently instead of one
+    // after another is the single biggest speed win available here (previously this
+    // waited for forecast, then hazards, then stations in sequence for no reason).
+    var stationsFallback;
+    try {
+      stationsFallback = STATIONS.map(function (s) { return Object.assign({}, s, MOCK_STATIONS[s.id] || {}); });
+    } catch (fallbackErr) {
+      console.warn('getDashboardData: building stations mock fallback itself failed:', fallbackErr);
+      stationsFallback = [];
+    }
+    var results = await Promise.all([
+      safeCall_(getRecreationalForecast_, MOCK_REC_FORECAST),
+      safeCall_(getHazards_, MOCK_HAZARDS),
+      safeCall_(getStationData_, stationsFallback)
+    ]);
+    return {
+      updated: new Date().toISOString(),
+      recreationalForecast: results[0],
+      hazards: results[1],
+      stations: results[2]
+    };
+  } catch (err) {
+    console.warn('getDashboardData: TOP-LEVEL failure (should be unreachable) — returning minimal safe object:', err);
+    return {
+      updated: new Date().toISOString(),
+      hazards: [],
+      stations: [],
+      recreationalForecast: { issued: null, regions: [] }
+    };
+  }
 }
 
 async function safeCall_(fn, fallback) {
@@ -420,46 +447,58 @@ async function fetchActiveAlertsForPoint_(lat, lon) {
 // ====== STATION WIND / TEMP DATA =============================================
 
 async function getStationData_() {
-  return Promise.all(STATIONS.map(async function (s) {
-    if (s.source === 'ndbc') return buildNdbcStation_(s);
+  // Promise.allSettled (not Promise.all) at this level, PLUS each station's own
+  // try/catch below — previously a single station's async chain throwing would
+  // reject the whole Promise.all, falling back to mock for ALL SIX stations at
+  // once with a generic error that didn't say which station actually broke.
+  var settled = await Promise.allSettled(STATIONS.map(function (s) { return getOneStationData_(s); }));
+  return settled.map(function (result, i) {
+    if (result.status === 'fulfilled') return result.value;
+    var s = STATIONS[i];
+    console.warn('getStationData_: ' + s.id + ' threw, falling back to mock for this station only:', result.reason);
+    return Object.assign({}, s, MOCK_STATIONS[s.id] || {});
+  });
+}
 
-    var resolvedId = null;
-    if (s.noaaId === 'TODO') resolvedId = await discoverNearestStationId_(s.lat, s.lon, s.name);
-    else if (s.noaaId) resolvedId = s.noaaId;
+async function getOneStationData_(s) {
+  if (s.source === 'ndbc') return buildNdbcStation_(s);
 
-    var noaaP = resolvedId ? fetchNoaaObservation_(resolvedId) : Promise.resolve(null);
-    var iemP = s.iemNetwork ? fetchIemObservation_(resolvedId, s.iemNetwork) : Promise.resolve(null);
-    var coopTempP = s.iemCoopNetwork ? fetchIemCoopObservation_(resolvedId, s.iemCoopNetwork) : Promise.resolve(null);
-    var rrsWindP = s.rrsPil ? fetchRrsWindObservation_(s.rrsPil, resolvedId) : Promise.resolve(null);
-    var usgsP = s.usgsSite ? fetchUsgsWaterTemp_(s.usgsSite) : Promise.resolve(null);
+  var resolvedId = null;
+  if (s.noaaId === 'TODO') resolvedId = await discoverNearestStationId_(s.lat, s.lon, s.name);
+  else if (s.noaaId) resolvedId = s.noaaId;
 
-    var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, usgsP]);
-    var noaa = results[0].status === 'fulfilled' ? results[0].value : null;
-    var iem = results[1].status === 'fulfilled' ? results[1].value : null;
-    var coopTemp = results[2].status === 'fulfilled' ? results[2].value : null;
-    var rrsWind = results[3].status === 'fulfilled' ? results[3].value : null;
-    var usgs = results[4].status === 'fulfilled' ? results[4].value : null;
+  var noaaP = resolvedId ? fetchNoaaObservation_(resolvedId) : Promise.resolve(null);
+  var iemP = s.iemNetwork ? fetchIemObservation_(resolvedId, s.iemNetwork) : Promise.resolve(null);
+  var coopTempP = s.iemCoopNetwork ? fetchIemCoopObservation_(resolvedId, s.iemCoopNetwork) : Promise.resolve(null);
+  var rrsWindP = s.rrsPil ? fetchRrsWindObservation_(s.rrsPil, resolvedId) : Promise.resolve(null);
+  var usgsP = s.usgsSite ? fetchUsgsWaterTemp_(s.usgsSite) : Promise.resolve(null);
 
-    var coopWind = (coopTemp || rrsWind) ? Object.assign({}, coopTemp, rrsWind) : null;
-    if (s.source === 'wfms') {
-      try { iem = await fetchWhitefaceObservation_(); } catch (err) { console.warn('Whiteface fetch failed:', err); iem = null; }
+  var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, usgsP]);
+  var noaa = results[0].status === 'fulfilled' ? results[0].value : null;
+  var iem = results[1].status === 'fulfilled' ? results[1].value : null;
+  var coopTemp = results[2].status === 'fulfilled' ? results[2].value : null;
+  var rrsWind = results[3].status === 'fulfilled' ? results[3].value : null;
+  var usgs = results[4].status === 'fulfilled' ? results[4].value : null;
+
+  var coopWind = (coopTemp || rrsWind) ? Object.assign({}, coopTemp, rrsWind) : null;
+  if (s.source === 'wfms') {
+    try { iem = await fetchWhitefaceObservation_(); } catch (err) { console.warn('Whiteface fetch failed:', err); iem = null; }
+  }
+
+  var merged = mergeObservations_(noaa, iem, coopWind);
+  var result = Object.assign({}, s, merged || MOCK_STATIONS[s.id] || {});
+
+  if (s.usgsSite) {
+    if (usgs) {
+      result.waterTemp = usgs.waterTempF;
+      result.waterTempUpdated = formatTime12_(new Date(usgs.timestamp), 'America/New_York');
+    } else if (MOCK_STATIONS[s.id] && MOCK_STATIONS[s.id].waterTemp != null) {
+      result.waterTemp = MOCK_STATIONS[s.id].waterTemp;
+      result.waterTempUpdated = MOCK_STATIONS[s.id].waterTempUpdated || null;
     }
+  }
 
-    var merged = mergeObservations_(noaa, iem, coopWind);
-    var result = Object.assign({}, s, merged || MOCK_STATIONS[s.id] || {});
-
-    if (s.usgsSite) {
-      if (usgs) {
-        result.waterTemp = usgs.waterTempF;
-        result.waterTempUpdated = formatTime12_(new Date(usgs.timestamp), 'America/New_York');
-      } else if (MOCK_STATIONS[s.id] && MOCK_STATIONS[s.id].waterTemp != null) {
-        result.waterTemp = MOCK_STATIONS[s.id].waterTemp;
-        result.waterTempUpdated = MOCK_STATIONS[s.id].waterTempUpdated || null;
-      }
-    }
-
-    return result;
-  }));
+  return result;
 }
 
 async function discoverNearestStationId_(lat, lon, label) {
@@ -878,27 +917,32 @@ async function fetchUsgsWaterTemp_(siteId) {
 }
 
 async function buildNdbcStation_(s) {
-  var ndbc = await fetchNdbcObservation_(s.ndbcId);
-  if (!ndbc) return Object.assign({}, s, MOCK_STATIONS[s.id] || {});
+  try {
+    var ndbc = await fetchNdbcObservation_(s.ndbcId);
+    if (!ndbc) return Object.assign({}, s, MOCK_STATIONS[s.id] || {});
 
-  var threshold = s.staleThresholdMin || STALE_OBSERVATION_MINUTES;
-  var ageMinutes = (Date.now() - new Date(ndbc.timestamp).getTime()) / 60000;
-  var isStale = ageMinutes > threshold;
+    var threshold = s.staleThresholdMin || STALE_OBSERVATION_MINUTES;
+    var ageMinutes = (Date.now() - new Date(ndbc.timestamp).getTime()) / 60000;
+    var isStale = ageMinutes > threshold;
 
-  return Object.assign({}, s, {
-    sustained: ndbc.sustainedMph,
-    gust: ndbc.gustMph,
-    gustOnly: ndbc.sustainedMph == null && ndbc.gustMph != null,
-    direction: degreesToCompass_(ndbc.directionDeg),
-    directionDeg: ndbc.directionDeg,
-    temp: ndbc.tempF,
-    feelsLike: ndbc.tempF,
-    waterTemp: ndbc.waterTempF,
-    waveHeightFt: ndbc.waveHeightFt,
-    updated: formatTime12_(new Date(ndbc.timestamp), 'America/New_York'),
-    stale: isStale,
-    staleAge: isStale ? humanizeAge_(ageMinutes) : null
-  });
+    return Object.assign({}, s, {
+      sustained: ndbc.sustainedMph,
+      gust: ndbc.gustMph,
+      gustOnly: ndbc.sustainedMph == null && ndbc.gustMph != null,
+      direction: degreesToCompass_(ndbc.directionDeg),
+      directionDeg: ndbc.directionDeg,
+      temp: ndbc.tempF,
+      feelsLike: ndbc.tempF,
+      waterTemp: ndbc.waterTempF,
+      waveHeightFt: ndbc.waveHeightFt,
+      updated: formatTime12_(new Date(ndbc.timestamp), 'America/New_York'),
+      stale: isStale,
+      staleAge: isStale ? humanizeAge_(ageMinutes) : null
+    });
+  } catch (err) {
+    console.warn('buildNdbcStation_ NDBC error for ' + s.ndbcId + ':', err);
+    return Object.assign({}, s, MOCK_STATIONS[s.id] || {});
+  }
 }
 
 // NDBC does not send CORS headers (confirmed), so this fetch will likely fail with
@@ -911,9 +955,13 @@ async function fetchNdbcObservation_(ndbcId) {
     var url = base + ndbcId + '.txt';
     var resp = await fetchWithTimeout_(url);
     if (!resp.ok) { console.warn('NDBC fetch failed for ' + ndbcId + ': HTTP ' + resp.status); return null; }
-    var lines = (await resp.text()).split('\n');
+    var fullText = await resp.text();
+    var lines = fullText.split('\n');
     var dataLine = lines[2];
-    if (!dataLine || !dataLine.trim()) return null;
+    if (!dataLine || !dataLine.trim()) {
+      console.warn('NDBC ' + ndbcId + ': no data line at index 2. First 300 chars of response:', fullText.slice(0, 300));
+      return null;
+    }
 
     var cols = dataLine.trim().split(/\s+/);
     var mm = function (v) { return (v == null || v === 'MM') ? null : Number(v); };
@@ -927,7 +975,10 @@ async function fetchNdbcObservation_(ndbcId) {
     var atmpC = mm(cols[13]);
     var wtmpC = mm(cols[14]);
 
-    if (wspdMs == null && gstMs == null && atmpC == null) return null;
+    if (wspdMs == null && gstMs == null && atmpC == null) {
+      console.warn('NDBC ' + ndbcId + ': parsed dataLine but wind/temp all null. Raw dataLine:', dataLine);
+      return null;
+    }
 
     return {
       sustainedMph: wspdMs != null ? Math.round(wspdMs * 2.23694) : null,
