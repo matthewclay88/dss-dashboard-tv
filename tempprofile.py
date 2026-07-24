@@ -1352,6 +1352,19 @@ def plot_skewt(
     t_max = temperature.max().to("degC").m
     t_min = temperature.min().to("degC").m
 
+    # Include dewpoint when determining the visible temperature range.
+    dewpoints = [
+        station["dewpoint_C"]
+        for station in profile
+        if station.get("dewpoint_C") is not None
+    ]
+
+    if dewpoints:
+        t_min = min(
+            t_min,
+            min(dewpoints)
+        )
+    
     # Small pressure padding above/below observations.
 
     bottom_pressure = p_max + 10
