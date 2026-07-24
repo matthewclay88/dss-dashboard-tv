@@ -34,13 +34,13 @@
       border-bottom: 1px solid var(--border);
     }
     .header-left { display: flex; align-items: center; gap: 10px; }
-    .logo-circle {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: #fff; border: 2px solid var(--navy);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 7px; font-weight: 700; color: var(--navy); text-align: center;
-      flex-shrink: 0;
-    }
+    .nws-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
     .title h1 { margin: 0; font-size: 16px; letter-spacing: 0.3px; line-height: 1.2; color: var(--navy-dark); font-weight: 800; }
     .title p { margin: 0; color: var(--text-dim); font-size: 11px; }
     .header-right { text-align: right; font-size: 12px; color: var(--navy); white-space: nowrap; }
@@ -73,6 +73,16 @@
       font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
     .info-modal .close-btn:hover { background: var(--border); }
+    .info-credit {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.2px;
+}
     .source-item { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
     .source-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .source-item h4 { margin: 0 0 5px; color: var(--navy-dark); font-size: 14px; }
@@ -262,12 +272,16 @@
   <div class="main-wrap">
     <div class="header">
       <div class="header-left">
-        <div class="logo-circle">VT<br>WX</div>
-        <div class="title">
-          <h1>LAKE CHAMPLAIN &amp; MOUNTAINS RECREATIONAL DASHBOARD</h1>
-          <p>Real-time conditions for outdoor recreation</p>
-        </div>
-      </div>
+  <img
+    class="nws-logo"
+    src="https://www.weather.gov/images/nws/nws_logo.png"
+    alt="National Weather Service"
+  >
+  <div class="title">
+    <h1>LAKE CHAMPLAIN &amp; MOUNTAINS RECREATIONAL DASHBOARD</h1>
+    <p>Real-time conditions for outdoor recreation</p>
+  </div>
+</div>
       <div class="header-right">
         <div class="refresh-row">&#8635; <span id="updatedLabel">Updated: --</span> &middot; <span id="nextUpdateLabel">Next: --</span>
           <button class="info-btn" id="infoBtn" title="Data sources">i</button>
@@ -343,11 +357,16 @@
         <span class="src-tag">NOAA/NCEP NOMADS (operational GLWU)</span>
       </div>
 
-      <div class="source-item">
+            <div class="source-item">
         <h4>Recreational text forecast</h4>
         <p>NWS Burlington, VT (BTV) office's "REC" text product (<a href="https://www.weather.gov/documentation/services-web-api" target="_blank">api.weather.gov/products</a>).</p>
         <span class="src-tag">NWS Burlington (BTV)</span>
       </div>
+
+      <div class="info-credit">
+        Created by Matthew Clay &mdash; NWS BTV
+      </div>
+
     </div>
   </div>
 
