@@ -1335,8 +1335,8 @@ def plot_skewt(
     #
     # This is deliberately fairly tight so small temperature
     # changes/inversions are easy to see.
-    temp_padding_left = 8
-    temp_padding_right = 8
+    temp_padding_left = 2.0
+    temp_padding_right = 2.0
 
     left_temperature = t_min - temp_padding_left
     right_temperature = t_max + temp_padding_right
@@ -1345,7 +1345,7 @@ def plot_skewt(
     #
     # On days when all stations have almost identical temperatures,
     # we still want enough room for the Skew-T background.
-    minimum_temp_width = 25
+    minimum_temp_width = 8.0
 
     current_width = (
         right_temperature
@@ -1464,6 +1464,11 @@ def plot_skewt(
         temperature,
     ):
 
+        label = (
+            f"{station['stid']}  "
+            f"{station['elevation_ft']:.0f} ft"
+        )
+        
         skew.ax.annotate(
             station["stid"],
             xy=(
