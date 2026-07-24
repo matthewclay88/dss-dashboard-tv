@@ -1453,9 +1453,7 @@ def plot_skewt(
 
     for station in profile:
 
-        td = station.get(
-            "dewpoint_C"
-        )
+        td = station.get("dewpoint_C")
 
         if td is None:
             continue
@@ -1468,22 +1466,27 @@ def plot_skewt(
             td
         )
 
-    if dewpoint_temperature:
+    if len(dewpoint_temperature) >= 2:
 
         td_pressure = (
-            np.array(
-                dewpoint_pressure
-            )
+            np.array(dewpoint_pressure)
             * units.hPa
         )
 
         td_temperature = (
-            np.array(
-                dewpoint_temperature
-            )
+            np.array(dewpoint_temperature)
             * units.degC
         )
 
+    skew.plot(
+        td_pressure,
+        td_temperature,
+        color="green",
+        linewidth=3,
+        marker="o",
+        markersize=7,
+        zorder=10,
+    )
         skew.plot(
             td_pressure,
             td_temperature,
