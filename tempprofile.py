@@ -133,12 +133,12 @@ FROUDE_UNBLOCKED = 1.0
 FROUDE_BLOCKED = 0.5
 
 # Approximate compass bearing (degrees) of the Mansfield ridge line
-# itself (the long axis of the spine, roughly north-south). Used to
-# resolve the cross-barrier (ridge-normal) wind component for the
-# Froude number, since along-ridge flow doesn't force air over or
-# around the barrier the way cross-ridge flow does. Adjust this if a
-# more precise ridge-line bearing is available.
-RIDGE_ORIENTATION_DEG = 10.0
+# itself - the summit ridge trends SSW-NNE, roughly 020-030 deg
+# azimuth along the spine of the Green Mountains. Used to resolve the
+# cross-barrier (ridge-normal) wind component for the Froude number,
+# since along-ridge flow doesn't force air over or around the
+# barrier the way cross-ridge flow does.
+RIDGE_ORIENTATION_DEG = 25.0
 
 
 # =====================================================================
