@@ -1446,32 +1446,75 @@ def max_inversion(profile):
     return best
 
 
-def compute_wetbulb_series(profile):
+def attach_derived_fields(profile):
     """
-    Wet-bulb temperature (C) at each station that has a dewpoint.
-    MMNV1 has no dewpoint sensor in this feed, so it is excluded
-    here, same as the rest of the moisture-dependent diagnostics.
-    """
+    Compute per-station wet-bulb temperature and relative humidity
+    for every station that has both a dewpoint and a pressure, and
+    attach them directly onto the station dict as "wetbulb_C" and
+    "relative_humidity_pct".
 
-    series = []
+    Stations without a dewpoint (MMNV1, or any NWS station missing
+    one on a given pull) get both fields set to None rather than
+    being dropped, so downstream code can display "--" instead of
+    silently losing the row.
+    """
 
     for x in profile:
 
         td = x.get("dewpoint_C")
         p = x.get("pressure_hPa")
+        t = x.get("temperature_C")
 
-        if td is None or p is None:
+        if td is None or p is None or t is None:
+
+            x["wetbulb_C"] = None
+            x["relative_humidity_pct"] = None
+
             continue
 
         try:
 
             tw = mpcalc.wet_bulb_temperature(
                 p * units.hPa,
-                x["temperature_C"] * units.degC,
+                t * units.degC,
                 td * units.degC,
             ).to("degC").m
 
         except Exception:
+
+            tw = None
+
+        x["wetbulb_C"] = tw
+
+        try:
+
+            rh = mpcalc.relative_humidity_from_dewpoint(
+                t * units.degC,
+                td * units.degC,
+            ).to("percent").m
+
+        except Exception:
+
+            rh = None
+
+        x["relative_humidity_pct"] = rh
+
+    return profile
+
+
+def compute_wetbulb_series(profile):
+    """
+    (elevation_ft, wetbulb_C) pairs for every station that already
+    has a wet-bulb value attached by attach_derived_fields().
+    """
+
+    series = []
+
+    for x in profile:
+
+        tw = x.get("wetbulb_C")
+
+        if tw is None:
             continue
 
         series.append({
@@ -1687,13 +1730,19 @@ def build_diagnostics(profile):
 
         diagnostics["wet_bulb_zero_ft"] = find_zero_level(wb_points)
 
-        wb_values = [w["wetbulb_C"] for w in wetbulb_series]
-        diagnostics["wet_bulb_range_C"] = (min(wb_values), max(wb_values))
-
     else:
 
         diagnostics["wet_bulb_zero_ft"] = None
-        diagnostics["wet_bulb_range_C"] = None
+
+    rh_values = [
+        x["relative_humidity_pct"]
+        for x in profile
+        if x.get("relative_humidity_pct") is not None
+    ]
+
+    diagnostics["mean_relative_humidity_pct"] = (
+        float(np.mean(rh_values)) if rh_values else None
+    )
 
     diagnostics["mean_lapse_rate_C_km"] = mean_lapse_rate(profile)
     diagnostics["max_inversion"] = max_inversion(profile)
@@ -1729,12 +1778,7 @@ def diagnostic_display_rows(diagnostics):
     else:
         inv_text = "None"
 
-    wb_range = diagnostics["wet_bulb_range_C"]
-
-    if wb_range:
-        wb_range_text = f"{wb_range[0]:.1f} -> {wb_range[1]:.1f} C"
-    else:
-        wb_range_text = "Insufficient data"
+    mean_rh_text = val(diagnostics["mean_relative_humidity_pct"], " %", 0)
 
     shear_val = diagnostics["bulk_shear_kt"]
     shear_text = (
@@ -1762,7 +1806,7 @@ def diagnostic_display_rows(diagnostics):
         ("Wet-Bulb Zero", val(diagnostics["wet_bulb_zero_ft"], " ft", 0), False),
         ("Mean Lapse Rate", val(diagnostics["mean_lapse_rate_C_km"], " C/km"), False),
         ("Max Inversion", inv_text, False),
-        ("Wet-Bulb Range", wb_range_text, False),
+        ("Mean RH", mean_rh_text, False),
         ("WIND / TERRAIN", "", True),
         (shear_label, shear_text, False),
         ("Froude Number", froude_text, False),
@@ -1976,6 +2020,52 @@ def plot_skewt(
         )
 
     # ==============================================================
+    # WET-BULB TEMPERATURE
+    # ==============================================================
+
+    wetbulb_pressure = []
+    wetbulb_temperature = []
+
+    for station in profile:
+
+        tw = station.get("wetbulb_C")
+
+        if tw is None:
+            continue
+
+        wetbulb_pressure.append(
+            station["pressure_hPa"]
+        )
+
+        wetbulb_temperature.append(
+            tw
+        )
+
+    if len(wetbulb_temperature) >= 2:
+
+        tw_pressure = (
+            np.array(wetbulb_pressure)
+            * units.hPa
+        )
+
+        tw_temperature = (
+            np.array(wetbulb_temperature)
+            * units.degC
+        )
+
+        skew.plot(
+            tw_pressure,
+            tw_temperature,
+            color="purple",
+            linewidth=2,
+            linestyle="--",
+            marker="o",
+            markersize=5,
+            alpha=0.85,
+            zorder=9,
+        )
+
+    # ==============================================================
     # WIND BARBS
     # ==============================================================
 
@@ -2034,6 +2124,22 @@ def plot_skewt(
         fontsize=11,
     )
 
+    legend_handles = [
+        plt.Line2D([0], [0], color="red", linewidth=3, label="Temperature"),
+        plt.Line2D([0], [0], color="green", linewidth=3, label="Dewpoint"),
+        plt.Line2D(
+            [0], [0], color="purple", linewidth=2, linestyle="--",
+            label="Wet-Bulb",
+        ),
+    ]
+
+    skew.ax.legend(
+        handles=legend_handles,
+        loc="upper right",
+        fontsize=9,
+        framealpha=0.85,
+    )
+
     # ==============================================================
     # OBSERVATION TABLE (left)
     # ==============================================================
@@ -2080,6 +2186,40 @@ def plot_skewt(
         else:
 
             dewpoint_text = "--"
+
+        # ----------------------------------------------------------
+        # Wet-bulb temperature
+        # ----------------------------------------------------------
+
+        wetbulb = station.get(
+            "wetbulb_C"
+        )
+
+        if wetbulb is not None:
+
+            wetbulb_text = (
+                f"{wetbulb:.1f}°C"
+            )
+
+        else:
+
+            wetbulb_text = "--"
+
+        # ----------------------------------------------------------
+        # Relative humidity
+        # ----------------------------------------------------------
+
+        rh = station.get(
+            "relative_humidity_pct"
+        )
+
+        if rh is not None:
+
+            rh_text = f"{rh:.0f}%"
+
+        else:
+
+            rh_text = "--"
 
         # ----------------------------------------------------------
         # Wind
@@ -2150,16 +2290,19 @@ def plot_skewt(
             f"{station['pressure_hPa']:.1f}",
             temp_text,
             dewpoint_text,
+            wetbulb_text,
+            rh_text,
             wind_text,
             time_text,
         ])
 
-    # Dedicated axes for the observation table (left half).
+    # Dedicated axes for the observation table (left half). Widened
+    # from the original 0.52 to fit the added Wet-Bulb/RH columns.
 
     table_ax = fig.add_axes([
+        0.04,
         0.06,
-        0.06,
-        0.52,
+        0.60,
         0.28,
     ])
 
@@ -2183,6 +2326,8 @@ def plot_skewt(
             "Pressure",
             "Temp",
             "Dewpoint",
+            "Wet-Bulb",
+            "RH",
             "Wind",
             "Time",
         ],
@@ -2196,7 +2341,7 @@ def plot_skewt(
     )
 
     table.set_fontsize(
-        9
+        8
     )
 
     table.scale(
@@ -2206,7 +2351,7 @@ def plot_skewt(
 
     # Make header bold.
 
-    for column in range(7):
+    for column in range(9):
 
         table[
             (0, column)
@@ -2221,9 +2366,9 @@ def plot_skewt(
     diag_rows = diagnostic_display_rows(diagnostics)
 
     diag_ax = fig.add_axes([
-        0.62,
+        0.68,
         0.14,
-        0.34,
+        0.30,
         0.20,
     ])
 
@@ -2330,6 +2475,10 @@ def main():
     )
 
     profile = calculate_pressures(
+        profile
+    )
+
+    profile = attach_derived_fields(
         profile
     )
 
