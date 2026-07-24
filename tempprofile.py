@@ -24,14 +24,15 @@ The profile:
     2. Anchors pressure to observed KBTV station pressure when available.
     3. Uses the hypsometric equation to estimate pressure at each elevation.
     4. Plots temperature and wind on a MetPy Skew-T.
+    5. Derives a "Winter Profile Diagnostics" panel (freezing level,
+       wet-bulb zero, lapse rate, inversions, an approximate Bourgouin
+       precip-type call, bulk shear, and a bulk Froude number / flow
+       regime for the ridge).
 
 V1 intentionally does NOT calculate:
-    dewpoint
-    wet bulb
     LCL
-    precipitation type
-    freezing level
-    inversion diagnostics
+    full moist-adiabatic parcel ascent
+    radar-informed precipitation type
 
 Requirements:
     pip install requests numpy matplotlib metpy
@@ -112,6 +113,39 @@ RRS_LOOKBACK_HOURS = 6
 
 OUTPUT_FILE = "vt_pseudo_sounding.png"
 
+# Physical constants used by the diagnostics module below.
+RD = 287.05      # J/(kg*K), dry air gas constant
+G = 9.80665       # m/s^2
+CP = 1004.0       # J/(kg*K), dry air specific heat at constant pressure
+
+# Height above the base station used for the low-level bulk shear
+# diagnostic (roughly base-to-summit for Mansfield).
+SHEAR_TOP_AGL_FT = 3600.0
+
+# Bourgouin (2000) published threshold: positive area aloft (J/kg)
+# required to start turning snow into liquid as it falls.
+BOURGOUIN_PA_THRESHOLD = 2.0
+
+# NOTE: Bourgouin (2000) discriminates freezing rain from ice pellets
+# with a curve fit to observed soundings that is not reproduced in
+# the original paper's abstract/body available here. The two
+# thresholds below (5.6 and 66 J/kg of negative/refreezing energy)
+# are a commonly cited operational approximation of that curve, not
+# a verified transcription of Bourgouin's actual coefficients. Treat
+# the PRECIP TYPE / Bourgouin line as a rough indicator, not a
+# validated forecast, until this is checked against the source paper.
+BOURGOUIN_NA_LOW = 5.6
+BOURGOUIN_NA_HIGH = 66.0
+
+# Bulk Froude number thresholds used to label flow regime around the
+# ridge. Fr >= 1 flow tends to go over the barrier; Fr < ~0.5 flow
+# tends to be blocked and diverts around/backs up upstream; the band
+# in between is a partially-blocked regime. These are conventional
+# rule-of-thumb cutoffs from mountain-flow literature, not a fitted
+# threshold for Mansfield specifically.
+FROUDE_UNBLOCKED = 1.0
+FROUDE_BLOCKED = 0.5
+
 
 # =====================================================================
 # 2. GENERAL HELPERS
@@ -170,6 +204,14 @@ def fmt(value, decimals=1):
         return "MISSING"
 
     return f"{value:.{decimals}f}"
+
+
+def ft_to_m(feet):
+    """
+    Feet -> meters.
+    """
+
+    return feet * 0.3048
 
 
 # =====================================================================
@@ -1312,6 +1354,529 @@ def print_profile(profile):
 
     print("=" * 112)
 
+
+# =====================================================================
+# 11B. WINTER PROFILE DIAGNOSTICS
+# =====================================================================
+#
+# This section derives a compact set of winter-weather diagnostics
+# from the same station profile used for the Skew-T. With only 6-7
+# low-level points instead of a full sounding, everything here is a
+# bulk / coarse estimate intended for situational awareness, not a
+# validated forecast product. Assumptions are called out inline.
+#
+
+def interp_crossing(z1, v1, z2, v2, target=0.0):
+    """
+    Linear interpolation for the elevation where a variable crosses
+    `target`, given two bracketing (elevation, value) points.
+    """
+
+    if v2 == v1:
+        return None
+
+    frac = (target - v1) / (v2 - v1)
+
+    if frac < 0 or frac > 1:
+        return None
+
+    return z1 + frac * (z2 - z1)
+
+
+def find_zero_level(points):
+    """
+    Lowest elevation (ft) at which a series crosses 0, given a list
+    of (elevation_ft, value) tuples with value already screened for
+    None. Returns None if no crossing exists in the observed layer.
+    """
+
+    points = [p for p in points if p[1] is not None]
+
+    if len(points) < 2:
+        return None
+
+    for (z1, v1), (z2, v2) in zip(points, points[1:]):
+
+        if v1 == 0:
+            return z1
+
+        if (v1 > 0 > v2) or (v1 < 0 < v2):
+            return interp_crossing(z1, v1, z2, v2)
+
+    return None
+
+
+def mean_lapse_rate(profile):
+    """
+    Bulk lapse rate between the lowest and highest observed stations,
+    in C/km, positive when temperature falls with height (the
+    conventional sign).
+    """
+
+    bottom = profile[0]
+    top = profile[-1]
+
+    dz_km = ft_to_m(
+        top["elevation_ft"] - bottom["elevation_ft"]
+    ) / 1000.0
+
+    if dz_km == 0:
+        return None
+
+    return (
+        bottom["temperature_C"] - top["temperature_C"]
+    ) / dz_km
+
+
+def max_inversion(profile):
+    """
+    The single layer with the largest temperature increase with
+    height (an inversion). Returns None if every layer cools with
+    height.
+    """
+
+    best = None
+
+    for lower, upper in zip(profile, profile[1:]):
+
+        dT = upper["temperature_C"] - lower["temperature_C"]
+
+        if dT > 0 and (best is None or dT > best["dT"]):
+
+            best = {
+                "dT": dT,
+                "z1": lower["elevation_ft"],
+                "z2": upper["elevation_ft"],
+            }
+
+    return best
+
+
+def compute_wetbulb_series(profile):
+    """
+    Wet-bulb temperature (C) at each station that has a dewpoint.
+    MMNV1 has no dewpoint sensor in this feed, so it is excluded
+    here, same as the rest of the moisture-dependent diagnostics.
+    """
+
+    series = []
+
+    for x in profile:
+
+        td = x.get("dewpoint_C")
+        p = x.get("pressure_hPa")
+
+        if td is None or p is None:
+            continue
+
+        try:
+
+            tw = mpcalc.wet_bulb_temperature(
+                p * units.hPa,
+                x["temperature_C"] * units.degC,
+                td * units.degC,
+            ).to("degC").m
+
+        except Exception:
+            continue
+
+        series.append({
+            "elevation_ft": x["elevation_ft"],
+            "wetbulb_C": tw,
+        })
+
+    return series
+
+
+def bulk_shear(profile, top_agl_ft=SHEAR_TOP_AGL_FT):
+    """
+    Vector wind difference (kt) between the lowest reporting station
+    and top_agl_ft above it, using linear interpolation of the u/v
+    components across whichever stations reported wind. Returns None
+    if fewer than two wind reports are available, or if the target
+    level is above the highest wind report.
+    """
+
+    wind_stations = [
+        x for x in profile
+        if x.get("wind_speed_kmh") is not None
+        and x.get("wind_direction_deg") is not None
+    ]
+
+    if len(wind_stations) < 2:
+        return None
+
+    elevations = np.array(
+        [x["elevation_ft"] for x in wind_stations]
+    )
+
+    speeds_kt = (
+        np.array(
+            [x["wind_speed_kmh"] for x in wind_stations]
+        )
+        * units("km/hour")
+    ).to("knots").m
+
+    directions = np.array(
+        [x["wind_direction_deg"] for x in wind_stations]
+    )
+
+    u, v = mpcalc.wind_components(
+        speeds_kt * units.knots,
+        directions * units.degree,
+    )
+
+    u = u.m
+    v = v.m
+
+    base_elev = elevations.min()
+    target_elev = base_elev + top_agl_ft
+
+    if target_elev > elevations.max():
+        return None
+
+    order = np.argsort(elevations)
+    elevations = elevations[order]
+    u = u[order]
+    v = v[order]
+
+    u_base = np.interp(base_elev, elevations, u)
+    v_base = np.interp(base_elev, elevations, v)
+
+    u_top = np.interp(target_elev, elevations, u)
+    v_top = np.interp(target_elev, elevations, v)
+
+    return float(np.hypot(u_top - u_base, v_top - v_base))
+
+
+def brunt_vaisala_and_froude(profile):
+    """
+    Bulk dry Brunt-Vaisala frequency (N, 1/s) from the potential-
+    temperature change across the full observed layer, and a bulk
+    Froude number Fr = U / (N * h) for the ridge, where U is the
+    lowest reporting station's wind speed and h is the elevation
+    span of the profile (base to summit).
+
+    This is a first-order estimate, not a substitute for an actual
+    upstream sounding, and returns (None, None, None) if the layer is
+    neutral/unstable (dtheta/dz <= 0), since N is undefined there.
+    """
+
+    if len(profile) < 2:
+        return None, None, None
+
+    bottom = profile[0]
+    top = profile[-1]
+
+    p_bottom = bottom.get("pressure_hPa")
+    p_top = top.get("pressure_hPa")
+
+    if p_bottom is None or p_top is None:
+        return None, None, None
+
+    theta_bottom = (
+        (bottom["temperature_C"] + 273.15)
+        * (1000.0 / p_bottom) ** (RD / CP)
+    )
+
+    theta_top = (
+        (top["temperature_C"] + 273.15)
+        * (1000.0 / p_top) ** (RD / CP)
+    )
+
+    dz = ft_to_m(top["elevation_ft"] - bottom["elevation_ft"])
+
+    if dz <= 0:
+        return None, None, None
+
+    theta_mean = (theta_bottom + theta_top) / 2.0
+    dtheta_dz = (theta_top - theta_bottom) / dz
+
+    if dtheta_dz <= 0:
+        # Neutral or unstable bulk layer - N (and therefore Fr) is
+        # not meaningfully defined from this simple two-point estimate.
+        return None, None, None
+
+    N = np.sqrt((G / theta_mean) * dtheta_dz)
+
+    wind_stations = [
+        x for x in profile if x.get("wind_speed_kmh") is not None
+    ]
+
+    if not wind_stations:
+        return N, None, None
+
+    lowest_wind = min(wind_stations, key=lambda x: x["elevation_ft"])
+
+    U = (
+        lowest_wind["wind_speed_kmh"] * units("km/hour")
+    ).to("m/s").m
+
+    mountain_height_m = dz
+
+    if mountain_height_m <= 0:
+        return N, U, None
+
+    Fr = U / (N * mountain_height_m)
+
+    return float(N), float(U), float(Fr)
+
+
+def classify_flow_regime(Fr):
+
+    if Fr is None:
+        return "Unknown"
+
+    if Fr >= FROUDE_UNBLOCKED:
+        return "Unblocked / flow-over"
+
+    if Fr >= FROUDE_BLOCKED:
+        return "Partially blocked"
+
+    return "Blocked"
+
+
+def bourgouin_energy_areas(profile):
+    """
+    Approximate Bourgouin (2000) positive ("melting") and negative
+    ("refreezing") energy areas, using the station pressure profile
+    already computed via the hypsometric equation:
+
+        layer area = Rd * Tmean(C) * ln(p_lower / p_upper)
+
+    This mirrors the original method's use of a layer's mean
+    temperature times its (log-pressure) depth. With 6-7 low-level
+    points instead of a full sounding - and nothing above the summit
+    station - this under- or over-estimates the true areas whenever
+    a real melting/refreezing layer falls between or above the
+    observation levels.
+    """
+
+    nodes = [
+        (x["pressure_hPa"], x["temperature_C"])
+        for x in profile
+        if x.get("pressure_hPa") is not None
+        and x.get("temperature_C") is not None
+    ]
+
+    if len(nodes) < 2:
+        return None, None
+
+    # Sort by descending pressure (ascending height).
+    nodes.sort(key=lambda n: -n[0])
+
+    # Insert 0 C crossings, interpolated linearly in T vs ln(p).
+    expanded = [nodes[0]]
+
+    for (p1, t1), (p2, t2) in zip(nodes, nodes[1:]):
+
+        if (t1 > 0 > t2) or (t1 < 0 < t2):
+
+            frac = (0.0 - t1) / (t2 - t1)
+            lnp = np.log(p1) + frac * (np.log(p2) - np.log(p1))
+            expanded.append((np.exp(lnp), 0.0))
+
+        expanded.append((p2, t2))
+
+    positive_area = 0.0
+    negative_area = 0.0
+
+    for (p1, t1), (p2, t2) in zip(expanded, expanded[1:]):
+
+        if p1 <= p2:
+            continue
+
+        t_mean = (t1 + t2) / 2.0
+        area = RD * t_mean * np.log(p1 / p2)
+
+        if area > 0:
+            positive_area += area
+        else:
+            negative_area += area
+
+    return positive_area, negative_area
+
+
+def classify_precip_type(profile, positive_area, negative_area):
+    """
+    Approximate Bourgouin-style precipitation-type call. See the
+    BOURGOUIN_* constants above for the caveats on the FZRA/PL
+    discriminant used here.
+    """
+
+    if positive_area is None:
+        return "None", "None", "N/A"
+
+    surface_temp = profile[0]["temperature_C"]
+
+    warm_layer_text = (
+        f"{positive_area:.1f} J/kg" if positive_area > 0 else "None"
+    )
+
+    cold_layer_text = (
+        f"{abs(negative_area):.1f} J/kg"
+        if negative_area < 0
+        else "None"
+    )
+
+    if positive_area < BOURGOUIN_PA_THRESHOLD:
+
+        precip_type = "Snow" if surface_temp <= 0 else "Rain"
+
+    else:
+
+        if surface_temp > 0:
+            precip_type = "Rain"
+        elif abs(negative_area) < BOURGOUIN_NA_LOW:
+            precip_type = "Rain / Freezing Rain"
+        elif abs(negative_area) < BOURGOUIN_NA_HIGH:
+            precip_type = "Ice Pellets"
+        else:
+            precip_type = "Snow"
+
+    return warm_layer_text, cold_layer_text, precip_type
+
+
+def build_diagnostics(profile):
+    """
+    Assemble the full winter-profile diagnostics dictionary from an
+    elevation-sorted, pressure-populated profile.
+    """
+
+    diagnostics = {}
+
+    # ---------------- THERMAL ----------------
+
+    freezing_points = [
+        (x["elevation_ft"], x["temperature_C"]) for x in profile
+    ]
+
+    diagnostics["freezing_level_ft"] = find_zero_level(freezing_points)
+
+    wetbulb_series = compute_wetbulb_series(profile)
+
+    if len(wetbulb_series) >= 2:
+
+        wb_points = [
+            (w["elevation_ft"], w["wetbulb_C"]) for w in wetbulb_series
+        ]
+
+        diagnostics["wet_bulb_zero_ft"] = find_zero_level(wb_points)
+
+        wb_values = [w["wetbulb_C"] for w in wetbulb_series]
+        diagnostics["wet_bulb_range_C"] = (min(wb_values), max(wb_values))
+
+    else:
+
+        diagnostics["wet_bulb_zero_ft"] = None
+        diagnostics["wet_bulb_range_C"] = None
+
+    diagnostics["mean_lapse_rate_C_km"] = mean_lapse_rate(profile)
+    diagnostics["max_inversion"] = max_inversion(profile)
+
+    # ---------------- PRECIP TYPE ----------------
+
+    positive_area, negative_area = bourgouin_energy_areas(profile)
+
+    warm_layer, cold_layer, precip_type = classify_precip_type(
+        profile, positive_area, negative_area
+    )
+
+    diagnostics["warm_layer"] = warm_layer
+    diagnostics["cold_layer"] = cold_layer
+    diagnostics["bourgouin_precip_type"] = precip_type
+
+    # ---------------- WIND / TERRAIN ----------------
+
+    diagnostics["bulk_shear_kt"] = bulk_shear(profile)
+
+    N, U, Fr = brunt_vaisala_and_froude(profile)
+
+    diagnostics["brunt_vaisala_N"] = N
+    diagnostics["froude_number"] = Fr
+    diagnostics["flow_regime"] = classify_flow_regime(Fr)
+
+    return diagnostics
+
+
+def diagnostic_display_rows(diagnostics):
+    """
+    Build the (label, value, is_section_header) rows shared by the
+    console printout and the figure table.
+    """
+
+    def val(x, suffix="", decimals=1, missing="None in observed layer"):
+        if x is None:
+            return missing
+        return f"{x:.{decimals}f}{suffix}"
+
+    inv = diagnostics["max_inversion"]
+
+    if inv:
+        inv_text = f"+{inv['dT']:.1f} C ({inv['z1']:.0f}-{inv['z2']:.0f} ft)"
+    else:
+        inv_text = "None"
+
+    wb_range = diagnostics["wet_bulb_range_C"]
+
+    if wb_range:
+        wb_range_text = f"{wb_range[0]:.1f} -> {wb_range[1]:.1f} C"
+    else:
+        wb_range_text = "Insufficient data"
+
+    shear_val = diagnostics["bulk_shear_kt"]
+    shear_text = (
+        val(shear_val, " kt", 0)
+        if shear_val is not None
+        else "Insufficient data"
+    )
+
+    froude_val = diagnostics["froude_number"]
+    froude_text = (
+        val(froude_val, "", 2)
+        if froude_val is not None
+        else "N/A"
+    )
+
+    rows = [
+        ("THERMAL", "", True),
+        ("Freezing Level", val(diagnostics["freezing_level_ft"], " ft", 0), False),
+        ("Wet-Bulb Zero", val(diagnostics["wet_bulb_zero_ft"], " ft", 0), False),
+        ("Mean Lapse Rate", val(diagnostics["mean_lapse_rate_C_km"], " C/km"), False),
+        ("Max Inversion", inv_text, False),
+        ("Wet-Bulb Range", wb_range_text, False),
+        ("PRECIP TYPE", "", True),
+        ("Warm Layer", diagnostics["warm_layer"], False),
+        ("Cold Layer", diagnostics["cold_layer"], False),
+        ("Bourgouin", diagnostics["bourgouin_precip_type"], False),
+        ("WIND / TERRAIN", "", True),
+        (f"0-{SHEAR_TOP_AGL_FT/1000:.1f} kft Bulk Shear", shear_text, False),
+        ("Froude Number", froude_text, False),
+        ("Flow Regime", diagnostics["flow_regime"], False),
+    ]
+
+    return rows
+
+
+def print_diagnostics(diagnostics):
+
+    rows = diagnostic_display_rows(diagnostics)
+
+    print()
+    print("=" * 60)
+    print("WINTER PROFILE DIAGNOSTICS")
+    print("=" * 60)
+
+    for label, value, is_header in rows:
+
+        if is_header:
+            print(f"\n{label}")
+        else:
+            print(f"  {label:<22}: {value}")
+
+    print("=" * 60)
+
+
 # =====================================================================
 # 12. PLOT
 # =====================================================================
@@ -1323,6 +1888,7 @@ def plot_skewt(
     wind_pressure,
     u,
     v,
+    diagnostics,
 ):
 
     # ==============================================================
@@ -1330,16 +1896,16 @@ def plot_skewt(
     # ==============================================================
 
     fig = plt.figure(
-        figsize=(9, 10)
+        figsize=(11, 11)
     )
 
     # Skew-T occupies the upper portion.
-    # Bottom portion is reserved for the observation table.
+    # Bottom portion is reserved for the observation + diagnostics tables.
 
     skew = SkewT(
         fig,
         rotation=45,
-        rect=(0.10, 0.39, 0.80, 0.52)
+        rect=(0.10, 0.40, 0.80, 0.53)
     )
 
     # ==============================================================
@@ -1555,7 +2121,7 @@ def plot_skewt(
     )
 
     # ==============================================================
-    # OBSERVATION TABLE
+    # OBSERVATION TABLE (left)
     # ==============================================================
 
     table_rows = []
@@ -1674,17 +2240,25 @@ def plot_skewt(
             time_text,
         ])
 
-    # Dedicated axes for table.
+    # Dedicated axes for the observation table (left half).
 
     table_ax = fig.add_axes([
-        0.10,
-        0.08,
-        0.80,
-        0.23,
+        0.06,
+        0.06,
+        0.52,
+        0.28,
     ])
 
     table_ax.axis(
         "off"
+    )
+
+    table_ax.set_title(
+        "Station Observations",
+        fontsize=10,
+        fontweight="bold",
+        loc="left",
+        pad=4,
     )
 
     table = table_ax.table(
@@ -1713,7 +2287,7 @@ def plot_skewt(
 
     table.scale(
         1.0,
-        1.45,
+        1.4,
     )
 
     # Make header bold.
@@ -1725,6 +2299,56 @@ def plot_skewt(
         ].set_text_props(
             weight="bold"
         )
+
+    # ==============================================================
+    # WINTER PROFILE DIAGNOSTICS TABLE (right)
+    # ==============================================================
+
+    diag_rows = diagnostic_display_rows(diagnostics)
+
+    diag_ax = fig.add_axes([
+        0.62,
+        0.06,
+        0.34,
+        0.28,
+    ])
+
+    diag_ax.axis("off")
+
+    diag_ax.set_title(
+        "Winter Profile Diagnostics",
+        fontsize=10,
+        fontweight="bold",
+        loc="left",
+        pad=4,
+    )
+
+    diag_table = diag_ax.table(
+        cellText=[[label, value] for label, value, _ in diag_rows],
+        colWidths=[0.55, 0.45],
+        cellLoc="left",
+        loc="center",
+    )
+
+    diag_table.auto_set_font_size(False)
+    diag_table.set_fontsize(8.5)
+    diag_table.scale(1.0, 1.3)
+
+    for row_index, (label, value, is_header) in enumerate(diag_rows):
+
+        for col in range(2):
+
+            cell = diag_table[(row_index, col)]
+            cell.set_edgecolor("none")
+
+            if is_header:
+
+                cell.set_text_props(weight="bold")
+                cell.set_facecolor("0.90")
+
+                # Blank out the value column on section-header rows.
+                if col == 1:
+                    cell.get_text().set_text("")
 
     # ==============================================================
     # PRODUCT TIME
@@ -1755,7 +2379,7 @@ def plot_skewt(
 
         fig.text(
             0.50,
-            0.025,
+            0.015,
             time_text,
             ha="center",
             fontsize=10,
@@ -1799,6 +2423,14 @@ def main():
         profile
     )
 
+    diagnostics = build_diagnostics(
+        profile
+    )
+
+    print_diagnostics(
+        diagnostics
+    )
+
     (
         pressure,
         temperature,
@@ -1816,6 +2448,7 @@ def main():
         wind_pressure,
         u,
         v,
+        diagnostics,
     )
 
 
