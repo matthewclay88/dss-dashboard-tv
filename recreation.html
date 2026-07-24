@@ -140,7 +140,9 @@
     .gauge-card {
       background: var(--card-bg); border: 1px solid var(--border);
       border-radius: 9px; padding: 11px; text-align: center;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
+    .gauge-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(15,42,74,0.12); }
     .gauge-card.is-stale { background: #fdf8ee; border-color: #f0dfb0; }
     .gauge-card.is-stale .updated-row { color: var(--orange); font-weight: 600; }
     .stale-badge {
@@ -248,6 +250,12 @@
       <button class="close-btn" id="infoModalClose">&times;</button>
       <h2>Where this data comes from</h2>
       <p class="info-modal-sub">A quick breakdown of the source behind each part of this dashboard.</p>
+
+      <div class="source-item">
+        <h4>Wind barb &amp; card border colors</h4>
+        <p>Lake stations: <strong style="color:#3fae4a">green</strong> under 15 mph, <strong style="color:#b8860b">yellow</strong> 15&ndash;25 mph, <strong style="color:#c0392b">red</strong> above 25 mph.
+        Mountain stations (Mt. Mansfield, Whiteface) use raised thresholds since exposed summits run windier in normal conditions: <strong style="color:#3fae4a">green</strong> under 30 mph, <strong style="color:#b8860b">yellow</strong> 30&ndash;45 mph, <strong style="color:#c0392b">red</strong> above 45 mph. Based on sustained wind speed (or gust, if sustained isn't available).</p>
+      </div>
 
       <div class="source-item">
         <h4>Wind &amp; temperature gauges &mdash; lake stations (Colchester Reef, Burton Island, Diamond Island)</h4>
@@ -1304,6 +1312,11 @@ function fmtVal(v) { return (v == null) ? '--' : v; }
 function buildGaugeCard(station) {
   var card = document.createElement('div');
   card.className = 'gauge-card' + (station.stale ? ' is-stale' : '');
+  // Left border matches the barb's own severity color exactly (same function,
+  // same thresholds) — lets severity read at a glance without even looking
+  // at the barb itself.
+  var severityBasis = station.sustained != null ? station.sustained : station.gust;
+  card.style.borderLeft = '4px solid ' + windSpeedColor_(severityBasis, station.region !== 'Lake Champlain');
   var staleBadge = station.stale
     ? '<div class="stale-badge">&#9888; STALE &middot; ' + station.staleAge + ' old</div>'
     : '';
