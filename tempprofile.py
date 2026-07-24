@@ -1441,12 +1441,6 @@ def plot_skewt(
     # ==============================================================
     # DEWPOINT
     # ==============================================================
-    #
-    # Dewpoint is optional.
-    #
-    # Only stations actually reporting dewpoint are plotted.
-    # Missing dewpoints are NOT estimated or interpolated.
-    # ==============================================================
 
     dewpoint_pressure = []
     dewpoint_temperature = []
@@ -1478,23 +1472,14 @@ def plot_skewt(
             * units.degC
         )
 
-    skew.plot(
-        td_pressure,
-        td_temperature,
-        color="green",
-        linewidth=3,
-        marker="o",
-        markersize=7,
-        zorder=10,
-    )
         skew.plot(
             td_pressure,
             td_temperature,
             color="green",
-            linewidth=2.5,
+            linewidth=3,
             marker="o",
-            markersize=6,
-            zorder=9,
+            markersize=7,
+            zorder=10,
         )
 
     # ==============================================================
