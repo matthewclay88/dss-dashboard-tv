@@ -1284,7 +1284,6 @@ def print_profile(profile):
 
     print("=" * 112)
 
-
 # =====================================================================
 # 12. PLOT
 # =====================================================================
@@ -1298,13 +1297,89 @@ def plot_skewt(
     v,
 ):
 
+    # --------------------------------------------------------------
+    # Square figure
+    # --------------------------------------------------------------
+
     fig = plt.figure(
         figsize=(9, 9)
     )
 
+    # Give the Skew-T a controlled, nearly square plotting area.
+    #
+    # [left, bottom, width, height]
     skew = SkewT(
         fig,
-        rotation=45
+        rotation=45,
+        rect=(0.10, 0.10, 0.78, 0.82)
+    )
+
+    # --------------------------------------------------------------
+    # Determine tight plotting limits from actual observations
+    # --------------------------------------------------------------
+
+    p_max = pressure.max().to("hPa").m
+    p_min = pressure.min().to("hPa").m
+
+    t_max = temperature.max().to("degC").m
+    t_min = temperature.min().to("degC").m
+
+    # Small amount of vertical padding around profile.
+    pressure_padding_bottom = 10
+    pressure_padding_top = 15
+
+    bottom_pressure = p_max + pressure_padding_bottom
+    top_pressure = p_min - pressure_padding_top
+
+    # Temperature padding.
+    #
+    # This is deliberately fairly tight so small temperature
+    # changes/inversions are easy to see.
+    temp_padding_left = 8
+    temp_padding_right = 8
+
+    left_temperature = t_min - temp_padding_left
+    right_temperature = t_max + temp_padding_right
+
+    # Guarantee a reasonable minimum temperature width.
+    #
+    # On days when all stations have almost identical temperatures,
+    # we still want enough room for the Skew-T background.
+    minimum_temp_width = 25
+
+    current_width = (
+        right_temperature
+        - left_temperature
+    )
+
+    if current_width < minimum_temp_width:
+
+        midpoint = (
+            t_max + t_min
+        ) / 2
+
+        left_temperature = (
+            midpoint
+            - minimum_temp_width / 2
+        )
+
+        right_temperature = (
+            midpoint
+            + minimum_temp_width / 2
+        )
+
+    # --------------------------------------------------------------
+    # Apply limits
+    # --------------------------------------------------------------
+
+    skew.ax.set_ylim(
+        bottom_pressure,
+        top_pressure
+    )
+
+    skew.ax.set_xlim(
+        left_temperature,
+        right_temperature
     )
 
     # --------------------------------------------------------------
@@ -1315,14 +1390,15 @@ def plot_skewt(
         pressure,
         temperature,
         color="red",
-        linewidth=2.5,
+        linewidth=3,
         marker="o",
-        markersize=7,
+        markersize=8,
         label="Observed Temperature",
+        zorder=10,
     )
 
     # --------------------------------------------------------------
-    # Winds
+    # Wind barbs
     # --------------------------------------------------------------
 
     if wind_pressure is not None:
@@ -1332,6 +1408,12 @@ def plot_skewt(
             u,
             v,
             xloc=1.0,
+            sizes={
+                "emptybarb": 0.15,
+                "spacing": 0.2,
+                "height": 0.4,
+            },
+            linewidth=1.2,
         )
 
     # --------------------------------------------------------------
@@ -1339,52 +1421,38 @@ def plot_skewt(
     # --------------------------------------------------------------
 
     skew.plot_dry_adiabats(
-        alpha=0.25
-    )
-
-    skew.plot_moist_adiabats(
         alpha=0.20
     )
 
-    skew.plot_mixing_lines(
+    skew.plot_moist_adiabats(
         alpha=0.15
     )
 
-    # --------------------------------------------------------------
-    # 0 C isotherm
-    # --------------------------------------------------------------
-
-    skew.ax.axvline(
-        0,
-        color="blue",
-        linestyle="--",
-        linewidth=1.5,
-        alpha=0.7,
+    skew.plot_mixing_lines(
+        alpha=0.12
     )
 
     # --------------------------------------------------------------
-    # Limits
+    # Zero-degree isotherm
+    # --------------------------------------------------------------
+    #
+    # Only draw it if 0 C is actually reasonably close to the
+    # displayed temperature range.
     # --------------------------------------------------------------
 
-    bottom_pressure = min(
-        1040,
-        pressure.max().m + 10
-    )
+    if (
+        left_temperature <= 0
+        <= right_temperature
+    ):
 
-    top_pressure = max(
-        820,
-        pressure.min().m - 25
-    )
-
-    skew.ax.set_ylim(
-        bottom_pressure,
-        top_pressure,
-    )
-
-    skew.ax.set_xlim(
-        -30,
-        35,
-    )
+        skew.ax.axvline(
+            0,
+            color="blue",
+            linestyle="--",
+            linewidth=1.5,
+            alpha=0.7,
+            zorder=5,
+        )
 
     # --------------------------------------------------------------
     # Station labels
@@ -1402,35 +1470,99 @@ def plot_skewt(
                 tt.to("degC").m,
                 pp.to("hPa").m,
             ),
-            xytext=(8, 0),
+            xytext=(10, 0),
             textcoords="offset points",
-            fontsize=9,
+            fontsize=10,
             fontweight="bold",
             va="center",
+            ha="left",
+            zorder=20,
         )
+
+    # --------------------------------------------------------------
+    # Titles
+    # --------------------------------------------------------------
 
     skew.ax.set_title(
         "Mount Mansfield Observed Slope Profile",
-        fontsize=15,
+        fontsize=16,
         fontweight="bold",
         loc="left",
+        pad=12,
     )
 
     skew.ax.set_title(
         "Temperature + Wind",
-        fontsize=10,
+        fontsize=11,
         loc="right",
+        pad=12,
     )
+
+    # --------------------------------------------------------------
+    # Axis labels
+    # --------------------------------------------------------------
+
+    skew.ax.set_xlabel(
+        "Temperature (°C)",
+        fontsize=11,
+    )
+
+    skew.ax.set_ylabel(
+        "Pressure (hPa)",
+        fontsize=11,
+    )
+
+    # --------------------------------------------------------------
+    # Legend
+    # --------------------------------------------------------------
 
     skew.ax.legend(
-        loc="upper left"
+        loc="upper left",
+        fontsize=10,
     )
 
-    plt.tight_layout()
+    # --------------------------------------------------------------
+    # Observation time footer
+    # --------------------------------------------------------------
+
+    latest_times = []
+
+    for station in profile:
+
+        dt = parse_iso_time(
+            station.get(
+                "temperature_time"
+            )
+        )
+
+        if dt is not None:
+            latest_times.append(dt)
+
+    if latest_times:
+
+        newest = max(
+            latest_times
+        )
+
+        time_text = newest.strftime(
+            "%d %b %Y %H:%M UTC"
+        )
+
+        fig.text(
+            0.49,
+            0.035,
+            time_text,
+            ha="center",
+            fontsize=10,
+        )
+
+    # --------------------------------------------------------------
+    # Save
+    # --------------------------------------------------------------
 
     plt.savefig(
         OUTPUT_FILE,
-        dpi=150,
+        dpi=175,
         bbox_inches="tight",
     )
 
@@ -1441,7 +1573,6 @@ def plot_skewt(
         f"Saved Skew-T to: "
         f"{OUTPUT_FILE}"
     )
-
 
 # =====================================================================
 # 13. MAIN
