@@ -1393,7 +1393,6 @@ def plot_skewt(
         linewidth=3,
         marker="o",
         markersize=8,
-        label="Observed Temperature",
         zorder=10,
     )
 
@@ -1416,6 +1415,39 @@ def plot_skewt(
             linewidth=1.2,
         )
 
+    # --------------------------------------------------------------
+    # Station / elevation labels beside wind barbs
+    # --------------------------------------------------------------
+
+    for station in profile:
+
+        pp = station["pressure_hPa"]
+
+        label = (
+            f"{station['stid']}  "
+            f"{station['elevation_ft']:.0f} ft"
+        )
+
+        # Position just inside the right side of the plot.
+        skew.ax.annotate(
+            label,
+            xy=(
+                0.985,
+                pp,
+            ),
+            xycoords=(
+                "axes fraction",
+                "data",
+            ),
+            xytext=(-38, 0),
+            textcoords="offset points",
+            ha="right",
+            va="center",
+            fontsize=9,
+            fontweight="bold",
+            zorder=20,
+        )
+    
     # --------------------------------------------------------------
     # Skew-T background
     # --------------------------------------------------------------
@@ -1455,36 +1487,6 @@ def plot_skewt(
         )
 
     # --------------------------------------------------------------
-    # Station labels
-    # --------------------------------------------------------------
-
-    for station, pp, tt in zip(
-        profile,
-        pressure,
-        temperature,
-    ):
-
-        label = (
-            f"{station['stid']}  "
-            f"{station['elevation_ft']:.0f} ft"
-        )
-        
-        skew.ax.annotate(
-            station["stid"],
-            xy=(
-                tt.to("degC").m,
-                pp.to("hPa").m,
-            ),
-            xytext=(10, 0),
-            textcoords="offset points",
-            fontsize=10,
-            fontweight="bold",
-            va="center",
-            ha="left",
-            zorder=20,
-        )
-
-    # --------------------------------------------------------------
     # Titles
     # --------------------------------------------------------------
 
@@ -1515,15 +1517,6 @@ def plot_skewt(
     skew.ax.set_ylabel(
         "Pressure (hPa)",
         fontsize=11,
-    )
-
-    # --------------------------------------------------------------
-    # Legend
-    # --------------------------------------------------------------
-
-    skew.ax.legend(
-        loc="upper left",
-        fontsize=10,
     )
 
     # --------------------------------------------------------------
