@@ -211,21 +211,12 @@ def fetch_nws_recent(stid):
 
         return []
 
-
 def extract_latest_nws_values(stid):
     """
-    Search recent NWS observations.
+    Search recent NWS observations for the newest usable values.
 
-    Temperature and wind do NOT have to come from exactly the same
-    observation record.
-
-    Returns the newest available:
-        temperature
-        wind speed
-        wind direction
-        pressure
-
-    while preserving timestamps.
+    Temperature, dewpoint, wind, and pressure do NOT have to come
+    from the same observation record.
     """
 
     features = fetch_nws_recent(stid)
@@ -235,6 +226,9 @@ def extract_latest_nws_values(stid):
 
     temperature = None
     temperature_time = None
+
+    dewpoint = None
+    dewpoint_time = None
 
     wind_speed = None
     wind_direction = None
@@ -248,26 +242,34 @@ def extract_latest_nws_values(stid):
     for feature in features:
 
         p = feature.get("properties", {})
-
         timestamp = p.get("timestamp")
 
         if newest_time is None and timestamp:
             newest_time = timestamp
 
-        # -------------------------------------------------------------
+        # ---------------------------------------------------------
         # Temperature
-        # -------------------------------------------------------------
+        # ---------------------------------------------------------
 
         temp = qv_value(p, "temperature")
 
         if temperature is None and temp is not None:
-
             temperature = temp
             temperature_time = timestamp
 
-        # -------------------------------------------------------------
+        # ---------------------------------------------------------
+        # Dewpoint
+        # ---------------------------------------------------------
+
+        td = qv_value(p, "dewpoint")
+
+        if dewpoint is None and td is not None:
+            dewpoint = td
+            dewpoint_time = timestamp
+
+        # ---------------------------------------------------------
         # Wind
-        # -------------------------------------------------------------
+        # ---------------------------------------------------------
 
         speed = qv_value(p, "windSpeed")
         direction = qv_value(p, "windDirection")
@@ -277,26 +279,27 @@ def extract_latest_nws_values(stid):
             and speed is not None
             and direction is not None
         ):
-
             wind_speed = speed
             wind_direction = direction
             wind_time = timestamp
 
-        # -------------------------------------------------------------
+        # ---------------------------------------------------------
         # Station pressure
-        # -------------------------------------------------------------
+        # ---------------------------------------------------------
 
         pressure = qv_value(p, "barometricPressure")
 
         if pressure_pa is None and pressure is not None:
-
             pressure_pa = pressure
             pressure_time = timestamp
 
-        # Stop once everything has been found.
+        # ---------------------------------------------------------
+        # Stop once everything has been found
+        # ---------------------------------------------------------
 
         if (
             temperature is not None
+            and dewpoint is not None
             and wind_speed is not None
             and pressure_pa is not None
         ):
@@ -304,18 +307,25 @@ def extract_latest_nws_values(stid):
 
     return {
         "stid": stid,
+
         "temperature_C": temperature,
         "temperature_time": temperature_time,
+
+        "dewpoint_C": dewpoint,
+        "dewpoint_time": dewpoint_time,
+
         "wind_speed_kmh": wind_speed,
         "wind_direction_deg": wind_direction,
         "wind_time": wind_time,
+
         "barometric_pressure_Pa": pressure_pa,
         "pressure_time": pressure_time,
+
         "timestamp": temperature_time or newest_time,
+
         "source": "NWS API",
     }
-
-
+    
 # =====================================================================
 # 4. MMNV1 TEMPERATURE - RR2
 # =====================================================================
@@ -803,6 +813,8 @@ def fetch_mmvn1():
         "stid": "MMNV1",
         "temperature_C": temp_c,
         "temperature_time": temp_time,
+        "dewpoint_C": None,
+        "dewpoint_time": None,
         "wind_speed_kmh": wind_speed_kmh,
         "wind_direction_deg": wind_direction,
         "wind_time": wind_time,
@@ -905,7 +917,10 @@ def fetch_all():
 
 def build_profile(observations):
     """
-    Convert normalized observations into elevation-sorted profile.
+    Convert normalized observations into an elevation-sorted profile.
+
+    Temperature is required for a station to enter the thermal profile.
+    Dewpoint and wind are optional.
     """
 
     profile = []
@@ -938,20 +953,35 @@ def build_profile(observations):
 
         profile.append({
             "stid": stid,
+
             "elevation_ft": elevation_ft,
-            "temperature_C": temperature,
+
+            "temperature_C":
+                temperature,
+
             "temperature_time":
                 obs.get("temperature_time"),
+
+            "dewpoint_C":
+                obs.get("dewpoint_C"),
+
+            "dewpoint_time":
+                obs.get("dewpoint_time"),
+
             "wind_speed_kmh":
                 obs.get("wind_speed_kmh"),
+
             "wind_direction_deg":
                 obs.get("wind_direction_deg"),
+
             "wind_time":
                 obs.get("wind_time"),
+
             "barometric_pressure_Pa":
                 obs.get(
                     "barometric_pressure_Pa"
                 ),
+
             "source":
                 obs.get("source"),
         })
@@ -968,8 +998,6 @@ def build_profile(observations):
         )
 
     return profile
-
-
 # =====================================================================
 # 9. PRESSURE PROFILE
 # =====================================================================
@@ -1297,26 +1325,26 @@ def plot_skewt(
     v,
 ):
 
-    # --------------------------------------------------------------
-    # Square figure
-    # --------------------------------------------------------------
+    # ==============================================================
+    # FIGURE
+    # ==============================================================
 
     fig = plt.figure(
-        figsize=(9, 9)
+        figsize=(9, 10)
     )
 
-    # Give the Skew-T a controlled, nearly square plotting area.
-    #
-    # [left, bottom, width, height]
+    # Skew-T occupies the upper portion.
+    # Bottom portion is reserved for the observation table.
+
     skew = SkewT(
         fig,
         rotation=45,
-        rect=(0.10, 0.10, 0.66, 0.82)
+        rect=(0.10, 0.39, 0.80, 0.52)
     )
 
-    # --------------------------------------------------------------
-    # Determine tight plotting limits from actual observations
-    # --------------------------------------------------------------
+    # ==============================================================
+    # TIGHT PLOT LIMITS
+    # ==============================================================
 
     p_max = pressure.max().to("hPa").m
     p_min = pressure.min().to("hPa").m
@@ -1324,27 +1352,29 @@ def plot_skewt(
     t_max = temperature.max().to("degC").m
     t_min = temperature.min().to("degC").m
 
-    # Small amount of vertical padding around profile.
-    pressure_padding_bottom = 10
-    pressure_padding_top = 15
+    # Small pressure padding above/below observations.
 
-    bottom_pressure = p_max + pressure_padding_bottom
-    top_pressure = p_min - pressure_padding_top
+    bottom_pressure = p_max + 10
+    top_pressure = p_min - 15
 
-    # Temperature padding.
+    # Very tight temperature zoom.
     #
-    # This is deliberately fairly tight so small temperature
-    # changes/inversions are easy to see.
+    # This product is intentionally focused on small temperature
+    # differences in the shallow low-level profile.
+
     temp_padding_left = 2.0
     temp_padding_right = 2.0
 
-    left_temperature = t_min - temp_padding_left
-    right_temperature = t_max + temp_padding_right
+    left_temperature = (
+        t_min - temp_padding_left
+    )
 
-    # Guarantee a reasonable minimum temperature width.
-    #
-    # On days when all stations have almost identical temperatures,
-    # we still want enough room for the Skew-T background.
+    right_temperature = (
+        t_max + temp_padding_right
+    )
+
+    # Maintain a minimum 8 C window if temperatures are clustered.
+
     minimum_temp_width = 8.0
 
     current_width = (
@@ -1356,21 +1386,17 @@ def plot_skewt(
 
         midpoint = (
             t_max + t_min
-        ) / 2
+        ) / 2.0
 
         left_temperature = (
             midpoint
-            - minimum_temp_width / 2
+            - minimum_temp_width / 2.0
         )
 
         right_temperature = (
             midpoint
-            + minimum_temp_width / 2
+            + minimum_temp_width / 2.0
         )
-
-    # --------------------------------------------------------------
-    # Apply limits
-    # --------------------------------------------------------------
 
     skew.ax.set_ylim(
         bottom_pressure,
@@ -1382,9 +1408,25 @@ def plot_skewt(
         right_temperature
     )
 
-    # --------------------------------------------------------------
-    # Temperature trace
-    # --------------------------------------------------------------
+    # ==============================================================
+    # SKEW-T BACKGROUND
+    # ==============================================================
+
+    skew.plot_dry_adiabats(
+        alpha=0.20
+    )
+
+    skew.plot_moist_adiabats(
+        alpha=0.15
+    )
+
+    skew.plot_mixing_lines(
+        alpha=0.12
+    )
+
+    # ==============================================================
+    # TEMPERATURE
+    # ==============================================================
 
     skew.plot(
         pressure,
@@ -1396,9 +1438,65 @@ def plot_skewt(
         zorder=10,
     )
 
-    # --------------------------------------------------------------
-    # Wind barbs
-    # --------------------------------------------------------------
+    # ==============================================================
+    # DEWPOINT
+    # ==============================================================
+    #
+    # Dewpoint is optional.
+    #
+    # Only stations actually reporting dewpoint are plotted.
+    # Missing dewpoints are NOT estimated or interpolated.
+    # ==============================================================
+
+    dewpoint_pressure = []
+    dewpoint_temperature = []
+
+    for station in profile:
+
+        td = station.get(
+            "dewpoint_C"
+        )
+
+        if td is None:
+            continue
+
+        dewpoint_pressure.append(
+            station["pressure_hPa"]
+        )
+
+        dewpoint_temperature.append(
+            td
+        )
+
+    if dewpoint_temperature:
+
+        td_pressure = (
+            np.array(
+                dewpoint_pressure
+            )
+            * units.hPa
+        )
+
+        td_temperature = (
+            np.array(
+                dewpoint_temperature
+            )
+            * units.degC
+        )
+
+        skew.plot(
+            td_pressure,
+            td_temperature,
+            color="green",
+            linewidth=2.5,
+            marker="o",
+            markersize=6,
+            zorder=9,
+        )
+
+    # ==============================================================
+    # WIND BARBS
+    # ==============================================================
 
     if wind_pressure is not None:
 
@@ -1415,64 +1513,9 @@ def plot_skewt(
             linewidth=1.2,
         )
 
-    # --------------------------------------------------------------
-    # Station / elevation labels beside wind barbs
-    # --------------------------------------------------------------
-
-    for station in profile:
-
-        pp = station["pressure_hPa"]
-
-        # Convert pressure from data coordinates -> display coordinates.
-        display_xy = skew.ax.transData.transform(
-            (0, pp)
-        )
-
-        # Convert display coordinates -> figure coordinates.
-        figure_xy = fig.transFigure.inverted().transform(
-            display_xy
-        )
-
-        y_fig = figure_xy[1]
-
-        label = (
-            f"{station['stid']}   "
-            f"{station['elevation_ft']:.0f} ft"
-        )
-
-        fig.text(
-            0.80,
-            y_fig,
-            label,
-            ha="left",
-            va="center",
-            fontsize=10,
-            fontweight="bold",
-        )
-    
-    # --------------------------------------------------------------
-    # Skew-T background
-    # --------------------------------------------------------------
-
-    skew.plot_dry_adiabats(
-        alpha=0.20
-    )
-
-    skew.plot_moist_adiabats(
-        alpha=0.15
-    )
-
-    skew.plot_mixing_lines(
-        alpha=0.12
-    )
-
-    # --------------------------------------------------------------
-    # Zero-degree isotherm
-    # --------------------------------------------------------------
-    #
-    # Only draw it if 0 C is actually reasonably close to the
-    # displayed temperature range.
-    # --------------------------------------------------------------
+    # ==============================================================
+    # 0 C ISOTHERM
+    # ==============================================================
 
     if (
         left_temperature <= 0
@@ -1484,13 +1527,13 @@ def plot_skewt(
             color="blue",
             linestyle="--",
             linewidth=1.5,
-            alpha=0.7,
+            alpha=0.75,
             zorder=5,
         )
 
-    # --------------------------------------------------------------
-    # Titles
-    # --------------------------------------------------------------
+    # ==============================================================
+    # TITLE / AXES
+    # ==============================================================
 
     skew.ax.set_title(
         "Mount Mansfield Observed Slope Profile",
@@ -1499,10 +1542,6 @@ def plot_skewt(
         loc="left",
         pad=12,
     )
-
-    # --------------------------------------------------------------
-    # Axis labels
-    # --------------------------------------------------------------
 
     skew.ax.set_xlabel(
         "Temperature (°C)",
@@ -1514,9 +1553,181 @@ def plot_skewt(
         fontsize=11,
     )
 
-    # --------------------------------------------------------------
-    # Observation time footer
-    # --------------------------------------------------------------
+    # ==============================================================
+    # OBSERVATION TABLE
+    # ==============================================================
+
+    table_rows = []
+
+    # Highest elevation first so the table follows the vertical
+    # orientation of the sounding.
+
+    for station in reversed(profile):
+
+        # ----------------------------------------------------------
+        # Temperature
+        # ----------------------------------------------------------
+
+        temp = station.get(
+            "temperature_C"
+        )
+
+        if temp is not None:
+
+            temp_text = (
+                f"{temp:.1f}°C"
+            )
+
+        else:
+
+            temp_text = "--"
+
+        # ----------------------------------------------------------
+        # Dewpoint
+        # ----------------------------------------------------------
+
+        dewpoint = station.get(
+            "dewpoint_C"
+        )
+
+        if dewpoint is not None:
+
+            dewpoint_text = (
+                f"{dewpoint:.1f}°C"
+            )
+
+        else:
+
+            dewpoint_text = "--"
+
+        # ----------------------------------------------------------
+        # Wind
+        # ----------------------------------------------------------
+
+        speed = station.get(
+            "wind_speed_kmh"
+        )
+
+        direction = station.get(
+            "wind_direction_deg"
+        )
+
+        if (
+            speed is not None
+            and direction is not None
+        ):
+
+            speed_kt = (
+                speed
+                * units("km/hour")
+            ).to("knots").m
+
+            if speed_kt < 0.5:
+
+                wind_text = "Calm"
+
+            else:
+
+                wind_text = (
+                    f"{direction:03.0f}° / "
+                    f"{speed_kt:.0f} kt"
+                )
+
+        else:
+
+            wind_text = "--"
+
+        # ----------------------------------------------------------
+        # Observation time
+        # ----------------------------------------------------------
+
+        obs_time = parse_iso_time(
+            station.get(
+                "temperature_time"
+            )
+        )
+
+        if obs_time:
+
+            time_text = (
+                obs_time.strftime(
+                    "%H:%MZ"
+                )
+            )
+
+        else:
+
+            time_text = "--"
+
+        # ----------------------------------------------------------
+        # Add row
+        # ----------------------------------------------------------
+
+        table_rows.append([
+            station["stid"],
+            f"{station['elevation_ft']:.0f} ft",
+            f"{station['pressure_hPa']:.1f}",
+            temp_text,
+            dewpoint_text,
+            wind_text,
+            time_text,
+        ])
+
+    # Dedicated axes for table.
+
+    table_ax = fig.add_axes([
+        0.10,
+        0.08,
+        0.80,
+        0.23,
+    ])
+
+    table_ax.axis(
+        "off"
+    )
+
+    table = table_ax.table(
+        cellText=table_rows,
+        colLabels=[
+            "Station",
+            "Elevation",
+            "Pressure",
+            "Temp",
+            "Dewpoint",
+            "Wind",
+            "Time",
+        ],
+        cellLoc="center",
+        colLoc="center",
+        loc="center",
+    )
+
+    table.auto_set_font_size(
+        False
+    )
+
+    table.set_fontsize(
+        9
+    )
+
+    table.scale(
+        1.0,
+        1.45,
+    )
+
+    # Make header bold.
+
+    for column in range(7):
+
+        table[
+            (0, column)
+        ].set_text_props(
+            weight="bold"
+        )
+
+    # ==============================================================
+    # PRODUCT TIME
+    # ==============================================================
 
     latest_times = []
 
@@ -1542,16 +1753,16 @@ def plot_skewt(
         )
 
         fig.text(
-            0.49,
-            0.035,
+            0.50,
+            0.025,
             time_text,
             ha="center",
             fontsize=10,
         )
 
-    # --------------------------------------------------------------
-    # Save
-    # --------------------------------------------------------------
+    # ==============================================================
+    # SAVE
+    # ==============================================================
 
     plt.savefig(
         OUTPUT_FILE,
