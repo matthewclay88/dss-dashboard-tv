@@ -27,6 +27,12 @@ jobs:
       - name: Generate Mount Mansfield sounding
         run: python tempprofile.py
 
+      - name: Upload sounding image
+        uses: actions/upload-artifact@v4
+        with:
+          name: mansfield-pseudo-sounding
+          path: vt_pseudo_sounding.png
+
       - name: Show generated files
         run: |
           echo "Repository contents:"
