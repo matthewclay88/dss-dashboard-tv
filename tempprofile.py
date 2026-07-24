@@ -1311,7 +1311,7 @@ def plot_skewt(
     skew = SkewT(
         fig,
         rotation=45,
-        rect=(0.10, 0.10, 0.78, 0.82)
+        rect=(0.10, 0.10, 0.66, 0.82)
     )
 
     # --------------------------------------------------------------
@@ -1423,29 +1423,31 @@ def plot_skewt(
 
         pp = station["pressure_hPa"]
 
+        # Convert pressure from data coordinates -> display coordinates.
+        display_xy = skew.ax.transData.transform(
+            (0, pp)
+        )
+
+        # Convert display coordinates -> figure coordinates.
+        figure_xy = fig.transFigure.inverted().transform(
+            display_xy
+        )
+
+        y_fig = figure_xy[1]
+
         label = (
-            f"{station['stid']}  "
+            f"{station['stid']}   "
             f"{station['elevation_ft']:.0f} ft"
         )
 
-        # Position just inside the right side of the plot.
-        skew.ax.annotate(
+        fig.text(
+            0.80,
+            y_fig,
             label,
-            xy=(
-                0.985,
-                pp,
-            ),
-            xycoords=(
-                "axes fraction",
-                "data",
-            ),
-            xytext=(-38, 0),
-            textcoords="offset points",
-            ha="right",
+            ha="left",
             va="center",
-            fontsize=9,
+            fontsize=10,
             fontweight="bold",
-            zorder=20,
         )
     
     # --------------------------------------------------------------
@@ -1495,13 +1497,6 @@ def plot_skewt(
         fontsize=16,
         fontweight="bold",
         loc="left",
-        pad=12,
-    )
-
-    skew.ax.set_title(
-        "Temperature + Wind",
-        fontsize=11,
-        loc="right",
         pad=12,
     )
 
