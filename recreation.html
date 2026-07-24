@@ -26,11 +26,9 @@
       color: #1a1a1a;
     }
 
-    /* ---------- HEADER ---------- */
+    /* ---------- HEADER (with embedded conditional alert row) ---------- */
     .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 8px 24px;
       background: linear-gradient(90deg, #dce8f5, #eef3f8);
       border-bottom: 1px solid var(--border);
@@ -43,34 +41,32 @@
       font-size: 7px; font-weight: 700; color: var(--navy); text-align: center;
       flex-shrink: 0;
     }
-    .title h1 {
-      margin: 0; font-size: 16px; letter-spacing: 0.3px; line-height: 1.2;
-      color: var(--navy-dark); font-weight: 800;
-    }
+    .title h1 { margin: 0; font-size: 16px; letter-spacing: 0.3px; line-height: 1.2; color: var(--navy-dark); font-weight: 800; }
     .title p { margin: 0; color: var(--text-dim); font-size: 11px; }
     .header-right { text-align: right; font-size: 12px; color: var(--navy); white-space: nowrap; }
     .header-right .refresh-row { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
 
-    /* ---------- HAZARDS BANNER ---------- */
-    .hazards {
-      display: flex; align-items: center; gap: 22px;
+    /* Embedded alert row — only takes up space when a hazard is active. */
+    .header-alert-row {
+      display: none; align-items: center; gap: 20px;
       background: #fdeeee; border-bottom: 1px solid #f6cccc;
-      padding: 8px 24px; flex-wrap: wrap;
+      padding: 6px 24px; flex-wrap: wrap;
     }
-    .hazards.is-clear { background: #eef7f0; border-bottom-color: #cfe9d6; }
-    .hazards .icon { color: var(--red); font-size: 16px; }
-    .hazards.is-clear .icon { color: var(--green); }
-    .hazards-label { color: var(--red); font-weight: 700; font-size: 12px; white-space: nowrap; }
-    .hazards.is-clear .hazards-label { color: var(--green); }
-    .hazard-item { border-left: 1px solid #f0c4c4; padding-left: 18px; font-size: 11px; }
-    .hazard-item b { display: block; color: #222; font-size: 12px; }
-    .hazard-item span { color: var(--text-dim); }
-    .hazards-empty { color: var(--text-dim); font-size: 11px; font-style: italic; }
-    .view-text-btn {
+    .header-alert-row.is-visible { display: flex; }
+    .header-alert-row .icon { color: var(--red); font-size: 14px; }
+    .header-alert-row .hazards-label { color: var(--red); font-weight: 700; font-size: 11px; white-space: nowrap; }
+    .header-alert-row .hazard-item { border-left: 1px solid #f0c4c4; padding-left: 14px; font-size: 10.5px; }
+    .header-alert-row .hazard-item b { display: block; color: #222; font-size: 11px; }
+    .header-alert-row .hazard-item span { color: var(--text-dim); }
+    .header-alert-row .view-text-btn {
       margin-left: auto; border: 1px solid var(--red); color: var(--red);
-      background: #fff; padding: 5px 12px; border-radius: 6px; font-size: 11px;
+      background: #fff; padding: 4px 10px; border-radius: 6px; font-size: 10px;
       font-weight: 600; cursor: pointer;
     }
+
+    /* ---------- MAIN WRAP: header (auto) + everything else fills the rest ---------- */
+    .main-wrap { display: flex; flex-direction: column; height: 100vh; }
+    .main-content { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: row; gap: 14px; padding: 8px 20px; }
 
     /* ---------- SECTION HEADERS ---------- */
     .section-title {
@@ -80,81 +76,69 @@
     }
     .section-title .tag { margin-left: auto; font-weight: 400; font-size: 11px; color: var(--text-dim); }
 
-    /* ---------- GAUGE GRID (grouped: lake stations | mountain stations) ---------- */
-    .gauge-section { display: flex; gap: 14px; padding: 0 28px 6px; align-items: stretch; }
-    .gauge-grid { display: grid; gap: 10px; }
-    .gauge-grid.lake-group { flex: 4 1 0; grid-template-columns: repeat(4, 1fr); }
-    .gauge-grid.mountain-group { flex: 2 1 0; grid-template-columns: repeat(2, 1fr); }
-    .gauge-divider { width: 1px; background: var(--border); align-self: stretch; flex-shrink: 0; }
+    /* ---------- LAYOUT: all 6 gauges (left, 2 cols x 3 rows) | map | wave graphs (right) ---------- */
+    .gauge-col-all {
+      flex: 0 0 520px; min-width: 0; min-height: 0;
+      display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .gauge-col-all .gauge-card { min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+    .center-map-wrap { flex: 1.6 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; }
+    .center-map-wrap img {
+      max-width: 100%; max-height: 100%; width: auto; height: auto;
+      object-fit: contain; border-radius: 10px; border: 1px solid var(--border);
+    }
+    /* Wider than before — the station-forecast panel is a roughly square
+       image (2x4 grid), so in a narrow column it hits its WIDTH limit long
+       before using the available height, leaving space unused. More width
+       here lets it grow taller too, since object-fit:contain keeps it
+       proportional either way. */
+    .wave-graphs-col { flex: 2 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; }
+    .wave-graphs-col img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); }
     @media (max-width: 1300px) {
-      .gauge-grid.lake-group { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 900px) {
-      .gauge-section { flex-direction: column; }
-      .gauge-divider { width: 100%; height: 1px; }
-      .gauge-grid.mountain-group { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 500px) {
-      .gauge-grid.lake-group, .gauge-grid.mountain-group { grid-template-columns: repeat(2, 1fr); }
+      .main-content { flex-direction: column; }
+      .gauge-col-all { flex: 0 0 auto; grid-template-rows: none; }
     }
 
     .gauge-card {
       background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px; text-align: center;
+      border-radius: 9px; padding: 16px; text-align: center;
     }
     .gauge-card.is-stale { background: #fdf8ee; border-color: #f0dfb0; }
     .gauge-card.is-stale .updated-row { color: var(--orange); font-weight: 600; }
     .stale-badge {
       display: inline-flex; align-items: center; gap: 4px;
       background: var(--red); color: #fff; font-size: 9px; font-weight: 800;
-      letter-spacing: 0.3px; padding: 2px 7px; border-radius: 999px;
+      letter-spacing: 0.3px; padding: 2px 8px; border-radius: 999px;
       margin: 2px 0 6px;
     }
-    .gust-only-note { font-size: 9px; color: var(--text-dim); font-style: italic; margin-top: -3px; margin-bottom: 5px; }
-    .gauge-card h3 { margin: 0; font-size: 12px; color: #1a1a1a; }
-    .gauge-card .region { font-size: 10px; font-weight: 700; margin: 2px 0 5px; }
+    .gust-only-note { font-size: 9.5px; color: var(--text-dim); font-style: italic; margin-top: -2px; margin-bottom: 4px; }
+    .gauge-card h3 { margin: 0; font-size: 14px; color: #1a1a1a; }
+    .gauge-card .region { font-size: 11px; font-weight: 700; margin: 2px 0 4px; }
     .region.blue { color: var(--blue); }
     .region.purple { color: var(--purple); }
     .region.green { color: var(--green); }
 
-    .metar-line { font-family: 'Courier New', Courier, monospace; font-size: 17px; font-weight: 800; color: #1a1a1a; margin-top: -2px; letter-spacing: 0.5px; }
+    .metar-line { font-family: 'Courier New', Courier, monospace; font-size: 20px; font-weight: 800; color: #1a1a1a; margin-top: -2px; letter-spacing: 0.5px; }
     .metar-gust { color: var(--red); }
 
     .temp-row {
       border-top: 1px solid var(--border); margin-top: 10px; padding-top: 8px;
       display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-    .temp-row .temp { font-size: 16px; font-weight: 700; color: var(--blue); }
-    .temp-row .feels { font-size: 10px; color: var(--text-dim); }
+    .temp-row .temp { font-size: 18px; font-weight: 700; color: var(--blue); }
+    .temp-row .feels { font-size: 11px; color: var(--text-dim); }
     .water-row {
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      font-size: 11px; color: var(--text-dim); margin-top: 5px;
+      font-size: 12px; color: var(--text-dim); margin-top: 5px;
     }
     .water-row .water-temp { font-weight: 700; color: #1a7ac9; }
     .wave-row {
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      font-size: 11px; color: var(--text-dim); margin-top: 2px;
+      font-size: 12px; color: var(--text-dim); margin-top: 2px;
     }
     .wave-row .wave-height { font-weight: 700; color: #1a7ac9; }
-    .updated-row { font-size: 9px; color: var(--text-dim); margin-top: 6px; }
-
-    /* ---------- ABOVE-FOLD WRAPPER ---------- */
-    .above-fold { display: flex; flex-direction: column; height: 100vh; }
-
-    /* ---------- GLERL WAVE HEIGHT + TEMP PROFILE (side by side, fill remaining space) ---------- */
-    .glerl-full { flex: 1 1 auto; min-height: 0; padding: 4px 20px 12px; display: flex; flex-direction: row; gap: 10px; }
-    .glerl-card {
-      background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-      padding: 6px; min-width: 0; min-height: 0;
-      display: flex; flex-direction: column;
-    }
-    .glerl-card.wave-card { flex: 3 1 0; }
-    .glerl-card:not(.wave-card) { flex: 1 1 0; }
-    .glerl-card img {
-      flex: 1 1 auto; min-height: 0; width: 100%; height: 100%;
-      object-fit: contain; border-radius: 6px;
-    }
-    .glerl-card.wave-card img { object-position: left center; }
+    .updated-row { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
 
     /* ---------- RECREATIONAL TEXT FORECAST ---------- */
     .rec-forecast {
@@ -183,7 +167,7 @@
 </head>
 <body>
 
-  <div class="above-fold">
+  <div class="main-wrap">
     <div class="header">
       <div class="header-left">
         <div class="logo-circle">VT<br>WX</div>
@@ -197,23 +181,18 @@
       </div>
     </div>
 
-    <div class="hazards" id="hazardsBar">
-      <span class="icon" id="hazardsIcon">&#9888;</span>
-      <span class="hazards-label" id="hazardsLabel">ACTIVE HAZARDS</span>
-      <div id="hazardsList" style="display:flex; gap:24px; flex-wrap:wrap;"></div>
+    <div class="header-alert-row" id="headerAlertRow">
+      <span class="icon">&#9888;</span>
+      <span class="hazards-label">ACTIVE HAZARDS</span>
+      <div id="headerAlertList" style="display:flex; gap:20px; flex-wrap:wrap;"></div>
       <button class="view-text-btn">View RECBTV Text</button>
     </div>
 
-    <div class="section-title">
-      &#128168; CURRENT WIND &amp; TEMPERATURE <span class="tag">All times EDT</span>
+    <div class="main-content">
+      <div class="gauge-col-all" id="gaugeColAll"></div>
+      <div class="center-map-wrap" id="centerMapWrap"></div>
+      <div class="wave-graphs-col" id="waveGraphsSection"></div>
     </div>
-    <div class="gauge-section">
-      <div class="gauge-grid lake-group" id="gaugeGridLake"></div>
-      <div class="gauge-divider"></div>
-      <div class="gauge-grid mountain-group" id="gaugeGridMountain"></div>
-    </div>
-
-    <div class="glerl-full" id="glerlGrid"></div>
   </div>
 
   <div class="section-title">&#128196; RECREATIONAL TEXT FORECAST <span class="tag" id="recIssuedLabel"></span></div>
@@ -277,9 +256,9 @@ var STATIONS = [
   { id: 'colchester_reef', name: 'Colchester Reef', region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM02', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294500', ndbcId: null,    lat: 44.548,  lon: -73.34 },
   { id: 'burton_island',   name: 'Burton Island',    region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM01', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04295000', ndbcId: null,    lat: 44.795,  lon: -73.298 },
   { id: 'diamond_island',  name: 'Diamond Island',   region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM03', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294413', ndbcId: null,    lat: 44.03,   lon: -73.43 },
-  { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: null, source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', rr2Url: 'https://forecast.weather.gov/product.php?site=NWS&product=RR2&issuedby=BTV', lat: 44.5437, lon: -72.8092 },
-  { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 },
-  { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 }
+  { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 },
+  { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: 'VT_COOP', source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', lat: 44.5437, lon: -72.8092 },
+  { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 }
 ];
 
 var HAZARD_EVENT_TYPES = [
@@ -477,27 +456,16 @@ async function getOneStationData_(s) {
   var iemP = s.iemNetwork ? fetchIemObservation_(resolvedId, s.iemNetwork) : Promise.resolve(null);
   var coopTempP = s.iemCoopNetwork ? fetchIemCoopObservation_(resolvedId, s.iemCoopNetwork) : Promise.resolve(null);
   var rrsWindP = s.rrsPil ? fetchRrsWindObservation_(s.rrsPil, resolvedId) : Promise.resolve(null);
-  var rr2TempP = s.rr2Url ? fetchRr2TempObservation_(s.rr2Url, resolvedId) : Promise.resolve(null);
   var usgsP = s.usgsSite ? fetchUsgsWaterTemp_(s.usgsSite) : Promise.resolve(null);
 
-  var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, rr2TempP, usgsP]);
+  var results = await Promise.allSettled([noaaP, iemP, coopTempP, rrsWindP, usgsP]);
   var noaa = results[0].status === 'fulfilled' ? results[0].value : null;
   var iem = results[1].status === 'fulfilled' ? results[1].value : null;
   var coopTemp = results[2].status === 'fulfilled' ? results[2].value : null;
   var rrsWind = results[3].status === 'fulfilled' ? results[3].value : null;
-  var rr2Temp = results[4].status === 'fulfilled' ? results[4].value : null;
-  var usgs = results[5].status === 'fulfilled' ? results[5].value : null;
+  var usgs = results[4].status === 'fulfilled' ? results[4].value : null;
 
-  var coopWind = (coopTemp || rrsWind || rr2Temp) ? Object.assign({}, coopTemp, rrsWind, rr2Temp) : null;
-  // Mt. Mansfield's main NOAA/MADIS sensor is currently down and its temp
-  // readings can't be trusted (even a stale/bad value can still carry a
-  // fresh-looking timestamp and win the freshness sort in mergeObservations_).
-  // Strip only the temp field here — sustainedMph/gustMph/direction from this
-  // same noaa fetch are still good and stay untouched. Revert once the
-  // sensor's confirmed fixed.
-  if (s.id === 'mt_mansfield' && noaa) {
-    noaa = Object.assign({}, noaa, { tempF: null });
-  }
+  var coopWind = (coopTemp || rrsWind) ? Object.assign({}, coopTemp, rrsWind) : null;
   if (s.source === 'wfms') {
     try { iem = await fetchWhitefaceObservation_(); } catch (err) { console.warn('Whiteface fetch failed:', err); iem = null; }
   }
@@ -808,51 +776,6 @@ async function fetchIemObhistoryRows_(stationId, network, dateStr) {
     console.warn('fetchIemObhistoryRows_ error for ' + stationId + '/' + network + '/' + dateStr + ':', err);
     return null;
   }
-}
-
-// Fetches the latest RR2 product from forecast.weather.gov's product.php,
-// which — unlike mesonet's timestamped AFOS archive URL — always serves the
-// current version at a stable URL (no hourly stamp to guess). Rather than
-// depend on that page's exact HTML wrapper/class (which we can't verify from
-// here and which differs from mesonet's), we search the raw response text
-// directly for the SHEF ".A" line — a pattern specific enough to be safe
-// without needing to isolate a particular tag first.
-async function fetchRr2TempObservation_(url, stationId) {
-  try {
-    var resp = await fetchWithTimeout_(url);
-    if (!resp.ok) return null;
-    var html = await resp.text();
-    var text = html.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-    return parseRr2Temp_(text, stationId);
-  } catch (err) {
-    console.warn('fetchRr2TempObservation_ error for ' + url + ':', err);
-    return null;
-  }
-}
-
-// Parses a line like: .A MMNV1 260723 Z DH1933/TAIRGZZ 59.5
-// (station, YYMMDD, timezone code, DHHHMM/ then one or more "CODE value" pairs
-// separated by "/"). We only care about the TAIRGZZ (air temp) element.
-function parseRr2Temp_(text, stationId) {
-  var lines = text.split('\n');
-  for (var i = 0; i < lines.length; i++) {
-    var m = lines[i].match(/^\.A\s+(\S+)\s+(\d{6})\s+([A-Z])\s+DH(\d{2})(\d{2})\/(.+)$/);
-    if (!m || m[1] !== stationId) continue;
-
-    var yy = Number(m[2].slice(0, 2)), mo = Number(m[2].slice(2, 4)), dd = Number(m[2].slice(4, 6));
-    var hh = Number(m[4]), mi = Number(m[5]);
-
-    var segments = m[6].split('/');
-    for (var j = 0; j < segments.length; j++) {
-      var seg = segments[j].trim().split(/\s+/);
-      if (seg.length < 2 || seg[0] !== 'TAIRGZZ') continue;
-      var value = parseFloat(seg[1]);
-      if (isNaN(value)) continue;
-      var timestamp = new Date(Date.UTC(2000 + yy, mo - 1, dd, hh, mi)).toISOString();
-      return { tempF: Math.round(value), tempTimestamp: timestamp };
-    }
-  }
-  return null;
 }
 
 function findLatestNonNullRow_(rows, fieldNames) {
@@ -1175,29 +1098,31 @@ function windSpeedColor_(speedMph, isMountain) {
 // 5-knot increments — half barb=5kt, full barb=10kt, pennant (triangle)=50kt.
 // Requires BOTH sustained speed and direction to draw a real barb — falls back
 // to a plain unoriented dot otherwise rather than misrepresent missing data.
+//
+// Enlarged from the original (cy raised further, staffLen and tickLen scaled
+// up) now that the surrounding card text has been shrunk — the freed-up
+// vertical space goes to making the barb itself the dominant visual element
+// on each card, per request.
 function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
-  // cy moved up from the box's visual center: a southerly wind rotates the shaft
-  // to point DOWNWARD from the dot, and centered at 78 that left only ~2 units of
-  // clearance before the METAR text sitting right below this SVG — now ~12.
-  var cx = 110, cy = 62, staffLen = 50;
+  var cx = 110, cy = 72, staffLen = 66;
   var colorBasis = sustainedMph != null ? sustainedMph : gustMph;
   var color = windSpeedColor_(colorBasis, isMountain);
 
   if (sustainedMph == null || directionDeg == null || isNaN(sustainedMph) || isNaN(directionDeg)) {
-    return '<svg viewBox="0 0 220 130" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">' +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="none" stroke="' + color + '" stroke-width="2" /></svg>';
+    return '<svg viewBox="0 0 220 150" width="100%" height="160" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="none" stroke="' + color + '" stroke-width="2.5" /></svg>';
   }
 
   var knots = sustainedMph * 0.868976;
   var rounded = Math.round(knots / 5) * 5;
   var isCalm = rounded < 3;
 
-  var svg = '<svg viewBox="0 0 220 130" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">';
-  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="' + color + '" />';
+  var svg = '<svg viewBox="0 0 220 150" width="100%" height="160" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="' + color + '" />';
 
   if (!isCalm) {
     var tipY = cy - staffLen;
-    var inner = '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + tipY + '" stroke="' + color + '" stroke-width="2.5" />';
+    var inner = '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + tipY + '" stroke="' + color + '" stroke-width="3" />';
 
     var remaining = rounded;
     var pennants = Math.floor(remaining / 50); remaining -= pennants * 50;
@@ -1207,11 +1132,8 @@ function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
     // Angle measured directly from NWS's own reference gifs (see
     // weather.gov/hfo/windbarbinfo): each tick leans toward the TIP at
     // atan(3) ≈ 71.6° from the shaft. Length/spacing/half-barb ratio are
-    // scaled up from that reference's own proportions — at this card's small
-    // render size (~100px), the reference's tighter spacing and half-barb
-    // ratio read as one indistinct blob rather than clearly separate,
-    // clearly-graduated strokes.
-    var tickLen = 20;
+    // scaled up from that reference's own proportions.
+    var tickLen = 26;
     var tickSpacing = tickLen * 0.45;
     var theta = Math.atan(3);
     var leanDx = Math.sin(theta), leanDy = -Math.cos(theta);
@@ -1228,7 +1150,7 @@ function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
     }
     for (var b = 0; b < fullBarbs; b++) {
       var ex = cx + leanDx * tickLen, ey = pos + leanDy * tickLen;
-      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + ex + '" y2="' + ey + '" stroke="' + color + '" stroke-width="2.4" />';
+      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + ex + '" y2="' + ey + '" stroke="' + color + '" stroke-width="2.8" />';
       pos += tickSpacing;
     }
     if (halfBarb) {
@@ -1237,7 +1159,7 @@ function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
       // of a subtle length difference that's easy to miss at card scale.
       var hl = tickLen * 0.4;
       var hex = cx + leanDx * hl, hey = pos + leanDy * hl;
-      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + hex + '" y2="' + hey + '" stroke="' + color + '" stroke-width="1.8" />';
+      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + hex + '" y2="' + hey + '" stroke="' + color + '" stroke-width="2.1" />';
     }
 
     svg += '<g transform="rotate(' + directionDeg + ' ' + cx + ' ' + cy + ')">' + inner + '</g>';
@@ -1299,38 +1221,29 @@ function buildGaugeCard(station) {
   return card;
 }
 
+// All 6 stations stacked in one column, evenly sized (via the
+// .gauge-col-all .gauge-card flex:1 CSS rule) to fill the available height.
 function renderGauges(stations) {
-  var lakeGrid = document.getElementById('gaugeGridLake');
-  var mountainGrid = document.getElementById('gaugeGridMountain');
-  lakeGrid.innerHTML = '';
-  mountainGrid.innerHTML = '';
+  var col = document.getElementById('gaugeColAll');
+  col.innerHTML = '';
   stations.forEach(function (s) {
-    var target = (s.region === 'Lake Champlain') ? lakeGrid : mountainGrid;
-    target.appendChild(buildGaugeCard(s));
+    col.appendChild(buildGaugeCard(s));
   });
 }
 
+// Embedded conditional row right under the header — only takes up space
+// when there's an active hazard, collapses to nothing on a clear day.
 function renderHazards(hazards) {
-  var bar = document.getElementById('hazardsBar');
-  var icon = document.getElementById('hazardsIcon');
-  var label = document.getElementById('hazardsLabel');
-  var list = document.getElementById('hazardsList');
+  var row = document.getElementById('headerAlertRow');
+  var list = document.getElementById('headerAlertList');
   list.innerHTML = '';
 
   if (!hazards || hazards.length === 0) {
-    bar.classList.add('is-clear');
-    icon.innerHTML = '&#10003;';
-    label.textContent = 'NO HAZARDS';
-    var d = document.createElement('div');
-    d.className = 'hazards-empty';
-    d.textContent = 'No hazards currently in effect.';
-    list.appendChild(d);
+    row.classList.remove('is-visible');
     return;
   }
 
-  bar.classList.remove('is-clear');
-  icon.innerHTML = '&#9888;';
-  label.textContent = 'ACTIVE HAZARDS';
+  row.classList.add('is-visible');
   hazards.forEach(function (h) {
     var d = document.createElement('div');
     d.className = 'hazard-item';
@@ -1339,22 +1252,26 @@ function renderHazards(hazards) {
   });
 }
 
+// The big center map is the Google Drive file that used to hold a static
+// thermocline image — its content is now the auto-generated GLWU wave
+// height + wind barb map instead (see the Python pipeline conversation),
+// so it's labeled and placed accordingly. NOAA's separate 8-panel
+// time-series chart (a different, genuinely distinct visual — wave height
+// over time at 8 points, vs. this map's spatial snapshot) gets its own
+// section below instead of sharing space with the big map.
 function renderGlerlImages() {
-  var grid = document.getElementById('glerlGrid');
-  grid.innerHTML = '';
   var cacheBust = Date.now();
 
-  var waveCard = document.createElement('div');
-  waveCard.className = 'glerl-card wave-card';
-  waveCard.innerHTML =
-    '<img src="https://www.glerl.noaa.gov/res/champlain/fig/wvht_1d_8station.png?t=' + cacheBust + '" alt="Wave Height (8 Station)">';
-  grid.appendChild(waveCard);
+  var mapWrap = document.getElementById('centerMapWrap');
+  mapWrap.innerHTML =
+    '<img src="https://lh3.googleusercontent.com/d/15QyC0yqn5Q-wFTZwQ-Qcm-Be252JwFnx?t=' + cacheBust + '" alt="Lake Champlain Wave Height &amp; Wind Barbs">';
 
-  var tempCard = document.createElement('div');
-  tempCard.className = 'glerl-card';
-  tempCard.innerHTML =
-    '<img src="https://lh3.googleusercontent.com/d/15QyC0yqn5Q-wFTZwQ-Qcm-Be252JwFnx?t=' + cacheBust + '" alt="Thermocline Profile">';
-  grid.appendChild(tempCard);
+  // Our own auto-generated 8-station forecast chart (2x4 grid, forward-only,
+  // built from the same GLWU data as the map above) — replaces NOAA's static
+  // wvht_1d_8station.png, which was too wide to fit this column readably.
+  var waveGraphs = document.getElementById('waveGraphsSection');
+  waveGraphs.innerHTML =
+    '<img src="https://lh3.googleusercontent.com/d/1EwxrJOQcBkyh8Ic-7s4rq2h10UPR7pDr?t=' + cacheBust + '" alt="Lake Champlain 8-Station Wave Height Forecast">';
 }
 
 function renderRecForecast(forecast) {
