@@ -44,7 +44,44 @@
     .title h1 { margin: 0; font-size: 16px; letter-spacing: 0.3px; line-height: 1.2; color: var(--navy-dark); font-weight: 800; }
     .title p { margin: 0; color: var(--text-dim); font-size: 11px; }
     .header-right { text-align: right; font-size: 12px; color: var(--navy); white-space: nowrap; }
-    .header-right .refresh-row { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+    .header-right .refresh-row { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+
+    /* ---------- INFO BUTTON + MODAL (data source breakdown) ---------- */
+    .info-btn {
+      width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--navy);
+      background: #fff; color: var(--navy); font-weight: 800; font-size: 12px;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; line-height: 1; padding: 0;
+    }
+    .info-btn:hover { background: var(--navy); color: #fff; }
+
+    .info-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(15, 42, 74, 0.45);
+      z-index: 100; align-items: center; justify-content: center; padding: 20px;
+    }
+    .info-modal-overlay.is-visible { display: flex; }
+    .info-modal {
+      background: #fff; border-radius: 12px; max-width: 640px; width: 100%;
+      max-height: 85vh; overflow-y: auto; padding: 26px 30px; position: relative;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .info-modal h2 { margin: 0 0 4px; font-size: 18px; color: var(--navy-dark); }
+    .info-modal .info-modal-sub { margin: 0 0 20px; font-size: 12px; color: var(--text-dim); }
+    .info-modal .close-btn {
+      position: absolute; top: 18px; right: 18px; width: 28px; height: 28px;
+      border-radius: 50%; border: none; background: var(--gray-bg); color: #333;
+      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .info-modal .close-btn:hover { background: var(--border); }
+    .source-item { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .source-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .source-item h4 { margin: 0 0 5px; color: var(--navy-dark); font-size: 14px; }
+    .source-item p { margin: 0; font-size: 13px; color: #333; line-height: 1.55; }
+    .source-item a { color: var(--blue); }
+    .source-item .src-tag {
+      display: inline-block; font-size: 10px; font-weight: 700; color: var(--blue);
+      background: #eef3fb; padding: 2px 8px; border-radius: 999px; margin-top: 6px;
+    }
 
     /* Embedded alert row — only takes up space when a hazard is active. */
     .header-alert-row {
@@ -85,7 +122,7 @@
     .gauge-col-all .gauge-card { min-height: 0; display: flex; flex-direction: column; justify-content: center; }
     .center-map-wrap { flex: 1.6 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; }
     .center-map-wrap img {
-      max-width: 100%; max-height: 100%; width: auto; height: auto;
+      width: 100%; height: 100%;
       object-fit: contain; border-radius: 10px; border: 1px solid var(--border);
     }
     /* Wider than before — the station-forecast panel is a roughly square
@@ -94,7 +131,7 @@
        here lets it grow taller too, since object-fit:contain keeps it
        proportional either way. */
     .wave-graphs-col { flex: 2 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; }
-    .wave-graphs-col img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); }
+    .wave-graphs-col img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); }
     @media (max-width: 1300px) {
       .main-content { flex-direction: column; }
       .gauge-col-all { flex: 0 0 auto; grid-template-rows: none; }
@@ -102,43 +139,52 @@
 
     .gauge-card {
       background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 9px; padding: 16px; text-align: center;
+      border-radius: 9px; padding: 11px; text-align: center;
     }
     .gauge-card.is-stale { background: #fdf8ee; border-color: #f0dfb0; }
     .gauge-card.is-stale .updated-row { color: var(--orange); font-weight: 600; }
     .stale-badge {
       display: inline-flex; align-items: center; gap: 4px;
       background: var(--red); color: #fff; font-size: 9px; font-weight: 800;
-      letter-spacing: 0.3px; padding: 2px 8px; border-radius: 999px;
-      margin: 2px 0 6px;
+      letter-spacing: 0.3px; padding: 2px 7px; border-radius: 999px;
+      margin: 2px 0 5px;
     }
-    .gust-only-note { font-size: 9.5px; color: var(--text-dim); font-style: italic; margin-top: -2px; margin-bottom: 4px; }
+    .gust-only-note { font-size: 9.5px; color: var(--text-dim); font-style: italic; margin-top: -3px; margin-bottom: 4px; }
+    /* Locked size — without this, a card with more content below it (like
+       Valcour Buoy's water+wave line) would compress this smaller than every
+       other card's barb under flexbox's default shrink-to-fit behavior,
+       since all cards share the same fixed height via the grid's 1fr rows.
+       IMPORTANT: because this can no longer shrink to make room, every other
+       size on this card has to stay within a budget that actually fits the
+       fixed row height — the previous round's sizes were too big in total,
+       which is what caused the overflow into the row below. */
+    .gauge-card svg.wind-barb-svg { flex-shrink: 0; }
     .gauge-card h3 { margin: 0; font-size: 14px; color: #1a1a1a; }
-    .gauge-card .region { font-size: 11px; font-weight: 700; margin: 2px 0 4px; }
+    .gauge-card .region { font-size: 11px; font-weight: 700; margin: 2px 0 5px; }
     .region.blue { color: var(--blue); }
     .region.purple { color: var(--purple); }
     .region.green { color: var(--green); }
 
-    .metar-line { font-family: 'Courier New', Courier, monospace; font-size: 20px; font-weight: 800; color: #1a1a1a; margin-top: -2px; letter-spacing: 0.5px; }
+    .metar-line { font-family: 'Courier New', Courier, monospace; font-size: 19px; font-weight: 800; color: #1a1a1a; margin-top: -2px; letter-spacing: 0.5px; }
     .metar-gust { color: var(--red); }
 
     .temp-row {
-      border-top: 1px solid var(--border); margin-top: 10px; padding-top: 8px;
+      border-top: 1px solid var(--border); margin-top: 9px; padding-top: 7px;
       display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-    .temp-row .temp { font-size: 18px; font-weight: 700; color: var(--blue); }
-    .temp-row .feels { font-size: 11px; color: var(--text-dim); }
+    .temp-row .temp { font-size: 17px; font-weight: 700; color: var(--blue); }
+    .temp-row .feels { font-size: 10.5px; color: var(--text-dim); }
     .water-row {
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      font-size: 12px; color: var(--text-dim); margin-top: 5px;
+      font-size: 11px; color: var(--text-dim); margin-top: 4px;
     }
     .water-row .water-temp { font-weight: 700; color: #1a7ac9; }
     .wave-row {
       display: flex; align-items: center; justify-content: center; gap: 5px;
-      font-size: 12px; color: var(--text-dim); margin-top: 2px;
+      font-size: 11px; color: var(--text-dim); margin-top: 2px;
     }
     .wave-row .wave-height { font-weight: 700; color: #1a7ac9; }
-    .updated-row { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+    .updated-row { font-size: 9px; color: var(--text-dim); margin-top: 5px; }
 
     /* ---------- RECREATIONAL TEXT FORECAST ---------- */
     .rec-forecast {
@@ -177,7 +223,9 @@
         </div>
       </div>
       <div class="header-right">
-        <div class="refresh-row">&#8635; <span id="updatedLabel">Updated: --</span> &middot; <span id="nextUpdateLabel">Next: --</span></div>
+        <div class="refresh-row">&#8635; <span id="updatedLabel">Updated: --</span> &middot; <span id="nextUpdateLabel">Next: --</span>
+          <button class="info-btn" id="infoBtn" title="Data sources">i</button>
+        </div>
       </div>
     </div>
 
@@ -192,6 +240,62 @@
       <div class="gauge-col-all" id="gaugeColAll"></div>
       <div class="center-map-wrap" id="centerMapWrap"></div>
       <div class="wave-graphs-col" id="waveGraphsSection"></div>
+    </div>
+  </div>
+
+  <div class="info-modal-overlay" id="infoModalOverlay">
+    <div class="info-modal">
+      <button class="close-btn" id="infoModalClose">&times;</button>
+      <h2>Where this data comes from</h2>
+      <p class="info-modal-sub">A quick breakdown of the source behind each part of this dashboard.</p>
+
+      <div class="source-item">
+        <h4>Wind &amp; temperature gauges &mdash; lake stations (Colchester Reef, Burton Island, Diamond Island)</h4>
+        <p>NOAA/NWS station observations (<a href="https://www.weather.gov/documentation/services-web-api" target="_blank">api.weather.gov</a>) for gust and temperature, combined with sustained wind from the Iowa Environmental Mesonet's VTWAC network (<a href="https://mesonet.agron.iastate.edu" target="_blank">mesonet.agron.iastate.edu</a>). Water temperature from USGS gauges.</p>
+        <span class="src-tag">NWS + IEM + USGS</span>
+      </div>
+
+      <div class="source-item">
+        <h4>Mt. Mansfield</h4>
+        <p>Sustained wind, gust, and direction from NWS's hourly "RRS" text product (SHEF-encoded, issued by NWS Burlington), which updates more frequently than the alternative COOP feed. Temperature from the IEM VT_COOP network.</p>
+        <span class="src-tag">NWS text product + IEM COOP</span>
+      </div>
+
+      <div class="source-item">
+        <h4>Whiteface</h4>
+        <p>Atmospheric Sciences Research Center (University at Albany) Whiteface Mountain Field Station API &mdash; a summit weather station independent of the NWS network.</p>
+        <span class="src-tag">ASRC / SUNY Albany</span>
+      </div>
+
+      <div class="source-item">
+        <h4>Valcour Buoy</h4>
+        <p>NOAA National Data Buoy Center, real-time station 45178 (<a href="https://www.ndbc.noaa.gov/station_page.php?station=45178" target="_blank">ndbc.noaa.gov</a>).</p>
+        <span class="src-tag">NOAA NDBC</span>
+      </div>
+
+      <div class="source-item">
+        <h4>Active hazards banner</h4>
+        <p>NWS active alerts for each station's location (<a href="https://www.weather.gov/documentation/services-web-api" target="_blank">api.weather.gov/alerts</a>), filtered to wind/winter advisories relevant to lake and mountain recreation.</p>
+        <span class="src-tag">NWS Alerts API</span>
+      </div>
+
+      <div class="source-item">
+        <h4>Center map &mdash; wave height + wind barbs</h4>
+        <p>NOAA/NCEP's <strong>operational</strong> GLWU (Great Lakes Wave) WaveWatch III model, specifically its Lake Champlain 500m grid (<code>grlr_500m_lc</code>), pulled directly from NOMADS. Rendered by a custom Python/Cartopy script we built &mdash; not GLERL's separate experimental Lake Champlain nowcast system, which uses a different (NWM+FVCOM+WaveWatch III) model and has no public data feed.</p>
+        <span class="src-tag">NOAA/NCEP NOMADS (operational GLWU)</span>
+      </div>
+
+      <div class="source-item">
+        <h4>8-station wave height forecast (right panel)</h4>
+        <p>Built from the exact same NOMADS GLWU data as the map above &mdash; wave height extracted at 8 named points (2 are exact NDBC/CDIP buoy coordinates; the rest are nearest-water-grid-point approximations of well-known lake locations) across the model's forecast hours. Forward-looking only, no historical observed data.</p>
+        <span class="src-tag">NOAA/NCEP NOMADS (operational GLWU)</span>
+      </div>
+
+      <div class="source-item">
+        <h4>Recreational text forecast</h4>
+        <p>NWS Burlington, VT (BTV) office's "REC" text product (<a href="https://www.weather.gov/documentation/services-web-api" target="_blank">api.weather.gov/products</a>).</p>
+        <span class="src-tag">NWS Burlington (BTV)</span>
+      </div>
     </div>
   </div>
 
@@ -256,9 +360,9 @@ var STATIONS = [
   { id: 'colchester_reef', name: 'Colchester Reef', region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM02', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294500', ndbcId: null,    lat: 44.548,  lon: -73.34 },
   { id: 'burton_island',   name: 'Burton Island',    region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM01', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04295000', ndbcId: null,    lat: 44.795,  lon: -73.298 },
   { id: 'diamond_island',  name: 'Diamond Island',   region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM03', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294413', ndbcId: null,    lat: 44.03,   lon: -73.43 },
-  { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 },
   { id: 'mt_mansfield',    name: 'Mt. Mansfield',    region: 'Green Mountains', regionColor: 'green', tempLabel: 'Wind Chill', noaaId: 'MMNV1', iemNetwork: null,    iemCoopNetwork: 'VT_COOP', source: null,   gaugeMax: 80, usgsSite: null,        ndbcId: null,    rrsPil: 'RRSBTV', lat: 44.5437, lon: -72.8092 },
-  { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 }
+  { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 },
+  { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 }
 ];
 
 var HAZARD_EVENT_TYPES = [
@@ -1098,31 +1202,29 @@ function windSpeedColor_(speedMph, isMountain) {
 // 5-knot increments — half barb=5kt, full barb=10kt, pennant (triangle)=50kt.
 // Requires BOTH sustained speed and direction to draw a real barb — falls back
 // to a plain unoriented dot otherwise rather than misrepresent missing data.
-//
-// Enlarged from the original (cy raised further, staffLen and tickLen scaled
-// up) now that the surrounding card text has been shrunk — the freed-up
-// vertical space goes to making the barb itself the dominant visual element
-// on each card, per request.
 function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
-  var cx = 110, cy = 72, staffLen = 66;
+  // cy moved up from the box's visual center: a southerly wind rotates the shaft
+  // to point DOWNWARD from the dot, and centered at 78 that left only ~2 units of
+  // clearance before the METAR text sitting right below this SVG — now ~12.
+  var cx = 110, cy = 62, staffLen = 50;
   var colorBasis = sustainedMph != null ? sustainedMph : gustMph;
   var color = windSpeedColor_(colorBasis, isMountain);
 
   if (sustainedMph == null || directionDeg == null || isNaN(sustainedMph) || isNaN(directionDeg)) {
-    return '<svg viewBox="0 0 220 150" width="100%" height="160" xmlns="http://www.w3.org/2000/svg">' +
-      '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="none" stroke="' + color + '" stroke-width="2.5" /></svg>';
+    return '<svg class="wind-barb-svg" viewBox="0 0 220 130" width="100%" height="112" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="none" stroke="' + color + '" stroke-width="2" /></svg>';
   }
 
   var knots = sustainedMph * 0.868976;
   var rounded = Math.round(knots / 5) * 5;
   var isCalm = rounded < 3;
 
-  var svg = '<svg viewBox="0 0 220 150" width="100%" height="160" xmlns="http://www.w3.org/2000/svg">';
-  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="' + color + '" />';
+  var svg = '<svg class="wind-barb-svg" viewBox="0 0 220 130" width="100%" height="112" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="' + color + '" />';
 
   if (!isCalm) {
     var tipY = cy - staffLen;
-    var inner = '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + tipY + '" stroke="' + color + '" stroke-width="3" />';
+    var inner = '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + tipY + '" stroke="' + color + '" stroke-width="2.5" />';
 
     var remaining = rounded;
     var pennants = Math.floor(remaining / 50); remaining -= pennants * 50;
@@ -1132,8 +1234,11 @@ function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
     // Angle measured directly from NWS's own reference gifs (see
     // weather.gov/hfo/windbarbinfo): each tick leans toward the TIP at
     // atan(3) ≈ 71.6° from the shaft. Length/spacing/half-barb ratio are
-    // scaled up from that reference's own proportions.
-    var tickLen = 26;
+    // scaled up from that reference's own proportions — at this card's small
+    // render size (~100px), the reference's tighter spacing and half-barb
+    // ratio read as one indistinct blob rather than clearly separate,
+    // clearly-graduated strokes.
+    var tickLen = 20;
     var tickSpacing = tickLen * 0.45;
     var theta = Math.atan(3);
     var leanDx = Math.sin(theta), leanDy = -Math.cos(theta);
@@ -1150,7 +1255,7 @@ function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
     }
     for (var b = 0; b < fullBarbs; b++) {
       var ex = cx + leanDx * tickLen, ey = pos + leanDy * tickLen;
-      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + ex + '" y2="' + ey + '" stroke="' + color + '" stroke-width="2.8" />';
+      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + ex + '" y2="' + ey + '" stroke="' + color + '" stroke-width="2.4" />';
       pos += tickSpacing;
     }
     if (halfBarb) {
@@ -1159,7 +1264,7 @@ function windBarbSVG(sustainedMph, directionDeg, gustMph, isMountain) {
       // of a subtle length difference that's easy to miss at card scale.
       var hl = tickLen * 0.4;
       var hex = cx + leanDx * hl, hey = pos + leanDy * hl;
-      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + hex + '" y2="' + hey + '" stroke="' + color + '" stroke-width="2.1" />';
+      inner += '<line x1="' + cx + '" y1="' + pos + '" x2="' + hex + '" y2="' + hey + '" stroke="' + color + '" stroke-width="1.8" />';
     }
 
     svg += '<g transform="rotate(' + directionDeg + ' ' + cx + ' ' + cy + ')">' + inner + '</g>';
@@ -1199,12 +1304,20 @@ function buildGaugeCard(station) {
   var sustainedAsOfNote = station.sustainedAsOf
     ? '<div class="gust-only-note">Sustained as of ' + station.sustainedAsOf + '</div>'
     : '';
-  var waterRow = (station.waterTemp != null)
-    ? '<div class="water-row">&#127754; Water <span class="water-temp">' + fmtVal(station.waterTemp) + '&deg;F</span></div>'
-    : '';
-  var waveRow = (station.waveHeightFt != null)
-    ? '<div class="wave-row">&#127754; Waves <span class="wave-height">' + fmtVal(station.waveHeightFt) + ' ft</span></div>'
-    : '';
+  // Combined onto one line when both exist (previously two separate rows) —
+  // Valcour Buoy is the only station with both, and the extra row was making
+  // its card need more total content height than others, which under
+  // flexbox's default shrink behavior compressed its wind barb smaller than
+  // every other card's (see .gauge-card svg flex-shrink:0 fix below too).
+  var waterWaveRow = '';
+  if (station.waterTemp != null && station.waveHeightFt != null) {
+    waterWaveRow = '<div class="water-row">&#127754; Water <span class="water-temp">' + fmtVal(station.waterTemp) + '&deg;F</span>' +
+      ' &nbsp;&#127754; Waves <span class="wave-height">' + fmtVal(station.waveHeightFt) + ' ft</span></div>';
+  } else if (station.waterTemp != null) {
+    waterWaveRow = '<div class="water-row">&#127754; Water <span class="water-temp">' + fmtVal(station.waterTemp) + '&deg;F</span></div>';
+  } else if (station.waveHeightFt != null) {
+    waterWaveRow = '<div class="wave-row">&#127754; Waves <span class="wave-height">' + fmtVal(station.waveHeightFt) + ' ft</span></div>';
+  }
   card.innerHTML =
     '<h3>' + station.name + '</h3>' +
     '<div class="region ' + station.regionColor + '">' + station.region + '</div>' +
@@ -1215,8 +1328,7 @@ function buildGaugeCard(station) {
     sustainedAsOfNote +
     '<div class="temp-row">&#127777;&#65039; <span class="temp">' + fmtVal(station.temp) + '&deg;F</span>' +
     '<span class="feels">' + station.tempLabel + ' ' + fmtVal(station.feelsLike) + '&deg;F</span></div>' +
-    waterRow +
-    waveRow +
+    waterWaveRow +
     '<div class="updated-row">Updated: ' + station.updated + '</div>';
   return card;
 }
@@ -1356,6 +1468,21 @@ document.addEventListener('visibilitychange', function () {
     lastVisibilityRefresh = Date.now();
     refresh();
   }
+});
+
+// Info modal — open on button click, close on the X, click-outside, or Escape.
+var infoOverlay = document.getElementById('infoModalOverlay');
+document.getElementById('infoBtn').addEventListener('click', function () {
+  infoOverlay.classList.add('is-visible');
+});
+document.getElementById('infoModalClose').addEventListener('click', function () {
+  infoOverlay.classList.remove('is-visible');
+});
+infoOverlay.addEventListener('click', function (e) {
+  if (e.target === infoOverlay) infoOverlay.classList.remove('is-visible');
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') infoOverlay.classList.remove('is-visible');
 });
 </script>
 </body>
