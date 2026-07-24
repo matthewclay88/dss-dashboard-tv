@@ -113,6 +113,50 @@
     }
     .section-title .tag { margin-left: auto; font-weight: 400; font-size: 11px; color: var(--text-dim); }
 
+/* ---------- GAUGE LOADING SKELETON ---------- */
+
+.gauge-card.loading-card {
+  position: relative;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+  border-left: 4px solid #d8dee7;
+  pointer-events: none;
+}
+
+.gauge-loading {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e7ebf0;
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: gaugeSpin 0.8s linear infinite;
+  margin-bottom: 10px;
+}
+
+.loading-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-dark);
+}
+
+.loading-text {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+@keyframes gaugeSpin {
+  to { transform: rotate(360deg); }
+}
+
     /* ---------- LAYOUT: all 6 gauges (left, 2 cols x 3 rows) | map | wave graphs (right) ---------- */
     .gauge-col-all {
       flex: 0 0 520px; min-width: 0; min-height: 0;
@@ -1309,6 +1353,27 @@ function metarLineHTML(sustainedMph, directionDeg, gustMph) {
 
 function fmtVal(v) { return (v == null) ? '--' : v; }
 
+function renderGaugeLoading() {
+  var wrap = document.getElementById('gaugeColAll');
+  if (!wrap) return;
+
+  wrap.innerHTML = '';
+
+  STATIONS.forEach(function(station) {
+    var card = document.createElement('div');
+    card.className = 'gauge-card loading-card';
+
+    card.innerHTML =
+      '<div class="gauge-loading">' +
+        '<div class="loading-spinner"></div>' +
+        '<div class="loading-title">' + station.name + '</div>' +
+        '<div class="loading-text">Loading latest observation...</div>' +
+      '</div>';
+
+    wrap.appendChild(card);
+  });
+}
+
 function buildGaugeCard(station) {
   var card = document.createElement('div');
   card.className = 'gauge-card' + (station.stale ? ' is-stale' : '');
@@ -1475,6 +1540,9 @@ async function refresh() {
 // GLERL/temp-profile imagery is static/public — render immediately, don't wait on fetches.
 renderGlerlImages();
 setInterval(renderGlerlImages, REFRESH_INTERVAL_MS);
+
+/* Show station cards immediately while observations load */
+renderGaugeLoading();
 
 refresh();
 setInterval(refresh, REFRESH_INTERVAL_MS);
