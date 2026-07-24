@@ -25,14 +25,13 @@ The profile:
     3. Uses the hypsometric equation to estimate pressure at each elevation.
     4. Plots temperature and wind on a MetPy Skew-T.
     5. Derives a "Winter Profile Diagnostics" panel (freezing level,
-       wet-bulb zero, lapse rate, inversions, an approximate Bourgouin
-       precip-type call, bulk shear, and a bulk Froude number / flow
-       regime for the ridge).
+       wet-bulb zero, lapse rate, inversions, a KBTV-to-MMNV1 bulk
+       shear, and a bulk Froude number / flow regime for the ridge).
 
 V1 intentionally does NOT calculate:
     LCL
     full moist-adiabatic parcel ascent
-    radar-informed precipitation type
+    precipitation type
 
 Requirements:
     pip install requests numpy matplotlib metpy
@@ -118,24 +117,11 @@ RD = 287.05      # J/(kg*K), dry air gas constant
 G = 9.80665       # m/s^2
 CP = 1004.0       # J/(kg*K), dry air specific heat at constant pressure
 
-# Height above the base station used for the low-level bulk shear
-# diagnostic (roughly base-to-summit for Mansfield).
-SHEAR_TOP_AGL_FT = 3600.0
-
-# Bourgouin (2000) published threshold: positive area aloft (J/kg)
-# required to start turning snow into liquid as it falls.
-BOURGOUIN_PA_THRESHOLD = 2.0
-
-# NOTE: Bourgouin (2000) discriminates freezing rain from ice pellets
-# with a curve fit to observed soundings that is not reproduced in
-# the original paper's abstract/body available here. The two
-# thresholds below (5.6 and 66 J/kg of negative/refreezing energy)
-# are a commonly cited operational approximation of that curve, not
-# a verified transcription of Bourgouin's actual coefficients. Treat
-# the PRECIP TYPE / Bourgouin line as a rough indicator, not a
-# validated forecast, until this is checked against the source paper.
-BOURGOUIN_NA_LOW = 5.6
-BOURGOUIN_NA_HIGH = 66.0
+# Stations used for the low-level bulk shear diagnostic. KBTV (330 ft)
+# to MMNV1 (3891 ft) spans about 3560 ft (~1.1 km), i.e. roughly the
+# 0-1 km AGL layer, and both are always part of the fixed station set.
+SHEAR_BASE_STID = "KBTV"
+SHEAR_TOP_STID = "MMNV1"
 
 # Bulk Froude number thresholds used to label flow regime around the
 # ridge. Fr >= 1 flow tends to go over the barrier; Fr < ~0.5 flow
@@ -145,6 +131,14 @@ BOURGOUIN_NA_HIGH = 66.0
 # threshold for Mansfield specifically.
 FROUDE_UNBLOCKED = 1.0
 FROUDE_BLOCKED = 0.5
+
+# Approximate compass bearing (degrees) of the Mansfield ridge line
+# itself (the long axis of the spine, roughly north-south). Used to
+# resolve the cross-barrier (ridge-normal) wind component for the
+# Froude number, since along-ridge flow doesn't force air over or
+# around the barrier the way cross-ridge flow does. Adjust this if a
+# more precise ridge-line bearing is available.
+RIDGE_ORIENTATION_DEG = 10.0
 
 
 # =====================================================================
@@ -1488,37 +1482,37 @@ def compute_wetbulb_series(profile):
     return series
 
 
-def bulk_shear(profile, top_agl_ft=SHEAR_TOP_AGL_FT):
+def bulk_shear(profile, base_stid=SHEAR_BASE_STID, top_stid=SHEAR_TOP_STID):
     """
-    Vector wind difference (kt) between the lowest reporting station
-    and top_agl_ft above it, using linear interpolation of the u/v
-    components across whichever stations reported wind. Returns None
-    if fewer than two wind reports are available, or if the target
-    level is above the highest wind report.
+    Vector wind difference (kt) between two named stations - by
+    default KBTV (330 ft, valley floor) and MMNV1 (3891 ft, summit),
+    which together span roughly the lowest 1 km AGL of this profile.
+
+    Returns None if either station is missing from the profile or is
+    missing a wind observation.
     """
 
-    wind_stations = [
-        x for x in profile
-        if x.get("wind_speed_kmh") is not None
-        and x.get("wind_direction_deg") is not None
-    ]
+    base = next((x for x in profile if x["stid"] == base_stid), None)
+    top = next((x for x in profile if x["stid"] == top_stid), None)
 
-    if len(wind_stations) < 2:
+    if base is None or top is None:
         return None
 
-    elevations = np.array(
-        [x["elevation_ft"] for x in wind_stations]
-    )
+    if (
+        base.get("wind_speed_kmh") is None
+        or base.get("wind_direction_deg") is None
+        or top.get("wind_speed_kmh") is None
+        or top.get("wind_direction_deg") is None
+    ):
+        return None
 
     speeds_kt = (
-        np.array(
-            [x["wind_speed_kmh"] for x in wind_stations]
-        )
+        np.array([base["wind_speed_kmh"], top["wind_speed_kmh"]])
         * units("km/hour")
     ).to("knots").m
 
     directions = np.array(
-        [x["wind_direction_deg"] for x in wind_stations]
+        [base["wind_direction_deg"], top["wind_direction_deg"]]
     )
 
     u, v = mpcalc.wind_components(
@@ -1529,93 +1523,124 @@ def bulk_shear(profile, top_agl_ft=SHEAR_TOP_AGL_FT):
     u = u.m
     v = v.m
 
-    base_elev = elevations.min()
-    target_elev = base_elev + top_agl_ft
-
-    if target_elev > elevations.max():
-        return None
-
-    order = np.argsort(elevations)
-    elevations = elevations[order]
-    u = u[order]
-    v = v[order]
-
-    u_base = np.interp(base_elev, elevations, u)
-    v_base = np.interp(base_elev, elevations, v)
-
-    u_top = np.interp(target_elev, elevations, u)
-    v_top = np.interp(target_elev, elevations, v)
-
-    return float(np.hypot(u_top - u_base, v_top - v_base))
+    return float(np.hypot(u[1] - u[0], v[1] - v[0]))
 
 
-def brunt_vaisala_and_froude(profile):
+def potential_temperature_profile(profile):
     """
-    Bulk dry Brunt-Vaisala frequency (N, 1/s) from the potential-
-    temperature change across the full observed layer, and a bulk
-    Froude number Fr = U / (N * h) for the ridge, where U is the
-    lowest reporting station's wind speed and h is the elevation
-    span of the profile (base to summit).
-
-    This is a first-order estimate, not a substitute for an actual
-    upstream sounding, and returns (None, None, None) if the layer is
-    neutral/unstable (dtheta/dz <= 0), since N is undefined there.
+    (height_m, theta_K) pairs for every station with both pressure
+    and temperature, sorted by height.
     """
 
-    if len(profile) < 2:
+    points = []
+
+    for x in profile:
+
+        p = x.get("pressure_hPa")
+        t = x.get("temperature_C")
+
+        if p is None or t is None:
+            continue
+
+        theta = (t + 273.15) * (1000.0 / p) ** (RD / CP)
+
+        points.append((ft_to_m(x["elevation_ft"]), theta))
+
+    points.sort(key=lambda pt: pt[0])
+
+    return points
+
+
+def cross_barrier_component(speed, direction_from_deg, ridge_orientation_deg=RIDGE_ORIENTATION_DEG):
+    """
+    Magnitude of the wind component oriented perpendicular to the
+    ridge line (cross-barrier flow), which is the component relevant
+    to blocking/Froude-number behavior - a wind blowing along the
+    ridge axis doesn't get forced up and over it the way cross-ridge
+    flow does.
+
+    `direction_from_deg` is the meteorological "wind from" direction.
+    Returns an unsigned magnitude, since blocking behaves the same
+    whether the flow approaches from the east or west side of the
+    ridge.
+    """
+
+    toward_deg = (direction_from_deg + 180.0) % 360.0
+    ridge_normal_deg = (ridge_orientation_deg + 90.0) % 360.0
+
+    angle = np.radians(toward_deg - ridge_normal_deg)
+
+    return abs(speed * np.cos(angle))
+
+
+def brunt_vaisala_and_froude(profile, wind_stid=SHEAR_BASE_STID):
+    """
+    Dry Brunt-Vaisala frequency (N, 1/s) from a least-squares fit of
+    potential temperature against height across every station in the
+    profile, and a bulk Froude number Fr = U / (N * h) for the ridge,
+    where U is the cross-barrier wind component at `wind_stid` (KBTV
+    by default) and h is the profile's elevation span (base to
+    summit).
+
+    Fitting N through all stations rather than differencing just the
+    top and bottom two is deliberate: with sub-degree temperature
+    differences over a shallow layer, a two-point estimate is very
+    sensitive to noise in either endpoint. A least-squares fit through
+    every station is more stable, though still a coarse, order-of-
+    magnitude estimate - not a substitute for an actual upstream
+    sounding.
+
+    Returns (None, None, None) if there are too few points, or if the
+    fitted layer is neutral/unstable (dtheta/dz <= 0), since N is
+    undefined there.
+    """
+
+    theta_points = potential_temperature_profile(profile)
+
+    if len(theta_points) < 3:
+        # A 2-point fit degenerates back into the noise-prone
+        # difference this function is meant to avoid.
         return None, None, None
 
-    bottom = profile[0]
-    top = profile[-1]
+    heights = np.array([pt[0] for pt in theta_points])
+    thetas = np.array([pt[1] for pt in theta_points])
 
-    p_bottom = bottom.get("pressure_hPa")
-    p_top = top.get("pressure_hPa")
-
-    if p_bottom is None or p_top is None:
-        return None, None, None
-
-    theta_bottom = (
-        (bottom["temperature_C"] + 273.15)
-        * (1000.0 / p_bottom) ** (RD / CP)
-    )
-
-    theta_top = (
-        (top["temperature_C"] + 273.15)
-        * (1000.0 / p_top) ** (RD / CP)
-    )
-
-    dz = ft_to_m(top["elevation_ft"] - bottom["elevation_ft"])
-
-    if dz <= 0:
-        return None, None, None
-
-    theta_mean = (theta_bottom + theta_top) / 2.0
-    dtheta_dz = (theta_top - theta_bottom) / dz
+    dtheta_dz, _intercept = np.polyfit(heights, thetas, 1)
 
     if dtheta_dz <= 0:
         # Neutral or unstable bulk layer - N (and therefore Fr) is
-        # not meaningfully defined from this simple two-point estimate.
+        # not meaningfully defined.
         return None, None, None
+
+    theta_mean = float(np.mean(thetas))
 
     N = np.sqrt((G / theta_mean) * dtheta_dz)
 
-    wind_stations = [
-        x for x in profile if x.get("wind_speed_kmh") is not None
-    ]
+    wind_station = next(
+        (x for x in profile if x["stid"] == wind_stid), None
+    )
 
-    if not wind_stations:
-        return N, None, None
+    if (
+        wind_station is None
+        or wind_station.get("wind_speed_kmh") is None
+        or wind_station.get("wind_direction_deg") is None
+    ):
+        return float(N), None, None
 
-    lowest_wind = min(wind_stations, key=lambda x: x["elevation_ft"])
-
-    U = (
-        lowest_wind["wind_speed_kmh"] * units("km/hour")
+    speed_ms = (
+        wind_station["wind_speed_kmh"] * units("km/hour")
     ).to("m/s").m
 
-    mountain_height_m = dz
+    U = cross_barrier_component(
+        speed_ms, wind_station["wind_direction_deg"]
+    )
+
+    mountain_height_m = ft_to_m(
+        profile[-1]["elevation_ft"] - profile[0]["elevation_ft"]
+    )
 
     if mountain_height_m <= 0:
-        return N, U, None
+        return float(N), float(U), None
 
     Fr = U / (N * mountain_height_m)
 
@@ -1634,107 +1659,6 @@ def classify_flow_regime(Fr):
         return "Partially blocked"
 
     return "Blocked"
-
-
-def bourgouin_energy_areas(profile):
-    """
-    Approximate Bourgouin (2000) positive ("melting") and negative
-    ("refreezing") energy areas, using the station pressure profile
-    already computed via the hypsometric equation:
-
-        layer area = Rd * Tmean(C) * ln(p_lower / p_upper)
-
-    This mirrors the original method's use of a layer's mean
-    temperature times its (log-pressure) depth. With 6-7 low-level
-    points instead of a full sounding - and nothing above the summit
-    station - this under- or over-estimates the true areas whenever
-    a real melting/refreezing layer falls between or above the
-    observation levels.
-    """
-
-    nodes = [
-        (x["pressure_hPa"], x["temperature_C"])
-        for x in profile
-        if x.get("pressure_hPa") is not None
-        and x.get("temperature_C") is not None
-    ]
-
-    if len(nodes) < 2:
-        return None, None
-
-    # Sort by descending pressure (ascending height).
-    nodes.sort(key=lambda n: -n[0])
-
-    # Insert 0 C crossings, interpolated linearly in T vs ln(p).
-    expanded = [nodes[0]]
-
-    for (p1, t1), (p2, t2) in zip(nodes, nodes[1:]):
-
-        if (t1 > 0 > t2) or (t1 < 0 < t2):
-
-            frac = (0.0 - t1) / (t2 - t1)
-            lnp = np.log(p1) + frac * (np.log(p2) - np.log(p1))
-            expanded.append((np.exp(lnp), 0.0))
-
-        expanded.append((p2, t2))
-
-    positive_area = 0.0
-    negative_area = 0.0
-
-    for (p1, t1), (p2, t2) in zip(expanded, expanded[1:]):
-
-        if p1 <= p2:
-            continue
-
-        t_mean = (t1 + t2) / 2.0
-        area = RD * t_mean * np.log(p1 / p2)
-
-        if area > 0:
-            positive_area += area
-        else:
-            negative_area += area
-
-    return positive_area, negative_area
-
-
-def classify_precip_type(profile, positive_area, negative_area):
-    """
-    Approximate Bourgouin-style precipitation-type call. See the
-    BOURGOUIN_* constants above for the caveats on the FZRA/PL
-    discriminant used here.
-    """
-
-    if positive_area is None:
-        return "None", "None", "N/A"
-
-    surface_temp = profile[0]["temperature_C"]
-
-    warm_layer_text = (
-        f"{positive_area:.1f} J/kg" if positive_area > 0 else "None"
-    )
-
-    cold_layer_text = (
-        f"{abs(negative_area):.1f} J/kg"
-        if negative_area < 0
-        else "None"
-    )
-
-    if positive_area < BOURGOUIN_PA_THRESHOLD:
-
-        precip_type = "Snow" if surface_temp <= 0 else "Rain"
-
-    else:
-
-        if surface_temp > 0:
-            precip_type = "Rain"
-        elif abs(negative_area) < BOURGOUIN_NA_LOW:
-            precip_type = "Rain / Freezing Rain"
-        elif abs(negative_area) < BOURGOUIN_NA_HIGH:
-            precip_type = "Ice Pellets"
-        else:
-            precip_type = "Snow"
-
-    return warm_layer_text, cold_layer_text, precip_type
 
 
 def build_diagnostics(profile):
@@ -1773,18 +1697,6 @@ def build_diagnostics(profile):
 
     diagnostics["mean_lapse_rate_C_km"] = mean_lapse_rate(profile)
     diagnostics["max_inversion"] = max_inversion(profile)
-
-    # ---------------- PRECIP TYPE ----------------
-
-    positive_area, negative_area = bourgouin_energy_areas(profile)
-
-    warm_layer, cold_layer, precip_type = classify_precip_type(
-        profile, positive_area, negative_area
-    )
-
-    diagnostics["warm_layer"] = warm_layer
-    diagnostics["cold_layer"] = cold_layer
-    diagnostics["bourgouin_precip_type"] = precip_type
 
     # ---------------- WIND / TERRAIN ----------------
 
@@ -1831,6 +1743,12 @@ def diagnostic_display_rows(diagnostics):
         else "Insufficient data"
     )
 
+    shear_depth_ft = STATIONS[SHEAR_TOP_STID] - STATIONS[SHEAR_BASE_STID]
+    shear_label = (
+        f"{SHEAR_BASE_STID}\u2192{SHEAR_TOP_STID} Shear "
+        f"({shear_depth_ft/1000.0:.1f} kft)"
+    )
+
     froude_val = diagnostics["froude_number"]
     froude_text = (
         val(froude_val, "", 2)
@@ -1845,12 +1763,8 @@ def diagnostic_display_rows(diagnostics):
         ("Mean Lapse Rate", val(diagnostics["mean_lapse_rate_C_km"], " C/km"), False),
         ("Max Inversion", inv_text, False),
         ("Wet-Bulb Range", wb_range_text, False),
-        ("PRECIP TYPE", "", True),
-        ("Warm Layer", diagnostics["warm_layer"], False),
-        ("Cold Layer", diagnostics["cold_layer"], False),
-        ("Bourgouin", diagnostics["bourgouin_precip_type"], False),
         ("WIND / TERRAIN", "", True),
-        (f"0-{SHEAR_TOP_AGL_FT/1000:.1f} kft Bulk Shear", shear_text, False),
+        (shear_label, shear_text, False),
         ("Froude Number", froude_text, False),
         ("Flow Regime", diagnostics["flow_regime"], False),
     ]
@@ -2308,9 +2222,9 @@ def plot_skewt(
 
     diag_ax = fig.add_axes([
         0.62,
-        0.06,
+        0.14,
         0.34,
-        0.28,
+        0.20,
     ])
 
     diag_ax.axis("off")
