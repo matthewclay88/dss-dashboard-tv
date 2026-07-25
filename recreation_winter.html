@@ -18,6 +18,8 @@
     --sidebar-card-bg: #f4f6f8;
     --snow-card-from: #123a63;
     --snow-card-to: #0a2647;
+    --froude-card-from: #5f3dc4;
+    --froude-card-to: #362174;
   }
 
   * { box-sizing: border-box; }
@@ -96,6 +98,7 @@
     padding: 12px 20px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-rows: auto auto;
     gap: 16px;
     align-items: stretch;
   }
@@ -130,17 +133,11 @@
     than a stretched/cropped chart on a TV display.
   */
 
-  .left-column {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 0;
-    min-width: 0;
-  }
-
   .sounding-panel {
+    grid-column: 1;
+    grid-row: 1;
     padding: 8px;
-    flex: 0 0 auto;
+    min-width: 0;
   }
 
   .sounding-panel img {
@@ -153,44 +150,53 @@
   /* ================= SIDEBAR ================= */
 
   .sidebar {
+    grid-column: 2;
+    grid-row: 1;
     height: 100%;
     min-height: 0;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
+    gap: 12px;
   }
 
   .sidebar h2 {
     font-size: 14px;
     letter-spacing: 0.04em;
-    margin: 2px 0 12px 2px;
+    margin: 2px 0 2px 2px;
+    flex: 0 0 auto;
   }
 
-  .obs-card {
-    flex: 0 0 auto;
+  .summit-card {
+    flex: 1 1 0;
+    min-height: 0;
     background: var(--sidebar-card-bg);
-    border-radius: 10px;
-    padding: 9px 14px;
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .summit-card .header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 8px;
   }
 
-  .obs-card .icon {
-    width: 40px;
-    height: 40px;
-    flex: 0 0 40px;
-    border-radius: 8px;
+  .summit-card .icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 9px;
     background: #e4ecf5;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .obs-card .icon svg {
-    width: 22px;
-    height: 22px;
+  .summit-card .icon svg {
+    width: 24px;
+    height: 24px;
     stroke: var(--blue);
     fill: none;
     stroke-width: 1.8;
@@ -198,43 +204,54 @@
     stroke-linejoin: round;
   }
 
-  .obs-card .info {
+  .summit-card .name {
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  .summit-card .elev {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .summit-card .stats {
+    display: flex;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--card-border);
+  }
+
+  .summit-card .stat {
     flex: 1;
-    min-width: 0;
+    text-align: center;
   }
 
-  .obs-card .name {
+  .summit-card .stat + .stat {
+    border-left: 1px solid var(--card-border);
+  }
+
+  .summit-card .stat .label {
+    font-size: 10px;
     font-weight: 700;
-    font-size: 14px;
-  }
-
-  .obs-card .elev {
-    font-size: 11.5px;
+    letter-spacing: 0.05em;
     color: var(--muted);
-    margin-top: 1px;
   }
 
-  .obs-card .readout {
-    text-align: right;
-  }
-
-  .obs-card .temp {
-    font-weight: 700;
-    font-size: 16px;
-  }
-
-  .obs-card .wind {
-    font-size: 11.5px;
-    color: var(--muted);
-    margin-top: 1px;
+  .summit-card .stat .value {
+    font-size: 21px;
+    font-weight: 800;
+    margin-top: 5px;
   }
 
   /* ================= SNOW DEPTH CARD ================= */
 
   .snow-row {
-    flex: 0 0 auto;
+    grid-column: 1 / -1;
+    grid-row: 2;
     display: flex;
     gap: 16px;
+    min-height: 0;
   }
 
   .snow-summary {
@@ -335,11 +352,28 @@
     clutter - these are meant to be glanced at, not studied.
   */
 
-  .mini-stat-card {
-    flex: 0 0 16%;
+  /* ================= 2x2 STAT GRID (P-Type, Froude, Freezing Level, Shear) ================= */
+  /*
+    Same total footprint the two large mini-stat-cards used to take
+    (flex: 2 2 0, matching two of the old flex: 1 1 0 cards combined)
+    but fits 4 stats instead of 2 - the old cards were a lot of space
+    for one number each.
+  */
+
+  .quad-stats {
+    flex: 2 2 0;
     min-width: 0;
-    border-radius: 12px;
-    padding: 16px 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .quad-card {
+    min-width: 0;
+    min-height: 0;
+    border-radius: 10px;
+    padding: 12px 16px;
     background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
     color: white;
     display: flex;
@@ -347,25 +381,64 @@
     justify-content: center;
   }
 
-  .mini-stat-card .eyebrow {
+  .quad-card .eyebrow {
     font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: #cfe0f2;
   }
 
-  .mini-stat-card .value {
-    font-size: 22px;
+  .quad-card .value {
+    font-size: 26px;
     font-weight: 800;
-    line-height: 1.25;
-    margin-top: 6px;
+    line-height: 1.15;
+    margin-top: 4px;
   }
 
-  .mini-stat-card .subtext {
+  .quad-card .subtext {
     font-size: 11px;
     color: #cfe0f2;
     margin-top: 3px;
   }
+
+  /* Froude keeps its own color scheme (purple, matching the mountain
+     icon used for it elsewhere in the diagnostics) so it still reads
+     as a standout among the four, just not a whole giant card
+     anymore - and a slightly bigger number since flow regime is
+     still the single most "headline" stat of the four. */
+
+  .froude-card {
+    background: linear-gradient(160deg, var(--froude-card-from), var(--froude-card-to));
+  }
+
+  .froude-card .eyebrow {
+    color: #e3d9fc;
+  }
+
+  .froude-card .value {
+    font-size: 32px;
+  }
+
+  .froude-card .subtext {
+    font-weight: 700;
+    color: #e3d9fc;
+  }
+
+  /* P-Type value color-coding - class applied by JS based on the
+     fetched precip type (see the <script> below). Falls back to
+     plain white (the base .quad-card .value color) until then. */
+
+  .ptype-card.ptype-rain { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
+  .ptype-card.ptype-snow { background: linear-gradient(160deg, #1971c2, #0b4a85); }
+  .ptype-card.ptype-mix { background: linear-gradient(160deg, #f59f00, #a66a00); }
+  .ptype-card.ptype-frz { background: linear-gradient(160deg, #e03131, #962020); }
+
+  /* Shear card: green/yellow/red by wind shear magnitude (see the
+     threshold logic in the <script> below). */
+
+  .shear-card.shear-low { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
+  .shear-card.shear-mod { background: linear-gradient(160deg, #f59f00, #a66a00); }
+  .shear-card.shear-high { background: linear-gradient(160deg, #e03131, #962020); }
 
 </style>
 </head>
@@ -394,165 +467,213 @@
 
   <div class="layout">
 
-    <!-- ================= LEFT: SOUNDING + SNOW DEPTH ================= -->
-    <div class="left-column">
+    <!-- ================= SOUNDING ================= -->
+    <div class="card sounding-panel">
+      <!--
+        Served as a plain static file from the severe-dashboard repo
+        (committed by the workflow after tempprofile.py runs), not
+        hotlinked from Drive - Drive enforces an anonymous per-file
+        download quota that made the image intermittently fail to
+        load on the live page. raw.githubusercontent.com has no such
+        quota for public repos. Update the branch/path below to match
+        wherever the workflow actually commits outputs/.
+      -->
+      <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+    </div>
 
-      <div class="card sounding-panel">
+    <!-- ================= BOTTOM ROW: SNOW DEPTH + P-TYPE + FROUDE (full width) ================= -->
+
+    <div class="snow-row">
+
+      <div class="snow-summary">
+        <div class="eyebrow">SNOW DEPTH</div>
+
+        <div class="headline">
+          <svg class="snowflake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/>
+          </svg>
+          <span class="value" data-field="snow-depth">18</span>
+          <span class="unit">in</span>
+        </div>
+
+        <div class="location">at Mansfield Summit</div>
+
         <!--
-          Served as a plain static file from the severe-dashboard repo
-          (committed by the workflow after tempprofile.py runs), not
-          hotlinked from Drive - Drive enforces an anonymous per-file
-          download quota that made the image intermittently fail to
-          load on the live page. raw.githubusercontent.com has no such
-          quota for public repos. Update the branch/path below to match
-          wherever the workflow actually commits outputs/.
+          TODO: mansfield_snow_depth.py already computes this exact
+          string (departure_text) into vt_snow_depth_status.json -
+          fetch that file and drop it straight in here.
         -->
-        <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+        <div class="departure placeholder" data-field="departure">
+          Departure — pending wiring
+        </div>
+
+        <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
       </div>
 
-      <!-- ================= SNOW DEPTH: SUMMARY (25%) + CHART (75%) ================= -->
-
-      <div class="snow-row">
-
-        <div class="snow-summary">
-          <div class="eyebrow">SNOW DEPTH</div>
-
-          <div class="headline">
-            <svg class="snowflake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-              <path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/>
-            </svg>
-            <span class="value" data-field="snow-depth">18</span>
-            <span class="unit">in</span>
-          </div>
-
-          <div class="location">at Mansfield Summit</div>
-
-          <!--
-            TODO: mansfield_snow_depth.py already computes this exact
-            string (departure_text) into vt_snow_depth_status.json -
-            fetch that file and drop it straight in here.
-          -->
-          <div class="departure placeholder" data-field="departure">
-            Departure — pending wiring
-          </div>
-
-          <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
-        </div>
-
-        <div class="snow-chart-panel">
-          <!--
-            Rendered by mansfield_snow_depth.py (plot_snow_depth_chart)
-            from the same NWS BTV feeds as the page at
-            weather.gov/btv/recreation - Max/Min/Avg/Current-season
-            depth lines. Served the same way as the sounding image
-            (committed to outputs/ by the workflow, referenced via
-            raw.githubusercontent.com); update the branch/path if
-            mansfield_snow_depth.py ends up committing elsewhere.
-          -->
-          <img src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_snow_depth_chart.png" alt="Mount Mansfield snow depth, current season vs. historical max/min/average">
-        </div>
-
+      <div class="snow-chart-panel">
         <!--
-          TODO: tempprofile.py's build_diagnostics() already computes
-          both of these (diagnostics["precip_type"] and
-          diagnostics["froude_number"] / diagnostics["flow_regime"]) -
-          they just aren't exported to a JSON file yet the way the
-          snow depth status is. Same pattern as everywhere else:
-          export a small JSON, fetch it here, drop the values in.
+          Rendered by mansfield_snow_depth.py (plot_snow_depth_chart)
+          from the same NWS BTV feeds as the page at
+          weather.gov/btv/recreation - Max/Min/Avg/Current-season
+          depth lines. Served the same way as the sounding image
+          (committed to outputs/ by the workflow, referenced via
+          raw.githubusercontent.com); update the branch/path if
+          mansfield_snow_depth.py ends up committing elsewhere.
         -->
+        <img src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_snow_depth_chart.png" alt="Mount Mansfield snow depth, current season vs. historical max/min/average">
+      </div>
 
-        <div class="mini-stat-card">
+      <!--
+        TODO: tempprofile.py's export_diagnostics_status() already
+        writes all four of these to vt_diagnostics_status.json -
+        fetch that file and drop the values in (see the <script> at
+        the bottom of this file, which already does this for snow
+        depth).
+      -->
+
+      <div class="quad-stats">
+
+        <div class="quad-card ptype-card">
           <div class="eyebrow">EXPECTED P-TYPE</div>
           <div class="value" data-field="precip-type">Rain</div>
         </div>
 
-        <div class="mini-stat-card">
+        <div class="quad-card froude-card">
           <div class="eyebrow">FROUDE NUMBER</div>
           <div class="value" data-field="froude-number">0.09</div>
           <div class="subtext" data-field="flow-regime">Blocked</div>
+        </div>
+
+        <div class="quad-card">
+          <div class="eyebrow">FREEZING LEVEL</div>
+          <div class="value" data-field="freezing-level">&mdash;</div>
+        </div>
+
+        <div class="quad-card shear-card">
+          <div class="eyebrow">SHEAR (SFC&ndash;SUMMIT)</div>
+          <div class="value" data-field="bulk-shear">&mdash;</div>
         </div>
 
       </div>
 
     </div>
 
-    <!-- ================= RIGHT: SIDEBAR ================= -->
+    <!-- ================= SIDEBAR ================= -->
     <div class="sidebar">
       <h2>MOUNTAIN OBSERVATIONS</h2>
 
       <!--
-        TODO: these 5 cards are placeholder data. Decide the mapping
-        from station ID -> display name/icon (e.g. MMNV1 -> "Summit",
-        KBTV -> "Base Lodge") and wire real temp/wind values in.
+        TODO: mockup data only. Station ID -> site mapping is still
+        open (see prior discussion) - Chin/Nose correspond to real
+        named points on the Mansfield ridge but don't yet map to any
+        station this dashboard actually fetches (only Summit/MMNV1
+        and Base Lodge/KBTV are unambiguous). Wind chill isn't
+        computed anywhere yet either - needs temp_C + wind_speed_kmh
+        per station, straightforward to add to tempprofile.py's
+        per-station data once the station mapping is settled.
       -->
 
-      <div class="obs-card" data-station="MMNV1">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+      <div class="summit-card" data-station="MMNV1">
+        <div class="header">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+          </div>
+          <div>
+            <div class="name">Chin</div>
+            <div class="elev">4,393 ft</div>
+          </div>
         </div>
-        <div class="info">
-          <div class="name">Summit</div>
-          <div class="elev">4,393 ft</div>
-        </div>
-        <div class="readout">
-          <div class="temp" data-field="temp">14.8 °C</div>
-          <div class="wind" data-field="wind">228° / 14 kt</div>
-        </div>
-      </div>
-
-      <div class="obs-card" data-station="CHIN">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="2"/><path d="M12 9 L9 14 L6 21 M12 9 L15 14 L12 21 M9 14 L15 14"/></svg>
-        </div>
-        <div class="info">
-          <div class="name">Chin</div>
-          <div class="elev">3,950 ft</div>
-        </div>
-        <div class="readout">
-          <div class="temp" data-field="temp">16.7 °C</div>
-          <div class="wind" data-field="wind">Calm</div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">TEMP</div>
+            <div class="value" data-field="temp">-8°</div>
+          </div>
+          <div class="stat">
+            <div class="label">WIND</div>
+            <div class="value" data-field="wind">240/35</div>
+          </div>
+          <div class="stat">
+            <div class="label">CHILL</div>
+            <div class="value" data-field="windchill">-22°</div>
+          </div>
         </div>
       </div>
 
-      <div class="obs-card" data-station="TAFT_LODGE">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
+      <div class="summit-card" data-station="NOSE">
+        <div class="header">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+          </div>
+          <div>
+            <div class="name">Nose</div>
+            <div class="elev">3,758 ft</div>
+          </div>
         </div>
-        <div class="info">
-          <div class="name">Taft Lodge</div>
-          <div class="elev">2,680 ft</div>
-        </div>
-        <div class="readout">
-          <div class="temp" data-field="temp">17.8 °C</div>
-          <div class="wind" data-field="wind">Calm</div>
-        </div>
-      </div>
-
-      <div class="obs-card" data-station="SUNSET_RIDGE">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M12 3 L17 12 H13 L16 18 H8 L11 12 H7 Z"/></svg>
-        </div>
-        <div class="info">
-          <div class="name">Sunset Ridge</div>
-          <div class="elev">2,250 ft</div>
-        </div>
-        <div class="readout">
-          <div class="temp" data-field="temp">18.8 °C</div>
-          <div class="wind" data-field="wind">Calm</div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">TEMP</div>
+            <div class="value" data-field="temp">-6°</div>
+          </div>
+          <div class="stat">
+            <div class="label">WIND</div>
+            <div class="value" data-field="wind">220/28</div>
+          </div>
+          <div class="stat">
+            <div class="label">CHILL</div>
+            <div class="value" data-field="windchill">-17°</div>
+          </div>
         </div>
       </div>
 
-      <div class="obs-card" data-station="KBTV">
-        <div class="icon">
-          <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
+      <div class="summit-card" data-station="TAFT_LODGE">
+        <div class="header">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
+          </div>
+          <div>
+            <div class="name">Taft Lodge</div>
+            <div class="elev">2,680 ft</div>
+          </div>
         </div>
-        <div class="info">
-          <div class="name">Base Lodge</div>
-          <div class="elev">1,300 ft</div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">TEMP</div>
+            <div class="value" data-field="temp">-3°</div>
+          </div>
+          <div class="stat">
+            <div class="label">WIND</div>
+            <div class="value" data-field="wind">180/12</div>
+          </div>
+          <div class="stat">
+            <div class="label">CHILL</div>
+            <div class="value" data-field="windchill">-7°</div>
+          </div>
         </div>
-        <div class="readout">
-          <div class="temp" data-field="temp">21.0 °C</div>
-          <div class="wind" data-field="wind">100° / 3 kt</div>
+      </div>
+
+      <div class="summit-card" data-station="KBTV">
+        <div class="header">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
+          </div>
+          <div>
+            <div class="name">Base Lodge</div>
+            <div class="elev">1,300 ft</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">TEMP</div>
+            <div class="value" data-field="temp">1°</div>
+          </div>
+          <div class="stat">
+            <div class="label">WIND</div>
+            <div class="value" data-field="wind">140/5</div>
+          </div>
+          <div class="stat">
+            <div class="label">CHILL</div>
+            <div class="value" data-field="windchill">-1°</div>
+          </div>
         </div>
       </div>
 
@@ -576,6 +697,40 @@
       });
     }
 
+    // green=rain, blue=snow, yellow=sleet/wintry mix, red=freezing rain
+    const PRECIP_COLOR_CLASS = {
+      "Rain": "ptype-rain",
+      "Snow": "ptype-snow",
+      "Sleet": "ptype-mix",
+      "Wintry Mix": "ptype-mix",
+      "Freezing Rain": "ptype-frz",
+    };
+
+    function applyPrecipColor(precipType) {
+      document.querySelectorAll('.ptype-card').forEach((card) => {
+        card.classList.remove("ptype-rain", "ptype-snow", "ptype-mix", "ptype-frz");
+        const cls = PRECIP_COLOR_CLASS[precipType];
+        if (cls) card.classList.add(cls);
+      });
+    }
+
+    // <15 kt green, 15-25 kt yellow, >=25 kt red (also covers 25-40
+    // and beyond - there's no 4th color to split that range further).
+    function shearColorClass(shearKt) {
+      if (shearKt === null || shearKt === undefined) return null;
+      if (shearKt < 15) return "shear-low";
+      if (shearKt < 25) return "shear-mod";
+      return "shear-high";
+    }
+
+    function applyShearColor(shearKt) {
+      document.querySelectorAll('.shear-card').forEach((card) => {
+        card.classList.remove("shear-low", "shear-mod", "shear-high");
+        const cls = shearColorClass(shearKt);
+        if (cls) card.classList.add(cls);
+      });
+    }
+
     function formatDateUTC(isoString) {
       if (!isoString) return "\u2014";
       const d = new Date(isoString);
@@ -592,6 +747,7 @@
         const data = await res.json();
 
         setField("precip-type", data.precip_type ?? "\u2014");
+        applyPrecipColor(data.precip_type);
 
         setField(
           "froude-number",
@@ -600,6 +756,21 @@
             : "\u2014"
         );
         setField("flow-regime", data.flow_regime ?? "\u2014");
+
+        setField(
+          "freezing-level",
+          data.freezing_level_ft !== null && data.freezing_level_ft !== undefined
+            ? `${Math.round(data.freezing_level_ft).toLocaleString()} ft`
+            : "None in layer"
+        );
+
+        setField(
+          "bulk-shear",
+          data.bulk_shear_kt !== null && data.bulk_shear_kt !== undefined
+            ? `${Math.round(data.bulk_shear_kt)} kt`
+            : "\u2014"
+        );
+        applyShearColor(data.bulk_shear_kt);
       } catch (err) {
         // Leave whatever's currently showing (placeholder or last
         // successful fetch) rather than blanking the card on a
@@ -637,6 +808,10 @@
       refreshDiagnostics();
       refreshSnowDepth();
     }
+
+    // Color the static placeholder immediately, don't wait on the
+    // fetch to resolve first.
+    applyPrecipColor(document.querySelector('[data-field="precip-type"]')?.textContent.trim());
 
     refreshAll();
     setInterval(refreshAll, REFRESH_INTERVAL_MS);
