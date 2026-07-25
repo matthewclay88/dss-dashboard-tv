@@ -130,22 +130,24 @@
     than a stretched/cropped chart on a TV display.
   */
 
-  .sounding-panel {
-    padding: 12px;
+  .left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
     min-height: 0;
     min-width: 0;
-    display: flex;
-    align-items: flex-start;
+  }
+
+  .sounding-panel {
+    padding: 12px;
+    flex: 0 0 auto;
   }
 
   .sounding-panel img {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: top;
+    height: auto;
     display: block;
     border-radius: 8px;
-    margin: 0 auto;
   }
 
   /* ================= SIDEBAR ================= */
@@ -348,18 +350,59 @@
 
   <div class="layout">
 
-    <!-- ================= LEFT: SOUNDING ================= -->
-    <div class="card sounding-panel">
-      <!--
-        Served as a plain static file from the severe-dashboard repo
-        (committed by the workflow after tempprofile.py runs), not
-        hotlinked from Drive - Drive enforces an anonymous per-file
-        download quota that made the image intermittently fail to
-        load on the live page. raw.githubusercontent.com has no such
-        quota for public repos. Update the branch/path below to match
-        wherever the workflow actually commits outputs/.
-      -->
-      <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+    <!-- ================= LEFT: SOUNDING + SNOW DEPTH ================= -->
+    <div class="left-column">
+
+      <div class="card sounding-panel">
+        <!--
+          Served as a plain static file from the severe-dashboard repo
+          (committed by the workflow after tempprofile.py runs), not
+          hotlinked from Drive - Drive enforces an anonymous per-file
+          download quota that made the image intermittently fail to
+          load on the live page. raw.githubusercontent.com has no such
+          quota for public repos. Update the branch/path below to match
+          wherever the workflow actually commits outputs/.
+        -->
+        <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+      </div>
+
+      <!-- ================= SNOW DEPTH ================= -->
+
+      <div class="snow-card">
+        <div class="eyebrow">CURRENT SNOW DEPTH</div>
+
+        <div class="headline">
+          <svg class="snowflake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/>
+          </svg>
+          <span class="value" data-field="snow-depth">18</span>
+          <span class="unit">in</span>
+        </div>
+
+        <div class="location">at Mansfield Summit</div>
+
+        <!--
+          TODO: mansfield_snow_depth.py already computes
+          departure_text ("+21 in above normal" / "-8 in below
+          normal" / "Near normal"). Drop diagnostics.departure_text
+          straight in here once wired up.
+        -->
+        <div class="departure placeholder" data-field="departure">
+          Departure from normal — pending dataset
+        </div>
+
+        <!--
+          TODO: replace with a real snow-depth-by-elevation map once
+          the dataset arrives. Left as a placeholder rather than
+          guessing at a map library/projection before that's decided.
+        -->
+        <div class="snow-map-placeholder">
+          Snow depth map<br>— dataset pending —
+        </div>
+
+        <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
+      </div>
+
     </div>
 
     <!-- ================= RIGHT: SIDEBAR ================= -->
@@ -440,43 +483,6 @@
           <div class="temp" data-field="temp">21.0 °C</div>
           <div class="wind" data-field="wind">100° / 3 kt</div>
         </div>
-      </div>
-
-      <!-- ================= SNOW DEPTH ================= -->
-
-      <div class="snow-card">
-        <div class="eyebrow">CURRENT SNOW DEPTH</div>
-
-        <div class="headline">
-          <svg class="snowflake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-            <path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/>
-          </svg>
-          <span class="value" data-field="snow-depth">18</span>
-          <span class="unit">in</span>
-        </div>
-
-        <div class="location">at Mansfield Summit</div>
-
-        <!--
-          TODO: mansfield_snow_depth.py already computes
-          departure_text ("+21 in above normal" / "-8 in below
-          normal" / "Near normal"). Drop diagnostics.departure_text
-          straight in here once wired up.
-        -->
-        <div class="departure placeholder" data-field="departure">
-          Departure from normal — pending dataset
-        </div>
-
-        <!--
-          TODO: replace with a real snow-depth-by-elevation map once
-          the dataset arrives. Left as a placeholder rather than
-          guessing at a map library/projection before that's decided.
-        -->
-        <div class="snow-map-placeholder">
-          Snow depth map<br>— dataset pending —
-        </div>
-
-        <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
       </div>
 
     </div>
