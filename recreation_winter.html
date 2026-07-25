@@ -311,13 +311,12 @@
     <!-- ================= LEFT: SOUNDING ================= -->
     <div class="card sounding-panel">
       <!--
-        TODO: point this at wherever tempprofile.py's output actually
-        lands for the live site (Drive share link, a copy committed
-        to the repo, etc). Nothing else in this panel needs markup -
-        title, chart, diagnostic cards, and table are all rendered
-        into the image itself.
+        Served directly from Google Drive - the file ID stays stable
+        across runs because upload_to_drive() updates this same file
+        in place rather than creating a new one each time, so this
+        URL doesn't need to change when tempprofile.py re-runs.
       -->
-      <img id="sounding-image" src="vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+      <img id="sounding-image" src="https://drive.google.com/uc?export=view&id=16omWsRc5Vf4utNeopB-om2lYzh3MacDp" alt="Mount Mansfield observed slope profile">
     </div>
 
     <!-- ================= RIGHT: SIDEBAR ================= -->
