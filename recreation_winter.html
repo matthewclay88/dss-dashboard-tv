@@ -599,6 +599,11 @@
     <div class="value" data-field="wind">—</div>
   </div>
 
+<div class="stat">
+    <div class="label">GUST</div>
+    <div class="value" data-field="gust">—</div>
+  </div>
+          
   <div class="stat">
     <div class="label">CHILL</div>
     <div class="value" data-field="windchill">—</div>
@@ -642,31 +647,41 @@
   </div>
 </div>
 
-      <div class="summit-card" data-station="TAFT_LODGE">
-        <div class="header">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
-          </div>
-          <div>
-            <div class="name">Taft Lodge</div>
-            <div class="elev">2,680 ft</div>
-          </div>
-        </div>
-        <div class="stats">
-          <div class="stat">
-            <div class="label">TEMP</div>
-            <div class="value" data-field="temp">-3°</div>
-          </div>
-          <div class="stat">
-            <div class="label">WIND</div>
-            <div class="value" data-field="wind">180/12</div>
-          </div>
-          <div class="stat">
-            <div class="label">CHILL</div>
-            <div class="value" data-field="windchill">-7°</div>
-          </div>
-        </div>
-      </div>
+      <!-- ================= BURKE MOUNTAIN ================= -->
+
+<div class="summit-card" data-station="BURKE">
+  <div class="header">
+    <div class="icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/>
+      </svg>
+    </div>
+
+    <div>
+      <div class="name">Burke Mountain</div>
+      <div class="elev" data-field="elevation">3,058 ft</div>
+    </div>
+  </div>
+
+  <div class="stats">
+
+    <div class="stat">
+      <div class="label">TEMP</div>
+      <div class="value" data-field="temp">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">WIND</div>
+      <div class="value" data-field="wind">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">CHILL</div>
+      <div class="value" data-field="windchill">—</div>
+    </div>
+
+  </div>
+</div>
 
       <div class="summit-card" data-station="KBTV">
         <div class="header">
@@ -1623,9 +1638,10 @@ async function refreshMansfieldObs() {
 
   // Existing fields in the actual Mount Mansfield card
   const tempEl = card.querySelector('[data-field="temp"]');
-  const windEl = card.querySelector('[data-field="wind"]');
-  const chillEl = card.querySelector('[data-field="windchill"]');
-  const elevationEl = card.querySelector('[data-field="elevation"]');
+const windEl = card.querySelector('[data-field="wind"]');
+const gustEl = card.querySelector('[data-field="gust"]');
+const chillEl = card.querySelector('[data-field="windchill"]');
+const elevationEl = card.querySelector('[data-field="elevation"]');
 
   try {
 
@@ -1699,7 +1715,26 @@ async function refreshMansfieldObs() {
       windEl.textContent = "—";
     }
 
+// ============================================================
+// WIND GUST
+//
+// UPERG from the RRSBTV product.
+// ============================================================
 
+if (
+  gustEl &&
+  wind &&
+  wind.gustMph != null
+) {
+
+  gustEl.textContent =
+    `${Math.round(wind.gustMph)}`;
+
+} else if (gustEl) {
+
+  gustEl.textContent = "—";
+}
+    
     // ============================================================
     // WIND CHILL
     //
@@ -2160,6 +2195,430 @@ async function refreshWhitefaceObs() {
   }
 }
 
+// ============================================================================
+// BURKE MOUNTAIN SUMMIT — WEATHER.COM PWS
+// ============================================================================
+//
+// Station: KVTEASTB15
+//
+// API provides:
+//   Temperature
+//   Sustained wind
+//   Wind gust
+//   Wind direction
+//   Wind chill
+//   Elevation
+//   Observation timestamp
+//
+// Elevation is supplied by the station metadata: 3,058 ft.
+// ============================================================================
+
+const BURKE_STATION = "KVTEASTB15";
+
+const BURKE_API_URL =
+  "https://api.weather.com/v2/pws/observations/current" +
+  "?apiKey=e1f10a1e78da46f5b10a1e78da96f525" +
+  "&stationId=" + BURKE_STATION +
+  "&numericPrecision=decimal" +
+  "&format=json" +
+  "&units=e";
+
+
+async function fetchBurkeObservation_() {
+
+  try {
+
+    const response = await fetchWithTimeout_(
+      BURKE_API_URL,
+      { cache: "no-store" }
+    );
+
+
+    if (!response.ok) {
+
+      console.warn(
+        `Burke PWS API failed: HTTP ${response.status}`
+      );
+
+      return null;
+    }
+
+
+    const data = await response.json();
+
+
+    // ------------------------------------------------------------
+    // Weather.com wraps the current observation in an array.
+    // ------------------------------------------------------------
+
+    if (
+      !data ||
+      !Array.isArray(data.observations) ||
+      !data.observations.length
+    ) {
+
+      console.warn(
+        "Burke: API returned no observations."
+      );
+
+      return null;
+    }
+
+
+    const raw = data.observations[0];
+
+    const imperial = raw.imperial || {};
+
+
+    // ------------------------------------------------------------
+    // TEMPERATURE
+    // ------------------------------------------------------------
+
+    const tempF =
+      imperial.temp != null
+        ? Number(imperial.temp)
+        : null;
+
+
+    // ------------------------------------------------------------
+    // WIND
+    // ------------------------------------------------------------
+
+    const sustainedMph =
+      imperial.windSpeed != null
+        ? Number(imperial.windSpeed)
+        : null;
+
+
+    const gustMph =
+      imperial.windGust != null
+        ? Number(imperial.windGust)
+        : null;
+
+
+    const directionDeg =
+      raw.winddir != null
+        ? Number(raw.winddir)
+        : null;
+
+
+    // ------------------------------------------------------------
+    // WIND CHILL
+    //
+    // Weather.com returns the actual air temperature as "windChill"
+    // when wind chill is not applicable.
+    //
+    // For our dashboard:
+    //
+    //   Temp > 50 F  → —
+    //   Wind < 3 mph → —
+    //
+    // Otherwise use the station's reported wind-chill value.
+    // ------------------------------------------------------------
+
+    let windChillF = null;
+
+
+    if (
+      tempF != null &&
+      tempF <= 50 &&
+      sustainedMph != null &&
+      sustainedMph >= 3 &&
+      imperial.windChill != null
+    ) {
+
+      const wc =
+        Number(imperial.windChill);
+
+
+      if (Number.isFinite(wc)) {
+        windChillF = wc;
+      }
+    }
+
+
+    // ------------------------------------------------------------
+    // ELEVATION
+    // ------------------------------------------------------------
+
+    const elevationFt =
+      imperial.elev != null
+        ? Number(imperial.elev)
+        : null;
+
+
+    // ------------------------------------------------------------
+    // OBSERVATION TIME
+    //
+    // obsTimeUtc is already ISO-8601, so unlike Whiteface we don't
+    // need a custom timestamp parser.
+    // ------------------------------------------------------------
+
+    const timestamp =
+      raw.obsTimeUtc || null;
+
+
+    // ------------------------------------------------------------
+    // Basic validation.
+    // ------------------------------------------------------------
+
+    if (
+      !Number.isFinite(tempF) &&
+      !Number.isFinite(sustainedMph)
+    ) {
+
+      console.warn(
+        "Burke: observation contained no usable temperature or wind."
+      );
+
+      return null;
+    }
+
+
+    // ------------------------------------------------------------
+    // Return normalized observation.
+    //
+    // Same general structure we're using for the other mountain
+    // stations, which keeps the card updater simple.
+    // ------------------------------------------------------------
+
+    return {
+
+      stationId:
+        raw.stationID || BURKE_STATION,
+
+      tempF:
+        Number.isFinite(tempF)
+          ? tempF
+          : null,
+
+      sustainedMph:
+        Number.isFinite(sustainedMph)
+          ? sustainedMph
+          : null,
+
+      gustMph:
+        Number.isFinite(gustMph)
+          ? gustMph
+          : null,
+
+      directionDeg:
+        Number.isFinite(directionDeg)
+          ? directionDeg
+          : null,
+
+      windChillF,
+
+      elevationFt:
+        Number.isFinite(elevationFt)
+          ? elevationFt
+          : null,
+
+      timestamp,
+
+      humidity:
+        raw.humidity != null
+          ? Number(raw.humidity)
+          : null,
+
+      dewpointF:
+        imperial.dewpt != null
+          ? Number(imperial.dewpt)
+          : null
+    };
+
+
+  } catch (error) {
+
+    console.warn(
+      "Burke observation fetch failed:",
+      error
+    );
+
+    return null;
+  }
+}
+
+// ============================================================================
+// REFRESH BURKE MOUNTAIN OBSERVATION CARD
+// ============================================================================
+
+async function refreshBurkeObs() {
+
+  const card = document.querySelector(
+    '.summit-card[data-station="BURKE"]'
+  );
+
+  if (!card) {
+    console.warn("Burke summit card not found.");
+    return;
+  }
+
+
+  const tempEl =
+    card.querySelector('[data-field="temp"]');
+
+  const windEl =
+    card.querySelector('[data-field="wind"]');
+
+  const chillEl =
+    card.querySelector('[data-field="windchill"]');
+
+  const elevationEl =
+    card.querySelector('[data-field="elevation"]');
+
+
+  try {
+
+    const obs =
+      await fetchBurkeObservation_();
+
+
+    // ============================================================
+    // NO OBSERVATION
+    // ============================================================
+
+    if (!obs) {
+
+      console.warn(
+        "Burke: no observation available."
+      );
+
+      if (tempEl) {
+        tempEl.textContent = "—";
+      }
+
+      if (windEl) {
+        windEl.textContent = "—";
+      }
+
+      if (chillEl) {
+        chillEl.textContent = "—";
+      }
+
+      return;
+    }
+
+
+    // ============================================================
+    // TEMPERATURE
+    // ============================================================
+
+    if (
+      tempEl &&
+      obs.tempF != null
+    ) {
+
+      tempEl.textContent =
+        `${Math.round(obs.tempF)}°`;
+
+    } else if (tempEl) {
+
+      tempEl.textContent = "—";
+    }
+
+
+    // ============================================================
+    // WIND
+    //
+    // Match Mansfield + Whiteface:
+    //
+    //       360/2
+    //
+    // direction / sustained mph
+    // ============================================================
+
+    if (
+      windEl &&
+      obs.sustainedMph != null
+    ) {
+
+      if (obs.directionDeg != null) {
+
+        const direction =
+          String(
+            Math.round(obs.directionDeg)
+          ).padStart(3, "0");
+
+
+        windEl.textContent =
+          `${direction}/${Math.round(obs.sustainedMph)}`;
+
+      } else {
+
+        windEl.textContent =
+          `${Math.round(obs.sustainedMph)} mph`;
+      }
+
+    } else if (windEl) {
+
+      windEl.textContent = "—";
+    }
+
+
+    // ============================================================
+    // WIND CHILL
+    //
+    // fetchBurkeObservation_() already applies our rule:
+    //
+    //   Temp > 50 F  → null
+    //   Wind < 3 mph → null
+    //
+    // Therefore null simply displays as —.
+    // ============================================================
+
+    if (
+      chillEl &&
+      obs.windChillF != null
+    ) {
+
+      chillEl.textContent =
+        `${Math.round(obs.windChillF)}°`;
+
+    } else if (chillEl) {
+
+      chillEl.textContent = "—";
+    }
+
+
+    // ============================================================
+    // ELEVATION
+    //
+    // Use the actual elevation reported by the PWS.
+    // ============================================================
+
+    if (
+      elevationEl &&
+      obs.elevationFt != null
+    ) {
+
+      elevationEl.textContent =
+        `${obs.elevationFt.toLocaleString("en-US", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        })} ft`;
+    }
+
+
+    // ============================================================
+    // TEST OUTPUT
+    // ============================================================
+
+    console.log(
+      "BURKE LIVE OBS:",
+      obs
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Burke observation refresh failed:",
+      error
+    );
+  }
+}
+    
     // Seeds name/elevation from STATION_CONFIG immediately on load, so the
     // card is correct even before the first fetch resolves - and so
     // elevation has one source of truth as more stations get wired up.
@@ -2177,6 +2636,7 @@ async function refreshWhitefaceObs() {
       refreshSnowDepth();
       refreshMansfieldObs();
       refreshWhitefaceObs();
+      refreshBurkeObs();
     }
 
     // Color the static placeholder immediately, don't wait on the
