@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mount Mansfield Dashboard</title>
+<style>
+
+  :root {
+    --navy: #0e2a4d;
+    --navy-light: #16457c;
+    --page-bg: #eef1f5;
+    --card-bg: #ffffff;
+    --card-border: #e2e6ea;
+    --ink: #1a2332;
+    --muted: #6b7688;
+    --blue: #1e5fa8;
+    --sidebar-card-bg: #f4f6f8;
+    --snow-card-from: #123a63;
+    --snow-card-to: #0a2647;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+
+  /* ================= NAVBAR ================= */
+
+  .navbar {
+    background: var(--navy);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+  }
+
+  .navbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .navbar .brand-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--navy-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navbar h1 {
+    font-size: 18px;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .navbar .subtitle {
+    font-size: 12px;
+    color: #a9bdd6;
+    margin-top: 1px;
+  }
+
+  .navbar .clock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14.5px;
+  }
+
+  /* ================= LAYOUT ================= */
+
+  .layout {
+    max-width: 1520px;
+    margin: 0 auto;
+    padding: 22px 28px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 22px;
+    align-items: start;
+  }
+
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
+  }
+
+  /* ================= SOUNDING PANEL ================= */
+  /*
+    The chart, diagnostic cards, and station table below are all
+    baked into vt_pseudo_sounding.png by tempprofile.py - not
+    rebuilt in HTML/CSS. Swap the src (or point it at a Drive/CDN
+    URL) to update; no markup changes needed here.
+  */
+
+  .sounding-panel {
+    padding: 4px;
+  }
+
+  .sounding-panel img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  /* ================= SIDEBAR ================= */
+
+  .sidebar h2 {
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    margin: 2px 0 12px 2px;
+  }
+
+  .obs-card {
+    background: var(--sidebar-card-bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .obs-card .icon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 8px;
+    background: #e4ecf5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .obs-card .icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--blue);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .obs-card .info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .obs-card .name {
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .obs-card .elev {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .obs-card .readout {
+    text-align: right;
+  }
+
+  .obs-card .temp {
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .obs-card .wind {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* ================= SNOW DEPTH CARD ================= */
+
+  .snow-card {
+    margin-top: 16px;
+    border-radius: 12px;
+    padding: 20px 20px 18px;
+    background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .snow-card .eyebrow {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #cfe0f2;
+  }
+
+  .snow-card .headline {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .snow-card .headline .snowflake {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    color: #bcd6f2;
+    align-self: center;
+  }
+
+  .snow-card .value {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .snow-card .unit {
+    font-size: 18px;
+    font-weight: 700;
+    color: #bcd6f2;
+  }
+
+  .snow-card .location {
+    font-size: 13px;
+    color: #cfe0f2;
+    margin-top: 4px;
+  }
+
+  .snow-card .departure {
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 10px;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+  }
+
+  .snow-card .departure.placeholder {
+    color: #bcd6f2;
+    font-weight: 600;
+    background: rgba(255,255,255,0.08);
+  }
+
+  /* Placeholder map area - swap for a real map/graphic once the
+     snow-depth-by-elevation dataset is wired in. */
+
+  .snow-map-placeholder {
+    margin-top: 16px;
+    height: 150px;
+    border-radius: 10px;
+    border: 1px dashed rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    color: #a9c2e0;
+    line-height: 1.5;
+    padding: 10px;
+  }
+
+  .snow-card .updated {
+    font-size: 11.5px;
+    color: #9db6d4;
+    margin-top: 14px;
+  }
+
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>MOUNT MANSFIELD DASHBOARD</h1>
+        <div class="subtitle">Real-time Mountain Observations</div>
+      </div>
+    </div>
+    <div class="clock">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cfe0f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7 L12 12 L16 14"/>
+      </svg>
+      <span id="nav-clock">25 Jul 2026 02:03 UTC</span>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- ================= LEFT: SOUNDING ================= -->
+    <div class="card sounding-panel">
+      <!--
+        TODO: point this at wherever tempprofile.py's output actually
+        lands for the live site (Drive share link, a copy committed
+        to the repo, etc). Nothing else in this panel needs markup -
+        title, chart, diagnostic cards, and table are all rendered
+        into the image itself.
+      -->
+      <img id="sounding-image" src="vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+    </div>
+
+    <!-- ================= RIGHT: SIDEBAR ================= -->
+    <div class="sidebar">
+      <h2>MOUNTAIN OBSERVATIONS</h2>
+
+      <!--
+        TODO: these 5 cards are placeholder data. Decide the mapping
+        from station ID -> display name/icon (e.g. MMNV1 -> "Summit",
+        KBTV -> "Base Lodge") and wire real temp/wind values in.
+      -->
+
+      <div class="obs-card" data-station="MMNV1">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Summit</div>
+          <div class="elev">4,393 ft</div>
+        </div>
+        <div class="readout">
+          <div class="temp" data-field="temp">14.8 °C</div>
+          <div class="wind" data-field="wind">228° / 14 kt</div>
+        </div>
+      </div>
+
+      <div class="obs-card" data-station="CHIN">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="2"/><path d="M12 9 L9 14 L6 21 M12 9 L15 14 L12 21 M9 14 L15 14"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Chin</div>
+          <div class="elev">3,950 ft</div>
+        </div>
+        <div class="readout">
+          <div class="temp" data-field="temp">16.7 °C</div>
+          <div class="wind" data-field="wind">Calm</div>
+        </div>
+      </div>
+
+      <div class="obs-card" data-station="TAFT_LODGE">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Taft Lodge</div>
+          <div class="elev">2,680 ft</div>
+        </div>
+        <div class="readout">
+          <div class="temp" data-field="temp">17.8 °C</div>
+          <div class="wind" data-field="wind">Calm</div>
+        </div>
+      </div>
+
+      <div class="obs-card" data-station="SUNSET_RIDGE">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3 L17 12 H13 L16 18 H8 L11 12 H7 Z"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Sunset Ridge</div>
+          <div class="elev">2,250 ft</div>
+        </div>
+        <div class="readout">
+          <div class="temp" data-field="temp">18.8 °C</div>
+          <div class="wind" data-field="wind">Calm</div>
+        </div>
+      </div>
+
+      <div class="obs-card" data-station="KBTV">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
+        </div>
+        <div class="info">
+          <div class="name">Base Lodge</div>
+          <div class="elev">1,300 ft</div>
+        </div>
+        <div class="readout">
+          <div class="temp" data-field="temp">21.0 °C</div>
+          <div class="wind" data-field="wind">100° / 3 kt</div>
+        </div>
+      </div>
+
+      <!-- ================= SNOW DEPTH ================= -->
+
+      <div class="snow-card">
+        <div class="eyebrow">CURRENT SNOW DEPTH</div>
+
+        <div class="headline">
+          <svg class="snowflake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/>
+          </svg>
+          <span class="value" data-field="snow-depth">18</span>
+          <span class="unit">in</span>
+        </div>
+
+        <div class="location">at Mansfield Summit</div>
+
+        <!--
+          TODO: mansfield_snow_depth.py already computes
+          departure_text ("+21 in above normal" / "-8 in below
+          normal" / "Near normal"). Drop diagnostics.departure_text
+          straight in here once wired up.
+        -->
+        <div class="departure placeholder" data-field="departure">
+          Departure from normal — pending dataset
+        </div>
+
+        <!--
+          TODO: replace with a real snow-depth-by-elevation map once
+          the dataset arrives. Left as a placeholder rather than
+          guessing at a map library/projection before that's decided.
+        -->
+        <div class="snow-map-placeholder">
+          Snow depth map<br>— dataset pending —
+        </div>
+
+        <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>
