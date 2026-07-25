@@ -675,6 +675,11 @@
       <div class="value" data-field="wind">—</div>
     </div>
 
+<div class="stat">
+    <div class="label">GUST</div>
+    <div class="value" data-field="gust">—</div>
+  </div>
+    
     <div class="stat">
       <div class="label">CHILL</div>
       <div class="value" data-field="windchill">—</div>
@@ -2459,10 +2464,13 @@ async function refreshBurkeObs() {
     card.querySelector('[data-field="temp"]');
 
   const windEl =
-    card.querySelector('[data-field="wind"]');
+  card.querySelector('[data-field="wind"]');
 
-  const chillEl =
-    card.querySelector('[data-field="windchill"]');
+const gustEl =
+  card.querySelector('[data-field="gust"]');
+
+const chillEl =
+  card.querySelector('[data-field="windchill"]');
 
   const elevationEl =
     card.querySelector('[data-field="elevation"]');
@@ -2555,6 +2563,24 @@ async function refreshBurkeObs() {
       windEl.textContent = "—";
     }
 
+// ============================================================
+// WIND GUST
+//
+// Current gust reported by KVTEASTB15 / Weather.com PWS.
+// ============================================================
+
+if (
+  gustEl &&
+  obs.gustMph != null
+) {
+
+  gustEl.textContent =
+    `${Math.round(obs.gustMph)}`;
+
+} else if (gustEl) {
+
+  gustEl.textContent = "—";
+}
 
     // ============================================================
     // WIND CHILL
