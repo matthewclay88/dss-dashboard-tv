@@ -564,14 +564,18 @@
       <h2>MOUNTAIN OBSERVATIONS</h2>
 
       <!--
-        TODO: mockup data only. Station ID -> site mapping is still
-        open (see prior discussion) - Chin/Nose correspond to real
-        named points on the Mansfield ridge but don't yet map to any
-        station this dashboard actually fetches (only Summit/MMNV1
-        and Base Lodge/KBTV are unambiguous). Wind chill isn't
-        computed anywhere yet either - needs temp_C + wind_speed_kmh
-        per station, straightforward to add to tempprofile.py's
-        per-station data once the station mapping is settled.
+        Mount Mansfield / MMNV1 is now wired live:
+          - temp:      NWS BTV RR2 hydromet product (SHEF .A line, TAIRGZZ)
+          - wind/dir:  IEM/mesonet RRSBTV HADS product (SHEF .E series, USIRG/UDIRG)
+          - windchill: computed server-side from the two above (NWS formula)
+        All three + elevation come from outputs/vt_mansfield_obs_status.json,
+        built by mansfield_obs.py. See that script for the SHEF parsing.
+
+        TODO: Nose/Taft Lodge/Base Lodge are still mockup data only.
+        Station ID -> site mapping is still open for those three (only
+        Summit/MMNV1 and Base Lodge/KBTV are unambiguous so far). Wind
+        chill for those three isn't computed anywhere yet either - same
+        approach as MMNV1 once their station IDs are settled.
       -->
 
       <div class="summit-card" data-station="MMNV1">
@@ -580,8 +584,8 @@
             <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
           </div>
           <div>
-            <div class="name">Chin</div>
-            <div class="elev">4,393 ft</div>
+            <div class="name">Mount Mansfield</div>
+            <div class="elev" data-field="elevation">4,393 ft</div>
           </div>
         </div>
         <div class="stats">
@@ -683,19 +687,36 @@
   </div>
 
   <script>
-    // Populates the cards backed by tempprofile.py / mansfield_snow_depth.py's
-    // JSON exports (vt_diagnostics_status.json, vt_snow_depth_status.json).
-    // Everything else on the page (sounding image, snow chart image, the
-    // 5 Mountain Observations cards) is still unwired - see the TODO
-    // comments next to those elements in the markup above.
+    // Populates the cards backed by tempprofile.py / mansfield_snow_depth.py /
+    // mansfield_obs.py's JSON exports (vt_diagnostics_status.json,
+    // vt_snow_depth_status.json, vt_mansfield_obs_status.json).
+    // The sounding image, snow chart image, and the Nose/Taft Lodge/Base
+    // Lodge cards are still unwired - see the TODO comments next to those
+    // elements in the markup above.
 
     const DATA_BASE = "https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/";
     const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // matches the workflow's ~15 min cadence closely enough
+
+    // Per-station metadata for the Mountain Observations sidebar. Elevation
+    // lives here (not just typed into markup) so it's one source of truth
+    // and reusable for future calcs (lapse rate, freezing-level AGL, etc.)
+    // as more stations get wired up.
+    const STATION_CONFIG = {
+      MMNV1: { name: "Mount Mansfield", elevationFt: 4393 },
+    };
 
     function setField(fieldName, text) {
       document.querySelectorAll(`[data-field="${fieldName}"]`).forEach((el) => {
         el.textContent = text;
       });
+    }
+
+    // Scoped version of setField - use this for anything that lives inside
+    // a specific station card (temp/wind/windchill/elevation), since those
+    // data-field names repeat across all four sidebar cards and the global
+    // setField() would stomp on the other stations too.
+    function cardField(station, fieldName) {
+      return document.querySelector(`.summit-card[data-station="${station}"] [data-field="${fieldName}"]`);
     }
 
     // green=rain, blue=snow, yellow=sleet/wintry mix, red=freezing rain
@@ -739,6 +760,16 @@
       const hh = String(d.getUTCHours()).padStart(2, "0");
       const mm = String(d.getUTCMinutes()).padStart(2, "0");
       return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()} ${hh}:${mm} UTC`;
+    }
+
+    // Formats a station's live wind reading to match the existing
+    // "dir/speed" display convention already used by the mockup cards
+    // (e.g. "240/35").
+    function formatWind(dirDeg, speedMph) {
+      if (dirDeg === null || dirDeg === undefined || speedMph === null || speedMph === undefined) {
+        return "\u2014";
+      }
+      return `${Math.round(dirDeg)}/${Math.round(speedMph)}`;
     }
 
     async function refreshDiagnostics() {
@@ -805,15 +836,69 @@
       }
     }
 
+    // Mount Mansfield / MMNV1 temp, wind, and wind chill - built server-side
+    // by mansfield_obs.py from the NWS BTV RR2 hydromet product (temp) and
+    // the IEM RRSBTV HADS product (wind speed/direction), since neither of
+    // those NWS/mesonet endpoints sends CORS headers that would let this
+    // page fetch them directly from the browser.
+    async function refreshMansfieldObs() {
+      const station = "MMNV1";
+      try {
+        const res = await fetch(DATA_BASE + "vt_mansfield_obs_status.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        const tempEl = cardField(station, "temp");
+        if (tempEl) {
+          tempEl.textContent = (data.temp_f !== null && data.temp_f !== undefined)
+            ? `${Math.round(data.temp_f)}\u00b0`
+            : "\u2014";
+        }
+
+        const windEl = cardField(station, "wind");
+        if (windEl) windEl.textContent = formatWind(data.wind_dir_deg, data.wind_speed_mph);
+
+        const chillEl = cardField(station, "windchill");
+        if (chillEl) {
+          chillEl.textContent = (data.wind_chill_f !== null && data.wind_chill_f !== undefined)
+            ? `${Math.round(data.wind_chill_f)}\u00b0`
+            : "\u2014";
+        }
+
+        // Elevation is static, but if the JSON ever carries a different
+        // value than STATION_CONFIG (e.g. a station move), let it win.
+        const elevEl = cardField(station, "elevation");
+        if (elevEl && data.elevation_ft) {
+          elevEl.textContent = `${data.elevation_ft.toLocaleString()} ft`;
+        }
+      } catch (err) {
+        console.warn("Mansfield obs status fetch failed:", err);
+      }
+    }
+
+    // Seeds name/elevation from STATION_CONFIG immediately on load, so the
+    // card is correct even before the first fetch resolves - and so
+    // elevation has one source of truth as more stations get wired up.
+    function seedStationConfig() {
+      Object.entries(STATION_CONFIG).forEach(([station, cfg]) => {
+        const nameEl = document.querySelector(`.summit-card[data-station="${station}"] .name`);
+        if (nameEl) nameEl.textContent = cfg.name;
+        const elevEl = cardField(station, "elevation");
+        if (elevEl) elevEl.textContent = `${cfg.elevationFt.toLocaleString()} ft`;
+      });
+    }
+
     function refreshAll() {
       refreshDiagnostics();
       refreshSnowDepth();
+      refreshMansfieldObs();
     }
 
     // Color the static placeholder immediately, don't wait on the
     // fetch to resolve first.
     applyPrecipColor(document.querySelector('[data-field="precip-type"]')?.textContent.trim());
 
+    seedStationConfig();
     refreshAll();
     setInterval(refreshAll, REFRESH_INTERVAL_MS);
   </script>
