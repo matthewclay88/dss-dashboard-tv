@@ -22,16 +22,25 @@
 
   * { box-sizing: border-box; }
 
-  body {
+  html, body {
+    height: 100%;
     margin: 0;
+  }
+
+  body {
     background: var(--page-bg);
     font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
     color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
   }
 
   /* ================= NAVBAR ================= */
 
   .navbar {
+    flex: 0 0 auto;
     background: var(--navy);
     color: white;
     display: flex;
@@ -79,17 +88,23 @@
   /* ================= LAYOUT ================= */
 
   .layout {
+    flex: 1 1 auto;
+    min-height: 0;
     max-width: 1520px;
+    width: 100%;
     margin: 0 auto;
     padding: 22px 28px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 380px;
     gap: 22px;
-    align-items: start;
+    align-items: stretch;
   }
 
   @media (max-width: 1100px) {
-    .layout { grid-template-columns: 1fr; }
+    .layout {
+      grid-template-columns: 1fr;
+      overflow-y: auto;
+    }
   }
 
   .card {
@@ -103,22 +118,43 @@
   /*
     The chart, diagnostic cards, and station table below are all
     baked into vt_pseudo_sounding.png by tempprofile.py - not
-    rebuilt in HTML/CSS. Swap the src (or point it at a Drive/CDN
-    URL) to update; no markup changes needed here.
+    rebuilt in HTML/CSS. Swap the src to update; no markup changes
+    needed here.
+
+    object-fit: contain scales the image down to fit the panel
+    without cropping or distorting it - since the chart's own aspect
+    ratio is decided dynamically in Python (see the Skew-T sizing
+    notes in tempprofile.py) and won't always exactly match the
+    panel's aspect, this may letterbox slightly rather than fill
+    edge-to-edge. That's intentional: better a little empty space
+    than a stretched/cropped chart on a TV display.
   */
 
   .sounding-panel {
-    padding: 4px;
+    padding: 12px;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
   }
 
   .sounding-panel img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: contain;
     display: block;
     border-radius: 8px;
+    margin: auto;
   }
 
   /* ================= SIDEBAR ================= */
+
+  .sidebar {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
 
   .sidebar h2 {
     font-size: 14px;
@@ -127,6 +163,7 @@
   }
 
   .obs-card {
+    flex: 0 0 auto;
     background: var(--sidebar-card-bg);
     border-radius: 10px;
     padding: 12px 14px;
@@ -191,6 +228,7 @@
   /* ================= SNOW DEPTH CARD ================= */
 
   .snow-card {
+    flex: 0 0 auto;
     margin-top: 16px;
     border-radius: 12px;
     padding: 20px 20px 18px;
