@@ -697,7 +697,706 @@
     const DATA_BASE = "https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/";
     const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // matches the workflow's ~15 min cadence closely enough
 
-    // Per-station metadata for the Mountain Observations sidebar. Elevation
+// ============================================================================
+// MOUNT MANSFIELD / MMNV1 LIVE OBSERVATION HELPERS
+// Source logic transplanted from the Recreation Dashboard.
+//
+// Temperature: IEM VT_COOP observation history / TAIRGZZ
+// Wind:        IEM AFOS archive / RRSBTV
+// Station:     MMNV1
+// ============================================================================
+
+const MANSFIELD_STATION = "MMNV1";
+const MANSFIELD_COOP_NETWORK = "VT_COOP";
+const MANSFIELD_RRS_PIL = "RRSBTV";
+
+
+// ---------------------------------------------------------------------------
+// Fetch helper
+// Prevents a failed/slow IEM request from hanging the dashboard indefinitely.
+// ---------------------------------------------------------------------------
+
+async function fetchWithTimeout_(url, options = {}, timeoutMs = 8000) {
+  const controller = new AbortController();
+
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    return await fetch(
+      url,
+      Object.assign({}, options, {
+        signal: controller.signal
+      })
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// Date helpers
+// Used by the IEM COOP observation-history request.
+// ---------------------------------------------------------------------------
+
+function tzParts_(date, timeZone) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: timeZone,
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  const parts = {};
+
+  formatter.formatToParts(date).forEach((part) => {
+    parts[part.type] = part.value;
+  });
+
+  return parts;
+}
+
+
+function formatDateYMD_(date, timeZone) {
+  const p = tzParts_(date, timeZone);
+
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+
+function pad2_(number) {
+  return number < 10 ? `0${number}` : String(number);
+}
+
+
+// ---------------------------------------------------------------------------
+// Wind chill
+//
+// Official NWS wind-chill equation.
+// Valid when:
+//   Temperature <= 50 F
+//   Wind >= 3 mph
+//
+// If conditions don't meet those criteria, we return the actual temperature
+// instead of displaying an artificial wind-chill value.
+// ---------------------------------------------------------------------------
+
+function calculateWindChill_(tempF, windMph) {
+
+  if (
+    tempF === null ||
+    tempF === undefined ||
+    windMph === null ||
+    windMph === undefined
+  ) {
+    return null;
+  }
+
+  if (tempF > 50 || windMph < 3) {
+    return tempF;
+  }
+
+  const windFactor = Math.pow(windMph, 0.16);
+
+  return (
+    35.74 +
+    (0.6215 * tempF) -
+    (35.75 * windFactor) +
+    (0.4275 * tempF * windFactor)
+  );
+}
+
+// ============================================================================
+// MMNV1 TEMPERATURE — IEM VT_COOP
+// ============================================================================
+//
+// Pulls the observation history for MMNV1 from the VT_COOP network.
+//
+// TAIRGZZ = instantaneous air temperature in degrees F.
+//
+// We request today's observations first. If today's dataset is empty
+// (which can happen shortly after midnight), we automatically try yesterday.
+// ============================================================================
+
+async function fetchMansfieldTemperature_() {
+
+  const rows = await fetchIemCoopRows_(
+    MANSFIELD_STATION,
+    MANSFIELD_COOP_NETWORK
+  );
+
+  if (!rows.length) {
+    console.warn("MMNV1: no VT_COOP observations found.");
+    return null;
+  }
+
+  const tempRow = findLatestNonNullRow_(rows, ["TAIRGZZ"]);
+
+  if (!tempRow || tempRow.TAIRGZZ == null) {
+    console.warn("MMNV1: no valid TAIRGZZ temperature found.");
+    return null;
+  }
+
+  return {
+    tempF: Math.round(Number(tempRow.TAIRGZZ)),
+    timestamp: tempRow.utc_valid
+  };
+}
+
+
+// ---------------------------------------------------------------------------
+// Retrieve MMNV1 COOP observation rows.
+//
+// Try today first. If nothing is available, try yesterday.
+// ---------------------------------------------------------------------------
+
+async function fetchIemCoopRows_(stationId, network) {
+
+  const today = formatDateYMD_(
+    new Date(),
+    "America/New_York"
+  );
+
+  let rows = await fetchIemObhistoryRows_(
+    stationId,
+    network,
+    today
+  );
+
+  if (!rows || !rows.length) {
+
+    const yesterday = formatDateYMD_(
+      new Date(Date.now() - 86400000),
+      "America/New_York"
+    );
+
+    rows = await fetchIemObhistoryRows_(
+      stationId,
+      network,
+      yesterday
+    );
+  }
+
+  return rows || [];
+}
+
+
+// ---------------------------------------------------------------------------
+// Actual IEM API request.
+// ---------------------------------------------------------------------------
+
+async function fetchIemObhistoryRows_(stationId, network, dateString) {
+
+  try {
+
+    const url =
+      "https://mesonet.agron.iastate.edu/api/1/obhistory.json" +
+      "?station=" + encodeURIComponent(stationId) +
+      "&network=" + encodeURIComponent(network) +
+      "&date=" + encodeURIComponent(dateString);
+
+    const response = await fetchWithTimeout_(
+      url,
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+
+      console.warn(
+        `IEM obhistory failed for ${stationId}/${network}/${dateString}: HTTP ${response.status}`
+      );
+
+      return null;
+    }
+
+    const json = await response.json();
+
+    return json.data || [];
+
+  } catch (error) {
+
+    console.warn(
+      `IEM obhistory error for ${stationId}/${network}/${dateString}:`,
+      error
+    );
+
+    return null;
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// Starting at the newest observation, find the first row containing a
+// non-null value for one of the requested fields.
+//
+// For Mansfield we're currently requesting only TAIRGZZ.
+// ---------------------------------------------------------------------------
+
+function findLatestNonNullRow_(rows, fieldNames) {
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+
+    for (let j = 0; j < fieldNames.length; j++) {
+
+      if (rows[i][fieldNames[j]] != null) {
+        return rows[i];
+      }
+    }
+  }
+
+  return null;
+}
+
+// ============================================================================
+// MMNV1 WIND — NWS BTV RRS PRODUCT VIA IEM AFOS ARCHIVE
+// ============================================================================
+//
+// Product: RRSBTV
+// Station: MMNV1
+//
+// SHEF parameters:
+//   USIRG = sustained wind speed
+//   UPERG = peak/gust wind
+//   UDIRG = wind direction
+//
+// RRSBTV editions are normally available at :12 after each UTC hour.
+// We search the newest expected edition plus the previous 6 hours because
+// MMNV1 is not guaranteed to appear in every hourly product.
+// ============================================================================
+
+async function fetchMansfieldWind_() {
+
+  const hoursBackOptions = [0, 1, 2, 3, 4, 5, 6];
+
+  // Fetch all candidate RRS editions in parallel.
+  const texts = await Promise.all(
+    hoursBackOptions.map((hoursBack) => {
+
+      const stamp = rrsStampForHoursBack_(hoursBack);
+
+      return fetchRrsProductTextForStamp_(
+        MANSFIELD_RRS_PIL,
+        stamp
+      );
+    })
+  );
+
+
+  // Search newest -> oldest and stop at the first edition
+  // that actually contains MMNV1 wind data.
+  for (let i = 0; i < texts.length; i++) {
+
+    const text = texts[i];
+
+    if (!text) continue;
+
+
+    const sustained = parseRrsSeries_(
+      text,
+      MANSFIELD_STATION,
+      "USIRG"
+    );
+
+    const gust = parseRrsSeries_(
+      text,
+      MANSFIELD_STATION,
+      "UPERG"
+    );
+
+    const direction = parseRrsSeries_(
+      text,
+      MANSFIELD_STATION,
+      "UDIRG"
+    );
+
+
+    // If neither sustained nor gust exists, this particular
+    // RRS edition does not contain usable MMNV1 wind data.
+    if (!sustained && !gust) {
+      continue;
+    }
+
+
+    // Determine the newest timestamp represented by the wind observations.
+    const timestamps = [];
+
+    if (sustained) {
+      timestamps.push(
+        new Date(sustained.timestamp).getTime()
+      );
+    }
+
+    if (gust) {
+      timestamps.push(
+        new Date(gust.timestamp).getTime()
+      );
+    }
+
+    const windTimestamp = timestamps.length
+      ? new Date(Math.max(...timestamps)).toISOString()
+      : null;
+
+
+    return {
+
+      sustainedMph:
+        sustained
+          ? Math.round(sustained.value)
+          : null,
+
+      gustMph:
+        gust
+          ? Math.round(gust.value)
+          : null,
+
+      directionDeg:
+        direction
+          ? Math.round(direction.value)
+          : null,
+
+      timestamp: windTimestamp
+    };
+  }
+
+
+  console.warn(
+    "MMNV1: no wind observation found in the latest 7 RRSBTV editions."
+  );
+
+  return null;
+}
+
+
+// ============================================================================
+// BUILD THE RRS PRODUCT TIMESTAMP
+// ============================================================================
+//
+// Example:
+//
+//   25 July 2026 at 21 UTC
+//
+// becomes:
+//
+//   202607252112
+//
+//                    ^^
+//                    :12 issuance
+//
+// If the current UTC minute is BEFORE :12, the current-hour edition probably
+// does not exist yet, so hoursBack=0 begins with the previous hour.
+// ============================================================================
+
+function rrsStampForHoursBack_(hoursBack) {
+
+  const now = new Date();
+
+  const baseHour =
+    now.getUTCMinutes() < 12
+      ? new Date(now.getTime() - 3600000)
+      : now;
+
+  const candidate =
+    new Date(
+      baseHour.getTime() -
+      (hoursBack * 3600000)
+    );
+
+
+  return (
+    candidate.getUTCFullYear() +
+    pad2_(candidate.getUTCMonth() + 1) +
+    pad2_(candidate.getUTCDate()) +
+    pad2_(candidate.getUTCHours()) +
+    "12"
+  );
+}
+
+
+// ============================================================================
+// FETCH ONE RRSBTV EDITION
+// ============================================================================
+
+async function fetchRrsProductTextForStamp_(pil, stamp) {
+
+  try {
+
+    const url =
+      "https://mesonet.agron.iastate.edu/wx/afos/p.php" +
+      "?pil=" + encodeURIComponent(pil) +
+      "&e=" + encodeURIComponent(stamp);
+
+
+    const response = await fetchWithTimeout_(
+      url,
+      { cache: "no-store" }
+    );
+
+
+    if (!response.ok) {
+
+      console.warn(
+        `RRS fetch failed for ${pil} ${stamp}: HTTP ${response.status}`
+      );
+
+      return null;
+    }
+
+
+    const html = await response.text();
+
+    return extractAfosPreText_(html);
+
+
+  } catch (error) {
+
+    console.warn(
+      `RRS fetch error for ${pil} ${stamp}:`,
+      error
+    );
+
+    return null;
+  }
+}
+
+
+// ============================================================================
+// EXTRACT AFOS PRODUCT TEXT FROM IEM HTML
+// ============================================================================
+//
+// Important:
+//
+// IEM can return MULTIPLE:
+//
+//     <pre class="afos-pre">
+//
+// blocks for the same nominal issuance.
+//
+// The working recreation dashboard encountered cases where the complete
+// product was not the final <pre> block. Therefore we concatenate ALL of
+// them instead of assuming the first or last block is the correct one.
+// ============================================================================
+
+function extractAfosPreText_(html) {
+
+  const matches =
+    html.match(
+      /<pre class="afos-pre">([\s\S]*?)<\/pre>/g
+    );
+
+
+  if (!matches || !matches.length) {
+    return null;
+  }
+
+
+  return matches
+    .map((block) => {
+
+      return block
+
+        .replace(
+          /^<pre class="afos-pre">/,
+          ""
+        )
+
+        .replace(
+          /<\/pre>$/,
+          ""
+        )
+
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">");
+
+    })
+
+    .join("\n");
+}
+
+
+// ============================================================================
+// PARSE A SHEF .E TIME SERIES
+// ============================================================================
+//
+// Example structure:
+//
+// .E MMNV1 20260725 DH2112/USIRG/DIN15/...
+//
+// Continuation lines may follow:
+//
+// .E1 ...
+// .E2 ...
+//
+// We collect the entire series, then work BACKWARD through it to obtain
+// the newest valid value.
+//
+// "M" = missing and is skipped.
+// ============================================================================
+
+function parseRrsSeries_(text, stationId, code) {
+
+  const lines = text.split("\n");
+
+
+  for (let i = 0; i < lines.length; i++) {
+
+    const match = lines[i].match(
+      /^\.E\s+(\S+)\s+(\d{8})\s+DH(\d{2})(\d{2})\/([A-Z0-9]+)\/DIN(\d+)\/(.+)$/
+    );
+
+
+    if (!match) {
+      continue;
+    }
+
+
+    // Wrong station or wrong SHEF parameter.
+    if (
+      match[1] !== stationId ||
+      match[5] !== code
+    ) {
+      continue;
+    }
+
+
+    const dateString = match[2];
+
+    const startHour =
+      Number(match[3]);
+
+    const startMinute =
+      Number(match[4]);
+
+    const intervalMinutes =
+      Number(match[6]);
+
+
+    let values =
+      match[7]
+        .split("/")
+        .filter((value) => value.length > 0);
+
+
+    // --------------------------------------------------------------
+    // Collect continuation lines:
+    //
+    // .E1
+    // .E2
+    // .E3
+    // etc.
+    // --------------------------------------------------------------
+
+    let j = i + 1;
+
+
+    while (j < lines.length) {
+
+      const continuation =
+        lines[j].match(
+          /^\.E\d+\s+(.+)$/
+        );
+
+
+      if (!continuation) {
+        break;
+      }
+
+
+      values = values.concat(
+
+        continuation[1]
+
+          .split("/")
+
+          .filter(
+            (value) =>
+              value.length > 0
+          )
+      );
+
+
+      j++;
+    }
+
+
+    // --------------------------------------------------------------
+    // Start with the newest value and work backward until we find
+    // something that isn't missing.
+    // --------------------------------------------------------------
+
+    for (
+      let k = values.length - 1;
+      k >= 0;
+      k--
+    ) {
+
+      if (values[k] === "M") {
+        continue;
+      }
+
+
+      const numericValue =
+        parseFloat(values[k]);
+
+
+      if (Number.isNaN(numericValue)) {
+        continue;
+      }
+
+
+      const year =
+        Number(
+          dateString.substring(0, 4)
+        );
+
+      const month =
+        Number(
+          dateString.substring(4, 6)
+        );
+
+      const day =
+        Number(
+          dateString.substring(6, 8)
+        );
+
+
+      const timestamp =
+        new Date(
+          Date.UTC(
+            year,
+            month - 1,
+            day,
+            startHour,
+            startMinute +
+              (k * intervalMinutes)
+          )
+        );
+
+
+      return {
+
+        value: numericValue,
+
+        timestamp:
+          timestamp.toISOString()
+      };
+    }
+
+
+    return null;
+  }
+
+
+  return null;
+}
+    
+    //**Remove soon** Per-station metadata for the Mountain Observations sidebar. Elevation
     // lives here (not just typed into markup) so it's one source of truth
     // and reusable for future calcs (lapse rate, freezing-level AGL, etc.)
     // as more stations get wired up.
@@ -836,45 +1535,238 @@
       }
     }
 
-    // Mount Mansfield / MMNV1 temp, wind, and wind chill - built server-side
-    // by mansfield_obs.py from the NWS BTV RR2 hydromet product (temp) and
-    // the IEM RRSBTV HADS product (wind speed/direction), since neither of
-    // those NWS/mesonet endpoints sends CORS headers that would let this
-    // page fetch them directly from the browser.
-    async function refreshMansfieldObs() {
-      const station = "MMNV1";
-      try {
-        const res = await fetch(DATA_BASE + "vt_mansfield_obs_status.json", { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+async function refreshMansfieldObs() {
+  const card = document.querySelector(
+    '.station-card[data-station="MMNV1"]'
+  );
 
-        const tempEl = cardField(station, "temp");
-        if (tempEl) {
-          tempEl.textContent = (data.temp_f !== null && data.temp_f !== undefined)
-            ? `${Math.round(data.temp_f)}\u00b0`
-            : "\u2014";
-        }
+  if (!card) {
+    console.warn("MMNV1 station card not found.");
+    return;
+  }
 
-        const windEl = cardField(station, "wind");
-        if (windEl) windEl.textContent = formatWind(data.wind_dir_deg, data.wind_speed_mph);
+  // ------------------------------------------------------------
+  // Find the existing fields inside the Mount Mansfield card.
+  // ------------------------------------------------------------
 
-        const chillEl = cardField(station, "windchill");
-        if (chillEl) {
-          chillEl.textContent = (data.wind_chill_f !== null && data.wind_chill_f !== undefined)
-            ? `${Math.round(data.wind_chill_f)}\u00b0`
-            : "\u2014";
-        }
+  const tempEl = card.querySelector(".temp-value");
+  const windEl = card.querySelector(".wind-value");
+  const chillEl = card.querySelector(".chill-value");
+  const updatedEl = card.querySelector(".station-updated");
 
-        // Elevation is static, but if the JSON ever carries a different
-        // value than STATION_CONFIG (e.g. a station move), let it win.
-        const elevEl = cardField(station, "elevation");
-        if (elevEl && data.elevation_ft) {
-          elevEl.textContent = `${data.elevation_ft.toLocaleString()} ft`;
-        }
-      } catch (err) {
-        console.warn("Mansfield obs status fetch failed:", err);
-      }
+
+  // ------------------------------------------------------------
+  // Pull temperature and wind at the same time.
+  //
+  // Temperature:
+  //   VT_COOP / TAIRGZZ
+  //
+  // Wind:
+  //   RRSBTV / USIRG + UPERG + UDIRG
+  // ------------------------------------------------------------
+
+  const results = await Promise.allSettled([
+    fetchMansfieldTemperature_(),
+    fetchMansfieldWind_()
+  ]);
+
+
+  const temperature =
+    results[0].status === "fulfilled"
+      ? results[0].value
+      : null;
+
+  const wind =
+    results[1].status === "fulfilled"
+      ? results[1].value
+      : null;
+
+
+  // ------------------------------------------------------------
+  // TEMPERATURE
+  // ------------------------------------------------------------
+
+  if (
+    tempEl &&
+    temperature &&
+    temperature.tempF != null
+  ) {
+    tempEl.textContent =
+      `${temperature.tempF}°`;
+  } else if (tempEl) {
+    tempEl.textContent = "--";
+  }
+
+
+  // ------------------------------------------------------------
+  // WIND
+  //
+  // Display:
+  //
+  //   WNW 32 mph
+  //
+  // or, if direction is unavailable:
+  //
+  //   32 mph
+  // ------------------------------------------------------------
+
+  if (
+    windEl &&
+    wind &&
+    wind.sustainedMph != null
+  ) {
+
+    const direction =
+      wind.directionDeg != null
+        ? degreesToCompass_(wind.directionDeg)
+        : null;
+
+
+    windEl.textContent =
+      direction
+        ? `${direction} ${wind.sustainedMph} mph`
+        : `${wind.sustainedMph} mph`;
+
+  } else if (windEl) {
+
+    windEl.textContent = "--";
+  }
+
+
+  // ------------------------------------------------------------
+  // WIND CHILL
+  //
+  // Uses sustained wind, not gust.
+  // ------------------------------------------------------------
+
+  if (
+    chillEl &&
+    temperature &&
+    temperature.tempF != null &&
+    wind &&
+    wind.sustainedMph != null
+  ) {
+
+    const windChill =
+      calculateWindChill_(
+        temperature.tempF,
+        wind.sustainedMph
+      );
+
+
+    chillEl.textContent =
+      windChill != null
+        ? `${Math.round(windChill)}°`
+        : "--";
+
+  } else if (chillEl) {
+
+    chillEl.textContent = "--";
+  }
+
+
+  // ------------------------------------------------------------
+  // UPDATED TIME
+  //
+  // Use the newest timestamp available from either feed.
+  // ------------------------------------------------------------
+
+  if (updatedEl) {
+
+    const timestamps = [];
+
+
+    if (
+      temperature &&
+      temperature.timestamp
+    ) {
+      timestamps.push(
+        new Date(
+          temperature.timestamp
+        ).getTime()
+      );
     }
+
+
+    if (
+      wind &&
+      wind.timestamp
+    ) {
+      timestamps.push(
+        new Date(
+          wind.timestamp
+        ).getTime()
+      );
+    }
+
+
+    if (timestamps.length) {
+
+      const newest =
+        new Date(
+          Math.max(...timestamps)
+        );
+
+
+      updatedEl.textContent =
+        "Updated " +
+        newest.toLocaleTimeString(
+          "en-US",
+          {
+            timeZone: "America/New_York",
+            hour: "numeric",
+            minute: "2-digit"
+          }
+        );
+
+    } else {
+
+      updatedEl.textContent =
+        "Observation unavailable";
+    }
+  }
+
+
+  // ------------------------------------------------------------
+  // Console output — useful while we're testing.
+  // ------------------------------------------------------------
+
+  console.log(
+    "MMNV1 observation:",
+    {
+      temperature,
+      wind
+    }
+  );
+}
+
+function degreesToCompass_(deg) {
+  if (deg == null) return null;
+
+  const directions = [
+    "N",
+    "NNE",
+    "NE",
+    "ENE",
+    "E",
+    "ESE",
+    "SE",
+    "SSE",
+    "S",
+    "SSW",
+    "SW",
+    "WSW",
+    "W",
+    "WNW",
+    "NW",
+    "NNW"
+  ];
+
+  const index =
+    Math.round(deg / 22.5) % 16;
+
+  return directions[index];
+}
 
     // Seeds name/elevation from STATION_CONFIG immediately on load, so the
     // card is correct even before the first fetch resolves - and so
