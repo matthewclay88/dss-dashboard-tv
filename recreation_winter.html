@@ -1537,209 +1537,169 @@ function parseRrsSeries_(text, stationId, code) {
 
 async function refreshMansfieldObs() {
   const card = document.querySelector(
-    '.station-card[data-station="MMNV1"]'
+    '.summit-card[data-station="MMNV1"]'
   );
 
   if (!card) {
-    console.warn("MMNV1 station card not found.");
+    console.warn("MMNV1 summit card not found.");
     return;
   }
 
-  // ------------------------------------------------------------
-  // Find the existing fields inside the Mount Mansfield card.
-  // ------------------------------------------------------------
+  // Existing fields in the actual Mount Mansfield card
+  const tempEl = card.querySelector('[data-field="temp"]');
+  const windEl = card.querySelector('[data-field="wind"]');
+  const chillEl = card.querySelector('[data-field="windchill"]');
+  const elevationEl = card.querySelector('[data-field="elevation"]');
 
-  const tempEl = card.querySelector(".temp-value");
-  const windEl = card.querySelector(".wind-value");
-  const chillEl = card.querySelector(".chill-value");
-  const updatedEl = card.querySelector(".station-updated");
+  try {
 
+    // Fetch temperature + wind simultaneously
+    const results = await Promise.allSettled([
+      fetchMansfieldTemperature_(),
+      fetchMansfieldWind_()
+    ]);
 
-  // ------------------------------------------------------------
-  // Pull temperature and wind at the same time.
-  //
-  // Temperature:
-  //   VT_COOP / TAIRGZZ
-  //
-  // Wind:
-  //   RRSBTV / USIRG + UPERG + UDIRG
-  // ------------------------------------------------------------
+    const temperature =
+      results[0].status === "fulfilled"
+        ? results[0].value
+        : null;
 
-  const results = await Promise.allSettled([
-    fetchMansfieldTemperature_(),
-    fetchMansfieldWind_()
-  ]);
-
-
-  const temperature =
-    results[0].status === "fulfilled"
-      ? results[0].value
-      : null;
-
-  const wind =
-    results[1].status === "fulfilled"
-      ? results[1].value
-      : null;
-
-
-  // ------------------------------------------------------------
-  // TEMPERATURE
-  // ------------------------------------------------------------
-
-  if (
-    tempEl &&
-    temperature &&
-    temperature.tempF != null
-  ) {
-    tempEl.textContent =
-      `${temperature.tempF}°`;
-  } else if (tempEl) {
-    tempEl.textContent = "--";
-  }
-
-
-  // ------------------------------------------------------------
-  // WIND
-  //
-  // Display:
-  //
-  //   WNW 32 mph
-  //
-  // or, if direction is unavailable:
-  //
-  //   32 mph
-  // ------------------------------------------------------------
-
-  if (
-    windEl &&
-    wind &&
-    wind.sustainedMph != null
-  ) {
-
-    const direction =
-      wind.directionDeg != null
-        ? degreesToCompass_(wind.directionDeg)
+    const wind =
+      results[1].status === "fulfilled"
+        ? results[1].value
         : null;
 
 
-    windEl.textContent =
-      direction
-        ? `${direction} ${wind.sustainedMph} mph`
-        : `${wind.sustainedMph} mph`;
-
-  } else if (windEl) {
-
-    windEl.textContent = "--";
-  }
-
-
-  // ------------------------------------------------------------
-  // WIND CHILL
-  //
-  // Uses sustained wind, not gust.
-  // ------------------------------------------------------------
-
-  if (
-    chillEl &&
-    temperature &&
-    temperature.tempF != null &&
-    wind &&
-    wind.sustainedMph != null
-  ) {
-
-    const windChill =
-      calculateWindChill_(
-        temperature.tempF,
-        wind.sustainedMph
-      );
-
-
-    chillEl.textContent =
-      windChill != null
-        ? `${Math.round(windChill)}°`
-        : "--";
-
-  } else if (chillEl) {
-
-    chillEl.textContent = "--";
-  }
-
-
-  // ------------------------------------------------------------
-  // UPDATED TIME
-  //
-  // Use the newest timestamp available from either feed.
-  // ------------------------------------------------------------
-
-  if (updatedEl) {
-
-    const timestamps = [];
-
+    // ============================================================
+    // TEMPERATURE
+    // ============================================================
 
     if (
+      tempEl &&
       temperature &&
-      temperature.timestamp
+      temperature.tempF != null
     ) {
-      timestamps.push(
-        new Date(
-          temperature.timestamp
-        ).getTime()
-      );
+      tempEl.textContent =
+        `${Math.round(temperature.tempF)}°`;
+    } else if (tempEl) {
+      tempEl.textContent = "—";
     }
 
+
+    // ============================================================
+    // WIND
+    //
+    // Keep the existing dashboard format:
+    //
+    //     240/35
+    //
+    // direction degrees / sustained mph
+    // ============================================================
 
     if (
+      windEl &&
       wind &&
-      wind.timestamp
+      wind.sustainedMph != null
     ) {
-      timestamps.push(
-        new Date(
-          wind.timestamp
-        ).getTime()
-      );
+
+      if (wind.directionDeg != null) {
+
+        const direction =
+          String(
+            Math.round(wind.directionDeg)
+          ).padStart(3, "0");
+
+        windEl.textContent =
+          `${direction}/${Math.round(wind.sustainedMph)}`;
+
+      } else {
+
+        windEl.textContent =
+          `${Math.round(wind.sustainedMph)} mph`;
+      }
+
+    } else if (windEl) {
+
+      windEl.textContent = "—";
     }
 
 
-    if (timestamps.length) {
+    // ============================================================
+    // WIND CHILL
+    //
+    // NWS formula using sustained wind.
+    // ============================================================
 
-      const newest =
-        new Date(
-          Math.max(...timestamps)
+    if (
+      chillEl &&
+      temperature &&
+      temperature.tempF != null &&
+      wind &&
+      wind.sustainedMph != null
+    ) {
+
+      const windChill =
+        calculateWindChill_(
+          temperature.tempF,
+          wind.sustainedMph
         );
 
+      chillEl.textContent =
+        windChill != null
+          ? `${Math.round(windChill)}°`
+          : "—";
 
-      updatedEl.textContent =
-        "Updated " +
-        newest.toLocaleTimeString(
-          "en-US",
-          {
-            timeZone: "America/New_York",
-            hour: "numeric",
-            minute: "2-digit"
-          }
-        );
+    } else if (chillEl) {
 
-    } else {
-
-      updatedEl.textContent =
-        "Observation unavailable";
+      chillEl.textContent = "—";
     }
-  }
 
 
-  // ------------------------------------------------------------
-  // Console output — useful while we're testing.
-  // ------------------------------------------------------------
+    // ============================================================
+    // ELEVATION
+    //
+    // You already have MMNV1 = 4,393 ft in STATION_CONFIG.
+    // ============================================================
 
-  console.log(
-    "MMNV1 observation:",
-    {
+    if (
+      elevationEl &&
+      STATION_CONFIG.MMNV1
+    ) {
+
+      elevationEl.textContent =
+        `${STATION_CONFIG.MMNV1.elevationFt.toLocaleString()} ft`;
+    }
+
+
+    // ============================================================
+    // TEST OUTPUT
+    // ============================================================
+
+    console.log("MMNV1 LIVE OBS:", {
       temperature,
-      wind
-    }
-  );
-}
+      wind,
+      windChill:
+        temperature &&
+        wind &&
+        temperature.tempF != null &&
+        wind.sustainedMph != null
+          ? Math.round(
+              calculateWindChill_(
+                temperature.tempF,
+                wind.sustainedMph
+              )
+            )
+          : null
+    });
 
+  } catch (error) {
+
+    console.error(
+      "MMNV1 observation refresh failed:",
+      error
+    );
+  }
+}
 function degreesToCompass_(deg) {
   if (deg == null) return null;
 
