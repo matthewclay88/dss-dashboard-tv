@@ -606,31 +606,41 @@
 </div>
       </div>
 
-      <div class="summit-card" data-station="NOSE">
-        <div class="header">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
-          </div>
-          <div>
-            <div class="name">Nose</div>
-            <div class="elev">3,758 ft</div>
-          </div>
-        </div>
-        <div class="stats">
-          <div class="stat">
-            <div class="label">TEMP</div>
-            <div class="value" data-field="temp">-6°</div>
-          </div>
-          <div class="stat">
-            <div class="label">WIND</div>
-            <div class="value" data-field="wind">220/28</div>
-          </div>
-          <div class="stat">
-            <div class="label">CHILL</div>
-            <div class="value" data-field="windchill">-17°</div>
-          </div>
-        </div>
-      </div>
+      <!-- ================= WHITEFACE MOUNTAIN ================= -->
+
+<div class="summit-card" data-station="WHITEFACE">
+  <div class="header">
+    <div class="icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/>
+      </svg>
+    </div>
+
+    <div>
+      <div class="name">Whiteface Mountain</div>
+      <div class="elev" data-field="elevation">4,867 ft</div>
+    </div>
+  </div>
+
+  <div class="stats">
+
+    <div class="stat">
+      <div class="label">TEMP</div>
+      <div class="value" data-field="temp">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">WIND</div>
+      <div class="value" data-field="wind">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">CHILL</div>
+      <div class="value" data-field="windchill">—</div>
+    </div>
+
+  </div>
+</div>
 
       <div class="summit-card" data-station="TAFT_LODGE">
         <div class="header">
@@ -1794,6 +1804,358 @@ function degreesToCompass_(deg) {
   return directions[index];
 }
 
+// ============================================================================
+// WHITEFACE MOUNTAIN — ASRC / UNIVERSITY AT ALBANY
+// ============================================================================
+//
+// API:
+// https://api.asrc.albany.edu:3000/wfmsapi
+//
+// Fields:
+//   WS_mph       = sustained wind speed
+//   Temp_degF    = air temperature
+//   WindChill_F  = wind chill
+//   WindDir      = wind direction
+//   DateTime     = observation time
+// ============================================================================
+
+async function fetchWhitefaceObservation_() {
+  try {
+
+    const response = await fetchWithTimeout_(
+      "https://api.asrc.albany.edu:3000/wfmsapi",
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      console.warn(
+        `Whiteface API failed: HTTP ${response.status}`
+      );
+      return null;
+    }
+
+    const data = await response.json();
+
+
+    const sustainedMph =
+      data.WS_mph &&
+      data.WS_mph.value != null
+        ? Math.round(Number(data.WS_mph.value))
+        : null;
+
+
+    const tempF =
+      data.Temp_degF &&
+      data.Temp_degF.value != null
+        ? Math.round(Number(data.Temp_degF.value))
+        : null;
+
+
+    const windChillF =
+      data.WindChill_F &&
+      data.WindChill_F.value != null
+        ? Math.round(Number(data.WindChill_F.value))
+        : null;
+
+
+    const directionLabel =
+      data.WindDir &&
+      data.WindDir.value
+        ? data.WindDir.value
+        : null;
+
+
+    const directionDeg =
+      data.WindDir &&
+      data.WindDir.units != null &&
+      data.WindDir.units !== "-"
+        ? Number(data.WindDir.units)
+        : null;
+
+
+    if (
+      sustainedMph == null &&
+      tempF == null
+    ) {
+      return null;
+    }
+
+
+    const timestamp =
+      parseWfmsDateTime_(
+        data.DateTime &&
+        data.DateTime.value
+      );
+
+
+    return {
+      sustainedMph,
+      tempF,
+      windChillF:
+        windChillF != null
+          ? windChillF
+          : tempF,
+      directionDeg,
+      directionLabel,
+      timestamp
+    };
+
+  } catch (error) {
+
+    console.warn(
+      "Whiteface observation fetch failed:",
+      error
+    );
+
+    return null;
+  }
+}
+
+function parseWfmsDateTime_(str) {
+  if (!str) return null;
+
+  const match = String(str).match(
+    /(\w+)\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})\s*(AM|PM)/i
+  );
+
+  if (!match) {
+    return null;
+  }
+
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+
+  const month =
+    months.indexOf(match[1]);
+
+  if (month === -1) {
+    return null;
+  }
+
+
+  const day =
+    parseInt(match[2], 10);
+
+  const year =
+    parseInt(match[3], 10);
+
+  let hour =
+    parseInt(match[4], 10) % 12;
+
+  const minute =
+    parseInt(match[5], 10);
+
+
+  if (
+    match[6].toUpperCase() === "PM"
+  ) {
+    hour += 12;
+  }
+
+
+  // Whiteface API observation times are local Eastern time.
+  //
+  // We mainly need this for observation age/display. The recreation
+  // dashboard uses the same parser for the WFMS feed.
+
+  return new Date(
+    year,
+    month,
+    day,
+    hour,
+    minute
+  ).toISOString();
+}
+
+// ============================================================================
+// REFRESH WHITEFACE MOUNTAIN OBSERVATION CARD
+// ============================================================================
+
+async function refreshWhitefaceObs() {
+
+  const card = document.querySelector(
+    '.summit-card[data-station="WHITEFACE"]'
+  );
+
+  if (!card) {
+    console.warn("Whiteface summit card not found.");
+    return;
+  }
+
+
+  const tempEl =
+    card.querySelector('[data-field="temp"]');
+
+  const windEl =
+    card.querySelector('[data-field="wind"]');
+
+  const chillEl =
+    card.querySelector('[data-field="windchill"]');
+
+  const elevationEl =
+    card.querySelector('[data-field="elevation"]');
+
+
+  try {
+
+    const obs =
+      await fetchWhitefaceObservation_();
+
+
+    if (!obs) {
+
+      console.warn(
+        "Whiteface: no observation available."
+      );
+
+      if (tempEl) {
+        tempEl.textContent = "—";
+      }
+
+      if (windEl) {
+        windEl.textContent = "—";
+      }
+
+      if (chillEl) {
+        chillEl.textContent = "—";
+      }
+
+      return;
+    }
+
+
+    // ============================================================
+    // TEMPERATURE
+    // ============================================================
+
+    if (
+      tempEl &&
+      obs.tempF != null
+    ) {
+
+      tempEl.textContent =
+        `${Math.round(obs.tempF)}°`;
+
+    } else if (tempEl) {
+
+      tempEl.textContent = "—";
+    }
+
+
+    // ============================================================
+    // WIND
+    //
+    // Match Mansfield's format:
+    //
+    //       240/35
+    //
+    // direction degrees / sustained mph
+    //
+    // If degrees aren't available, fall back to the API's
+    // compass direction.
+    // ============================================================
+
+    if (
+      windEl &&
+      obs.sustainedMph != null
+    ) {
+
+      if (
+        obs.directionDeg != null &&
+        Number.isFinite(obs.directionDeg)
+      ) {
+
+        const direction =
+          String(
+            Math.round(obs.directionDeg)
+          ).padStart(3, "0");
+
+
+        windEl.textContent =
+          `${direction}/${Math.round(obs.sustainedMph)}`;
+
+      } else if (obs.directionLabel) {
+
+        windEl.textContent =
+          `${obs.directionLabel}/${Math.round(obs.sustainedMph)}`;
+
+      } else {
+
+        windEl.textContent =
+          `${Math.round(obs.sustainedMph)} mph`;
+      }
+
+    } else if (windEl) {
+
+      windEl.textContent = "—";
+    }
+
+
+    // ============================================================
+    // WIND CHILL
+    //
+    // Whiteface conveniently provides its own wind-chill value,
+    // so we use that rather than recalculating it.
+    // ============================================================
+
+    if (
+      chillEl &&
+      obs.windChillF != null
+    ) {
+
+      chillEl.textContent =
+        `${Math.round(obs.windChillF)}°`;
+
+    } else if (chillEl) {
+
+      chillEl.textContent = "—";
+    }
+
+
+    // ============================================================
+    // ELEVATION
+    // ============================================================
+
+    if (elevationEl) {
+
+      elevationEl.textContent =
+        "4,867 ft";
+    }
+
+
+    // ============================================================
+    // TEST OUTPUT
+    // ============================================================
+
+    console.log(
+      "WHITEFACE LIVE OBS:",
+      obs
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Whiteface observation refresh failed:",
+      error
+    );
+  }
+}
+
     // Seeds name/elevation from STATION_CONFIG immediately on load, so the
     // card is correct even before the first fetch resolves - and so
     // elevation has one source of truth as more stations get wired up.
@@ -1810,6 +2172,7 @@ function degreesToCompass_(deg) {
       refreshDiagnostics();
       refreshSnowDepth();
       refreshMansfieldObs();
+      refreshWhitefaceObs();
     }
 
     // Color the static placeholder immediately, don't wait on the
