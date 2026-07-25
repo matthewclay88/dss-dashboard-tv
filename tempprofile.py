@@ -48,6 +48,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch
 
 import metpy.calc as mpcalc
 from metpy.units import units
@@ -64,6 +65,7 @@ STATIONS = {
     "E6664": 958,
     "A3150": 1293,
     "UVM05": 1309,
+    "MMSV1": 2236,
     "UVM06": 2877,
     "MMNV1": 3891,
 }
@@ -74,6 +76,7 @@ NWS_STATIONS = [
     "E6664",
     "A3150",
     "UVM05",
+    "MMSV1",
     "UVM06",
 ]
 
@@ -1704,6 +1707,208 @@ def classify_flow_regime(Fr):
     return "Blocked"
 
 
+def layer_lapse_rates(profile):
+    """
+    Lapse rate (C/km, positive = cooling with height) of the layer
+    immediately BELOW each station, keyed by stid. The lowest station
+    has no layer below it in this profile and is omitted.
+    """
+
+    rates = {}
+
+    for lower, upper in zip(profile, profile[1:]):
+
+        dz_km = ft_to_m(
+            upper["elevation_ft"] - lower["elevation_ft"]
+        ) / 1000.0
+
+        if dz_km == 0:
+            continue
+
+        rate = (
+            lower["temperature_C"] - upper["temperature_C"]
+        ) / dz_km
+
+        rates[upper["stid"]] = rate
+
+    return rates
+
+
+def bourgouin_energy(profile):
+    """
+    Rough positive/negative "energy" areas (J/kg) referenced to the
+    0 C isotherm, in the spirit of Bourgouin (2000)'s precipitation-
+    type nomogram: Ep is the warm-nose area above freezing, En is the
+    magnitude of the sub-freezing area below/around it.
+
+    This is a coarse adaptation built from 6-7 near-surface station
+    points rather than a full upper-air sounding, and uses the
+    simplified single hypsometric-layer formula
+    (E = Rd * ln(p_bottom/p_top) * T_mean_C) rather than the full
+    published nomogram curves. Treat the resulting precip-type call
+    as a rough guide, not a validated forecast.
+    """
+
+    Rd = 287.05
+
+    Ep = 0.0
+    En = 0.0
+
+    for lower, upper in zip(profile, profile[1:]):
+
+        p1 = lower["pressure_hPa"]
+        p2 = upper["pressure_hPa"]
+
+        t1 = lower["temperature_C"]
+        t2 = upper["temperature_C"]
+
+        same_sign = (t1 >= 0 and t2 >= 0) or (t1 <= 0 and t2 <= 0)
+
+        if same_sign:
+
+            t_mean = (t1 + t2) / 2.0
+            area = Rd * np.log(p1 / p2) * t_mean
+
+            if t_mean >= 0:
+                Ep += area
+            else:
+                En += -area
+
+            continue
+
+        # Layer straddles 0 C - split at the crossing pressure,
+        # found by interpolating T linearly against ln(p).
+
+        lnp1 = np.log(p1)
+        lnp2 = np.log(p2)
+
+        frac = (0.0 - t1) / (t2 - t1)
+        lnp0 = lnp1 + frac * (lnp2 - lnp1)
+        p0 = np.exp(lnp0)
+
+        area_lower = Rd * np.log(p1 / p0) * (t1 / 2.0)
+        area_upper = Rd * np.log(p0 / p2) * (t2 / 2.0)
+
+        if t1 >= 0:
+            Ep += area_lower
+            En += -area_upper
+        else:
+            En += -area_lower
+            Ep += area_upper
+
+    return Ep, En
+
+
+def classify_precip_type(Ep, En, surface_temp_c):
+    """
+    Coarse precip-type call from the Bourgouin-style energy areas.
+    Thresholds follow the commonly-cited simplified cutoffs (Ep/En
+    around 2 J/kg to separate snow from a melting warm nose, and a
+    refreeze threshold around 15-20 J/kg for ice pellets vs freezing
+    rain) rather than the full published nomogram, since a 6-7 point
+    near-surface profile doesn't support the original curves.
+    """
+
+    if Ep < 2.0:
+        return "All Snow"
+
+    if En < 2.0:
+        return "All Rain" if surface_temp_c is not None and surface_temp_c > 0 else "Rain"
+
+    if surface_temp_c is not None and surface_temp_c <= 0:
+
+        if En < 15.0:
+            return "Freezing Rain"
+
+        return "Ice Pellets"
+
+    return "Rain / Wintry Mix"
+
+
+def melting_layer_summary(profile):
+    """
+    Walks the profile from the surface upward looking for a
+    sub-freezing surface layer and, above it, a warm nose aloft.
+    Elevations of 0 C crossings are linearly interpolated between
+    bracketing stations. Returns None for any field that doesn't
+    apply (e.g. no cold layer at all).
+    """
+
+    summary = {
+        "cold_layer_ft": None,
+        "warm_layer_ft": None,
+        "subfreezing_depth_ft": None,
+        "max_warm_nose_C": None,
+    }
+
+    if profile[0]["temperature_C"] >= 0:
+        return summary
+
+    z_top = profile[0]["elevation_ft"]
+
+    for lower, upper in zip(profile, profile[1:]):
+
+        if upper["temperature_C"] < 0:
+            z_top = upper["elevation_ft"]
+            continue
+
+        crossing = interp_crossing(
+            lower["elevation_ft"], lower["temperature_C"],
+            upper["elevation_ft"], upper["temperature_C"],
+        )
+
+        z_top = crossing if crossing is not None else z_top
+
+        break
+
+    summary["cold_layer_ft"] = (profile[0]["elevation_ft"], z_top)
+    summary["subfreezing_depth_ft"] = z_top - profile[0]["elevation_ft"]
+
+    warm_points = [
+        x for x in profile
+        if x["elevation_ft"] >= z_top and x["temperature_C"] > 0
+    ]
+
+    if warm_points:
+
+        summary["warm_layer_ft"] = (
+            z_top,
+            max(x["elevation_ft"] for x in warm_points),
+        )
+
+        summary["max_warm_nose_C"] = max(
+            x["temperature_C"] for x in warm_points
+        )
+
+    return summary
+
+
+def stability_label(mean_lapse, inversion):
+    """
+    Coarse stability label from the bulk (base-to-summit) lapse rate,
+    compared against the dry adiabatic rate (~9.8 C/km), with a note
+    if any individual layer in the profile is inverted. This is a
+    bulk classification across the whole observed layer, not a
+    level-by-level parcel analysis.
+    """
+
+    if mean_lapse is None:
+        return "Unknown", ""
+
+    if mean_lapse >= 9.5:
+        label = "Unstable"
+    elif mean_lapse >= 6.5:
+        label = "Near Neutral"
+    elif mean_lapse > 0:
+        label = "Stable"
+    else:
+        label = "Very Stable"
+
+    subtext = "Shallow Inversion" if inversion else ""
+
+    return label, subtext
+
+
 def build_diagnostics(profile):
     """
     Assemble the full winter-profile diagnostics dictionary from an
@@ -1746,6 +1951,15 @@ def build_diagnostics(profile):
 
     diagnostics["mean_lapse_rate_C_km"] = mean_lapse_rate(profile)
     diagnostics["max_inversion"] = max_inversion(profile)
+    diagnostics["layer_lapse_rates"] = layer_lapse_rates(profile)
+
+    stability, stability_subtext = stability_label(
+        diagnostics["mean_lapse_rate_C_km"],
+        diagnostics["max_inversion"],
+    )
+
+    diagnostics["stability_label"] = stability
+    diagnostics["stability_subtext"] = stability_subtext
 
     # ---------------- WIND / TERRAIN ----------------
 
@@ -1756,6 +1970,19 @@ def build_diagnostics(profile):
     diagnostics["brunt_vaisala_N"] = N
     diagnostics["froude_number"] = Fr
     diagnostics["flow_regime"] = classify_flow_regime(Fr)
+
+    # ---------------- MELTING LAYER / PRECIP TYPE ----------------
+
+    melt = melting_layer_summary(profile)
+    diagnostics.update(melt)
+
+    Ep, En = bourgouin_energy(profile)
+
+    diagnostics["positive_energy_Jkg"] = Ep
+    diagnostics["negative_energy_Jkg"] = En
+    diagnostics["precip_type"] = classify_precip_type(
+        Ep, En, profile[0]["temperature_C"]
+    )
 
     return diagnostics
 
@@ -1816,6 +2043,102 @@ def diagnostic_display_rows(diagnostics):
     return rows
 
 
+def key_diagnostics_rows(diagnostics):
+    """
+    (label, value, subtext) rows for the "KEY DIAGNOSTICS" dashboard
+    panel. Subtext is the smaller line shown under the value.
+    """
+
+    def val(x, suffix="", decimals=1):
+        if x is None:
+            return "None", "in observed layer"
+        return f"{x:.{decimals}f}{suffix}", ""
+
+    freezing_val, freezing_sub = val(diagnostics["freezing_level_ft"], " ft", 0)
+    wbz_val, wbz_sub = val(diagnostics["wet_bulb_zero_ft"], " ft", 0)
+    lapse_val, lapse_sub = val(diagnostics["mean_lapse_rate_C_km"], " C/km")
+
+    shear_val = diagnostics["bulk_shear_kt"]
+    shear_depth_ft = STATIONS[SHEAR_TOP_STID] - STATIONS[SHEAR_BASE_STID]
+    shear_text = (
+        f"{shear_val:.0f} kt" if shear_val is not None else "N/A"
+    )
+
+    froude_val = diagnostics["froude_number"]
+    froude_text = (
+        f"{froude_val:.2f}" if froude_val is not None else "N/A"
+    )
+
+    return [
+        (
+            "Freezing Level", freezing_val, freezing_sub,
+        ),
+        (
+            "Wet Bulb Zero", wbz_val, wbz_sub,
+        ),
+        (
+            "Mean Lapse Rate", lapse_val,
+            f"({profile_span_label()})",
+        ),
+        (
+            f"{shear_depth_ft/1000.0:.1f} kft Bulk Shear", shear_text, "",
+        ),
+        (
+            "Froude Number", froude_text, diagnostics["flow_regime"],
+        ),
+        (
+            "Precip Type", diagnostics["precip_type"], "",
+        ),
+    ]
+
+
+def profile_span_label():
+    """
+    "330 ft - 3891 ft" style label for the fixed station elevations.
+    """
+
+    elevations = sorted(STATIONS.values())
+
+    return f"{elevations[0]:.0f} ft \u2013 {elevations[-1]:.0f} ft"
+
+
+def layer_summary_rows(diagnostics):
+    """
+    (label, value, subtext) rows for the "LAYER SUMMARY" dashboard
+    panel: warm nose / cold layer detection plus the stability call.
+    """
+
+    def ft_range(pair):
+        if pair is None:
+            return "None", "in observed layer"
+        return f"{pair[1] - pair[0]:.0f} ft thick", f"{pair[0]:.0f}-{pair[1]:.0f} ft"
+
+    warm_val, warm_sub = ft_range(diagnostics["warm_layer_ft"])
+    cold_val, cold_sub = ft_range(diagnostics["cold_layer_ft"])
+
+    subfreezing = diagnostics["subfreezing_depth_ft"]
+    subfreezing_val = (
+        f"{subfreezing:.0f} ft" if subfreezing is not None else "None"
+    )
+    subfreezing_sub = "" if subfreezing is not None else "in observed layer"
+
+    warm_nose = diagnostics["max_warm_nose_C"]
+    warm_nose_val = (
+        f"{warm_nose:.1f} C" if warm_nose is not None else "N/A"
+    )
+
+    return [
+        ("Warm Layer", warm_val, warm_sub),
+        ("Cold Layer", cold_val, cold_sub),
+        ("Subfreezing Depth", subfreezing_val, subfreezing_sub),
+        ("Max Warm Nose", warm_nose_val, ""),
+        (
+            "Stability", diagnostics["stability_label"],
+            diagnostics["stability_subtext"],
+        ),
+    ]
+
+
 def print_diagnostics(diagnostics):
 
     rows = diagnostic_display_rows(diagnostics)
@@ -1839,6 +2162,111 @@ def print_diagnostics(diagnostics):
 # 12. PLOT
 # =====================================================================
 
+# Dashboard color palette (dark theme).
+
+BG_COLOR = "#0a1628"
+PANEL_COLOR = "#101f35"
+PANEL_EDGE = "#1e3450"
+TEXT_COLOR = "#e8eef5"
+MUTED_COLOR = "#7d90a8"
+ACCENT_COLOR = "#38bdf8"
+
+TEMP_COLOR = "#ff5252"
+DEWPOINT_COLOR = "#34d399"
+WETBULB_COLOR = "#c084fc"
+
+WARN_COLOR = "#fb923c"
+GOOD_COLOR = "#34d399"
+NEUTRAL_COLOR = "#e8eef5"
+
+
+def _panel_background(fig, rect, title=None):
+    """
+    Draw a rounded dark panel at `rect` (fig-fraction [x, y, w, h])
+    with an optional title, and return the axes so the caller can add
+    text/tables inside it. Axes limits are fixed to 0-1 in both
+    directions so callers can place content by fraction.
+    """
+
+    ax = fig.add_axes(rect)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    box = FancyBboxPatch(
+        (0.0, 0.0), 1.0, 1.0,
+        boxstyle="round,pad=0,rounding_size=0.03",
+        linewidth=1.0,
+        edgecolor=PANEL_EDGE,
+        facecolor=PANEL_COLOR,
+        transform=ax.transAxes,
+        zorder=0,
+    )
+
+    ax.add_patch(box)
+
+    if title:
+
+        ax.text(
+            0.05, 0.92, title,
+            transform=ax.transAxes,
+            fontsize=11, fontweight="bold",
+            color=ACCENT_COLOR, ha="left", va="top",
+        )
+
+    return ax
+
+
+def _draw_stat_rows(ax, rows, top=0.80, bottom=0.06):
+    """
+    Draw (label, value, subtext, value_color) rows evenly spaced
+    inside a panel axes already sized to 0-1 x 0-1, with a thin
+    divider under each row except the last.
+    """
+
+    n = len(rows)
+
+    if n == 0:
+        return
+
+    step = (top - bottom) / n
+
+    for i, (label, value, subtext, value_color) in enumerate(rows):
+
+        y = top - i * step
+
+        ax.text(
+            0.05, y, label.upper(),
+            transform=ax.transAxes,
+            fontsize=8.5, color=MUTED_COLOR,
+            ha="left", va="top",
+        )
+
+        ax.text(
+            0.95, y, value,
+            transform=ax.transAxes,
+            fontsize=13, fontweight="bold", color=value_color,
+            ha="right", va="top",
+        )
+
+        if subtext:
+
+            ax.text(
+                0.95, y - step * 0.42, subtext,
+                transform=ax.transAxes,
+                fontsize=7.5, color=MUTED_COLOR,
+                ha="right", va="top",
+            )
+
+        if i < n - 1:
+
+            ax.plot(
+                [0.05, 0.95], [y - step * 0.78, y - step * 0.78],
+                transform=ax.transAxes,
+                color=PANEL_EDGE, linewidth=0.8,
+            )
+
+
 def plot_skewt(
     profile,
     pressure,
@@ -1854,17 +2282,76 @@ def plot_skewt(
     # ==============================================================
 
     fig = plt.figure(
-        figsize=(11, 11)
+        figsize=(15, 15),
+        facecolor=BG_COLOR,
     )
 
-    # Skew-T occupies the upper portion.
-    # Bottom portion is reserved for the observation + diagnostics tables.
+    # ==============================================================
+    # HEADER
+    # ==============================================================
+
+    fig.text(
+        0.02, 0.975, "MOUNT MANSFIELD",
+        fontsize=22, fontweight="bold", color=TEXT_COLOR,
+        ha="left", va="top",
+    )
+
+    fig.text(
+        0.02, 0.945, "OBSERVED SLOPE PROFILE",
+        fontsize=13, fontweight="bold", color=ACCENT_COLOR,
+        ha="left", va="top",
+    )
+
+    fig.text(
+        0.50, 0.96, profile_span_label(),
+        fontsize=11, color=MUTED_COLOR,
+        ha="center", va="center",
+    )
+
+    latest_times = []
+
+    for station in profile:
+
+        dt = parse_iso_time(station.get("temperature_time"))
+
+        if dt is not None:
+            latest_times.append(dt)
+
+    if latest_times:
+
+        newest = max(latest_times)
+
+        fig.text(
+            0.98, 0.975, newest.strftime("%d %b %Y"),
+            fontsize=16, fontweight="bold", color=TEXT_COLOR,
+            ha="right", va="top",
+        )
+
+        fig.text(
+            0.98, 0.945, newest.strftime("%H:%M UTC"),
+            fontsize=12, fontweight="bold", color=ACCENT_COLOR,
+            ha="right", va="top",
+        )
+
+    # ==============================================================
+    # SKEW-T PANEL
+    # ==============================================================
+
+    skewt_bg = _panel_background(fig, [0.015, 0.305, 0.685, 0.615])
 
     skew = SkewT(
         fig,
         rotation=45,
-        rect=(0.10, 0.40, 0.80, 0.53)
+        rect=(0.06, 0.335, 0.55, 0.55),
     )
+
+    skew.ax.set_facecolor(PANEL_COLOR)
+
+    for spine in skew.ax.spines.values():
+        spine.set_color(PANEL_EDGE)
+
+    skew.ax.tick_params(colors=MUTED_COLOR)
+    skew.ax.grid(color=PANEL_EDGE, alpha=0.5, linewidth=0.6)
 
     # ==============================================================
     # TIGHT PLOT LIMITS
@@ -1876,7 +2363,6 @@ def plot_skewt(
     t_max = temperature.max().to("degC").m
     t_min = temperature.min().to("degC").m
 
-    # Include dewpoint when determining the visible temperature range.
     dewpoints = [
         station["dewpoint_C"]
         for station in profile
@@ -1884,95 +2370,68 @@ def plot_skewt(
     ]
 
     if dewpoints:
-        t_min = min(
-            t_min,
-            min(dewpoints)
-        )
-    
-    # Small pressure padding above/below observations.
+        t_min = min(t_min, min(dewpoints))
 
     bottom_pressure = p_max + 10
     top_pressure = p_min - 15
 
-    # Very tight temperature zoom.
-    #
-    # This product is intentionally focused on small temperature
-    # differences in the shallow low-level profile.
-
     temp_padding_left = 2.0
     temp_padding_right = 2.0
 
-    left_temperature = (
-        t_min - temp_padding_left
-    )
-
-    right_temperature = (
-        t_max + temp_padding_right
-    )
-
-    # Maintain a minimum 8 C window if temperatures are clustered.
+    left_temperature = t_min - temp_padding_left
+    right_temperature = t_max + temp_padding_right
 
     minimum_temp_width = 8.0
-
-    current_width = (
-        right_temperature
-        - left_temperature
-    )
+    current_width = right_temperature - left_temperature
 
     if current_width < minimum_temp_width:
 
-        midpoint = (
-            t_max + t_min
-        ) / 2.0
+        midpoint = (t_max + t_min) / 2.0
+        left_temperature = midpoint - minimum_temp_width / 2.0
+        right_temperature = midpoint + minimum_temp_width / 2.0
 
-        left_temperature = (
-            midpoint
-            - minimum_temp_width / 2.0
-        )
+    skew.ax.set_ylim(bottom_pressure, top_pressure)
+    skew.ax.set_xlim(left_temperature, right_temperature)
 
-        right_temperature = (
-            midpoint
-            + minimum_temp_width / 2.0
-        )
+    # Round-number pressure gridlines (every 20 hPa) anchored to
+    # KBTV's actual surface pressure, e.g. 1020, 1000, 980, 960, ...
+    # rather than matplotlib's default auto-ticks.
 
-    skew.ax.set_ylim(
-        bottom_pressure,
-        top_pressure
+    kbtv_station = next(
+        (x for x in profile if x["stid"] == "KBTV"), profile[0]
     )
 
-    skew.ax.set_xlim(
-        left_temperature,
-        right_temperature
-    )
+    tick_base = 20.0 * round(kbtv_station["pressure_hPa"] / 20.0)
+
+    yticks = []
+    tick = tick_base
+
+    while tick >= top_pressure - 20:
+
+        if tick <= bottom_pressure + 20:
+            yticks.append(tick)
+
+        tick -= 20
+
+    skew.ax.set_yticks(yticks)
+    skew.ax.set_yticklabels([f"{t:.0f}" for t in yticks])
 
     # ==============================================================
     # SKEW-T BACKGROUND
     # ==============================================================
 
-    skew.plot_dry_adiabats(
-        alpha=0.20
-    )
-
-    skew.plot_moist_adiabats(
-        alpha=0.15
-    )
-
-    skew.plot_mixing_lines(
-        alpha=0.12
-    )
+    skew.plot_dry_adiabats(alpha=0.30, colors="#fb923c", linewidth=0.6)
+    skew.plot_moist_adiabats(alpha=0.25, colors="#34d399", linewidth=0.6)
+    skew.plot_mixing_lines(alpha=0.25, colors="#38bdf8", linewidth=0.6)
 
     # ==============================================================
     # TEMPERATURE
     # ==============================================================
 
     skew.plot(
-        pressure,
-        temperature,
-        color="red",
-        linewidth=3,
-        marker="o",
-        markersize=8,
-        zorder=10,
+        pressure, temperature,
+        color=TEMP_COLOR, linewidth=3,
+        marker="o", markersize=8, zorder=10,
     )
 
     # ==============================================================
@@ -1989,34 +2448,16 @@ def plot_skewt(
         if td is None:
             continue
 
-        dewpoint_pressure.append(
-            station["pressure_hPa"]
-        )
-
-        dewpoint_temperature.append(
-            td
-        )
+        dewpoint_pressure.append(station["pressure_hPa"])
+        dewpoint_temperature.append(td)
 
     if len(dewpoint_temperature) >= 2:
 
-        td_pressure = (
-            np.array(dewpoint_pressure)
-            * units.hPa
-        )
-
-        td_temperature = (
-            np.array(dewpoint_temperature)
-            * units.degC
-        )
-
         skew.plot(
-            td_pressure,
-            td_temperature,
-            color="green",
-            linewidth=3,
-            marker="o",
-            markersize=7,
-            zorder=10,
+            np.array(dewpoint_pressure) * units.hPa,
+            np.array(dewpoint_temperature) * units.degC,
+            color=DEWPOINT_COLOR, linewidth=3,
+            marker="o", markersize=7, zorder=10,
         )
 
     # ==============================================================
@@ -2033,36 +2474,16 @@ def plot_skewt(
         if tw is None:
             continue
 
-        wetbulb_pressure.append(
-            station["pressure_hPa"]
-        )
-
-        wetbulb_temperature.append(
-            tw
-        )
+        wetbulb_pressure.append(station["pressure_hPa"])
+        wetbulb_temperature.append(tw)
 
     if len(wetbulb_temperature) >= 2:
 
-        tw_pressure = (
-            np.array(wetbulb_pressure)
-            * units.hPa
-        )
-
-        tw_temperature = (
-            np.array(wetbulb_temperature)
-            * units.degC
-        )
-
         skew.plot(
-            tw_pressure,
-            tw_temperature,
-            color="purple",
-            linewidth=2,
-            linestyle="--",
-            marker="o",
-            markersize=5,
-            alpha=0.85,
-            zorder=9,
+            np.array(wetbulb_pressure) * units.hPa,
+            np.array(wetbulb_temperature) * units.degC,
+            color=WETBULB_COLOR, linewidth=2, linestyle="--",
+            marker="o", markersize=5, alpha=0.9, zorder=9,
         )
 
     # ==============================================================
@@ -2072,217 +2493,204 @@ def plot_skewt(
     if wind_pressure is not None:
 
         skew.plot_barbs(
-            wind_pressure,
-            u,
-            v,
+            wind_pressure, u, v,
             xloc=1.0,
-            sizes={
-                "emptybarb": 0.15,
-                "spacing": 0.2,
-                "height": 0.4,
-            },
-            linewidth=1.2,
+            sizes={"emptybarb": 0.15, "spacing": 0.2, "height": 0.4},
+            linewidth=1.2, color=TEXT_COLOR,
         )
 
     # ==============================================================
     # 0 C ISOTHERM
     # ==============================================================
 
-    if (
-        left_temperature <= 0
-        <= right_temperature
-    ):
+    if left_temperature <= 0 <= right_temperature:
 
         skew.ax.axvline(
-            0,
-            color="blue",
-            linestyle="--",
-            linewidth=1.5,
-            alpha=0.75,
-            zorder=5,
+            0, color=ACCENT_COLOR, linestyle="--",
+            linewidth=1.5, alpha=0.8, zorder=5,
         )
 
     # ==============================================================
-    # TITLE / AXES
+    # AXES LABELS / LEGEND
     # ==============================================================
 
-    skew.ax.set_title(
-        "Mount Mansfield Observed Slope Profile",
-        fontsize=16,
-        fontweight="bold",
-        loc="left",
-        pad=12,
-    )
-
-    skew.ax.set_xlabel(
-        "Temperature (°C)",
-        fontsize=11,
-    )
-
-    skew.ax.set_ylabel(
-        "Pressure (hPa)",
-        fontsize=11,
-    )
+    skew.ax.set_xlabel("Temperature (\u00b0C)", fontsize=10, color=TEXT_COLOR)
+    skew.ax.set_ylabel("Pressure (hPa)", fontsize=10, color=TEXT_COLOR)
 
     legend_handles = [
-        plt.Line2D([0], [0], color="red", linewidth=3, label="Temperature"),
-        plt.Line2D([0], [0], color="green", linewidth=3, label="Dewpoint"),
+        plt.Line2D([0], [0], color=TEMP_COLOR, linewidth=3, label="Temperature"),
+        plt.Line2D([0], [0], color=DEWPOINT_COLOR, linewidth=3, label="Dewpoint"),
         plt.Line2D(
-            [0], [0], color="purple", linewidth=2, linestyle="--",
+            [0], [0], color=WETBULB_COLOR, linewidth=2, linestyle="--",
             label="Wet-Bulb",
         ),
     ]
 
-    skew.ax.legend(
+    legend = skew.ax.legend(
         handles=legend_handles,
-        loc="upper right",
-        fontsize=9,
-        framealpha=0.85,
+        loc="upper right", fontsize=8.5, framealpha=0.9,
+    )
+
+    legend.get_frame().set_facecolor(PANEL_COLOR)
+    legend.get_frame().set_edgecolor(PANEL_EDGE)
+
+    for text in legend.get_texts():
+        text.set_color(TEXT_COLOR)
+
+    # Small legend for the background lines, matching the reference
+    # mock's lower-left key.
+
+    bg_legend_handles = [
+        plt.Line2D([0], [0], color="#fb923c", linewidth=1, linestyle="--", label="Dry Adiabats"),
+        plt.Line2D([0], [0], color="#34d399", linewidth=1, linestyle="--", label="Moist Adiabats"),
+        plt.Line2D([0], [0], color="#38bdf8", linewidth=1, linestyle="--", label="Mixing Ratio"),
+        plt.Line2D([0], [0], color=ACCENT_COLOR, linewidth=1.5, linestyle="--", label="0\u00b0C Isotherm"),
+    ]
+
+    bg_legend = skew.ax.legend(
+        handles=bg_legend_handles,
+        loc="lower left", fontsize=7.5, framealpha=0.9,
+    )
+
+    bg_legend.get_frame().set_facecolor(PANEL_COLOR)
+    bg_legend.get_frame().set_edgecolor(PANEL_EDGE)
+
+    for text in bg_legend.get_texts():
+        text.set_color(MUTED_COLOR)
+
+    skew.ax.add_artist(legend)
+
+    # ==============================================================
+    # KEY DIAGNOSTICS PANEL (top right)
+    # ==============================================================
+
+    key_ax = _panel_background(fig, [0.715, 0.575, 0.275, 0.345], "KEY DIAGNOSTICS")
+
+    key_rows_raw = key_diagnostics_rows(diagnostics)
+
+    key_colors = [
+        WARN_COLOR if key_rows_raw[0][1] == "None" else NEUTRAL_COLOR,
+        ACCENT_COLOR if key_rows_raw[1][1] == "None" else NEUTRAL_COLOR,
+        "#c084fc",
+        NEUTRAL_COLOR,
+        "#2dd4bf",
+        GOOD_COLOR if "Rain" in key_rows_raw[5][1] or "Snow" in key_rows_raw[5][1] else WARN_COLOR,
+    ]
+
+    key_rows = [
+        (label, value, subtext, color)
+        for (label, value, subtext), color in zip(key_rows_raw, key_colors)
+    ]
+
+    _draw_stat_rows(key_ax, key_rows, top=0.80, bottom=0.04)
+
+    # ==============================================================
+    # LAYER SUMMARY PANEL (mid right)
+    # ==============================================================
+
+    layer_ax = _panel_background(fig, [0.715, 0.235, 0.275, 0.315], "LAYER SUMMARY")
+
+    layer_rows_raw = layer_summary_rows(diagnostics)
+
+    layer_colors = [
+        WARN_COLOR if layer_rows_raw[0][1] == "None" else NEUTRAL_COLOR,
+        ACCENT_COLOR if layer_rows_raw[1][1] == "None" else NEUTRAL_COLOR,
+        NEUTRAL_COLOR,
+        NEUTRAL_COLOR,
+        "#c084fc",
+    ]
+
+    layer_rows = [
+        (label, value, subtext, color)
+        for (label, value, subtext), color in zip(layer_rows_raw, layer_colors)
+    ]
+
+    _draw_stat_rows(layer_ax, layer_rows, top=0.76, bottom=0.04)
+
+    # ==============================================================
+    # NOTES PANEL (bottom right)
+    # ==============================================================
+
+    notes_ax = _panel_background(fig, [0.715, 0.06, 0.275, 0.16], "NOTES")
+
+    precip_type = diagnostics["precip_type"]
+
+    if diagnostics["cold_layer_ft"] is None:
+        note_text = (
+            "Entire observed layer is above freezing.\n"
+            f"{precip_type} expected."
+        )
+    elif diagnostics["warm_layer_ft"] is None:
+        note_text = (
+            "Entire observed layer is at or below freezing.\n"
+            f"{precip_type} expected."
+        )
+    else:
+        note_text = (
+            "Sub-freezing surface layer with a warm nose aloft.\n"
+            f"{precip_type} possible \u2014 refreeze risk near the surface."
+        )
+
+    notes_ax.text(
+        0.05, 0.72, note_text,
+        transform=notes_ax.transAxes,
+        fontsize=9, color=TEXT_COLOR, ha="left", va="top",
+    )
+
+    notes_ax.text(
+        0.05, 0.18,
+        "Diagnostics are calculated from point observations and\n"
+        "represent only the sampled layer. Use with judgment.",
+        transform=notes_ax.transAxes,
+        fontsize=7, color=MUTED_COLOR, ha="left", va="top",
+        style="italic",
     )
 
     # ==============================================================
-    # OBSERVATION TABLE (left)
+    # OBSERVATION TABLE (bottom left)
     # ==============================================================
 
-    table_rows = []
+    obs_ax = _panel_background(fig, [0.015, 0.015, 0.685, 0.275], "OBSERVATIONS")
 
-    # Highest elevation first so the table follows the vertical
-    # orientation of the sounding.
+    layer_lapse = diagnostics["layer_lapse_rates"]
+
+    table_rows = []
+    table_colors = []
 
     for station in reversed(profile):
 
-        # ----------------------------------------------------------
-        # Temperature
-        # ----------------------------------------------------------
+        temp = station.get("temperature_C")
+        temp_text = f"{temp:.1f}" if temp is not None else "--"
 
-        temp = station.get(
-            "temperature_C"
-        )
+        dewpoint = station.get("dewpoint_C")
+        dewpoint_text = f"{dewpoint:.1f}" if dewpoint is not None else "--"
 
-        if temp is not None:
+        wetbulb = station.get("wetbulb_C")
+        wetbulb_text = f"{wetbulb:.1f}" if wetbulb is not None else "--"
 
-            temp_text = (
-                f"{temp:.1f}°C"
-            )
+        speed = station.get("wind_speed_kmh")
+        direction = station.get("wind_direction_deg")
 
-        else:
+        if speed is not None and direction is not None:
 
-            temp_text = "--"
-
-        # ----------------------------------------------------------
-        # Dewpoint
-        # ----------------------------------------------------------
-
-        dewpoint = station.get(
-            "dewpoint_C"
-        )
-
-        if dewpoint is not None:
-
-            dewpoint_text = (
-                f"{dewpoint:.1f}°C"
-            )
-
-        else:
-
-            dewpoint_text = "--"
-
-        # ----------------------------------------------------------
-        # Wet-bulb temperature
-        # ----------------------------------------------------------
-
-        wetbulb = station.get(
-            "wetbulb_C"
-        )
-
-        if wetbulb is not None:
-
-            wetbulb_text = (
-                f"{wetbulb:.1f}°C"
-            )
-
-        else:
-
-            wetbulb_text = "--"
-
-        # ----------------------------------------------------------
-        # Relative humidity
-        # ----------------------------------------------------------
-
-        rh = station.get(
-            "relative_humidity_pct"
-        )
-
-        if rh is not None:
-
-            rh_text = f"{rh:.0f}%"
-
-        else:
-
-            rh_text = "--"
-
-        # ----------------------------------------------------------
-        # Wind
-        # ----------------------------------------------------------
-
-        speed = station.get(
-            "wind_speed_kmh"
-        )
-
-        direction = station.get(
-            "wind_direction_deg"
-        )
-
-        if (
-            speed is not None
-            and direction is not None
-        ):
-
-            speed_kt = (
-                speed
-                * units("km/hour")
-            ).to("knots").m
+            speed_kt = (speed * units("km/hour")).to("knots").m
 
             if speed_kt < 0.5:
-
                 wind_text = "Calm"
-
             else:
-
-                wind_text = (
-                    f"{direction:03.0f}° / "
-                    f"{speed_kt:.0f} kt"
-                )
+                wind_text = f"{direction:03.0f}\u00b0 / {speed_kt:.0f} kt"
 
         else:
-
             wind_text = "--"
 
-        # ----------------------------------------------------------
-        # Observation time
-        # ----------------------------------------------------------
+        lapse = layer_lapse.get(station["stid"])
+        lapse_text = f"{lapse:.1f}" if lapse is not None else "--"
+        lapse_color = TEXT_COLOR
+        if lapse is not None:
+            lapse_color = WARN_COLOR if lapse < 0 else TEXT_COLOR
 
-        obs_time = parse_iso_time(
-            station.get(
-                "temperature_time"
-            )
-        )
-
-        if obs_time:
-
-            time_text = (
-                obs_time.strftime(
-                    "%H:%MZ"
-                )
-            )
-
-        else:
-
-            time_text = "--"
-
-        # ----------------------------------------------------------
-        # Add row
-        # ----------------------------------------------------------
+        obs_time = parse_iso_time(station.get("temperature_time"))
+        time_text = obs_time.strftime("%H:%MZ") if obs_time else "--"
 
         table_rows.append([
             station["stid"],
@@ -2291,158 +2699,86 @@ def plot_skewt(
             temp_text,
             dewpoint_text,
             wetbulb_text,
-            rh_text,
             wind_text,
+            lapse_text,
             time_text,
         ])
 
-    # Dedicated axes for the observation table (left half). Widened
-    # from the original 0.52 to fit the added Wet-Bulb/RH columns.
+        table_colors.append(lapse_color)
 
-    table_ax = fig.add_axes([
-        0.04,
-        0.06,
-        0.60,
-        0.28,
-    ])
+    inner_table_ax = fig.add_axes([0.03, 0.02, 0.66, 0.22])
+    inner_table_ax.axis("off")
 
-    table_ax.axis(
-        "off"
-    )
+    col_labels = [
+        "Station", "Elevation", "Pressure", "Temp", "Dewpoint",
+        "Wet-Bulb", "Wind", "Layer Lapse\n(C/km)", "Time",
+    ]
 
-    table_ax.set_title(
-        "Station Observations",
-        fontsize=10,
-        fontweight="bold",
-        loc="left",
-        pad=4,
-    )
-
-    table = table_ax.table(
+    table = inner_table_ax.table(
         cellText=table_rows,
-        colLabels=[
-            "Station",
-            "Elevation",
-            "Pressure",
-            "Temp",
-            "Dewpoint",
-            "Wet-Bulb",
-            "RH",
-            "Wind",
-            "Time",
-        ],
-        cellLoc="center",
-        colLoc="center",
-        loc="center",
+        colLabels=col_labels,
+        cellLoc="center", colLoc="center", loc="center",
     )
 
-    table.auto_set_font_size(
-        False
-    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(8)
+    table.scale(1.0, 1.5)
 
-    table.set_fontsize(
-        8
-    )
+    n_cols = len(col_labels)
 
-    table.scale(
-        1.0,
-        1.4,
-    )
+    for col in range(n_cols):
 
-    # Make header bold.
+        header_cell = table[(0, col)]
+        header_cell.set_text_props(weight="bold", color=ACCENT_COLOR)
+        header_cell.set_facecolor(PANEL_COLOR)
+        header_cell.set_edgecolor(PANEL_EDGE)
 
-    for column in range(9):
+    col_text_colors = {
+        3: TEMP_COLOR,
+        4: DEWPOINT_COLOR,
+        5: WETBULB_COLOR,
+    }
 
-        table[
-            (0, column)
-        ].set_text_props(
-            weight="bold"
-        )
+    for row in range(1, len(table_rows) + 1):
+
+        for col in range(n_cols):
+
+            cell = table[(row, col)]
+            cell.set_facecolor(PANEL_COLOR)
+            cell.set_edgecolor(PANEL_EDGE)
+
+            color = col_text_colors.get(col, TEXT_COLOR)
+
+            if col == 7:
+                color = table_colors[row - 1]
+
+            cell.get_text().set_color(color)
 
     # ==============================================================
-    # WINTER PROFILE DIAGNOSTICS TABLE (right)
+    # FOOTER
     # ==============================================================
-
-    diag_rows = diagnostic_display_rows(diagnostics)
-
-    diag_ax = fig.add_axes([
-        0.68,
-        0.14,
-        0.30,
-        0.20,
-    ])
-
-    diag_ax.axis("off")
-
-    diag_ax.set_title(
-        "Winter Profile Diagnostics",
-        fontsize=10,
-        fontweight="bold",
-        loc="left",
-        pad=4,
-    )
-
-    diag_table = diag_ax.table(
-        cellText=[[label, value] for label, value, _ in diag_rows],
-        colWidths=[0.55, 0.45],
-        cellLoc="left",
-        loc="center",
-    )
-
-    diag_table.auto_set_font_size(False)
-    diag_table.set_fontsize(8.5)
-    diag_table.scale(1.0, 1.3)
-
-    for row_index, (label, value, is_header) in enumerate(diag_rows):
-
-        for col in range(2):
-
-            cell = diag_table[(row_index, col)]
-            cell.set_edgecolor("none")
-
-            if is_header:
-
-                cell.set_text_props(weight="bold")
-                cell.set_facecolor("0.90")
-
-                # Blank out the value column on section-header rows.
-                if col == 1:
-                    cell.get_text().set_text("")
-
-    # ==============================================================
-    # PRODUCT TIME
-    # ==============================================================
-
-    latest_times = []
-
-    for station in profile:
-
-        dt = parse_iso_time(
-            station.get(
-                "temperature_time"
-            )
-        )
-
-        if dt is not None:
-            latest_times.append(dt)
 
     if latest_times:
 
-        newest = max(
-            latest_times
-        )
-
-        time_text = newest.strftime(
-            "%d %b %Y %H:%M UTC"
-        )
+        newest = max(latest_times)
 
         fig.text(
-            0.50,
-            0.015,
-            time_text,
-            ha="center",
-            fontsize=10,
+            0.02, 0.008,
+            f"Data Time: {newest.strftime('%d %b %Y %H:%M UTC')}",
+            fontsize=8, color=MUTED_COLOR, ha="left", va="bottom",
         )
+
+    fig.text(
+        0.50, 0.008,
+        "Sources: NWS API \u2022 RR2 (BTV) \u2022 RRSBTV (IEM)",
+        fontsize=8, color=MUTED_COLOR, ha="center", va="bottom",
+    )
+
+    fig.text(
+        0.98, 0.008,
+        "Product: Mount Mansfield Pseudo-Sounding v1.2",
+        fontsize=8, color=MUTED_COLOR, ha="right", va="bottom",
+    )
 
     # ==============================================================
     # SAVE
@@ -2451,16 +2787,13 @@ def plot_skewt(
     plt.savefig(
         OUTPUT_FILE,
         dpi=175,
-        bbox_inches="tight",
+        facecolor=BG_COLOR,
     )
 
     plt.close(fig)
 
     print()
-    print(
-        f"Saved Skew-T to: "
-        f"{OUTPUT_FILE}"
-    )
+    print(f"Saved Skew-T to: {OUTPUT_FILE}")
 
 # =====================================================================
 # 13. MAIN
