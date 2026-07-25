@@ -48,6 +48,7 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Circle, Polygon, FancyBboxPatch
 
 import metpy.calc as mpcalc
 from metpy.units import units
@@ -2156,10 +2157,177 @@ def print_diagnostics(diagnostics):
 
     print("=" * 60)
 
-
 # =====================================================================
 # 12. PLOT
 # =====================================================================
+
+MUTED_TEXT = "#868e96"
+DIVIDER_COLOR = "#dee2e6"
+CARD_BG = "#f8f9fa"
+
+TEMP_COLOR = "red"
+DEWPOINT_COLOR = "green"
+WETBULB_COLOR = "purple"
+
+
+def _icon_thermometer(ax, color):
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    ax.set_aspect("equal")
+
+    ax.plot(
+        [0.5, 0.5], [0.28, 0.82],
+        color=color, linewidth=5, solid_capstyle="round",
+    )
+
+    ax.add_patch(Circle((0.5, 0.22), 0.16, color=color))
+    ax.add_patch(Circle((0.5, 0.55), 0.055, color="white"))
+
+
+def _icon_wind(ax, color):
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    ax.set_aspect("equal")
+
+    for y0, length in [(0.68, 0.5), (0.48, 0.7), (0.28, 0.4)]:
+
+        x = np.linspace(0.12, 0.12 + length, 20)
+        yv = y0 + 0.035 * np.sin(np.linspace(0, np.pi, 20))
+
+        ax.plot(x, yv, color=color, linewidth=3.2, solid_capstyle="round")
+
+
+def _icon_mountain(ax, color):
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    ax.set_aspect("equal")
+
+    ax.add_patch(
+        Polygon(
+            [(0.08, 0.15), (0.5, 0.85), (0.92, 0.15)],
+            closed=True, color=color,
+        )
+    )
+
+    ax.add_patch(
+        Polygon(
+            [(0.4, 0.62), (0.5, 0.78), (0.6, 0.62), (0.5, 0.68)],
+            closed=True, color="white",
+        )
+    )
+
+
+def _icon_snowflake(ax, color):
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    ax.text(
+        0.5, 0.46, "\u2744",
+        fontsize=26, ha="center", va="center", color=color,
+    )
+
+
+def _icon_droplet(ax, color):
+
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    ax.set_aspect("equal")
+
+    ax.add_patch(Circle((0.5, 0.33), 0.30, color=color))
+
+    ax.add_patch(
+        Polygon(
+            [(0.5, 0.92), (0.26, 0.42), (0.74, 0.42)],
+            closed=True, color=color,
+        )
+    )
+
+
+def _draw_diagnostic_cards(fig, rect, cards):
+    """
+    Draw a row of icon diagnostic cards spanning `rect` (figure
+    fraction [x, y, w, h]). `cards` is a list of
+    (icon_fn, icon_color, label, value, value_color, subtext).
+    """
+
+    x0, y0, w, h = rect
+
+    band_ax = fig.add_axes(rect)
+    band_ax.set_xlim(0, 1)
+    band_ax.set_ylim(0, 1)
+    band_ax.axis("off")
+
+    band = FancyBboxPatch(
+        (0.0, 0.0), 1.0, 1.0,
+        boxstyle="round,pad=0,rounding_size=0.12",
+        linewidth=1.0,
+        edgecolor=DIVIDER_COLOR,
+        facecolor=CARD_BG,
+        transform=band_ax.transAxes,
+        zorder=0,
+    )
+
+    band_ax.add_patch(band)
+
+    fig_w_in, fig_h_in = fig.get_size_inches()
+
+    n = len(cards)
+    card_w = w / n
+
+    for i, (icon_fn, icon_color, label, value, value_color, subtext) in enumerate(cards):
+
+        cx0 = x0 + i * card_w
+
+        if i > 0:
+
+            band_ax.plot(
+                [i / n, i / n], [0.18, 0.82],
+                color=DIVIDER_COLOR, linewidth=1,
+                transform=band_ax.transAxes,
+            )
+
+        icon_h_frac = h * 0.5
+        icon_h_in = icon_h_frac * fig_h_in
+        icon_w_frac = icon_h_in / fig_w_in
+
+        icon_x = cx0 + card_w * 0.08
+        icon_y = y0 + (h - icon_h_frac) / 2
+
+        icon_ax = fig.add_axes(
+            [icon_x, icon_y, icon_w_frac, icon_h_frac]
+        )
+
+        icon_fn(icon_ax, icon_color)
+
+        text_x = icon_x + icon_w_frac + card_w * 0.05
+
+        fig.text(
+            text_x, y0 + h * 0.74, label,
+            fontsize=9, color=MUTED_TEXT, ha="left", va="center",
+            fontweight="bold",
+        )
+
+        fig.text(
+            text_x, y0 + h * 0.46, value,
+            fontsize=18, color=value_color, ha="left", va="center",
+            fontweight="bold",
+        )
+
+        if subtext:
+
+            fig.text(
+                text_x, y0 + h * 0.20, subtext,
+                fontsize=8, color=MUTED_TEXT, ha="left", va="center",
+            )
 
 
 def plot_skewt(
@@ -2173,26 +2341,8 @@ def plot_skewt(
 ):
 
     # ==============================================================
-    # FIGURE
-    # ==============================================================
-
-    fig = plt.figure(
-        figsize=(13, 15)
-    )
-
-    # Skew-T now takes up most of the figure - the observed layer is
-    # only ~100 hPa deep, so more vertical/horizontal room per hPa
-    # makes the small temperature/dewpoint separations much easier
-    # to read. Tables are pushed into a shorter strip at the bottom.
-
-    skew = SkewT(
-        fig,
-        rotation=45,
-        rect=(0.08, 0.30, 0.86, 0.65)
-    )
-
-    # ==============================================================
-    # TIGHT PLOT LIMITS
+    # PLOT LIMITS (computed before the figure, since figure sizing
+    # below depends on them)
     # ==============================================================
 
     p_max = pressure.max().to("hPa").m
@@ -2201,7 +2351,6 @@ def plot_skewt(
     t_max = temperature.max().to("degC").m
     t_min = temperature.min().to("degC").m
 
-    # Include dewpoint when determining the visible temperature range.
     dewpoints = [
         station["dewpoint_C"]
         for station in profile
@@ -2209,88 +2358,116 @@ def plot_skewt(
     ]
 
     if dewpoints:
-        t_min = min(
-            t_min,
-            min(dewpoints)
-        )
-
-    # Small pressure padding above/below observations. Tighter than
-    # before since we want the ~100 hPa observed layer to fill as
-    # much of the panel as possible.
+        t_min = min(t_min, min(dewpoints))
 
     bottom_pressure = p_max + 5
     top_pressure = p_min - 8
 
-    # Very tight temperature zoom.
-    #
-    # This product is intentionally focused on small temperature
-    # differences in the shallow low-level profile.
-
     temp_padding_left = 2.0
     temp_padding_right = 2.0
 
-    left_temperature = (
-        t_min - temp_padding_left
-    )
-
-    right_temperature = (
-        t_max + temp_padding_right
-    )
-
-    # Maintain a minimum 8 C window if temperatures are clustered.
+    left_temperature = t_min - temp_padding_left
+    right_temperature = t_max + temp_padding_right
 
     minimum_temp_width = 8.0
-
-    current_width = (
-        right_temperature
-        - left_temperature
-    )
+    current_width = right_temperature - left_temperature
 
     if current_width < minimum_temp_width:
 
-        midpoint = (
-            t_max + t_min
-        ) / 2.0
+        midpoint = (t_max + t_min) / 2.0
+        left_temperature = midpoint - minimum_temp_width / 2.0
+        right_temperature = midpoint + minimum_temp_width / 2.0
 
-        left_temperature = (
-            midpoint
-            - minimum_temp_width / 2.0
-        )
+    # ==============================================================
+    # FIGURE SIZING
+    # ==============================================================
+    #
+    # Probe the Skew-T's natural (aspect-locked) shape for these
+    # exact data limits, then size the figure to match it exactly so
+    # the plot fills its box with no wasted margin. See prior notes:
+    # MetPy locks a fixed 45-degree isotherm geometry, so a shallow
+    # ~100 hPa layer is naturally short and wide.
 
-        right_temperature = (
-            midpoint
-            + minimum_temp_width / 2.0
-        )
+    probe_fig = plt.figure(figsize=(10, 10))
 
-    skew.ax.set_ylim(
-        bottom_pressure,
-        top_pressure
+    probe_skew = SkewT(
+        probe_fig, rotation=45, rect=(0.1, 0.1, 0.8, 0.8)
     )
 
-    skew.ax.set_xlim(
-        left_temperature,
-        right_temperature
+    probe_skew.ax.set_ylim(bottom_pressure, top_pressure)
+    probe_skew.ax.set_xlim(left_temperature, right_temperature)
+
+    probe_fig.canvas.draw()
+
+    probe_pos = probe_skew.ax.get_position()
+    natural_ratio = probe_pos.height / probe_pos.width
+
+    plt.close(probe_fig)
+
+    skew_width_in = 15.0
+    skew_height_in = max(skew_width_in * natural_ratio, 4.5)
+    skew_width_in = skew_height_in / natural_ratio
+
+    if skew_width_in > 20.0:
+        skew_width_in = 20.0
+        skew_height_in = skew_width_in * natural_ratio
+
+    wind_col_in = 1.3
+    content_gap_in = 0.15
+    content_width_in = skew_width_in + content_gap_in + wind_col_in
+
+    rect_width_frac = 0.92
+    rect_x0 = (1.0 - rect_width_frac) / 2.0
+
+    header_in = 1.0
+    gap1_in = 0.15
+    icon_row_in = 1.5
+    gap2_in = 0.30
+    table_in = 2.7
+    footer_in = 0.35
+
+    fig_width_in = content_width_in / rect_width_frac
+    fig_height_in = (
+        header_in + gap1_in + skew_height_in
+        + gap2_in + icon_row_in + gap2_in + table_in + footer_in
     )
 
-    # Round-number pressure gridlines (every 20 hPa) anchored to
-    # KBTV's actual surface pressure, e.g. 1020, 1000, 980, 960, ...
-    # rather than matplotlib's default auto-ticks.
+    fig = plt.figure(figsize=(fig_width_in, fig_height_in))
+
+    skew_width_frac = skew_width_in / fig_width_in
+    skew_height_frac = skew_height_in / fig_height_in
+
+    skew_y0 = (
+        footer_in + table_in + gap2_in + icon_row_in + gap2_in
+    ) / fig_height_in
+
+    skew = SkewT(
+        fig,
+        rotation=45,
+        rect=(rect_x0, skew_y0, skew_width_frac, skew_height_frac),
+    )
+
+    skew.ax.set_ylim(bottom_pressure, top_pressure)
+    skew.ax.set_xlim(left_temperature, right_temperature)
+
+    # Round-number pressure gridlines (every 10 hPa) anchored to
+    # KBTV's actual surface pressure.
 
     kbtv_station = next(
         (x for x in profile if x["stid"] == "KBTV"), profile[0]
     )
 
-    tick_base = 20.0 * round(kbtv_station["pressure_hPa"] / 20.0)
+    tick_base = 10.0 * round(kbtv_station["pressure_hPa"] / 10.0)
 
     yticks = []
     tick = tick_base
 
-    while tick >= top_pressure - 20:
+    while tick >= top_pressure - 10:
 
-        if tick <= bottom_pressure + 20:
+        if tick <= bottom_pressure + 10:
             yticks.append(tick)
 
-        tick -= 20
+        tick -= 10
 
     skew.ax.set_yticks(yticks)
     skew.ax.set_yticklabels([f"{t:.0f}" for t in yticks])
@@ -2299,35 +2476,19 @@ def plot_skewt(
     # SKEW-T BACKGROUND
     # ==============================================================
 
-    skew.plot_dry_adiabats(
-        alpha=0.20
-    )
-
-    skew.plot_moist_adiabats(
-        alpha=0.15
-    )
-
-    skew.plot_mixing_lines(
-        alpha=0.12
-    )
+    skew.plot_dry_adiabats(alpha=0.20)
+    skew.plot_moist_adiabats(alpha=0.15)
+    skew.plot_mixing_lines(alpha=0.12)
 
     # ==============================================================
-    # TEMPERATURE
+    # TEMPERATURE / DEWPOINT / WET-BULB
     # ==============================================================
 
     skew.plot(
-        pressure,
-        temperature,
-        color="red",
-        linewidth=3,
-        marker="o",
-        markersize=9,
-        zorder=10,
+        pressure, temperature,
+        color=TEMP_COLOR, linewidth=3, marker="o", markersize=9,
+        zorder=10, label="Temperature (\u00b0C)",
     )
-
-    # ==============================================================
-    # DEWPOINT
-    # ==============================================================
 
     dewpoint_pressure = []
     dewpoint_temperature = []
@@ -2339,39 +2500,17 @@ def plot_skewt(
         if td is None:
             continue
 
-        dewpoint_pressure.append(
-            station["pressure_hPa"]
-        )
-
-        dewpoint_temperature.append(
-            td
-        )
+        dewpoint_pressure.append(station["pressure_hPa"])
+        dewpoint_temperature.append(td)
 
     if len(dewpoint_temperature) >= 2:
 
-        td_pressure = (
-            np.array(dewpoint_pressure)
-            * units.hPa
-        )
-
-        td_temperature = (
-            np.array(dewpoint_temperature)
-            * units.degC
-        )
-
         skew.plot(
-            td_pressure,
-            td_temperature,
-            color="green",
-            linewidth=3,
-            marker="o",
-            markersize=8,
-            zorder=10,
+            np.array(dewpoint_pressure) * units.hPa,
+            np.array(dewpoint_temperature) * units.degC,
+            color=DEWPOINT_COLOR, linewidth=3, marker="o", markersize=8,
+            zorder=10, label="Dewpoint (\u00b0C)",
         )
-
-    # ==============================================================
-    # WET-BULB TEMPERATURE
-    # ==============================================================
 
     wetbulb_pressure = []
     wetbulb_temperature = []
@@ -2383,433 +2522,279 @@ def plot_skewt(
         if tw is None:
             continue
 
-        wetbulb_pressure.append(
-            station["pressure_hPa"]
-        )
-
-        wetbulb_temperature.append(
-            tw
-        )
+        wetbulb_pressure.append(station["pressure_hPa"])
+        wetbulb_temperature.append(tw)
 
     if len(wetbulb_temperature) >= 2:
 
-        tw_pressure = (
-            np.array(wetbulb_pressure)
-            * units.hPa
-        )
-
-        tw_temperature = (
-            np.array(wetbulb_temperature)
-            * units.degC
-        )
-
         skew.plot(
-            tw_pressure,
-            tw_temperature,
-            color="purple",
-            linewidth=2,
-            linestyle="--",
-            marker="o",
-            markersize=6,
-            alpha=0.85,
-            zorder=9,
+            np.array(wetbulb_pressure) * units.hPa,
+            np.array(wetbulb_temperature) * units.degC,
+            color=WETBULB_COLOR, linewidth=2, linestyle="--",
+            marker="o", markersize=6, alpha=0.85, zorder=9,
+            label="Wet-Bulb (\u00b0C)",
         )
 
+    if left_temperature <= 0 <= right_temperature:
+
+        skew.ax.axvline(
+            0, color="black", linestyle="-", linewidth=1.2,
+            alpha=0.6, zorder=5,
+        )
+
+    skew.ax.set_xlabel("Temperature (\u00b0C)", fontsize=12)
+    skew.ax.set_ylabel("Pressure (hPa)", fontsize=12)
+
+    legend = skew.ax.legend(
+        loc="upper left", fontsize=10, framealpha=0.95,
+        edgecolor=DIVIDER_COLOR,
+    )
+
     # ==============================================================
-    # WIND BARBS
+    # WIND COLUMN (separate axes, plain upright barbs)
     # ==============================================================
+
+    wind_x0 = rect_x0 + skew_width_frac + content_gap_in / fig_width_in
+    wind_width_frac = wind_col_in / fig_width_in
+
+    wind_ax = fig.add_axes(
+        [wind_x0, skew_y0, wind_width_frac, skew_height_frac],
+        sharey=skew.ax,
+    )
+
+    wind_ax.set_ylim(bottom_pressure, top_pressure)
+    wind_ax.set_yscale(skew.ax.get_yscale())
+    wind_ax.set_xlim(-1, 1)
+    wind_ax.set_xticks([])
+    wind_ax.set_yticklabels([])
+
+    for spine in wind_ax.spines.values():
+        spine.set_visible(False)
+
+    wind_ax.tick_params(left=False)
+
+    wind_ax.text(
+        0.0, 1.02, "WIND",
+        transform=wind_ax.transAxes,
+        fontsize=11, fontweight="bold", ha="center", va="bottom",
+    )
 
     if wind_pressure is not None:
 
-        skew.plot_barbs(
-            wind_pressure,
-            u,
-            v,
-            xloc=1.0,
-            sizes={
-                "emptybarb": 0.15,
-                "spacing": 0.2,
-                "height": 0.4,
-            },
-            linewidth=1.3,
+        wind_ax.barbs(
+            np.zeros(len(wind_pressure)),
+            wind_pressure.to("hPa").m,
+            u.to("knots").m,
+            v.to("knots").m,
+            length=6.5, linewidth=1.2,
         )
 
     # ==============================================================
-    # 0 C ISOTHERM
+    # HEADER
     # ==============================================================
 
-    if (
-        left_temperature <= 0
-        <= right_temperature
-    ):
-
-        skew.ax.axvline(
-            0,
-            color="blue",
-            linestyle="--",
-            linewidth=1.5,
-            alpha=0.75,
-            zorder=5,
-        )
-
-    # ==============================================================
-    # TITLE / AXES
-    # ==============================================================
-
-    skew.ax.set_title(
-        "Mount Mansfield Observed Slope Profile",
-        fontsize=18,
-        fontweight="bold",
-        loc="left",
-        pad=12,
+    fig.text(
+        0.03, (fig_height_in - 0.32) / fig_height_in,
+        "MOUNT MANSFIELD OBSERVED SLOPE PROFILE",
+        fontsize=19, fontweight="bold", color="black",
+        ha="left", va="top",
     )
 
-    skew.ax.set_xlabel(
-        "Temperature (\u00b0C)",
-        fontsize=12,
+    fig.text(
+        0.03, (fig_height_in - 0.62) / fig_height_in,
+        profile_span_label(),
+        fontsize=11, color=MUTED_TEXT,
+        ha="left", va="top",
     )
-
-    skew.ax.set_ylabel(
-        "Pressure (hPa)",
-        fontsize=12,
-    )
-
-    legend_handles = [
-        plt.Line2D([0], [0], color="red", linewidth=3, label="Temperature"),
-        plt.Line2D([0], [0], color="green", linewidth=3, label="Dewpoint"),
-        plt.Line2D(
-            [0], [0], color="purple", linewidth=2, linestyle="--",
-            label="Wet-Bulb",
-        ),
-    ]
-
-    skew.ax.legend(
-        handles=legend_handles,
-        loc="upper right",
-        fontsize=10,
-        framealpha=0.85,
-    )
-
-    # ==============================================================
-    # OBSERVATION TABLE (left)
-    # ==============================================================
-
-    table_rows = []
-
-    # Highest elevation first so the table follows the vertical
-    # orientation of the sounding.
-
-    for station in reversed(profile):
-
-        # ----------------------------------------------------------
-        # Temperature
-        # ----------------------------------------------------------
-
-        temp = station.get(
-            "temperature_C"
-        )
-
-        if temp is not None:
-
-            temp_text = (
-                f"{temp:.1f}\u00b0C"
-            )
-
-        else:
-
-            temp_text = "--"
-
-        # ----------------------------------------------------------
-        # Dewpoint
-        # ----------------------------------------------------------
-
-        dewpoint = station.get(
-            "dewpoint_C"
-        )
-
-        if dewpoint is not None:
-
-            dewpoint_text = (
-                f"{dewpoint:.1f}\u00b0C"
-            )
-
-        else:
-
-            dewpoint_text = "--"
-
-        # ----------------------------------------------------------
-        # Wet-bulb temperature
-        # ----------------------------------------------------------
-
-        wetbulb = station.get(
-            "wetbulb_C"
-        )
-
-        if wetbulb is not None:
-
-            wetbulb_text = (
-                f"{wetbulb:.1f}\u00b0C"
-            )
-
-        else:
-
-            wetbulb_text = "--"
-
-        # ----------------------------------------------------------
-        # Relative humidity
-        # ----------------------------------------------------------
-
-        rh = station.get(
-            "relative_humidity_pct"
-        )
-
-        if rh is not None:
-
-            rh_text = f"{rh:.0f}%"
-
-        else:
-
-            rh_text = "--"
-
-        # ----------------------------------------------------------
-        # Wind
-        # ----------------------------------------------------------
-
-        speed = station.get(
-            "wind_speed_kmh"
-        )
-
-        direction = station.get(
-            "wind_direction_deg"
-        )
-
-        if (
-            speed is not None
-            and direction is not None
-        ):
-
-            speed_kt = (
-                speed
-                * units("km/hour")
-            ).to("knots").m
-
-            if speed_kt < 0.5:
-
-                wind_text = "Calm"
-
-            else:
-
-                wind_text = (
-                    f"{direction:03.0f}\u00b0 / "
-                    f"{speed_kt:.0f} kt"
-                )
-
-        else:
-
-            wind_text = "--"
-
-        # ----------------------------------------------------------
-        # Observation time
-        # ----------------------------------------------------------
-
-        obs_time = parse_iso_time(
-            station.get(
-                "temperature_time"
-            )
-        )
-
-        if obs_time:
-
-            time_text = (
-                obs_time.strftime(
-                    "%H:%MZ"
-                )
-            )
-
-        else:
-
-            time_text = "--"
-
-        # ----------------------------------------------------------
-        # Add row
-        # ----------------------------------------------------------
-
-        table_rows.append([
-            station["stid"],
-            f"{station['elevation_ft']:.0f} ft",
-            f"{station['pressure_hPa']:.1f}",
-            temp_text,
-            dewpoint_text,
-            wetbulb_text,
-            rh_text,
-            wind_text,
-            time_text,
-        ])
-
-    # Dedicated axes for the observation table (left half).
-
-    table_ax = fig.add_axes([
-        0.04,
-        0.03,
-        0.60,
-        0.20,
-    ])
-
-    table_ax.axis(
-        "off"
-    )
-
-    table_ax.set_title(
-        "Station Observations",
-        fontsize=11,
-        fontweight="bold",
-        loc="left",
-        pad=4,
-    )
-
-    table = table_ax.table(
-        cellText=table_rows,
-        colLabels=[
-            "Station",
-            "Elevation",
-            "Pressure",
-            "Temp",
-            "Dewpoint",
-            "Wet-Bulb",
-            "RH",
-            "Wind",
-            "Time",
-        ],
-        cellLoc="center",
-        colLoc="center",
-        loc="center",
-    )
-
-    table.auto_set_font_size(
-        False
-    )
-
-    table.set_fontsize(
-        9
-    )
-
-    table.scale(
-        1.0,
-        1.5,
-    )
-
-    # Make header bold.
-
-    for column in range(9):
-
-        table[
-            (0, column)
-        ].set_text_props(
-            weight="bold"
-        )
-
-    # ==============================================================
-    # WINTER PROFILE DIAGNOSTICS TABLE (right)
-    # ==============================================================
-
-    diag_rows = diagnostic_display_rows(diagnostics)
-
-    diag_ax = fig.add_axes([
-        0.68,
-        0.05,
-        0.30,
-        0.18,
-    ])
-
-    diag_ax.axis("off")
-
-    diag_ax.set_title(
-        "Winter Profile Diagnostics",
-        fontsize=11,
-        fontweight="bold",
-        loc="left",
-        pad=4,
-    )
-
-    diag_table = diag_ax.table(
-        cellText=[[label, value] for label, value, _ in diag_rows],
-        colWidths=[0.55, 0.45],
-        cellLoc="left",
-        loc="center",
-    )
-
-    diag_table.auto_set_font_size(False)
-    diag_table.set_fontsize(9)
-    diag_table.scale(1.0, 1.4)
-
-    for row_index, (label, value, is_header) in enumerate(diag_rows):
-
-        for col in range(2):
-
-            cell = diag_table[(row_index, col)]
-            cell.set_edgecolor("none")
-
-            if is_header:
-
-                cell.set_text_props(weight="bold")
-                cell.set_facecolor("0.90")
-
-                # Blank out the value column on section-header rows.
-                if col == 1:
-                    cell.get_text().set_text("")
-
-    # ==============================================================
-    # PRODUCT TIME
-    # ==============================================================
 
     latest_times = []
 
     for station in profile:
 
-        dt = parse_iso_time(
-            station.get(
-                "temperature_time"
-            )
-        )
+        dt = parse_iso_time(station.get("temperature_time"))
 
         if dt is not None:
             latest_times.append(dt)
 
     if latest_times:
 
-        newest = max(
-            latest_times
-        )
-
-        time_text = newest.strftime(
-            "%d %b %Y %H:%M UTC"
-        )
+        newest = max(latest_times)
 
         fig.text(
-            0.50,
-            0.008,
-            time_text,
-            ha="center",
-            fontsize=10,
+            1.0 - rect_x0, (fig_height_in - 0.32) / fig_height_in,
+            newest.strftime("%d %b %Y %H:%M UTC"),
+            fontsize=15, fontweight="bold", color="black",
+            ha="right", va="top",
         )
+
+    # ==============================================================
+    # DIAGNOSTIC ICON CARDS
+    # ==============================================================
+
+    def val(x, suffix="", decimals=1):
+        if x is None:
+            return "\u2014", "None in layer"
+        return f"{x:.{decimals}f}{suffix}", ""
+
+    lapse_val, lapse_sub = val(
+        diagnostics["mean_lapse_rate_C_km"], " \u00b0C/km"
+    )
+
+    shear_val_num = diagnostics["bulk_shear_kt"]
+    shear_val = f"{shear_val_num:.0f} kt" if shear_val_num is not None else "\u2014"
+    shear_depth_ft = STATIONS[SHEAR_TOP_STID] - STATIONS[SHEAR_BASE_STID]
+    shear_sub = f"{STATIONS[SHEAR_BASE_STID]:.0f}\u2013{STATIONS[SHEAR_TOP_STID]:.0f} ft"
+
+    froude_num = diagnostics["froude_number"]
+    froude_val = f"{froude_num:.2f}" if froude_num is not None else "\u2014"
+    froude_sub = diagnostics["flow_regime"]
+
+    freezing_val, freezing_sub = val(diagnostics["freezing_level_ft"], " ft", 0)
+    wbz_val, wbz_sub = val(diagnostics["wet_bulb_zero_ft"], " ft", 0)
+
+    cards = [
+        (
+            _icon_thermometer, "#d9480f", "MEAN LAPSE RATE",
+            lapse_val, "#d9480f",
+            profile_span_label() if not lapse_sub else lapse_sub,
+        ),
+        (
+            _icon_wind, "#1971c2",
+            f"BULK SHEAR (0\u2013{shear_depth_ft/1000.0:.1f} kft)",
+            shear_val, "#1971c2", shear_sub,
+        ),
+        (
+            _icon_mountain, "#7048e8", "FROUDE NUMBER",
+            froude_val, "#7048e8", froude_sub,
+        ),
+        (
+            _icon_snowflake, "#1c7ed6", "FREEZING LEVEL",
+            freezing_val, "#e8590c" if freezing_val == "\u2014" else "#1c7ed6",
+            freezing_sub,
+        ),
+        (
+            _icon_droplet, "#1c7ed6", "WET-BULB ZERO",
+            wbz_val, "#e8590c" if wbz_val == "\u2014" else "#1c7ed6",
+            wbz_sub,
+        ),
+    ]
+
+    icon_row_y0 = (footer_in + table_in + gap2_in) / fig_height_in
+    icon_row_height = icon_row_in / fig_height_in
+
+    _draw_diagnostic_cards(
+        fig,
+        (rect_x0, icon_row_y0, rect_width_frac, icon_row_height),
+        cards,
+    )
+
+    # ==============================================================
+    # STATION TABLE
+    # ==============================================================
+
+    table_rows = []
+
+    for station in reversed(profile):
+
+        temp = station.get("temperature_C")
+        temp_text = f"{temp:.1f}" if temp is not None else "--"
+
+        dewpoint = station.get("dewpoint_C")
+        dewpoint_text = f"{dewpoint:.1f}" if dewpoint is not None else "--"
+
+        wetbulb = station.get("wetbulb_C")
+        wetbulb_text = f"{wetbulb:.1f}" if wetbulb is not None else "--"
+
+        speed = station.get("wind_speed_kmh")
+        direction = station.get("wind_direction_deg")
+
+        if speed is not None and direction is not None:
+
+            speed_kt = (speed * units("km/hour")).to("knots").m
+
+            if speed_kt < 0.5:
+                wind_text = "Calm"
+            else:
+                wind_text = f"{direction:03.0f}\u00b0 / {speed_kt:.0f} kt"
+
+        else:
+            wind_text = "--"
+
+        obs_time = parse_iso_time(station.get("temperature_time"))
+        time_text = obs_time.strftime("%H:%MZ") if obs_time else "--"
+
+        table_rows.append([
+            station["stid"],
+            f"{station['elevation_ft']:.0f}",
+            f"{station['pressure_hPa']:.1f}",
+            temp_text,
+            dewpoint_text,
+            wetbulb_text,
+            wind_text,
+            time_text,
+        ])
+
+    table_y0 = footer_in / fig_height_in
+    table_height = table_in / fig_height_in
+
+    table_ax = fig.add_axes([rect_x0, table_y0, rect_width_frac, table_height])
+    table_ax.axis("off")
+
+    col_labels = [
+        "Station", "Elev (ft)", "Pressure (hPa)", "Temp (\u00b0C)",
+        "Dewpoint (\u00b0C)", "Wet Bulb (\u00b0C)", "Wind (dir / spd)",
+        "Time (UTC)",
+    ]
+
+    table = table_ax.table(
+        cellText=table_rows,
+        colLabels=col_labels,
+        cellLoc="center", colLoc="center", loc="center",
+    )
+
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1.0, 1.7)
+
+    n_cols = len(col_labels)
+
+    for col in range(n_cols):
+
+        header_cell = table[(0, col)]
+        header_cell.set_text_props(weight="bold")
+        header_cell.set_edgecolor(DIVIDER_COLOR)
+
+    col_text_colors = {3: TEMP_COLOR, 4: DEWPOINT_COLOR, 5: WETBULB_COLOR}
+
+    for row in range(1, len(table_rows) + 1):
+
+        for col in range(n_cols):
+
+            cell = table[(row, col)]
+            cell.set_edgecolor(DIVIDER_COLOR)
+            cell.get_text().set_color(col_text_colors.get(col, "black"))
+
+    # ==============================================================
+    # FOOTER
+    # ==============================================================
+
+    fig.text(
+        0.5, footer_in / fig_height_in * 0.4,
+        "Data sources:  NWS API (BTV) \u2022 RR2 \u2022 RRSBTV (IEM)",
+        fontsize=9, color=MUTED_TEXT, ha="center", va="center",
+        style="italic",
+    )
 
     # ==============================================================
     # SAVE
     # ==============================================================
 
-    plt.savefig(
-        OUTPUT_FILE,
-        dpi=175,
-        bbox_inches="tight",
-    )
-
+    plt.savefig(OUTPUT_FILE, dpi=175)
     plt.close(fig)
 
     print()
-    print(
-        f"Saved Skew-T to: "
-        f"{OUTPUT_FILE}"
-    )
+    print(f"Saved Skew-T to: {OUTPUT_FILE}")
+
 
 
 # =====================================================================
