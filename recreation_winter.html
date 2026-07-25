@@ -811,7 +811,7 @@ function calculateWindChill_(tempF, windMph) {
   }
 
   if (tempF > 50 || windMph < 3) {
-    return tempF;
+    return null;
   }
 
   const windFactor = Math.pow(windMph, 0.16);
@@ -1892,9 +1892,13 @@ async function fetchWhitefaceObservation_() {
       sustainedMph,
       tempF,
       windChillF:
-        windChillF != null
-          ? windChillF
-          : tempF,
+  tempF != null &&
+  tempF <= 50 &&
+  sustainedMph != null &&
+  sustainedMph >= 3 &&
+  windChillF != null
+    ? windChillF
+    : null,
       directionDeg,
       directionLabel,
       timestamp
