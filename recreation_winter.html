@@ -826,25 +826,89 @@ function calculateWindChill_(tempF, windMph) {
 
 async function fetchMansfieldTemperature_() {
 
-  const rows = await fetchIemCoopRows_(
-    MANSFIELD_STATION,
-    MANSFIELD_COOP_NETWORK
+  // Try today first.
+  const today = formatDateYMD_(
+    new Date(),
+    "America/New_York"
   );
 
-  if (!rows.length) {
-    console.warn("MMNV1: no VT_COOP observations found.");
+  let rows = await fetchIemObhistoryRows_(
+    MANSFIELD_STATION,
+    MANSFIELD_COOP_NETWORK,
+    today
+  );
+
+  let tempRow =
+    rows && rows.length
+      ? findLatestNonNullRow_(rows, ["TAIRGZZ"])
+      : null;
+
+
+  // If MMNV1 / TAIRGZZ is temporarily missing from today's
+  // observation history, try yesterday as a fallback.
+  //
+  // This also handles the period immediately after midnight.
+  if (!tempRow) {
+
+    const yesterday = formatDateYMD_(
+      new Date(Date.now() - 86400000),
+      "America/New_York"
+    );
+
+    const previousRows =
+      await fetchIemObhistoryRows_(
+        MANSFIELD_STATION,
+        MANSFIELD_COOP_NETWORK,
+        yesterday
+      );
+
+    tempRow =
+      previousRows && previousRows.length
+        ? findLatestNonNullRow_(
+            previousRows,
+            ["TAIRGZZ"]
+          )
+        : null;
+  }
+
+
+  if (
+    !tempRow ||
+    tempRow.TAIRGZZ == null
+  ) {
+
+    console.warn(
+      "MMNV1: no valid TAIRGZZ temperature available."
+    );
+
     return null;
   }
 
-  const tempRow = findLatestNonNullRow_(rows, ["TAIRGZZ"]);
 
-  if (!tempRow || tempRow.TAIRGZZ == null) {
-    console.warn("MMNV1: no valid TAIRGZZ temperature found.");
+  const tempF =
+    Number(tempRow.TAIRGZZ);
+
+
+  if (!Number.isFinite(tempF)) {
+
+    console.warn(
+      "MMNV1: invalid TAIRGZZ value:",
+      tempRow.TAIRGZZ
+    );
+
     return null;
   }
+
+
+  console.log(
+    "MMNV1 temperature:",
+    tempF,
+    tempRow.utc_valid
+  );
+
 
   return {
-    tempF: Math.round(Number(tempRow.TAIRGZZ)),
+    tempF: tempF,
     timestamp: tempRow.utc_valid
   };
 }
