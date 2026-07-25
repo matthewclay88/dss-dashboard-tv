@@ -311,12 +311,15 @@
     <!-- ================= LEFT: SOUNDING ================= -->
     <div class="card sounding-panel">
       <!--
-        Served directly from Google Drive - the file ID stays stable
-        across runs because upload_to_drive() updates this same file
-        in place rather than creating a new one each time, so this
-        URL doesn't need to change when tempprofile.py re-runs.
+        Served as a plain static file from the severe-dashboard repo
+        (committed by the workflow after tempprofile.py runs), not
+        hotlinked from Drive - Drive enforces an anonymous per-file
+        download quota that made the image intermittently fail to
+        load on the live page. raw.githubusercontent.com has no such
+        quota for public repos. Update the branch/path below to match
+        wherever the workflow actually commits outputs/.
       -->
-      <img id="sounding-image" src="https://drive.google.com/uc?export=view&id=16omWsRc5Vf4utNeopB-om2lYzh3MacDp" alt="Mount Mansfield observed slope profile">
+      <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
     </div>
 
     <!-- ================= RIGHT: SIDEBAR ================= -->
