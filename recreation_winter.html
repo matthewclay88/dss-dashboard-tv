@@ -238,7 +238,7 @@
   }
 
   .snow-summary {
-    flex: 0 0 25%;
+    flex: 0 0 20%;
     min-width: 0;
     border-radius: 12px;
     padding: 16px 18px;
@@ -313,7 +313,7 @@
   }
 
   .snow-chart-panel {
-    flex: 0 0 75%;
+    flex: 0 0 46%;
     min-width: 0;
     border-radius: 12px;
     background: var(--card-bg);
@@ -327,6 +327,44 @@
     height: auto;
     align-self: center;
     display: block;
+  }
+
+  /* ================= SMALL STAT CARDS (P-Type, Froude) ================= */
+  /*
+    Deliberately minimal - a label and one value, no icon/subtext
+    clutter - these are meant to be glanced at, not studied.
+  */
+
+  .mini-stat-card {
+    flex: 0 0 16%;
+    min-width: 0;
+    border-radius: 12px;
+    padding: 16px 14px;
+    background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .mini-stat-card .eyebrow {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #cfe0f2;
+  }
+
+  .mini-stat-card .value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-top: 6px;
+  }
+
+  .mini-stat-card .subtext {
+    font-size: 11px;
+    color: #cfe0f2;
+    margin-top: 3px;
   }
 
 </style>
@@ -412,6 +450,26 @@
             mansfield_snow_depth.py ends up committing elsewhere.
           -->
           <img src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_snow_depth_chart.png" alt="Mount Mansfield snow depth, current season vs. historical max/min/average">
+        </div>
+
+        <!--
+          TODO: tempprofile.py's build_diagnostics() already computes
+          both of these (diagnostics["precip_type"] and
+          diagnostics["froude_number"] / diagnostics["flow_regime"]) -
+          they just aren't exported to a JSON file yet the way the
+          snow depth status is. Same pattern as everywhere else:
+          export a small JSON, fetch it here, drop the values in.
+        -->
+
+        <div class="mini-stat-card">
+          <div class="eyebrow">EXPECTED P-TYPE</div>
+          <div class="value" data-field="precip-type">Rain</div>
+        </div>
+
+        <div class="mini-stat-card">
+          <div class="eyebrow">FROUDE NUMBER</div>
+          <div class="value" data-field="froude-number">0.09</div>
+          <div class="subtext" data-field="flow-regime">Blocked</div>
         </div>
 
       </div>
