@@ -560,5 +560,87 @@
 
   </div>
 
+  <script>
+    // Populates the cards backed by tempprofile.py / mansfield_snow_depth.py's
+    // JSON exports (vt_diagnostics_status.json, vt_snow_depth_status.json).
+    // Everything else on the page (sounding image, snow chart image, the
+    // 5 Mountain Observations cards) is still unwired - see the TODO
+    // comments next to those elements in the markup above.
+
+    const DATA_BASE = "https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/";
+    const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // matches the workflow's ~15 min cadence closely enough
+
+    function setField(fieldName, text) {
+      document.querySelectorAll(`[data-field="${fieldName}"]`).forEach((el) => {
+        el.textContent = text;
+      });
+    }
+
+    function formatDateUTC(isoString) {
+      if (!isoString) return "\u2014";
+      const d = new Date(isoString);
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const hh = String(d.getUTCHours()).padStart(2, "0");
+      const mm = String(d.getUTCMinutes()).padStart(2, "0");
+      return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()} ${hh}:${mm} UTC`;
+    }
+
+    async function refreshDiagnostics() {
+      try {
+        const res = await fetch(DATA_BASE + "vt_diagnostics_status.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        setField("precip-type", data.precip_type ?? "\u2014");
+
+        setField(
+          "froude-number",
+          data.froude_number !== null && data.froude_number !== undefined
+            ? data.froude_number.toFixed(2)
+            : "\u2014"
+        );
+        setField("flow-regime", data.flow_regime ?? "\u2014");
+      } catch (err) {
+        // Leave whatever's currently showing (placeholder or last
+        // successful fetch) rather than blanking the card on a
+        // transient network/404 error.
+        console.warn("Diagnostics status fetch failed:", err);
+      }
+    }
+
+    async function refreshSnowDepth() {
+      try {
+        const res = await fetch(DATA_BASE + "vt_snow_depth_status.json", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        setField(
+          "snow-depth",
+          data.current_depth_in !== null && data.current_depth_in !== undefined
+            ? Math.round(data.current_depth_in)
+            : "\u2014"
+        );
+
+        setField("departure", data.departure_text ?? "\u2014");
+
+        document.querySelectorAll('[data-field="departure"]').forEach((el) => {
+          el.classList.remove("placeholder");
+        });
+
+        setField("updated", formatDateUTC(data.generated_at));
+      } catch (err) {
+        console.warn("Snow depth status fetch failed:", err);
+      }
+    }
+
+    function refreshAll() {
+      refreshDiagnostics();
+      refreshSnowDepth();
+    }
+
+    refreshAll();
+    setInterval(refreshAll, REFRESH_INTERVAL_MS);
+  </script>
+
 </body>
 </html>
