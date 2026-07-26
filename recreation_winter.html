@@ -97,7 +97,7 @@
     margin: 0 auto;
     padding: 12px 20px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: 2fr 1fr;
     grid-template-rows: auto auto;
     gap: 16px;
     align-items: stretch;
@@ -138,16 +138,6 @@
     grid-row: 1;
     padding: 8px;
     min-width: 0;
-    /* ~1/4 of the 1520px max layout width - was stretching to fill
-       its entire grid cell (roughly 75% of the screen) regardless of
-       how small the underlying PNG actually was, since img below is
-       width:100% of ITS CONTAINER. Shrinking the Python-rendered
-       chart alone couldn't fix this - the container needed to
-       shrink too. justify-self/align-self: start keeps it pinned to
-       the top-left instead of stretching to match the sidebar's
-       height the way the grid row normally would. */
-    max-width: 380px;
-    justify-self: start;
     align-self: start;
   }
 
