@@ -308,70 +308,21 @@
 
   /* ================= WIND SPEED COLOR-CODING ================= */
   /*
-    <30 kt green, 30-45 yellow/orange, 45-60 red, >60 purple (see
-    applyWindColor_ in the script below). summit-card is a light
-    card with dark text by default - a solid colored background
-    needs its own text/icon/border treatment to stay readable,
-    which is why this is more than just a background-color swap.
+    <30 mph green, 30-45 orange, 45-60 red, >60 purple (see
+    applyWindColor_ in the script below). Accent left-border only -
+    same vernacular as the dashboard card in tempprofile.py
+    (plot_dashboard_card) - rather than filling the whole card, so
+    the card stays its normal light background/dark text throughout.
   */
 
-  .summit-card.wind-calm    { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
-  .summit-card.wind-breezy  { background: linear-gradient(160deg, #f59f00, #a66a00); }
-  .summit-card.wind-strong  { background: linear-gradient(160deg, #e03131, #962020); }
-  .summit-card.wind-extreme { background: linear-gradient(160deg, #9c36b5, #6a1b7a); }
-
-  .summit-card.wind-calm,
-  .summit-card.wind-breezy,
-  .summit-card.wind-strong,
-  .summit-card.wind-extreme {
-    color: white;
+  .summit-card {
+    border-left: 4px solid transparent;
   }
 
-  .summit-card.wind-calm .elev,
-  .summit-card.wind-breezy .elev,
-  .summit-card.wind-strong .elev,
-  .summit-card.wind-extreme .elev,
-  .summit-card.wind-calm .stat .label,
-  .summit-card.wind-breezy .stat .label,
-  .summit-card.wind-strong .stat .label,
-  .summit-card.wind-extreme .stat .label {
-    color: rgba(255,255,255,0.78);
-  }
-
-  .summit-card.wind-calm .stat .value,
-  .summit-card.wind-breezy .stat .value,
-  .summit-card.wind-strong .stat .value,
-  .summit-card.wind-extreme .stat .value {
-    color: white;
-  }
-
-  .summit-card.wind-calm .stats,
-  .summit-card.wind-breezy .stats,
-  .summit-card.wind-strong .stats,
-  .summit-card.wind-extreme .stats {
-    border-top-color: rgba(255,255,255,0.28);
-  }
-
-  .summit-card.wind-calm .stat + .stat,
-  .summit-card.wind-breezy .stat + .stat,
-  .summit-card.wind-strong .stat + .stat,
-  .summit-card.wind-extreme .stat + .stat {
-    border-left-color: rgba(255,255,255,0.28);
-  }
-
-  .summit-card.wind-calm .icon,
-  .summit-card.wind-breezy .icon,
-  .summit-card.wind-strong .icon,
-  .summit-card.wind-extreme .icon {
-    background: rgba(255,255,255,0.2);
-  }
-
-  .summit-card.wind-calm .icon svg,
-  .summit-card.wind-breezy .icon svg,
-  .summit-card.wind-strong .icon svg,
-  .summit-card.wind-extreme .icon svg {
-    stroke: white;
-  }
+  .summit-card.wind-calm    { border-left-color: #2f9e44; }
+  .summit-card.wind-breezy  { border-left-color: #f59f00; }
+  .summit-card.wind-strong  { border-left-color: #e03131; }
+  .summit-card.wind-extreme { border-left-color: #9c36b5; }
 
   /* ================= BOTTOM ROW: remaining height ================= */
 
