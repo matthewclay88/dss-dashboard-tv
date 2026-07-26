@@ -34,10 +34,21 @@ V1 intentionally does NOT calculate:
     precipitation type
 
 Requirements:
-    pip install requests numpy matplotlib metpy
+    pip install requests numpy matplotlib metpy google-api-python-client google-auth
+
+Workflow note:
+    This script writes its PNGs into outputs/. For the dashboard's
+    <img> tags to load them reliably, the workflow needs "permissions:
+    contents: write" and a commit/push step after this script runs -
+    see the accompanying yml diff. Do not rely on the Drive upload
+    below for the public-facing dashboard embed; Drive enforces an
+    anonymous per-file download quota that makes direct hotlinking
+    from a public webpage unreliable.
 """
 
+import os
 import re
+import math
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
@@ -49,10 +60,16 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Polygon, FancyBboxPatch
+from matplotlib.ticker import FixedLocator, FixedFormatter, NullLocator, NullFormatter
 
 import metpy.calc as mpcalc
 from metpy.units import units
 from metpy.plots import SkewT
+
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
 
 # =====================================================================
@@ -113,7 +130,37 @@ NWS_OB_LIMIT = 20
 # Number of hourly RRS products to search backward.
 RRS_LOOKBACK_HOURS = 6
 
-OUTPUT_FILE = "vt_pseudo_sounding.png"
+REPO_OUTPUT_DIR = "outputs"
+
+OUTPUT_FILE = os.path.join(REPO_OUTPUT_DIR, "vt_pseudo_sounding.png")
+CARD_OUTPUT_FILE = os.path.join(REPO_OUTPUT_DIR, "vt_dashboard_card.png")
+TABLE_OUTPUT_FILE = os.path.join(REPO_OUTPUT_DIR, "vt_station_table.png")
+DIAGNOSTICS_OUTPUT_FILE = os.path.join(REPO_OUTPUT_DIR, "vt_diagnostics.png")
+DIAGNOSTICS_STATUS_FILE = os.path.join(REPO_OUTPUT_DIR, "vt_diagnostics_status.json")
+
+# classify_precip_type()'s raw labels, mapped to the simpler wording
+# used on the dashboard card (rain/snow/sleet/freezing rain).
+PRECIP_TYPE_DISPLAY = {
+    "All Rain": "Rain",
+    "All Snow": "Snow",
+    "Freezing Rain": "Freezing Rain",
+    "Ice Pellets": "Sleet",
+    "Rain / Wintry Mix": "Wintry Mix",
+    "Rain": "Rain",
+}
+
+# Google Drive destination for the rendered PNG. Reuses the same
+# service account as main.py (GOOGLE_CREDENTIALS). Falls back to
+# GLWU_DRIVE_FOLDER_ID if a dedicated MANSFIELD_DRIVE_FOLDER_ID isn't
+# set, so this works whether you want it in the same Drive folder as
+# main.py's images or a separate one.
+
+DRIVE_FOLDER_ID = (
+    os.environ.get("MANSFIELD_DRIVE_FOLDER_ID")
+    or os.environ.get("GLWU_DRIVE_FOLDER_ID")
+)
+
+DRIVE_UPLOAD_FILENAME = "vt_pseudo_sounding.png"
 
 # Physical constants used by the diagnostics module below.
 RD = 287.05      # J/(kg*K), dry air gas constant
@@ -209,6 +256,116 @@ def ft_to_m(feet):
     """
 
     return feet * 0.3048
+
+
+def choose_tick_interval(axis_range, target_ticks=8, candidates=(0.5, 1, 2, 2.5, 5, 10, 20)):
+    """
+    Pick the smallest interval from `candidates` that keeps the
+    number of gridlines across `axis_range` at or below
+    `target_ticks`. Used so the temperature axis gets a sensible
+    number of gridlines whether the visible range is 8 C (a tightly
+    zoomed layer) or 40 C, instead of MetPy's fixed 10 C default
+    locator, which leaves a very narrow zoomed range with only one
+    or two ticks.
+    """
+
+    for interval in candidates:
+
+        if axis_range / interval <= target_ticks:
+            return interval
+
+    return candidates[-1]
+
+
+def compute_skew_corrected_xlim(
+    bottom_pressure, top_pressure, points,
+    box_width_in=10.0, box_height_in=10.0,
+    min_width=8.0, pad=2.0,
+):
+    """
+    Determine temperature-axis limits that keep every (temperature,
+    pressure) point in `points` visible, accounting for MetPy's
+    45-degree skew transform - not just each point's raw temperature.
+
+    The skew shifts a point's rendered screen position to the right
+    as pressure decreases (higher elevation), by an amount that
+    depends on how much pressure range the chart spans. Sizing xlim
+    from raw min/max temperature alone (as if the axes were
+    unskewed) under-accounts for that shift once a chart shows more
+    than a small pressure range - a point can have an unremarkable
+    raw temperature yet still render very close to, or past, the
+    edge of the visible box because of its altitude. This showed up
+    directly: widening the pressure range to make the chart read
+    more square (see the padding notes above) also increased how far
+    the top of the profile shifts right, and pushed it toward the
+    edge of the frame.
+
+    box_width_in/box_height_in matter here: MetPy's skew-locked axes
+    doesn't necessarily fill an arbitrary given rect - when the rect's
+    aspect doesn't match the data's natural locked aspect, the actual
+    rendered geometry differs from what a same-shaped-square probe
+    would show. Since the actual output figure is now a FIXED size
+    (see plot_skewt's sizing notes) rather than one shaped to match
+    the data, the probe here has to use that same fixed box shape or
+    the correction can be wrong for exactly the days whose natural
+    aspect doesn't match it - confirmed directly: switching to a
+    fixed box without this fix let 2 of 4 test scenarios clip.
+
+    Approach: render the given points against a deliberately
+    oversized, arbitrary xlim so nothing clips, measure where they
+    actually land in axes-fraction terms, and back-convert that into
+    the equivalent "effective x position" each point would have
+    (skew shift included). Because the skew transform is affine, that
+    effective position doesn't depend on which provisional xlim was
+    used to measure it - only the final chosen xlim, which is set
+    from the resulting min/max plus padding.
+    """
+
+    if not points:
+        return -4.0, 4.0
+
+    raw_temps = [p[0] for p in points]
+    raw_span = max(max(raw_temps) - min(raw_temps), 10.0)
+
+    provisional_half_width = raw_span * 3 + 40.0
+    provisional_left = min(raw_temps) - provisional_half_width
+    provisional_right = max(raw_temps) + provisional_half_width
+
+    probe_fig = plt.figure(figsize=(box_width_in, box_height_in))
+
+    probe_skew = SkewT(
+        probe_fig, rotation=45, rect=(0.02, 0.02, 0.96, 0.96)
+    )
+
+    probe_skew.ax.set_ylim(bottom_pressure, top_pressure)
+    probe_skew.ax.set_xlim(provisional_left, provisional_right)
+
+    probe_fig.canvas.draw()
+
+    bbox = probe_skew.ax.get_window_extent()
+
+    shifted_x_values = []
+
+    for temp_value, pressure_value in points:
+
+        px, _py = probe_skew.ax.transData.transform((temp_value, pressure_value))
+        frac = (px - bbox.x0) / (bbox.x1 - bbox.x0)
+
+        shifted_x = provisional_left + frac * (provisional_right - provisional_left)
+        shifted_x_values.append(shifted_x)
+
+    plt.close(probe_fig)
+
+    final_left = min(shifted_x_values) - pad
+    final_right = max(shifted_x_values) + pad
+
+    if final_right - final_left < min_width:
+
+        midpoint = (final_left + final_right) / 2.0
+        final_left = midpoint - min_width / 2.0
+        final_right = midpoint + min_width / 2.0
+
+    return final_left, final_right
 
 
 # =====================================================================
@@ -1449,6 +1606,33 @@ def max_inversion(profile):
     return best
 
 
+def inversion_pressure_bands(profile):
+    """
+    Every layer (not just the single largest) that is an inversion OR
+    isothermal - temperature not decreasing with height - as a list
+    of (pressure_low, pressure_high) tuples ready for axhspan shading
+    on the Skew-T. Isothermal layers are included alongside true
+    inversions because both indicate a stable capping layer; a strict
+    "warmer above" check misses a layer that's exactly flat. A profile
+    can have more than one such layer (e.g. a shallow surface
+    inversion plus a separate one aloft), unlike max_inversion() which
+    only reports the single strongest true inversion.
+    """
+
+    bands = []
+
+    for lower, upper in zip(profile, profile[1:]):
+
+        if upper["temperature_C"] >= lower["temperature_C"]:
+
+            p1 = lower["pressure_hPa"]
+            p2 = upper["pressure_hPa"]
+
+            bands.append((min(p1, p2), max(p1, p2)))
+
+    return bands
+
+
 def attach_derived_fields(profile):
     """
     Compute per-station wet-bulb temperature and relative humidity
@@ -2252,6 +2436,61 @@ def _icon_droplet(ax, color):
     )
 
 
+def _build_diagnostic_cards(diagnostics):
+    """
+    Build the (icon_fn, icon_color, label, value, value_color,
+    subtext) tuples for the diagnostic icon-card row, from a
+    diagnostics dict as returned by build_diagnostics().
+    """
+
+    def val(x, suffix="", decimals=1):
+        if x is None:
+            return "\u2014", "None in layer"
+        return f"{x:.{decimals}f}{suffix}", ""
+
+    lapse_val, lapse_sub = val(
+        diagnostics["mean_lapse_rate_C_km"], " \u00b0C/km"
+    )
+
+    shear_val_num = diagnostics["bulk_shear_kt"]
+    shear_val = f"{shear_val_num:.0f} kt" if shear_val_num is not None else "\u2014"
+    shear_sub = f"{STATIONS[SHEAR_BASE_STID]:.0f}\u2013{STATIONS[SHEAR_TOP_STID]:.0f} ft"
+
+    froude_num = diagnostics["froude_number"]
+    froude_val = f"{froude_num:.2f}" if froude_num is not None else "\u2014"
+    froude_sub = diagnostics["flow_regime"]
+
+    freezing_val, freezing_sub = val(diagnostics["freezing_level_ft"], " ft", 0)
+    wbz_val, wbz_sub = val(diagnostics["wet_bulb_zero_ft"], " ft", 0)
+
+    return [
+        (
+            _icon_thermometer, "#d9480f", "MEAN LAPSE RATE",
+            lapse_val, "#d9480f",
+            profile_span_label() if not lapse_sub else lapse_sub,
+        ),
+        (
+            _icon_wind, "#1971c2",
+            "BULK SHEAR",
+            shear_val, "#1971c2", shear_sub,
+        ),
+        (
+            _icon_mountain, "#7048e8", "FROUDE NUMBER",
+            froude_val, "#7048e8", froude_sub,
+        ),
+        (
+            _icon_snowflake, "#1c7ed6", "FREEZING LEVEL",
+            freezing_val, "#e8590c" if freezing_val == "\u2014" else "#1c7ed6",
+            freezing_sub,
+        ),
+        (
+            _icon_droplet, "#1c7ed6", "WET-BULB ZERO",
+            wbz_val, "#e8590c" if wbz_val == "\u2014" else "#1c7ed6",
+            wbz_sub,
+        ),
+    ]
+
+
 def _draw_diagnostic_cards(fig, rect, cards):
     """
     Draw a row of icon diagnostic cards spanning `rect` (figure
@@ -2295,11 +2534,11 @@ def _draw_diagnostic_cards(fig, rect, cards):
                 transform=band_ax.transAxes,
             )
 
-        icon_h_frac = h * 0.5
+        icon_h_frac = h * 0.30
         icon_h_in = icon_h_frac * fig_h_in
         icon_w_frac = icon_h_in / fig_w_in
 
-        icon_x = cx0 + card_w * 0.08
+        icon_x = cx0 + card_w * 0.07
         icon_y = y0 + (h - icon_h_frac) / 2
 
         icon_ax = fig.add_axes(
@@ -2308,25 +2547,25 @@ def _draw_diagnostic_cards(fig, rect, cards):
 
         icon_fn(icon_ax, icon_color)
 
-        text_x = icon_x + icon_w_frac + card_w * 0.05
+        text_x = icon_x + icon_w_frac + card_w * 0.06
 
         fig.text(
-            text_x, y0 + h * 0.74, label,
+            text_x, y0 + h * 0.80, label,
             fontsize=9, color=MUTED_TEXT, ha="left", va="center",
             fontweight="bold",
         )
 
         fig.text(
-            text_x, y0 + h * 0.46, value,
-            fontsize=18, color=value_color, ha="left", va="center",
+            text_x, y0 + h * 0.50, value,
+            fontsize=15, color=value_color, ha="left", va="center",
             fontweight="bold",
         )
 
         if subtext:
 
             fig.text(
-                text_x, y0 + h * 0.20, subtext,
-                fontsize=8, color=MUTED_TEXT, ha="left", va="center",
+                text_x, y0 + h * 0.16, subtext,
+                fontsize=7.5, color=MUTED_TEXT, ha="left", va="center",
             )
 
 
@@ -2360,95 +2599,134 @@ def plot_skewt(
     if dewpoints:
         t_min = min(t_min, min(dewpoints))
 
-    bottom_pressure = p_max + 5
-    top_pressure = p_min - 8
+    # Modest, mostly-fixed pressure padding - not tuned for squareness
+    # anymore. A fixed 850 mb ceiling trims how much sky gets shown
+    # above the summit station instead of the proportional padding
+    # used for the (since-reverted) square layout; a small safety
+    # margin keeps this sane if a station's pressure ever ends up
+    # unusually close to that ceiling.
 
-    temp_padding_left = 2.0
-    temp_padding_right = 2.0
+    bottom_pressure = p_max + 15.0
+    top_pressure = min(850.0, p_min - 15.0)
 
-    left_temperature = t_min - temp_padding_left
-    right_temperature = t_max + temp_padding_right
+    # Deliberately FIXED, not derived from the data - see the FIGURE
+    # SIZING comment below for why. Defined here (before the xlim
+    # correction) so compute_skew_corrected_xlim's probe uses this
+    # exact box shape rather than an arbitrary square one - the skew
+    # correction has to match whatever shape MetPy will actually
+    # render into, or points can still clip.
 
-    minimum_temp_width = 8.0
-    current_width = right_temperature - left_temperature
+    skew_width_in = 5.5
+    skew_height_in = 3.0
 
-    if current_width < minimum_temp_width:
+    # Temperature-axis limits, corrected for the skew transform's
+    # horizontal shift with height (see compute_skew_corrected_xlim)
+    # rather than just the raw temperature range - a real effect even
+    # at this more modest pressure range, just smaller in magnitude.
 
-        midpoint = (t_max + t_min) / 2.0
-        left_temperature = midpoint - minimum_temp_width / 2.0
-        right_temperature = midpoint + minimum_temp_width / 2.0
+    skew_points = []
+
+    for station in profile:
+
+        skew_points.append((station["temperature_C"], station["pressure_hPa"]))
+
+        if station.get("dewpoint_C") is not None:
+            skew_points.append((station["dewpoint_C"], station["pressure_hPa"]))
+
+        if station.get("wetbulb_C") is not None:
+            skew_points.append((station["wetbulb_C"], station["pressure_hPa"]))
+
+    left_temperature, right_temperature = compute_skew_corrected_xlim(
+        bottom_pressure, top_pressure, skew_points,
+        box_width_in=skew_width_in, box_height_in=skew_height_in,
+    )
 
     # ==============================================================
     # FIGURE SIZING
     # ==============================================================
     #
-    # Probe the Skew-T's natural (aspect-locked) shape for these
-    # exact data limits, then size the figure to match it exactly so
-    # the plot fills its box with no wasted margin. See prior notes:
-    # MetPy locks a fixed 45-degree isotherm geometry, so a shallow
-    # ~100 hPa layer is naturally short and wide.
+    # Deliberately FIXED, not derived from the data. Earlier versions
+    # probed the Skew-T's natural (aspect-locked) shape for the
+    # day's specific data and sized the figure to match it exactly.
+    # That produced a genuinely different output size on different
+    # days - some days narrower, some taller - which caused two
+    # separate visible problems on the dashboard: the fixed-length
+    # title text would collide with the date on narrow-width days,
+    # and the image's on-page footprint would visibly change size
+    # ("snap" bigger/smaller) as the underlying data changed, even
+    # though the CSS grid ratio around it never changed. A fixed
+    # figure size trades a little wasted margin on days whose data
+    # doesn't perfectly match this aspect for a stable, predictable
+    # output every time - which matters more for a fixed dashboard
+    # layout than a perfectly tight fit.
 
-    probe_fig = plt.figure(figsize=(10, 10))
-
-    probe_skew = SkewT(
-        probe_fig, rotation=45, rect=(0.1, 0.1, 0.8, 0.8)
-    )
-
-    probe_skew.ax.set_ylim(bottom_pressure, top_pressure)
-    probe_skew.ax.set_xlim(left_temperature, right_temperature)
-
-    probe_fig.canvas.draw()
-
-    probe_pos = probe_skew.ax.get_position()
-    natural_ratio = probe_pos.height / probe_pos.width
-
-    plt.close(probe_fig)
-
-    skew_width_in = 15.0
-    skew_height_in = max(skew_width_in * natural_ratio, 4.5)
-    skew_width_in = skew_height_in / natural_ratio
-
-    if skew_width_in > 20.0:
-        skew_width_in = 20.0
-        skew_height_in = skew_width_in * natural_ratio
-
-    wind_col_in = 1.3
+    wind_col_in = 0.9
     content_gap_in = 0.15
     content_width_in = skew_width_in + content_gap_in + wind_col_in
 
-    rect_width_frac = 0.92
-    rect_x0 = (1.0 - rect_width_frac) / 2.0
+    # Asymmetric, not a symmetric fraction of total width - the
+    # y-axis pressure labels live only on the left, and a 4-digit
+    # value (any bottom_pressure >= 1000 hPa, which is a completely
+    # ordinary sea-level-ish reading) needs more room than a 3-digit
+    # one. A single symmetric margin sized for 3 digits clipped every
+    # 4-digit label by several pixels - confirmed directly by
+    # measuring rendered tick label bounding boxes against the figure
+    # edge, not just eyeballing it. The right side only needs to
+    # clear the wind barb column, which is a fixed-width axes, not
+    # text that grows with the data - a smaller margin is fine there.
+    left_margin_in = 0.55
+    right_margin_in = 0.20
 
-    header_in = 1.0
-    gap1_in = 0.15
-    icon_row_in = 1.5
-    gap2_in = 0.30
-    table_in = 2.7
-    footer_in = 0.35
+    header_in = 0.62
+    gap1_in = 0.08
+    bottom_margin_in = 0.52
 
-    fig_width_in = content_width_in / rect_width_frac
-    fig_height_in = (
-        header_in + gap1_in + skew_height_in
-        + gap2_in + icon_row_in + gap2_in + table_in + footer_in
-    )
+    fig_width_in = left_margin_in + content_width_in + right_margin_in
+
+    fig_height_in = header_in + gap1_in + skew_height_in + bottom_margin_in
 
     fig = plt.figure(figsize=(fig_width_in, fig_height_in))
+
+    content_x0 = left_margin_in / fig_width_in
 
     skew_width_frac = skew_width_in / fig_width_in
     skew_height_frac = skew_height_in / fig_height_in
 
-    skew_y0 = (
-        footer_in + table_in + gap2_in + icon_row_in + gap2_in
-    ) / fig_height_in
+    skew_y0 = bottom_margin_in / fig_height_in
 
     skew = SkewT(
         fig,
         rotation=45,
-        rect=(rect_x0, skew_y0, skew_width_frac, skew_height_frac),
+        rect=(content_x0, skew_y0, skew_width_frac, skew_height_frac),
     )
 
     skew.ax.set_ylim(bottom_pressure, top_pressure)
     skew.ax.set_xlim(left_temperature, right_temperature)
+
+    # Round-number temperature gridlines, spaced dynamically so a
+    # tightly zoomed range (e.g. 8 C wide) still gets a reasonable
+    # number of ticks instead of MetPy's fixed 10 C default locator
+    # leaving only one or two.
+
+    temp_range = right_temperature - left_temperature
+    temp_tick_interval = choose_tick_interval(temp_range)
+
+    xtick_start = math.ceil(left_temperature / temp_tick_interval) * temp_tick_interval
+
+    xticks = []
+    xtick = xtick_start
+
+    while xtick <= right_temperature:
+
+        xticks.append(xtick)
+        xtick += temp_tick_interval
+
+    xtick_decimals = 1 if temp_tick_interval < 1 else 0
+
+    skew.ax.xaxis.set_major_locator(FixedLocator(xticks))
+    skew.ax.xaxis.set_major_formatter(
+        FixedFormatter([f"{t:.{xtick_decimals}f}" for t in xticks])
+    )
 
     # Round-number pressure gridlines (every 10 hPa) anchored to
     # KBTV's actual surface pressure.
@@ -2469,8 +2747,18 @@ def plot_skewt(
 
         tick -= 10
 
-    skew.ax.set_yticks(yticks)
-    skew.ax.set_yticklabels([f"{t:.0f}" for t in yticks])
+    # FixedLocator/FixedFormatter (not plain set_yticks/set_yticklabels)
+    # so these persist through any later redraw - a log-scale y-axis
+    # otherwise falls back to matplotlib's default scientific-notation
+    # formatter (the "9 x 10^2" style labels), which is what was
+    # actually showing up instead of our intended round-number labels.
+    # Minor ticks/labels are explicitly disabled for the same reason -
+    # the log scale enables them by default with their own formatter.
+
+    skew.ax.yaxis.set_major_locator(FixedLocator(yticks))
+    skew.ax.yaxis.set_major_formatter(FixedFormatter([f"{t:.0f}" for t in yticks]))
+    skew.ax.yaxis.set_minor_locator(NullLocator())
+    skew.ax.yaxis.set_minor_formatter(NullFormatter())
 
     # ==============================================================
     # SKEW-T BACKGROUND
@@ -2479,6 +2767,17 @@ def plot_skewt(
     skew.plot_dry_adiabats(alpha=0.20)
     skew.plot_moist_adiabats(alpha=0.15)
     skew.plot_mixing_lines(alpha=0.12)
+
+    # Subtle red shading over any layer where temperature increases
+    # with height (an inversion) - every such layer, not just the
+    # single strongest one, since a profile can have more than one.
+
+    for p_low, p_high in inversion_pressure_bands(profile):
+
+        skew.ax.axhspan(
+            p_low, p_high,
+            color="red", alpha=0.08, zorder=1, linewidth=0,
+        )
 
     # ==============================================================
     # TEMPERATURE / DEWPOINT / WET-BULB
@@ -2554,7 +2853,7 @@ def plot_skewt(
     # WIND COLUMN (separate axes, plain upright barbs)
     # ==============================================================
 
-    wind_x0 = rect_x0 + skew_width_frac + content_gap_in / fig_width_in
+    wind_x0 = content_x0 + skew_width_frac + content_gap_in / fig_width_in
     wind_width_frac = wind_col_in / fig_width_in
 
     wind_ax = fig.add_axes(
@@ -2563,15 +2862,13 @@ def plot_skewt(
     )
 
     wind_ax.set_ylim(bottom_pressure, top_pressure)
-    wind_ax.set_yscale(skew.ax.get_yscale())
     wind_ax.set_xlim(-1, 1)
     wind_ax.set_xticks([])
-    wind_ax.set_yticklabels([])
 
     for spine in wind_ax.spines.values():
         spine.set_visible(False)
 
-    wind_ax.tick_params(left=False)
+    wind_ax.tick_params(left=False, labelleft=False)
 
     wind_ax.text(
         0.0, 1.02, "WIND",
@@ -2594,16 +2891,16 @@ def plot_skewt(
     # ==============================================================
 
     fig.text(
-        0.03, (fig_height_in - 0.32) / fig_height_in,
+        0.03, (fig_height_in - 0.20) / fig_height_in,
         "MOUNT MANSFIELD OBSERVED SLOPE PROFILE",
-        fontsize=19, fontweight="bold", color="black",
+        fontsize=13, fontweight="bold", color="black",
         ha="left", va="top",
     )
 
     fig.text(
-        0.03, (fig_height_in - 0.62) / fig_height_in,
+        0.03, (fig_height_in - 0.44) / fig_height_in,
         profile_span_label(),
-        fontsize=11, color=MUTED_TEXT,
+        fontsize=9, color=MUTED_TEXT,
         ha="left", va="top",
     )
 
@@ -2621,76 +2918,73 @@ def plot_skewt(
         newest = max(latest_times)
 
         fig.text(
-            1.0 - rect_x0, (fig_height_in - 0.32) / fig_height_in,
+            1.0 - right_margin_in / fig_width_in, (fig_height_in - 0.22) / fig_height_in,
             newest.strftime("%d %b %Y %H:%M UTC"),
-            fontsize=15, fontweight="bold", color="black",
+            fontsize=11, fontweight="bold", color="black",
             ha="right", va="top",
         )
 
     # ==============================================================
-    # DIAGNOSTIC ICON CARDS
+    # SAVE
     # ==============================================================
 
-    def val(x, suffix="", decimals=1):
-        if x is None:
-            return "\u2014", "None in layer"
-        return f"{x:.{decimals}f}{suffix}", ""
+    plt.savefig(OUTPUT_FILE, dpi=175)
+    plt.close(fig)
 
-    lapse_val, lapse_sub = val(
-        diagnostics["mean_lapse_rate_C_km"], " \u00b0C/km"
-    )
+    print()
+    print(f"Saved Skew-T to: {OUTPUT_FILE}")
 
-    shear_val_num = diagnostics["bulk_shear_kt"]
-    shear_val = f"{shear_val_num:.0f} kt" if shear_val_num is not None else "\u2014"
-    shear_depth_ft = STATIONS[SHEAR_TOP_STID] - STATIONS[SHEAR_BASE_STID]
-    shear_sub = f"{STATIONS[SHEAR_BASE_STID]:.0f}\u2013{STATIONS[SHEAR_TOP_STID]:.0f} ft"
 
-    froude_num = diagnostics["froude_number"]
-    froude_val = f"{froude_num:.2f}" if froude_num is not None else "\u2014"
-    froude_sub = diagnostics["flow_regime"]
+def plot_diagnostics_image(diagnostics):
+    """
+    Render the diagnostic icon-card row as its own image
+    (DIAGNOSTICS_OUTPUT_FILE), separate from the Skew-T. Sized
+    comfortably rather than squeezed to a fraction of the chart's
+    width, since it's no longer sharing a figure with it - the tiny
+    fonts from the squeeze-to-75%-of-chart-width experiment aren't
+    needed here.
+    """
 
-    freezing_val, freezing_sub = val(diagnostics["freezing_level_ft"], " ft", 0)
-    wbz_val, wbz_sub = val(diagnostics["wet_bulb_zero_ft"], " ft", 0)
+    cards = _build_diagnostic_cards(diagnostics)
 
-    cards = [
-        (
-            _icon_thermometer, "#d9480f", "MEAN LAPSE RATE",
-            lapse_val, "#d9480f",
-            profile_span_label() if not lapse_sub else lapse_sub,
-        ),
-        (
-            _icon_wind, "#1971c2",
-            f"BULK SHEAR (0\u2013{shear_depth_ft/1000.0:.1f} kft)",
-            shear_val, "#1971c2", shear_sub,
-        ),
-        (
-            _icon_mountain, "#7048e8", "FROUDE NUMBER",
-            froude_val, "#7048e8", froude_sub,
-        ),
-        (
-            _icon_snowflake, "#1c7ed6", "FREEZING LEVEL",
-            freezing_val, "#e8590c" if freezing_val == "\u2014" else "#1c7ed6",
-            freezing_sub,
-        ),
-        (
-            _icon_droplet, "#1c7ed6", "WET-BULB ZERO",
-            wbz_val, "#e8590c" if wbz_val == "\u2014" else "#1c7ed6",
-            wbz_sub,
-        ),
-    ]
+    fig_width_in = 9.5
+    icon_row_in = 1.6
+    footer_in = 0.30
 
-    icon_row_y0 = (footer_in + table_in + gap2_in) / fig_height_in
-    icon_row_height = icon_row_in / fig_height_in
+    fig = plt.figure(figsize=(fig_width_in, icon_row_in + footer_in))
+
+    icon_row_y0 = footer_in / (icon_row_in + footer_in)
+    icon_row_height = icon_row_in / (icon_row_in + footer_in)
 
     _draw_diagnostic_cards(
         fig,
-        (rect_x0, icon_row_y0, rect_width_frac, icon_row_height),
+        (0.02, icon_row_y0, 0.96, icon_row_height),
         cards,
     )
 
-    # ==============================================================
-    # STATION TABLE
-    # ==============================================================
+    fig.text(
+        0.5, footer_in / (icon_row_in + footer_in) * 0.4,
+        "Data sources:  NWS API (BTV) \u2022 RR2 \u2022 RRSBTV (IEM)",
+        fontsize=8, color=MUTED_TEXT, ha="center", va="center",
+        style="italic",
+    )
+
+    plt.savefig(DIAGNOSTICS_OUTPUT_FILE, dpi=175)
+    plt.close(fig)
+
+    print()
+    print(f"Saved diagnostics cards to: {DIAGNOSTICS_OUTPUT_FILE}")
+
+
+def plot_station_table(profile):
+    """
+    Render the station observation table as its own image
+    (TABLE_OUTPUT_FILE), separate from the Skew-T. Split out so the
+    dashboard can lay the two out independently - e.g. show the chart
+    prominently and the table as a click-to-expand detail - and so
+    the Skew-T itself isn't forced to reserve vertical space for a
+    table that doesn't need to share its aspect ratio.
+    """
 
     table_rows = []
 
@@ -2734,11 +3028,26 @@ def plot_skewt(
             time_text,
         ])
 
-    table_y0 = footer_in / fig_height_in
-    table_height = table_in / fig_height_in
+    n_rows = len(table_rows)
 
-    table_ax = fig.add_axes([rect_x0, table_y0, rect_width_frac, table_height])
+    # Sized to the content rather than a fixed canvas - a handful of
+    # inches of height per row plus a small margin, so this doesn't
+    # carry the large fixed whitespace a fixed-size figure would.
+
+    fig_width_in = 11.5
+    fig_height_in = 0.55 + 0.42 * (n_rows + 1)
+
+    fig = plt.figure(figsize=(fig_width_in, fig_height_in))
+
+    table_ax = fig.add_axes([0.02, 0.04, 0.96, 0.90])
     table_ax.axis("off")
+
+    table_ax.text(
+        0.0, 1.06, "STATION OBSERVATIONS",
+        transform=table_ax.transAxes,
+        fontsize=12, fontweight="bold", color="black",
+        ha="left", va="bottom",
+    )
 
     col_labels = [
         "Station", "Elev (ft)", "Pressure (hPa)", "Temp (\u00b0C)",
@@ -2774,34 +3083,394 @@ def plot_skewt(
             cell.set_edgecolor(DIVIDER_COLOR)
             cell.get_text().set_color(col_text_colors.get(col, "black"))
 
-    # ==============================================================
-    # FOOTER
-    # ==============================================================
-
-    fig.text(
-        0.5, footer_in / fig_height_in * 0.4,
-        "Data sources:  NWS API (BTV) \u2022 RR2 \u2022 RRSBTV (IEM)",
-        fontsize=9, color=MUTED_TEXT, ha="center", va="center",
-        style="italic",
-    )
-
-    # ==============================================================
-    # SAVE
-    # ==============================================================
-
-    plt.savefig(OUTPUT_FILE, dpi=175)
+    plt.savefig(TABLE_OUTPUT_FILE, dpi=175)
     plt.close(fig)
 
     print()
-    print(f"Saved Skew-T to: {OUTPUT_FILE}")
+    print(f"Saved station table to: {TABLE_OUTPUT_FILE}")
 
+
+
+
+
+# =====================================================================
+# 13B. GOOGLE DRIVE UPLOAD
+# =====================================================================
+
+def get_drive_service():
+    """
+    Build an authenticated Drive API client from the GOOGLE_CREDENTIALS
+    secret (a service account JSON key, same as main.py uses).
+    """
+
+    creds_raw = os.environ.get("GOOGLE_CREDENTIALS")
+
+    if not creds_raw:
+
+        raise RuntimeError(
+            "GOOGLE_CREDENTIALS is not set - cannot authenticate to "
+            "Google Drive."
+        )
+
+    creds_dict = json.loads(creds_raw)
+
+    credentials = service_account.Credentials.from_service_account_info(
+        creds_dict,
+        scopes=["https://www.googleapis.com/auth/drive"],
+    )
+
+    return build("drive", "v3", credentials=credentials)
+
+
+def upload_to_drive(filepath, folder_id, filename=None):
+    """
+    Upload filepath to the given Drive folder, updating an existing
+    file of the same name in place if one is already there instead of
+    creating a new copy on every scheduled run.
+    """
+
+    if not folder_id:
+
+        print(
+            "WARNING: no Drive folder ID configured "
+            "(MANSFIELD_DRIVE_FOLDER_ID / GLWU_DRIVE_FOLDER_ID) - "
+            "skipping upload."
+        )
+
+        return
+
+    filename = filename or os.path.basename(filepath)
+
+    service = get_drive_service()
+
+    query = (
+        f"name = '{filename}' "
+        f"and '{folder_id}' in parents "
+        f"and trashed = false"
+    )
+
+    existing = service.files().list(
+        q=query,
+        fields="files(id, name)",
+        spaces="drive",
+    ).execute().get("files", [])
+
+    media = MediaFileUpload(filepath, mimetype="image/png")
+
+    if existing:
+
+        file_id = existing[0]["id"]
+
+        service.files().update(
+            fileId=file_id,
+            media_body=media,
+        ).execute()
+
+        print(f"Updated existing Drive file '{filename}' ({file_id})")
+
+    else:
+
+        metadata = {
+            "name": filename,
+            "parents": [folder_id],
+        }
+
+        created = service.files().create(
+            body=metadata,
+            media_body=media,
+            fields="id",
+        ).execute()
+
+        print(f"Uploaded new Drive file '{filename}' ({created['id']})")
+
+
+# =====================================================================
+# 12B. COMPACT DASHBOARD CARD
+# =====================================================================
+#
+# A second, purpose-built output alongside the full Skew-T: sized and
+# styled to sit in a dashboard grid next to the existing station
+# cards. Deliberately drops everything that only earns its place at
+# "study this closely" size - the background adiabat/mixing lines,
+# the station table, the wind barb column, dewpoint - and keeps only
+# what answers "rain, snow, or something worse, and where."
+
+CARD_BG_COLOR = "white"
+CARD_BORDER_NORMAL = "#dee2e6"
+CARD_BORDER_RISK = "#c1590f"
+CARD_MUTED = "#6b7688"
+CARD_BLUE = "#1e5fa8"
+CARD_SNOW = "#3f7cc9"
+CARD_RAIN = "#c1590f"
+
+
+def temperature_sign_bands(profile):
+    """
+    Walk the elevation-sorted profile and return a list of
+    (elev_low, elev_high, is_above_freezing) bands, splitting at any
+    0 C crossing between stations (interpolated). Used to shade the
+    compact card's background by freezing/non-freezing layer.
+    """
+
+    bands = []
+
+    for lower, upper in zip(profile, profile[1:]):
+
+        z1, t1 = lower["elevation_ft"], lower["temperature_C"]
+        z2, t2 = upper["elevation_ft"], upper["temperature_C"]
+
+        if (t1 >= 0) == (t2 >= 0):
+
+            bands.append((z1, z2, t1 >= 0))
+            continue
+
+        crossing = interp_crossing(z1, t1, z2, t2, 0.0)
+
+        if crossing is None:
+
+            bands.append((z1, z2, t1 >= 0))
+            continue
+
+        bands.append((z1, crossing, t1 >= 0))
+        bands.append((crossing, z2, t2 >= 0))
+
+    return bands
+
+
+def plot_dashboard_card(profile, diagnostics):
+    """
+    Render the compact dashboard card to CARD_OUTPUT_FILE.
+    """
+
+    fig = plt.figure(figsize=(4.0, 5.0))
+
+    precip_type = diagnostics["precip_type"]
+    has_warm_nose = diagnostics["warm_layer_ft"] is not None
+
+    border_color = CARD_BORDER_RISK if has_warm_nose else CARD_BORDER_NORMAL
+
+    # Card background + left accent border, matching the existing
+    # dashboard's card vernacular (white card, colored left border).
+
+    outer_ax = fig.add_axes([0, 0, 1, 1])
+    outer_ax.set_xlim(0, 1)
+    outer_ax.set_ylim(0, 1)
+    outer_ax.axis("off")
+
+    outer_ax.add_patch(
+        FancyBboxPatch(
+            (0.02, 0.02), 0.96, 0.96,
+            boxstyle="round,pad=0,rounding_size=0.02",
+            linewidth=1.2,
+            edgecolor=CARD_BORDER_NORMAL,
+            facecolor=CARD_BG_COLOR,
+            zorder=0,
+        )
+    )
+
+    outer_ax.add_patch(
+        plt.Rectangle(
+            (0.02, 0.02), 0.018, 0.96,
+            facecolor=border_color,
+            edgecolor="none",
+            zorder=1,
+        )
+    )
+
+    # ---------------- Header ----------------
+
+    outer_ax.text(
+        0.53, 0.955, "MOUNT MANSFIELD",
+        fontsize=13, fontweight="bold", color="black",
+        ha="center", va="top",
+    )
+
+    outer_ax.text(
+        0.53, 0.915, "Green Mountains",
+        fontsize=9.5, fontweight="bold", color=CARD_BLUE,
+        ha="center", va="top",
+    )
+
+    if has_warm_nose:
+
+        outer_ax.text(
+            0.53, 0.865, "\u26a0 FZRA RISK",
+            fontsize=9, fontweight="bold", color=CARD_BORDER_RISK,
+            ha="center", va="top",
+            bbox=dict(
+                boxstyle="round,pad=0.35",
+                facecolor="#fdeee0",
+                edgecolor="none",
+            ),
+        )
+
+    # ---------------- Simplified elevation profile ----------------
+
+    chart_ax = fig.add_axes([0.20, 0.30, 0.68, 0.48])
+
+    elevations = [x["elevation_ft"] for x in profile]
+    temps = [x["temperature_C"] for x in profile]
+
+    z_min, z_max = min(elevations), max(elevations)
+    t_min, t_max = min(temps), max(temps)
+
+    t_pad = max((t_max - t_min) * 0.25, 2.0)
+    z_pad = (z_max - z_min) * 0.05
+
+    chart_ax.set_xlim(t_min - t_pad, t_max + t_pad)
+    chart_ax.set_ylim(z_min - z_pad, z_max + z_pad)
+
+    for z1, z2, is_warm in temperature_sign_bands(profile):
+
+        chart_ax.axhspan(
+            z1, z2,
+            color=CARD_RAIN if is_warm else CARD_SNOW,
+            alpha=0.10, zorder=0,
+        )
+
+    if t_min - t_pad <= 0 <= t_max + t_pad:
+
+        chart_ax.axvline(
+            0, color="black", linewidth=1.0, alpha=0.5, zorder=2,
+        )
+
+    chart_ax.plot(
+        temps, elevations,
+        color=CARD_RAIN, linewidth=2.5,
+        marker="o", markersize=5, zorder=5,
+    )
+
+    chart_ax.set_yticks(elevations)
+    chart_ax.set_yticklabels(
+        [f"{e:.0f}" for e in elevations], fontsize=7.5, color=CARD_MUTED,
+    )
+
+    chart_ax.set_xticks(
+        [round(t_min - t_pad / 2), 0, round(t_max + t_pad / 2)]
+    )
+    chart_ax.tick_params(axis="x", labelsize=7.5, colors=CARD_MUTED)
+
+    for spine_name in ("top", "right"):
+        chart_ax.spines[spine_name].set_visible(False)
+
+    for spine_name in ("left", "bottom"):
+        chart_ax.spines[spine_name].set_color(CARD_BORDER_NORMAL)
+
+    chart_ax.tick_params(colors=CARD_MUTED, length=3)
+
+    # ---------------- Headline readout ----------------
+
+    freezing_level = diagnostics["freezing_level_ft"]
+
+    if freezing_level is not None:
+
+        headline_value = f"{freezing_level:,.0f} ft"
+        headline_color = CARD_BLUE
+
+    elif profile[0]["temperature_C"] >= 0:
+
+        headline_value = "All Rain"
+        headline_color = CARD_RAIN
+
+    else:
+
+        headline_value = "All Snow"
+        headline_color = CARD_SNOW
+
+    outer_ax.text(
+        0.53, 0.215, "RAIN / SNOW LINE",
+        fontsize=9, fontweight="bold", color=CARD_MUTED,
+        ha="center", va="top",
+    )
+
+    outer_ax.text(
+        0.53, 0.185, headline_value,
+        fontsize=20, fontweight="bold", color=headline_color,
+        ha="center", va="top",
+    )
+
+    outer_ax.text(
+        0.53, 0.09, f"Precip type: {precip_type}",
+        fontsize=8.5, color=CARD_MUTED,
+        ha="center", va="top",
+    )
+
+    # ---------------- Footer ----------------
+
+    latest_times = [
+        parse_iso_time(x.get("temperature_time"))
+        for x in profile
+        if parse_iso_time(x.get("temperature_time")) is not None
+    ]
+
+    if latest_times:
+
+        newest = max(latest_times)
+
+        outer_ax.text(
+            0.53, 0.04, f"Updated {newest.strftime('%H:%M UTC')}",
+            fontsize=7.5, color=CARD_MUTED,
+            ha="center", va="top",
+        )
+
+    plt.savefig(CARD_OUTPUT_FILE, dpi=175)
+    plt.close(fig)
+
+    print()
+    print(f"Saved dashboard card to: {CARD_OUTPUT_FILE}")
 
 
 # =====================================================================
 # 13. MAIN
 # =====================================================================
 
+def export_diagnostics_status(diagnostics, profile):
+    """
+    Export the subset of diagnostics the dashboard's small stat cards
+    need (P-Type, Froude Number) as JSON, same pattern as
+    mansfield_snow_depth.py's status file. Only plain JSON-safe types
+    here (float/str/None) - the full diagnostics dict has tuples and
+    numpy floats that don't serialize directly.
+    """
+
+    froude = diagnostics["froude_number"]
+    precip_type_raw = diagnostics["precip_type"]
+
+    latest_times = [
+        parse_iso_time(x.get("temperature_time"))
+        for x in profile
+        if parse_iso_time(x.get("temperature_time")) is not None
+    ]
+
+    status = {
+        "precip_type": PRECIP_TYPE_DISPLAY.get(precip_type_raw, precip_type_raw),
+        "precip_type_raw": precip_type_raw,
+        "froude_number": round(float(froude), 2) if froude is not None else None,
+        "flow_regime": diagnostics["flow_regime"],
+        "freezing_level_ft": diagnostics["freezing_level_ft"],
+        "mean_lapse_rate_C_km": (
+            round(float(diagnostics["mean_lapse_rate_C_km"]), 1)
+            if diagnostics["mean_lapse_rate_C_km"] is not None else None
+        ),
+        "bulk_shear_kt": (
+            round(float(diagnostics["bulk_shear_kt"]), 0)
+            if diagnostics["bulk_shear_kt"] is not None else None
+        ),
+        "observed_at": max(latest_times).isoformat() if latest_times else None,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    with open(DIAGNOSTICS_STATUS_FILE, "w") as f:
+        json.dump(status, f, indent=2)
+
+    print(f"Saved diagnostics status to: {DIAGNOSTICS_STATUS_FILE}")
+
+    return status
+
+
 def main():
+
+    os.makedirs(REPO_OUTPUT_DIR, exist_ok=True)
 
     observations = fetch_all()
 
@@ -2829,6 +3498,8 @@ def main():
         diagnostics
     )
 
+    export_diagnostics_status(diagnostics, profile)
+
     (
         pressure,
         temperature,
@@ -2848,6 +3519,23 @@ def main():
         v,
         diagnostics,
     )
+
+    plot_station_table(profile)
+
+    plot_diagnostics_image(diagnostics)
+
+    plot_dashboard_card(
+        profile,
+        diagnostics,
+    )
+
+    upload_to_drive(OUTPUT_FILE, DRIVE_FOLDER_ID, DRIVE_UPLOAD_FILENAME)
+
+    # Not uploading CARD_OUTPUT_FILE/TABLE_OUTPUT_FILE to Drive yet -
+    # add matching upload_to_drive(...) calls here whenever you're
+    # ready, or (better, per the earlier Drive-hotlinking issue) just
+    # let the workflow's git commit step pick up everything in
+    # outputs/ the same way it already does for the other two files.
 
 
 if __name__ == "__main__":
