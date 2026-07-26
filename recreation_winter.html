@@ -45,6 +45,7 @@
     --froude-card-from: #5f3dc4;
     --froude-card-to: #362174;
     --live-green: #2fbf71;
+     --bg-image: url('https://raw.githubusercontent.com/matthewclay88/dss-dashboard-tv/main/assets/dashboard-bg.jpg');
   }
 
   * { box-sizing: border-box; }
@@ -55,14 +56,16 @@
   }
 
   body {
-    background: var(--page-bg);
-    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: var(--ink);
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
+  background:
+    linear-gradient(180deg, rgba(14,32,64,0.62) 0%, rgba(238,241,245,0.90) 40%, rgba(238,241,245,0.94) 100%),
+    var(--bg-image) center / cover no-repeat fixed;
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
 
   /* ================= NAVBAR (fixed height) ================= */
 
