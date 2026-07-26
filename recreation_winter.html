@@ -6,6 +6,30 @@
 <title>Mount Mansfield Dashboard</title>
 <style>
 
+  /* =====================================================================
+     LAYOUT PHILOSOPHY (rewrite)
+     ---------------------------------------------------------------------
+     Previous versions let CONTENT decide box sizes: an image's own
+     aspect ratio (width:100%; height:auto) determined how tall its
+     container got, a card list's item count determined the sidebar's
+     height, and the two main rows were "auto auto" - sized to whatever
+     their tallest content demanded. Every one of the recurring overlap/
+     squish/oversize bugs traced back to that same pattern: two things
+     that both wanted to dictate a shared boundary.
+
+     This version inverts it. The two main rows get a FIXED height
+     budget (percentages of the available vertical space, defined once,
+     here). Everything inside a row must fit INTO that budget:
+       - images use max-width/max-height + object-fit:contain, so they
+         scale to fit their box in both dimensions (letterboxing if
+         their aspect doesn't match) instead of forcing the box to grow
+       - card lists use flex:1 1 0 with overflow:hidden as a hard
+         backstop, so a long list compresses rather than overflowing
+     Nothing in here can push past its box and collide with a sibling,
+     regardless of what the underlying PNGs or data happen to look like
+     on a given day. That's the actual fix - not another size tweak.
+     ===================================================================== */
+
   :root {
     --navy: #0e2a4d;
     --navy-light: #16457c;
@@ -20,6 +44,7 @@
     --snow-card-to: #0a2647;
     --froude-card-from: #5f3dc4;
     --froude-card-to: #362174;
+    --live-green: #2fbf71;
   }
 
   * { box-sizing: border-box; }
@@ -39,16 +64,16 @@
     overflow: hidden;
   }
 
-  /* ================= NAVBAR ================= */
+  /* ================= NAVBAR (fixed height) ================= */
 
   .navbar {
-    flex: 0 0 auto;
-    background: var(--navy);
+    flex: 0 0 62px;
+    background: linear-gradient(120deg, #0a2040 0%, var(--navy) 55%, #163a68 100%);
     color: white;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 24px;
+    padding: 0 24px;
   }
 
   .navbar .brand {
@@ -58,13 +83,14 @@
   }
 
   .navbar .brand-icon {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     background: var(--navy-light);
-    border-radius: 7px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
   }
 
   .navbar h1 {
@@ -79,6 +105,37 @@
     margin-top: 1px;
   }
 
+  .navbar .right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .navbar .live {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #bcd6f2;
+  }
+
+  .navbar .live .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--live-green);
+    box-shadow: 0 0 0 0 rgba(47,191,113,0.6);
+    animation: pulse 2.2s infinite;
+  }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(47,191,113,0.55); }
+    70%  { box-shadow: 0 0 0 7px rgba(47,191,113,0); }
+    100% { box-shadow: 0 0 0 0 rgba(47,191,113,0); }
+  }
+
   .navbar .clock {
     display: flex;
     align-items: center;
@@ -87,27 +144,18 @@
     font-size: 14.5px;
   }
 
-  /* ================= LAYOUT ================= */
+  /* ================= MAIN (everything below the navbar) ================= */
 
-  .layout {
+  .main {
     flex: 1 1 auto;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
     max-width: 1700px;
     width: 100%;
     margin: 0 auto;
-    padding: 12px 20px;
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: auto auto;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  @media (max-width: 1100px) {
-    .layout {
-      grid-template-columns: 1fr;
-      overflow-y: auto;
-    }
+    padding: 14px 22px;
+    gap: 14px;
   }
 
   .card {
@@ -117,56 +165,57 @@
     box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
   }
 
-  /* ================= SOUNDING PANEL ================= */
-  /*
-    The chart, diagnostic cards, and station table below are all
-    baked into vt_pseudo_sounding.png by tempprofile.py - not
-    rebuilt in HTML/CSS. Swap the src to update; no markup changes
-    needed here.
+  /* ================= TOP ROW: fixed % of available height ================= */
 
-    object-fit: contain scales the image down to fit the panel
-    without cropping or distorting it - since the chart's own aspect
-    ratio is decided dynamically in Python (see the Skew-T sizing
-    notes in tempprofile.py) and won't always exactly match the
-    panel's aspect, this may letterbox slightly rather than fill
-    edge-to-edge. That's intentional: better a little empty space
-    than a stretched/cropped chart on a TV display.
+  .top-row {
+    flex: 0 0 63%;
+    min-height: 0;
+    display: flex;
+    gap: 16px;
+  }
+
+  /* ---- Sounding panel ---- */
+  /*
+    flex:0 0 66% / sidebar's 34% preserves the 2:1 ratio measured
+    directly off the reference layout. Both are now height-bounded by
+    top-row's fixed budget, and the image inside is constrained on
+    BOTH axes (object-fit:contain) - it will never force this box
+    taller than its budget, unlike the old width:100%;height:auto
+    approach.
   */
 
   .sounding-panel {
-    grid-column: 1;
-    grid-row: 1;
-    padding: 8px;
+    flex: 0 0 66%;
     min-width: 0;
-    align-self: start;
-    /* Absolute cap, not a proportion of the grid column. The 2fr/1fr
-       column ratio is still what determines where the sidebar sits,
-       but letting the chart's actual pixel size follow that ratio
-       meant it came out a different absolute size on every screen -
-       correct-looking on the viewport it was tested at, oversized on
-       a wider one. This value is independent of viewport width
-       entirely, so it now looks the same size everywhere. */
-    max-width: 1100px;
+    height: 100%;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
   .sounding-panel img {
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
+    object-fit: contain;
     display: block;
-    border-radius: 8px;
+    border-radius: 6px;
   }
 
-  /* ================= SIDEBAR ================= */
+  /* ---- Sidebar ---- */
 
   .sidebar {
-    grid-column: 2;
-    grid-row: 1;
+    flex: 0 0 34%;
     height: 100%;
     min-height: 0;
-    overflow-y: auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    overflow: hidden;
   }
 
   .sidebar h2 {
@@ -178,6 +227,7 @@
 
   .summit-card {
     flex: 1 1 0;
+    min-height: 0;
     overflow: hidden;
     background: var(--sidebar-card-bg);
     border-radius: 12px;
@@ -185,6 +235,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    transition: background 0.4s ease;
   }
 
   .summit-card .header {
@@ -194,9 +245,9 @@
   }
 
   .summit-card .icon {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
     border-radius: 9px;
     background: #e4ecf5;
     display: flex;
@@ -205,8 +256,8 @@
   }
 
   .summit-card .icon svg {
-    width: 24px;
-    height: 24px;
+    width: 23px;
+    height: 23px;
     stroke: var(--blue);
     fill: none;
     stroke-width: 1.8;
@@ -216,19 +267,19 @@
 
   .summit-card .name {
     font-weight: 700;
-    font-size: 18px;
+    font-size: 17px;
   }
 
   .summit-card .elev {
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--muted);
     margin-top: 1px;
   }
 
   .summit-card .stats {
     display: flex;
-    margin-top: 9px;
-    padding-top: 8px;
+    margin-top: 8px;
+    padding-top: 7px;
     border-top: 1px solid var(--card-border);
   }
 
@@ -242,33 +293,35 @@
   }
 
   .summit-card .stat .label {
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--muted);
   }
 
   .summit-card .stat .value {
-    font-size: 21px;
+    font-size: 19px;
     font-weight: 800;
-    margin-top: 5px;
+    margin-top: 4px;
+    transition: opacity 0.25s ease;
   }
 
-  /* ================= SNOW DEPTH CARD ================= */
+  /* ================= BOTTOM ROW: remaining height ================= */
 
-  .snow-row {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  .bottom-row {
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     gap: 16px;
-    min-height: 0;
   }
 
   .snow-summary {
     flex: 0 0 20%;
     min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     border-radius: 12px;
-    padding: 20px 22px;
+    padding: 18px 20px;
     background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
     color: white;
     display: flex;
@@ -276,7 +329,7 @@
   }
 
   .snow-summary .eyebrow {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 700;
     letter-spacing: 0.06em;
     color: #cfe0f2;
@@ -286,41 +339,41 @@
     display: flex;
     align-items: baseline;
     gap: 10px;
-    margin-top: 14px;
+    margin-top: 12px;
   }
 
   .snow-summary .headline .snowflake {
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
     color: #bcd6f2;
     align-self: center;
   }
 
   .snow-summary .value {
-    font-size: 52px;
+    font-size: 46px;
     font-weight: 800;
     line-height: 1;
   }
 
   .snow-summary .unit {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #bcd6f2;
   }
 
   .snow-summary .location {
-    font-size: 14px;
+    font-size: 13px;
     color: #cfe0f2;
     margin-top: 6px;
   }
 
   .snow-summary .departure {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 700;
-    margin-top: 14px;
+    margin-top: 12px;
     display: inline-block;
-    padding: 5px 12px;
+    padding: 4px 11px;
     border-radius: 999px;
     background: rgba(255,255,255,0.12);
     align-self: flex-start;
@@ -333,15 +386,15 @@
   }
 
   .snow-summary .updated {
-    font-size: 11.5px;
+    font-size: 11px;
     color: #9db6d4;
     margin-top: auto;
-    padding-top: 16px;
+    padding-top: 12px;
   }
 
   .snow-summary .stats-mini {
-    margin-top: 28px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 16px;
     border-top: 1px solid rgba(255,255,255,0.14);
     display: flex;
   }
@@ -349,6 +402,7 @@
   .snow-summary .stat-mini-col {
     flex: 1;
     text-align: center;
+    min-width: 0;
   }
 
   .snow-summary .stat-mini-col + .stat-mini-col {
@@ -356,54 +410,49 @@
   }
 
   .snow-summary .stat-mini-col .label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     color: #9db6d4;
   }
 
   .snow-summary .stat-mini-col .value {
     display: block;
-    font-size: 22px;
+    font-size: 19px;
     font-weight: 800;
     color: #eaf1fa;
-    margin-top: 6px;
+    margin-top: 5px;
   }
 
   .snow-chart-panel {
     flex: 0 0 46%;
     min-width: 0;
+    min-height: 0;
     border-radius: 12px;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    padding: 8px;
+    padding: 10px;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
   .snow-chart-panel img {
-    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
-    align-self: center;
+    object-fit: contain;
     display: block;
   }
 
-  /* ================= SMALL STAT CARDS (P-Type, Froude) ================= */
-  /*
-    Deliberately minimal - a label and one value, no icon/subtext
-    clutter - these are meant to be glanced at, not studied.
-  */
-
-  /* ================= 2x2 STAT GRID (P-Type, Froude, Freezing Level, Shear) ================= */
-  /*
-    Same total footprint the two large mini-stat-cards used to take
-    (flex: 2 2 0, matching two of the old flex: 1 1 0 cards combined)
-    but fits 4 stats instead of 2 - the old cards were a lot of space
-    for one number each.
-  */
+  /* ================= 2x2 STAT GRID ================= */
 
   .quad-stats {
-    flex: 2 2 0;
+    flex: 1 1 0;
     min-width: 0;
+    min-height: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -413,6 +462,7 @@
   .quad-card {
     min-width: 0;
     min-height: 0;
+    overflow: hidden;
     border-radius: 10px;
     padding: 12px 16px;
     background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
@@ -420,6 +470,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    transition: background 0.4s ease;
   }
 
   .quad-card .eyebrow {
@@ -434,6 +485,7 @@
     font-weight: 800;
     line-height: 1.15;
     margin-top: 4px;
+    transition: opacity 0.25s ease;
   }
 
   .quad-card .subtext {
@@ -441,12 +493,6 @@
     color: #cfe0f2;
     margin-top: 3px;
   }
-
-  /* Froude keeps its own color scheme (purple, matching the mountain
-     icon used for it elsewhere in the diagnostics) so it still reads
-     as a standout among the four, just not a whole giant card
-     anymore - and a slightly bigger number since flow regime is
-     still the single most "headline" stat of the four. */
 
   .froude-card {
     background: linear-gradient(160deg, var(--froude-card-from), var(--froude-card-to));
@@ -465,17 +511,10 @@
     color: #e3d9fc;
   }
 
-  /* P-Type value color-coding - class applied by JS based on the
-     fetched precip type (see the <script> below). Falls back to
-     plain white (the base .quad-card .value color) until then. */
-
   .ptype-card.ptype-rain { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
   .ptype-card.ptype-snow { background: linear-gradient(160deg, #1971c2, #0b4a85); }
   .ptype-card.ptype-mix { background: linear-gradient(160deg, #f59f00, #a66a00); }
   .ptype-card.ptype-frz { background: linear-gradient(160deg, #e03131, #962020); }
-
-  /* Shear card: green/yellow/red by wind shear magnitude (see the
-     threshold logic in the <script> below). */
 
   .shear-card.shear-low { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
   .shear-card.shear-mod { background: linear-gradient(160deg, #f59f00, #a66a00); }
@@ -488,7 +527,7 @@
   <div class="navbar">
     <div class="brand">
       <div class="brand-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/>
         </svg>
       </div>
@@ -497,34 +536,124 @@
         <div class="subtitle">Real-time Mountain Observations</div>
       </div>
     </div>
-    <div class="clock">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cfe0f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 7 L12 12 L16 14"/>
-      </svg>
-      <span id="nav-clock">25 Jul 2026 02:03 UTC</span>
+    <div class="right">
+      <div class="live"><span class="dot"></span>LIVE</div>
+      <div class="clock">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cfe0f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7 L12 12 L16 14"/>
+        </svg>
+        <span id="nav-clock">25 Jul 2026 02:03 UTC</span>
+      </div>
     </div>
   </div>
 
-  <div class="layout">
+  <div class="main">
 
-    <!-- ================= SOUNDING ================= -->
-    <div class="card sounding-panel">
-      <!--
-        Served as a plain static file from the severe-dashboard repo
-        (committed by the workflow after tempprofile.py runs), not
-        hotlinked from Drive - Drive enforces an anonymous per-file
-        download quota that made the image intermittently fail to
-        load on the live page. raw.githubusercontent.com has no such
-        quota for public repos. Update the branch/path below to match
-        wherever the workflow actually commits outputs/.
-      -->
-      <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+    <!-- ================= TOP ROW: SOUNDING + SIDEBAR ================= -->
+    <div class="top-row">
+
+      <div class="card sounding-panel">
+        <!--
+          Served as a plain static file from the severe-dashboard repo
+          (committed by the workflow after tempprofile.py runs), not
+          hotlinked from Drive - Drive enforces an anonymous per-file
+          download quota that made the image intermittently fail to
+          load on the live page. raw.githubusercontent.com has no such
+          quota for public repos.
+        -->
+        <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+      </div>
+
+      <div class="sidebar">
+        <h2>MOUNTAIN OBSERVATIONS</h2>
+
+        <!--
+          Mount Mansfield / MMNV1, Whiteface, Bolton Vista Peak, and
+          Burke Mountain are all wired live - see the fetch*Observation_
+          functions below. Wind chill is computed client-side (NWS
+          formula) for Mansfield; Whiteface/Burke/Bolton report their
+          own via their respective APIs.
+        -->
+
+        <div class="summit-card" data-station="WHITEFACE">
+          <div class="header">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+            </div>
+            <div>
+              <div class="name">Whiteface Mountain</div>
+              <div class="elev" data-field="elevation">4,867 ft</div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          </div>
+        </div>
+
+        <div class="summit-card" data-station="MMNV1">
+          <div class="header">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+            </div>
+            <div>
+              <div class="name">Mount Mansfield</div>
+              <div class="elev" data-field="elevation">3,891 ft</div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          </div>
+        </div>
+
+        <div class="summit-card" data-station="BOLTON">
+          <div class="header">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+            </div>
+            <div>
+              <div class="name">Bolton Vista Peak</div>
+              <div class="elev" data-field="elevation">3,150 ft</div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          </div>
+        </div>
+
+        <div class="summit-card" data-station="BURKE">
+          <div class="header">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+            </div>
+            <div>
+              <div class="name">Burke Mountain</div>
+              <div class="elev" data-field="elevation">3,058 ft</div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
 
-    <!-- ================= BOTTOM ROW: SNOW DEPTH + P-TYPE + FROUDE (full width) ================= -->
-
-    <div class="snow-row">
+    <!-- ================= BOTTOM ROW: SNOW DEPTH + P-TYPE + FROUDE ================= -->
+    <div class="bottom-row">
 
       <div class="snow-summary">
         <div class="eyebrow">SNOW DEPTH</div>
@@ -539,22 +668,10 @@
 
         <div class="location">at Mansfield Summit</div>
 
-        <!--
-          TODO: mansfield_snow_depth.py already computes this exact
-          string (departure_text) into vt_snow_depth_status.json -
-          fetch that file and drop it straight in here.
-        -->
         <div class="departure placeholder" data-field="departure">
           Departure — pending wiring
         </div>
 
-        <!--
-          TODO: same situation as departure above — mansfield_snow_depth.py
-          needs to add normal_depth_in, record_high_in, and record_low_in
-          to vt_snow_depth_status.json. refreshSnowDepth() below already
-          reads them; until those fields exist in the JSON these three
-          rows will just show "—".
-        -->
         <div class="stats-mini">
           <div class="stat-mini-col">
             <span class="label">NORMAL</span>
@@ -574,25 +691,8 @@
       </div>
 
       <div class="snow-chart-panel">
-        <!--
-          Rendered by mansfield_snow_depth.py (plot_snow_depth_chart)
-          from the same NWS BTV feeds as the page at
-          weather.gov/btv/recreation - Max/Min/Avg/Current-season
-          depth lines. Served the same way as the sounding image
-          (committed to outputs/ by the workflow, referenced via
-          raw.githubusercontent.com); update the branch/path if
-          mansfield_snow_depth.py ends up committing elsewhere.
-        -->
         <img src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_snow_depth_chart.png" alt="Mount Mansfield snow depth, current season vs. historical max/min/average">
       </div>
-
-      <!--
-        TODO: tempprofile.py's export_diagnostics_status() already
-        writes all four of these to vt_diagnostics_status.json -
-        fetch that file and drop the values in (see the <script> at
-        the bottom of this file, which already does this for snow
-        depth).
-      -->
 
       <div class="quad-stats">
 
@@ -621,185 +721,31 @@
 
     </div>
 
-    <!-- ================= SIDEBAR ================= -->
-    <div class="sidebar">
-      <h2>MOUNTAIN OBSERVATIONS</h2>
-
-      <!--
-        Mount Mansfield / MMNV1 is now wired live:
-          - temp:      NWS BTV RR2 hydromet product (SHEF .A line, TAIRGZZ)
-          - wind/dir:  IEM/mesonet RRSBTV HADS product (SHEF .E series, USIRG/UDIRG)
-          - windchill: computed server-side from the two above (NWS formula)
-        All three + elevation come from outputs/vt_mansfield_obs_status.json,
-        built by mansfield_obs.py. See that script for the SHEF parsing.
-
-        TODO: Nose/Taft Lodge/Base Lodge are still mockup data only.
-        Station ID -> site mapping is still open for those three (only
-        Summit/MMNV1 and Base Lodge/KBTV are unambiguous so far). Wind
-        chill for those three isn't computed anywhere yet either - same
-        approach as MMNV1 once their station IDs are settled.
-      -->
-
-      <!-- ================= WHITEFACE MOUNTAIN ================= -->
-
-<div class="summit-card" data-station="WHITEFACE">
-  <div class="header">
-    <div class="icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/>
-      </svg>
-    </div>
-
-    <div>
-      <div class="name">Whiteface Mountain</div>
-      <div class="elev" data-field="elevation">4,867 ft</div>
-    </div>
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="label">TEMP</div>
-      <div class="value" data-field="temp">—</div>
-    </div>
-
-    <div class="stat">
-      <div class="label">WIND</div>
-      <div class="value" data-field="wind">—</div>
-    </div>
-
-<div class="stat">
-  <div class="label">GUST</div>
-  <div class="value" data-field="gust">—</div>
-</div>
-    
-    <div class="stat">
-      <div class="label">CHILL</div>
-      <div class="value" data-field="windchill">—</div>
-    </div>
-
-  </div>
-</div>
-      
-      <div class="summit-card" data-station="MMNV1">
-        <div class="header">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
-          </div>
-          <div>
-            <div class="name">Mount Mansfield</div>
-            <div class="elev" data-field="elevation">3,891 ft</div>
-          </div>
-        </div>
-        <div class="stats">
-  <div class="stat">
-    <div class="label">TEMP</div>
-    <div class="value" data-field="temp">—</div>
-  </div>
-
-  <div class="stat">
-    <div class="label">WIND</div>
-    <div class="value" data-field="wind">—</div>
-  </div>
-
-<div class="stat">
-    <div class="label">GUST</div>
-    <div class="value" data-field="gust">—</div>
-  </div>
-          
-  <div class="stat">
-    <div class="label">CHILL</div>
-    <div class="value" data-field="windchill">—</div>
-  </div>
-</div>
-      </div>
-
-      <div class="summit-card" data-station="BOLTON">
-  <div class="header">
-    <div class="icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/>
-      </svg>
-    </div>
-
-    <div>
-      <div class="name">Bolton Vista Peak</div>
-      <div class="elev" data-field="elevation">3,150 ft</div>
-    </div>
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="label">TEMP</div>
-      <div class="value" data-field="temp">—</div>
-    </div>
-
-    <div class="stat">
-      <div class="label">WIND</div>
-      <div class="value" data-field="wind">—</div>
-    </div>
-
-    <div class="stat">
-      <div class="label">GUST</div>
-      <div class="value" data-field="gust">—</div>
-    </div>
-
-    <div class="stat">
-      <div class="label">CHILL</div>
-      <div class="value" data-field="windchill">—</div>
-    </div>
-
-  </div>
-
-</div>
-      
-      <!-- ================= BURKE MOUNTAIN ================= -->
-
-<div class="summit-card" data-station="BURKE">
-  <div class="header">
-    <div class="icon">
-      <svg viewBox="0 0 24 24">
-        <path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/>
-      </svg>
-    </div>
-
-    <div>
-      <div class="name">Burke Mountain</div>
-      <div class="elev" data-field="elevation">3,058 ft</div>
-    </div>
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="label">TEMP</div>
-      <div class="value" data-field="temp">—</div>
-    </div>
-
-    <div class="stat">
-      <div class="label">WIND</div>
-      <div class="value" data-field="wind">—</div>
-    </div>
-
-<div class="stat">
-    <div class="label">GUST</div>
-    <div class="value" data-field="gust">—</div>
-  </div>
-    
-    <div class="stat">
-      <div class="label">CHILL</div>
-      <div class="value" data-field="windchill">—</div>
-    </div>
-
-  </div>
-</div>
-
-    </div>
-
   </div>
 
   <script>
+    // ============================================================
+    // LIVE CLOCK - ticks every second. The rest of the dashboard
+    // refreshes every 5 minutes (REFRESH_INTERVAL_MS below); this is
+    // just a "yes, this page is actually alive" visual, cheap to run
+    // on its own faster interval.
+    // ============================================================
+
+    function tickClock() {
+      const now = new Date();
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const hh = String(now.getUTCHours()).padStart(2, "0");
+      const mm = String(now.getUTCMinutes()).padStart(2, "0");
+      const ss = String(now.getUTCSeconds()).padStart(2, "0");
+      const el = document.getElementById("nav-clock");
+      if (el) {
+        el.textContent = `${now.getUTCDate()} ${months[now.getUTCMonth()]} ${now.getUTCFullYear()} ${hh}:${mm}:${ss} UTC`;
+      }
+    }
+
+    tickClock();
+    setInterval(tickClock, 1000);
+
     // Populates the cards backed by tempprofile.py / mansfield_snow_depth.py /
     // mansfield_obs.py's JSON exports (vt_diagnostics_status.json,
     // vt_snow_depth_status.json, vt_mansfield_obs_status.json).
