@@ -139,6 +139,14 @@
     padding: 8px;
     min-width: 0;
     align-self: start;
+    /* Absolute cap, not a proportion of the grid column. The 2fr/1fr
+       column ratio is still what determines where the sidebar sits,
+       but letting the chart's actual pixel size follow that ratio
+       meant it came out a different absolute size on every screen -
+       correct-looking on the viewport it was tested at, oversized on
+       a wider one. This value is independent of viewport width
+       entirely, so it now looks the same size everywhere. */
+    max-width: 640px;
   }
 
   .sounding-panel img {
