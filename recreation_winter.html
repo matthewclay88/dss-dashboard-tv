@@ -31,15 +31,15 @@
      ===================================================================== */
 
   :root {
-    --navy: #0e2a4d;
-    --navy-light: #16457c;
-    --page-bg: #eef1f5;
-    --card-bg: #ffffff;
-    --card-border: #e2e6ea;
-    --ink: #1a2332;
-    --muted: #6b7688;
-    --blue: #1e5fa8;
-    --sidebar-card-bg: #f4f6f8;
+  --navy: #0e2a4d;
+  --navy-light: #16457c;
+  --page-bg: #eef1f5;
+  --card-bg: rgba(255, 255, 255, 0.72);
+  --card-border: rgba(226, 230, 234, 0.8);
+  --ink: #1a2332;
+  --muted: #6b7688;
+  --blue: #1e5fa8;
+  --sidebar-card-bg: rgba(244, 246, 248, 0.68);
     --snow-card-from: #123a63;
     --snow-card-to: #0a2647;
     --froude-card-from: #5f3dc4;
@@ -228,18 +228,29 @@
     flex: 0 0 auto;
   }
 
+  .card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+  
   .summit-card {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow: hidden;
-    background: var(--sidebar-card-bg);
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    transition: background 0.4s ease;
-  }
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--sidebar-card-bg);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: background 0.4s ease;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
 
   .summit-card .header {
     display: flex;
@@ -466,18 +477,20 @@
   }
 
   .snow-chart-panel {
-    flex: 0 0 46%;
-    min-width: 0;
-    min-height: 0;
-    border-radius: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
+  flex: 0 0 46%;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
 
   .snow-chart-panel img {
     max-width: 100%;
