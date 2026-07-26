@@ -578,39 +578,6 @@
         approach as MMNV1 once their station IDs are settled.
       -->
 
-      <div class="summit-card" data-station="MMNV1">
-        <div class="header">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
-          </div>
-          <div>
-            <div class="name">Mount Mansfield</div>
-            <div class="elev" data-field="elevation">3891 ft</div>
-          </div>
-        </div>
-        <div class="stats">
-  <div class="stat">
-    <div class="label">TEMP</div>
-    <div class="value" data-field="temp">—</div>
-  </div>
-
-  <div class="stat">
-    <div class="label">WIND</div>
-    <div class="value" data-field="wind">—</div>
-  </div>
-
-<div class="stat">
-    <div class="label">GUST</div>
-    <div class="value" data-field="gust">—</div>
-  </div>
-          
-  <div class="stat">
-    <div class="label">CHILL</div>
-    <div class="value" data-field="windchill">—</div>
-  </div>
-</div>
-      </div>
-
       <!-- ================= WHITEFACE MOUNTAIN ================= -->
 
 <div class="summit-card" data-station="WHITEFACE">
@@ -651,7 +618,80 @@
 
   </div>
 </div>
+      
+      <div class="summit-card" data-station="MMNV1">
+        <div class="header">
+          <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+          </div>
+          <div>
+            <div class="name">Mount Mansfield</div>
+            <div class="elev" data-field="elevation">3,891 ft</div>
+          </div>
+        </div>
+        <div class="stats">
+  <div class="stat">
+    <div class="label">TEMP</div>
+    <div class="value" data-field="temp">—</div>
+  </div>
 
+  <div class="stat">
+    <div class="label">WIND</div>
+    <div class="value" data-field="wind">—</div>
+  </div>
+
+<div class="stat">
+    <div class="label">GUST</div>
+    <div class="value" data-field="gust">—</div>
+  </div>
+          
+  <div class="stat">
+    <div class="label">CHILL</div>
+    <div class="value" data-field="windchill">—</div>
+  </div>
+</div>
+      </div>
+
+      <div class="summit-card" data-station="BOLTON">
+  <div class="header">
+    <div class="icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/>
+      </svg>
+    </div>
+
+    <div>
+      <div class="name">Bolton Vista Peak</div>
+      <div class="elev" data-field="elevation">3,150 ft</div>
+    </div>
+  </div>
+
+  <div class="stats">
+
+    <div class="stat">
+      <div class="label">TEMP</div>
+      <div class="value" data-field="temp">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">WIND</div>
+      <div class="value" data-field="wind">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">GUST</div>
+      <div class="value" data-field="gust">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">CHILL</div>
+      <div class="value" data-field="windchill">—</div>
+    </div>
+
+  </div>
+
+</div>
+      
       <!-- ================= BURKE MOUNTAIN ================= -->
 
 <div class="summit-card" data-station="BURKE">
@@ -692,36 +732,6 @@
 
   </div>
 </div>
-
-      <div class="summit-card" data-station="KBTV">
-        <div class="header">
-          <div class="icon">
-            <svg viewBox="0 0 24 24"><path d="M4 12 L12 5 L20 12 M6 12 V20 H18 V12"/></svg>
-          </div>
-          <div>
-            <div class="name">Base Lodge</div>
-            <div class="elev">1,300 ft</div>
-          </div>
-        </div>
-        <div class="stats">
-          <div class="stat">
-            <div class="label">TEMP</div>
-            <div class="value" data-field="temp">1°</div>
-          </div>
-          <div class="stat">
-            <div class="label">WIND</div>
-            <div class="value" data-field="wind">140/5</div>
-          </div>
-          <div class="stat">
-            <div class="label">CHILL</div>
-            <div class="value" data-field="windchill">-1°</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
 
   <script>
     // Populates the cards backed by tempprofile.py / mansfield_snow_depth.py /
@@ -2224,11 +2234,19 @@ async function refreshWhitefaceObs() {
 // ============================================================================
 
 const BURKE_STATION = "KVTEASTB15";
-
+const BOLTON_STATION = "KVTBOLTO4";
+    
 const BURKE_API_URL =
   "https://api.weather.com/v2/pws/observations/current" +
   "?apiKey=e1f10a1e78da46f5b10a1e78da96f525" +
   "&stationId=" + BURKE_STATION +
+  "&numericPrecision=decimal" +
+  "&format=json" +
+  "&units=e";
+const BOLTON_API_URL =
+  "https://api.weather.com/v2/pws/observations/current" +
+  "?apiKey=e1f10a1e78da46f5b10a1e78da96f525" +
+  "&stationId=" + BOLTON_STATION +
   "&numericPrecision=decimal" +
   "&format=json" +
   "&units=e";
@@ -2649,7 +2667,199 @@ if (
     );
   }
 }
-    
+
+async function fetchBoltonObservation_() {
+
+  try {
+
+    const response = await fetchWithTimeout_(
+      BOLTON_API_URL,
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      console.warn(`Bolton PWS API failed: HTTP ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (
+      !data ||
+      !Array.isArray(data.observations) ||
+      !data.observations.length
+    ) {
+      console.warn("Bolton: API returned no observations.");
+      return null;
+    }
+
+    const raw = data.observations[0];
+    const imperial = raw.imperial || {};
+
+    const tempF =
+      imperial.temp != null
+        ? Number(imperial.temp)
+        : null;
+
+    const sustainedMph =
+      imperial.windSpeed != null
+        ? Number(imperial.windSpeed)
+        : null;
+
+    const gustMph =
+      imperial.windGust != null
+        ? Number(imperial.windGust)
+        : null;
+
+    const directionDeg =
+      raw.winddir != null
+        ? Number(raw.winddir)
+        : null;
+
+    let windChillF = null;
+
+    if (
+      tempF != null &&
+      tempF <= 50 &&
+      sustainedMph != null &&
+      sustainedMph >= 3 &&
+      imperial.windChill != null
+    ) {
+
+      const wc = Number(imperial.windChill);
+
+      if (Number.isFinite(wc)) {
+        windChillF = wc;
+      }
+    }
+
+    const elevationFt =
+      imperial.elev != null
+        ? Number(imperial.elev)
+        : null;
+
+    return {
+
+      stationId:
+        raw.stationID || BOLTON_STATION,
+
+      tempF,
+
+      sustainedMph,
+
+      gustMph,
+
+      directionDeg,
+
+      windChillF,
+
+      elevationFt,
+
+      timestamp: raw.obsTimeUtc || null
+    };
+
+  } catch (error) {
+
+    console.warn(
+      "Bolton observation fetch failed:",
+      error
+    );
+
+    return null;
+  }
+}
+
+async function refreshBoltonObs() {
+
+  const card = document.querySelector(
+    '.summit-card[data-station="BOLTON"]'
+  );
+
+  if (!card) {
+    console.warn("Bolton summit card not found.");
+    return;
+  }
+
+  const tempEl = card.querySelector('[data-field="temp"]');
+  const windEl = card.querySelector('[data-field="wind"]');
+  const gustEl = card.querySelector('[data-field="gust"]');
+  const chillEl = card.querySelector('[data-field="windchill"]');
+  const elevationEl = card.querySelector('[data-field="elevation"]');
+
+  try {
+
+    const obs = await fetchBoltonObservation_();
+
+    if (!obs) {
+
+      tempEl.textContent = "—";
+      windEl.textContent = "—";
+      gustEl.textContent = "—";
+      chillEl.textContent = "—";
+
+      return;
+    }
+
+    tempEl.textContent =
+      obs.tempF != null
+        ? `${Math.round(obs.tempF)}°`
+        : "—";
+
+    if (obs.sustainedMph != null) {
+
+      if (obs.directionDeg != null) {
+
+        const direction =
+          String(Math.round(obs.directionDeg))
+            .padStart(3, "0");
+
+        windEl.textContent =
+          `${direction}/${Math.round(obs.sustainedMph)}`;
+
+      } else {
+
+        windEl.textContent =
+          `${Math.round(obs.sustainedMph)} mph`;
+      }
+
+    } else {
+
+      windEl.textContent = "—";
+    }
+
+    gustEl.textContent =
+      obs.gustMph != null
+        ? `${Math.round(obs.gustMph)}`
+        : "—";
+
+    chillEl.textContent =
+      obs.windChillF != null
+        ? `${Math.round(obs.windChillF)}°`
+        : "—";
+
+    if (
+      elevationEl &&
+      obs.elevationFt != null
+    ) {
+
+      elevationEl.textContent =
+        `${Math.round(obs.elevationFt)} ft`;
+    }
+
+    console.log(
+      "BOLTON LIVE OBS:",
+      obs
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Bolton observation refresh failed:",
+      error
+    );
+  }
+}    
+
     // Seeds name/elevation from STATION_CONFIG immediately on load, so the
     // card is correct even before the first fetch resolves - and so
     // elevation has one source of truth as more stations get wired up.
@@ -2668,6 +2878,7 @@ if (
       refreshMansfieldObs();
       refreshWhitefaceObs();
       refreshBurkeObs();
+      refreshBoltonObs();
     }
 
     // Color the static placeholder immediately, don't wait on the
