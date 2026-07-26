@@ -465,17 +465,29 @@
     display: block;
   }
 
+  .lapse-card.lapse-low {
+    background: linear-gradient(160deg,#2f9e44,#1c6b2c);
+  }
+
+.lapse-card.lapse-medium {
+    background: linear-gradient(160deg,#f59f00,#a66a00);
+  }
+
+.lapse-card.lapse-high {
+    background: linear-gradient(160deg,#e03131,#962020);
+  }
+  
   /* ================= 2x2 STAT GRID ================= */
 
   .quad-stats {
-    flex: 1 1 0;
-    min-width: 0;
-    min-height: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 12px;
-  }
+    flex:1 1 0;
+    min-width:0;
+    min-height:0;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:repeat(3,1fr);
+    gap:12px;
+}
 
   .quad-card {
     min-width: 0;
@@ -711,33 +723,44 @@
       </div>
 
       <div class="snow-chart-panel">
-        <img src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_snow_depth_chart.png" alt="Mount Mansfield snow depth, current season vs. historical max/min/average">
-      </div>
+    <img src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_snow_depth_chart.png"
+         alt="Mount Mansfield snow depth, current season vs. historical max/min/average">
+</div>
 
-      <div class="quad-stats">
+<div class="quad-stats">
 
-        <div class="quad-card ptype-card">
-          <div class="eyebrow">EXPECTED P-TYPE</div>
-          <div class="value" data-field="precip-type">Rain</div>
-        </div>
+    <div class="quad-card">
+        <div class="eyebrow">FREEZING LEVEL</div>
+        <div class="value" data-field="freezing-level">&mdash;</div>
+    </div>
 
-        <div class="quad-card froude-card">
-          <div class="eyebrow">FROUDE NUMBER</div>
-          <div class="value" data-field="froude-number">0.09</div>
-          <div class="subtext" data-field="flow-regime">Blocked</div>
-        </div>
+    <div class="quad-card">
+        <div class="eyebrow">WET-BULB ZERO</div>
+        <div class="value" data-field="wetbulb-zero">&mdash;</div>
+    </div>
 
-        <div class="quad-card">
-          <div class="eyebrow">FREEZING LEVEL</div>
-          <div class="value" data-field="freezing-level">&mdash;</div>
-        </div>
+    <div class="quad-card shear-card">
+        <div class="eyebrow">SHEAR (SFC–SUMMIT)</div>
+        <div class="value" data-field="bulk-shear">&mdash;</div>
+    </div>
 
-        <div class="quad-card shear-card">
-          <div class="eyebrow">SHEAR (SFC&ndash;SUMMIT)</div>
-          <div class="value" data-field="bulk-shear">&mdash;</div>
-        </div>
+    <div class="quad-card lapse-card">
+        <div class="eyebrow">MEAN LAPSE RATE</div>
+        <div class="value" data-field="lapse-rate">&mdash;</div>
+    </div>
 
-      </div>
+    <div class="quad-card froude-card">
+        <div class="eyebrow">FROUDE NUMBER</div>
+        <div class="value" data-field="froude-number">—</div>
+        <div class="subtext" data-field="flow-regime">—</div>
+    </div>
+
+    <div class="quad-card ptype-card">
+        <div class="eyebrow">EXPECTED P-TYPE</div>
+        <div class="value" data-field="precip-type">—</div>
+    </div>
+
+</div>
 
     </div>
 
@@ -1658,6 +1681,37 @@ function parseRrsSeries_(text, stationId, code) {
       });
     }
 
+    function lapseColorClass(rate) {
+
+    if (rate === null || rate === undefined)
+        return null;
+
+    if (rate <= 6)
+        return "lapse-low";
+
+    if (rate <= 8)
+        return "lapse-medium";
+
+    return "lapse-high";
+}
+
+function applyLapseColor(rate) {
+
+    document.querySelectorAll(".lapse-card").forEach((card) => {
+
+        card.classList.remove(
+            "lapse-low",
+            "lapse-medium",
+            "lapse-high"
+        );
+
+        const cls = lapseColorClass(rate);
+
+        if (cls)
+            card.classList.add(cls);
+    });
+}
+    
     function formatDateUTC(isoString) {
       if (!isoString) return "\u2014";
       const d = new Date(isoString);
@@ -1701,6 +1755,14 @@ function parseRrsSeries_(text, stationId, code) {
             : "None in layer"
         );
 
+setField(
+    "wetbulb-zero",
+    data.wet_bulb_zero_ft !== null &&
+    data.wet_bulb_zero_ft !== undefined
+        ? `${Math.round(data.wet_bulb_zero_ft).toLocaleString()} ft`
+        : "None in layer"
+);
+        
         setField(
           "bulk-shear",
           data.bulk_shear_kt !== null && data.bulk_shear_kt !== undefined
@@ -1708,6 +1770,17 @@ function parseRrsSeries_(text, stationId, code) {
             : "\u2014"
         );
         applyShearColor(data.bulk_shear_kt);
+
+        setField(
+    "lapse-rate",
+    data.mean_lapse_rate_C_km !== null &&
+    data.mean_lapse_rate_C_km !== undefined
+        ? `${data.mean_lapse_rate_C_km.toFixed(1)} C/km`
+        : "—"
+);
+
+applyLapseColor(data.mean_lapse_rate_C_km);
+        
       } catch (err) {
         // Leave whatever's currently showing (placeholder or last
         // successful fetch) rather than blanking the card on a
