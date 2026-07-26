@@ -189,7 +189,7 @@
   */
 
   .sounding-panel {
-    aspect-ratio: 7.53 / 5.42;
+    aspect-ratio: 7.3 / 4.22;
     flex: 0 0 auto;
     height: 100%;
     min-width: 0;
@@ -229,7 +229,7 @@
     overflow: hidden;
     background: var(--sidebar-card-bg);
     border-radius: 12px;
-    padding: 12px 18px;
+    padding: 10px 14px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -242,14 +242,14 @@
   .summit-card .header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
   }
 
   .summit-card .icon {
-    width: 46px;
-    height: 46px;
-    flex: 0 0 46px;
-    border-radius: 9px;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 8px;
     background: #e4ecf5;
     display: flex;
     align-items: center;
@@ -257,8 +257,8 @@
   }
 
   .summit-card .icon svg {
-    width: 26px;
-    height: 26px;
+    width: 21px;
+    height: 21px;
     stroke: var(--blue);
     fill: none;
     stroke-width: 1.8;
@@ -266,60 +266,51 @@
     stroke-linejoin: round;
   }
 
-  /* Name + elevation now share one line ("Mount Mansfield @ 3,891 ft"),
+  /* Name + elevation share one line ("Mount Mansfield @ 3,891 ft"),
      which is what frees up the vertical room the stats row uses below. */
 
   .summit-card .name-line {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 7px;
+    gap: 6px;
     min-width: 0;
   }
 
   .summit-card .name {
     font-weight: 800;
-    font-size: 22px;
+    font-size: 17px;
     line-height: 1.15;
   }
 
   .summit-card .elev-inline {
-    font-size: 14px;
+    font-size: 11.5px;
     font-weight: 600;
     color: var(--muted);
     white-space: nowrap;
   }
 
+  /* Five equal-width columns: TEMP / DIR / WIND / GUST / CHILL. Every
+     column shares the row with flex:1 1 0 rather than hand-tuned
+     percentages per column - with five of them, individually sized
+     basis values were the thing making this row fragile (any one
+     content change threw the others off). Equal columns plus
+     min-width:0 (so long numbers can't force the row wider than the
+     card) is simpler and holds up regardless of which values are
+     showing on a given refresh. */
+
   .summit-card .stats {
     display: flex;
-    margin-top: 10px;
-    padding-top: 9px;
+    margin-top: 8px;
+    padding-top: 7px;
     border-top: 1px solid var(--card-border);
   }
 
   .summit-card .stat {
-    text-align: center;
+    flex: 1 1 0;
     min-width: 0;
-  }
-
-  /* TEMP */
-  .summit-card .stat:nth-child(1) {
-    flex: 0 0 20%;
-  }
-
-  /* WIND — compass widget, needs to be roughly square */
-  .summit-card .stat:nth-child(2) {
-    flex: 0 0 32%;
-  }
-
-  /* GUST */
-  .summit-card .stat:nth-child(3) {
-    flex: 0 0 24%;
-  }
-
-  /* CHILL */
-  .summit-card .stat:nth-child(4) {
-    flex: 0 0 24%;
+    text-align: center;
+    padding: 0 2px;
   }
 
   .summit-card .stat + .stat {
@@ -327,22 +318,25 @@
   }
 
   .summit-card .stat .label {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
     color: var(--muted);
+    white-space: nowrap;
   }
 
   .summit-card .stat .value {
-    font-size: 27px;
+    font-size: 19px;
     font-weight: 800;
-    margin-top: 5px;
+    margin-top: 4px;
+    white-space: nowrap;
     transition: opacity 0.25s ease;
   }
 
-  /* ---- Wind compass widget ---- */
+  /* ---- Wind direction compass (needle only — speed now lives in
+     its own numeric column, see the WIND stat) ---- */
 
-  .stat.wind-stat {
+  .stat.wind-dir-stat {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -351,9 +345,9 @@
 
   .wind-compass {
     position: relative;
-    width: 58px;
-    height: 58px;
-    margin: 4px auto 0;
+    width: 40px;
+    height: 40px;
+    margin: 3px auto 0;
   }
 
   .compass-svg {
@@ -370,7 +364,7 @@
   }
 
   .compass-tick {
-    font-size: 8px;
+    font-size: 7px;
     font-weight: 800;
     fill: var(--muted);
     text-anchor: middle;
@@ -384,17 +378,6 @@
 
   .compass-needle polygon {
     fill: var(--blue);
-  }
-
-  .compass-speed {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--ink);
-    pointer-events: none;
   }
 
   /* ================= WIND SPEED COLOR-CODING ================= */
@@ -709,8 +692,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-stat">
-              <div class="label">WIND (mph)</div>
+            <div class="stat wind-dir-stat">
+              <div class="label">DIR</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -719,10 +702,10 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
-                <div class="compass-speed" data-field="wind-speed">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -739,8 +722,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-stat">
-              <div class="label">WIND (mph)</div>
+            <div class="stat wind-dir-stat">
+              <div class="label">DIR</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -749,10 +732,10 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
-                <div class="compass-speed" data-field="wind-speed">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -769,8 +752,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-stat">
-              <div class="label">WIND (mph)</div>
+            <div class="stat wind-dir-stat">
+              <div class="label">DIR</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -779,10 +762,10 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
-                <div class="compass-speed" data-field="wind-speed">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -799,8 +782,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-stat">
-              <div class="label">WIND (mph)</div>
+            <div class="stat wind-dir-stat">
+              <div class="label">DIR</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -809,10 +792,10 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
-                <div class="compass-speed" data-field="wind-speed">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -1096,17 +1079,19 @@ function formatGustDisplay_(gustMph) {
 }
 
 // ---------------------------------------------------------------------------
-// Wind compass widget.
+// Wind direction + speed.
 //
-// Rotates the needle to the meteorological "wind FROM" direction
-// (0deg = needle points north/up, same convention formatWindDisplay_
-// already used for its bare degree number) and writes the rounded
-// speed into the center of the dial. A missing direction just fades
-// the needle out rather than hiding it, so the dial's shape and the
-// speed number stay stable even when direction briefly drops out of
-// a feed. The full "165° 5 mph" text still lives on as this
-// element's title attribute, so hovering the compass gives the exact
-// reading.
+// The DIR compass dial and the WIND numeric column are two separate
+// stats now, but one feed drives both, so this stays a single
+// function. The needle rotates to the meteorological "wind FROM"
+// direction (0deg = needle points north/up, same convention
+// formatWindDisplay_ already used for its bare degree number); a
+// missing direction just fades the needle out rather than hiding it,
+// so the dial's shape stays stable even when direction briefly drops
+// out of a feed. Speed reuses formatGustDisplay_'s "23 mph" shape so
+// the WIND and GUST columns read the same way. The full "165° 5 mph"
+// text still lives on as the compass's title attribute, so hovering
+// the dial gives the exact reading even without the number inside it.
 // ---------------------------------------------------------------------------
 
 function setWindCompass_(card, directionDeg, speedMph) {
@@ -1115,16 +1100,13 @@ function setWindCompass_(card, directionDeg, speedMph) {
 
   const container = card.querySelector('[data-field="wind-compass"]');
   const needle = card.querySelector('[data-field="wind-needle"]');
-  const speedEl = card.querySelector('[data-field="wind-speed"]');
-
-  const hasSpeed =
-    speedMph !== null && speedMph !== undefined && Number.isFinite(speedMph);
+  const speedEl = card.querySelector('[data-field="wind"]');
 
   const hasDirection =
     directionDeg !== null && directionDeg !== undefined && Number.isFinite(directionDeg);
 
   if (speedEl) {
-    speedEl.textContent = hasSpeed ? Math.round(speedMph) : "\u2014";
+    speedEl.textContent = formatGustDisplay_(speedMph);
   }
 
   if (needle) {
