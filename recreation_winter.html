@@ -330,6 +330,32 @@
     padding-top: 10px;
   }
 
+  .snow-summary .stats-mini {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.14);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .snow-summary .stat-mini-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+  }
+
+  .snow-summary .stat-mini-row .label {
+    color: #9db6d4;
+    font-weight: 600;
+  }
+
+  .snow-summary .stat-mini-row .value {
+    font-weight: 700;
+    color: #eaf1fa;
+  }
+
   .snow-chart-panel {
     flex: 0 0 46%;
     min-width: 0;
@@ -507,6 +533,30 @@
         <div class="departure placeholder" data-field="departure">
           Departure — pending wiring
         </div>
+
+        <!--
+          TODO: same situation as departure above — mansfield_snow_depth.py
+          needs to add normal_depth_in, record_high_in, and record_low_in
+          to vt_snow_depth_status.json. refreshSnowDepth() below already
+          reads them; until those fields exist in the JSON these three
+          rows will just show "—".
+        -->
+        <div class="stats-mini">
+          <div class="stat-mini-row">
+            <span class="label">Normal</span>
+            <span class="value" data-field="snow-normal">—</span>
+          </div>
+          <div class="stat-mini-row">
+            <span class="label">Record High</span>
+            <span class="value" data-field="snow-record-high">—</span>
+          </div>
+          <div class="stat-mini-row">
+            <span class="label">Record Low</span>
+            <span class="value" data-field="snow-record-low">—</span>
+          </div>
+        </div>
+
+        <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
 
         <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
       </div>
@@ -1639,6 +1689,27 @@ function parseRrsSeries_(text, stationId, code) {
         document.querySelectorAll('[data-field="departure"]').forEach((el) => {
           el.classList.remove("placeholder");
         });
+
+        setField(
+          "snow-normal",
+          data.normal_depth_in !== null && data.normal_depth_in !== undefined
+            ? `${Math.round(data.normal_depth_in)}"`
+            : "\u2014"
+        );
+
+        setField(
+          "snow-record-high",
+          data.record_high_in !== null && data.record_high_in !== undefined
+            ? `${Math.round(data.record_high_in)}"`
+            : "\u2014"
+        );
+
+        setField(
+          "snow-record-low",
+          data.record_low_in !== null && data.record_low_in !== undefined
+            ? `${Math.round(data.record_low_in)}"`
+            : "\u2014"
+        );
 
         setField("updated", formatDateUTC(data.generated_at));
       } catch (err) {
