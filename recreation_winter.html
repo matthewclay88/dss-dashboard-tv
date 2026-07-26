@@ -173,11 +173,11 @@
   /* ================= TOP ROW: fixed % of available height ================= */
 
   .top-row {
-    flex: 0 0 63%;
-    min-height: 0;
-    display: flex;
-    gap: 16px;
-  }
+  flex: 0 0 auto;   /* was: flex: 0 0 63% */
+  min-height: 0;
+  display: flex;
+  gap: 16px;
+}
 
   /* ---- Sounding panel ---- */
   /*
@@ -189,8 +189,9 @@
   */
 
   .sounding-panel {
-  flex: 0 0 70%;   /* was aspect-ratio-driven; now a fixed share, bumped up from 66% since it can be a little wider */
-  height: 100%;
+  flex: 0 0 70%;
+  aspect-ratio: 15.03 / 5.64;   /* update this pair if tempprofile.py's final fig_width_in/fig_height_in ever change */
+  height: auto;                  /* was: height: 100% */
   min-width: 0;
   padding: 14px;
   display: flex;
@@ -212,8 +213,8 @@
   /* ---- Sidebar ---- */
 
   .sidebar {
-  flex: 0 0 30%;   /* was flex: 1 1 auto */
-  height: 100%;
+  flex: 0 0 30%;
+  height: auto;   /* was: height: 100% */
   min-height: 0;
   min-width: 0;
   display: flex;
