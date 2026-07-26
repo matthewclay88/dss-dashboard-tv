@@ -188,15 +188,16 @@
   */
 
   .sounding-panel {
-    flex: 0 0 66%;
-    min-width: 0;
-    height: 100%;
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
+  aspect-ratio: 7.3 / 4.22;   /* matches tempprofile.py's fixed fig_width_in / fig_height_in */
+  flex: 0 0 auto;
+  height: 100%;
+  min-width: 0;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 
   .sounding-panel img {
     max-width: 100%;
@@ -211,15 +212,15 @@
   /* ---- Sidebar ---- */
 
   .sidebar {
-    flex: 0 0 34%;
-    height: 100%;
-    min-height: 0;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow: hidden;
-  }
+  flex: 1 1 auto;             /* was flex: 0 0 34% */
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
 
   .sidebar h2 {
     font-size: 14px;
@@ -259,8 +260,8 @@
   }
 
   .summit-card .icon {
-    width: 40px;
-    height: 40px;
+    width: 46px;
+    height: 46px;
     flex: 0 0 40px;
     border-radius: 9px;
     background: #e4ecf5;
@@ -270,8 +271,8 @@
   }
 
   .summit-card .icon svg {
-    width: 23px;
-    height: 23px;
+    width: 26px;
+    height: 26px;
     stroke: var(--blue);
     fill: none;
     stroke-width: 1.8;
@@ -280,15 +281,16 @@
   }
 
   .summit-card .name {
-    font-weight: 700;
-    font-size: 17px;
-  }
+  font-weight: 800;
+  font-size: 20px;   /* was 17px */
+}
 
   .summit-card .elev {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 1px;
-  }
+  font-size: 13px;   /* was 12px */
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 1px;
+}
 
   .summit-card .stats {
     display: flex;
@@ -300,6 +302,20 @@
   .summit-card .stat {
     text-align: center;
     min-width: 0;
+}
+
+.summit-card .stat .label {
+  font-size: 11px;    /* was 9.5px */
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.summit-card .stat .value {
+  font-size: 24px;    /* was 19px */
+  font-weight: 800;
+  margin-top: 4px;
+  transition: opacity 0.25s ease;
 }
 
 /* TEMP */
@@ -634,8 +650,6 @@
       </div>
 
       <div class="sidebar">
-        <h2>MOUNTAIN OBSERVATIONS</h2>
-
         <!--
           Mount Mansfield / MMNV1, Whiteface, Bolton Vista Peak, and
           Burke Mountain are all wired live - see the fetch*Observation_
