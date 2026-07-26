@@ -166,6 +166,8 @@
     border: 1px solid var(--card-border);
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 
   /* ================= TOP ROW: fixed % of available height ================= */
@@ -179,25 +181,24 @@
 
   /* ---- Sounding panel ---- */
   /*
-    flex:0 0 66% / sidebar's 34% preserves the 2:1 ratio measured
-    directly off the reference layout. Both are now height-bounded by
-    top-row's fixed budget, and the image inside is constrained on
-    BOTH axes (object-fit:contain) - it will never force this box
-    taller than its budget, unlike the old width:100%;height:auto
-    approach.
+    Sized to the Skew-T's own fixed aspect ratio (matches
+    tempprofile.py's fig_width_in / fig_height_in) rather than a
+    flex-basis percentage, so object-fit:contain has no leftover
+    space to letterbox - the card IS the image's shape, and the
+    sidebar just takes whatever width is left over.
   */
 
   .sounding-panel {
-  aspect-ratio: 7.3 / 4.22;   /* matches tempprofile.py's fixed fig_width_in / fig_height_in */
-  flex: 0 0 auto;
-  height: 100%;
-  min-width: 0;
-  padding: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
+    aspect-ratio: 7.3 / 4.22;
+    flex: 0 0 auto;
+    height: 100%;
+    min-width: 0;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
 
   .sounding-panel img {
     max-width: 100%;
@@ -212,46 +213,31 @@
   /* ---- Sidebar ---- */
 
   .sidebar {
-  flex: 1 1 auto;             /* was flex: 0 0 34% */
-  height: 100%;
-  min-height: 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: hidden;
-}
-
-  .sidebar h2 {
-    font-size: 14px;
-    letter-spacing: 0.04em;
-    margin: 2px 0 2px 2px;
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
   }
 
-  .card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
-  
   .summit-card {
-  flex: 1 1 0;
-  min-height: 0;
-  overflow: hidden;
-  background: var(--sidebar-card-bg);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  transition: background 0.4s ease;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--sidebar-card-bg);
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: background 0.4s ease;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-left: 4px solid transparent;
+  }
 
   .summit-card .header {
     display: flex;
@@ -262,7 +248,7 @@
   .summit-card .icon {
     width: 46px;
     height: 46px;
-    flex: 0 0 40px;
+    flex: 0 0 46px;
     border-radius: 9px;
     background: #e4ecf5;
     display: flex;
@@ -280,80 +266,135 @@
     stroke-linejoin: round;
   }
 
-  .summit-card .name {
-  font-weight: 800;
-  font-size: 20px;   /* was 17px */
-}
+  /* Name + elevation now share one line ("Mount Mansfield @ 3,891 ft"),
+     which is what frees up the vertical room the stats row uses below. */
 
-  .summit-card .elev {
-  font-size: 13px;   /* was 12px */
-  font-weight: 600;
-  color: var(--muted);
-  margin-top: 1px;
-}
+  .summit-card .name-line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .summit-card .name {
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1.15;
+  }
+
+  .summit-card .elev-inline {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+  }
 
   .summit-card .stats {
     display: flex;
-    margin-top: 8px;
-    padding-top: 7px;
+    margin-top: 10px;
+    padding-top: 9px;
     border-top: 1px solid var(--card-border);
   }
 
   .summit-card .stat {
     text-align: center;
     min-width: 0;
-}
+  }
 
-.summit-card .stat .label {
-  font-size: 11px;    /* was 9.5px */
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-}
+  /* TEMP */
+  .summit-card .stat:nth-child(1) {
+    flex: 0 0 20%;
+  }
 
-.summit-card .stat .value {
-  font-size: 24px;    /* was 19px */
-  font-weight: 800;
-  margin-top: 4px;
-  transition: opacity 0.25s ease;
-}
+  /* WIND — compass widget, needs to be roughly square */
+  .summit-card .stat:nth-child(2) {
+    flex: 0 0 32%;
+  }
 
-/* TEMP */
-.summit-card .stat:nth-child(1) {
-    flex: 0 0 18%;
-}
+  /* GUST */
+  .summit-card .stat:nth-child(3) {
+    flex: 0 0 24%;
+  }
 
-/* WIND — give direction + speed room to breathe */
-.summit-card .stat:nth-child(2) {
-    flex: 0 0 36%;
-}
-
-/* GUST */
-.summit-card .stat:nth-child(3) {
-    flex: 0 0 23%;
-}
-
-/* CHILL */
-.summit-card .stat:nth-child(4) {
-    flex: 0 0 23%;
-}
+  /* CHILL */
+  .summit-card .stat:nth-child(4) {
+    flex: 0 0 24%;
+  }
 
   .summit-card .stat + .stat {
     border-left: 1px solid var(--card-border);
   }
 
   .summit-card .stat .label {
-    font-size: 9.5px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.05em;
     color: var(--muted);
   }
 
   .summit-card .stat .value {
-    font-size: 19px;
+    font-size: 27px;
     font-weight: 800;
-    margin-top: 4px;
+    margin-top: 5px;
     transition: opacity 0.25s ease;
+  }
+
+  /* ---- Wind compass widget ---- */
+
+  .stat.wind-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .wind-compass {
+    position: relative;
+    width: 58px;
+    height: 58px;
+    margin: 4px auto 0;
+  }
+
+  .compass-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+
+  .compass-ring {
+    fill: rgba(255, 255, 255, 0.35);
+    stroke: var(--card-border);
+    stroke-width: 2;
+  }
+
+  .compass-tick {
+    font-size: 8px;
+    font-weight: 800;
+    fill: var(--muted);
+    text-anchor: middle;
+  }
+
+  .compass-needle {
+    transform-box: view-box;
+    transform-origin: 30px 30px;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  .compass-needle polygon {
+    fill: var(--blue);
+  }
+
+  .compass-speed {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--ink);
+    pointer-events: none;
   }
 
   /* ================= WIND SPEED COLOR-CODING ================= */
@@ -364,10 +405,6 @@
     (plot_dashboard_card) - rather than filling the whole card, so
     the card stays its normal light background/dark text throughout.
   */
-
-  .summit-card {
-    border-left: 4px solid transparent;
-  }
 
   .summit-card.wind-calm    { border-left-color: #2f9e44; }
   .summit-card.wind-breezy  { border-left-color: #f59f00; }
@@ -493,20 +530,20 @@
   }
 
   .snow-chart-panel {
-  flex: 0 0 46%;
-  min-width: 0;
-  min-height: 0;
-  border-radius: 12px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-}
+    flex: 0 0 46%;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
 
   .snow-chart-panel img {
     max-width: 100%;
@@ -655,7 +692,9 @@
           Burke Mountain are all wired live - see the fetch*Observation_
           functions below. Wind chill is computed client-side (NWS
           formula) for Mansfield; Whiteface/Burke/Bolton report their
-          own via their respective APIs.
+          own via their respective APIs. Wind direction/speed render
+          as a small compass widget (see setWindCompass_) rather than
+          plain text.
         -->
 
         <div class="summit-card" data-station="WHITEFACE">
@@ -663,14 +702,26 @@
             <div class="icon">
               <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
             </div>
-            <div>
-              <div class="name">Whiteface Mountain</div>
-              <div class="elev" data-field="elevation">4,867 ft</div>
+            <div class="name-line">
+              <span class="name">Whiteface Mountain</span>
+              <span class="elev-inline" data-field="elevation">@ 4,867 ft</span>
             </div>
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat wind-stat">
+              <div class="label">WIND (mph)</div>
+              <div class="wind-compass" data-field="wind-compass">
+                <svg class="compass-svg" viewBox="0 0 60 60">
+                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
+                  <text class="compass-tick" x="30" y="11">N</text>
+                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
+                    <polygon points="30,8 25,30 30,25 35,30"/>
+                  </g>
+                </svg>
+                <div class="compass-speed" data-field="wind-speed">—</div>
+              </div>
+            </div>
             <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -681,14 +732,26 @@
             <div class="icon">
               <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
             </div>
-            <div>
-              <div class="name">Mount Mansfield</div>
-              <div class="elev" data-field="elevation">3,891 ft</div>
+            <div class="name-line">
+              <span class="name">Mount Mansfield</span>
+              <span class="elev-inline" data-field="elevation">@ 3,891 ft</span>
             </div>
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat wind-stat">
+              <div class="label">WIND (mph)</div>
+              <div class="wind-compass" data-field="wind-compass">
+                <svg class="compass-svg" viewBox="0 0 60 60">
+                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
+                  <text class="compass-tick" x="30" y="11">N</text>
+                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
+                    <polygon points="30,8 25,30 30,25 35,30"/>
+                  </g>
+                </svg>
+                <div class="compass-speed" data-field="wind-speed">—</div>
+              </div>
+            </div>
             <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -699,14 +762,26 @@
             <div class="icon">
               <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
             </div>
-            <div>
-              <div class="name">Bolton Vista Peak</div>
-              <div class="elev" data-field="elevation">3,150 ft</div>
+            <div class="name-line">
+              <span class="name">Bolton Vista Peak</span>
+              <span class="elev-inline" data-field="elevation">@ 3,150 ft</span>
             </div>
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat wind-stat">
+              <div class="label">WIND (mph)</div>
+              <div class="wind-compass" data-field="wind-compass">
+                <svg class="compass-svg" viewBox="0 0 60 60">
+                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
+                  <text class="compass-tick" x="30" y="11">N</text>
+                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
+                    <polygon points="30,8 25,30 30,25 35,30"/>
+                  </g>
+                </svg>
+                <div class="compass-speed" data-field="wind-speed">—</div>
+              </div>
+            </div>
             <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -717,14 +792,26 @@
             <div class="icon">
               <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
             </div>
-            <div>
-              <div class="name">Burke Mountain</div>
-              <div class="elev" data-field="elevation">3,058 ft</div>
+            <div class="name-line">
+              <span class="name">Burke Mountain</span>
+              <span class="elev-inline" data-field="elevation">@ 3,058 ft</span>
             </div>
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat wind-stat">
+              <div class="label">WIND (mph)</div>
+              <div class="wind-compass" data-field="wind-compass">
+                <svg class="compass-svg" viewBox="0 0 60 60">
+                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
+                  <text class="compass-tick" x="30" y="11">N</text>
+                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
+                    <polygon points="30,8 25,30 30,25 35,30"/>
+                  </g>
+                </svg>
+                <div class="compass-speed" data-field="wind-speed">—</div>
+              </div>
+            </div>
             <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -974,6 +1061,10 @@ function calculateWindChill_(tempF, windMph) {
 // Burke/Bolton), so this is just formatting/rounding - no unit
 // conversion needed. (Earlier version converted to knots; reverted
 // per correction - mph throughout.)
+//
+// Still used to build the compass widget's hover tooltip (see
+// setWindCompass_) even though the card body itself now shows a
+// compass graphic instead of this text.
 // ---------------------------------------------------------------------------
 
 // "165° 5 mph" - direction as a bare degree number, speed rounded to
@@ -1002,6 +1093,53 @@ function formatGustDisplay_(gustMph) {
   }
 
   return `${Math.round(gustMph)} mph`;
+}
+
+// ---------------------------------------------------------------------------
+// Wind compass widget.
+//
+// Rotates the needle to the meteorological "wind FROM" direction
+// (0deg = needle points north/up, same convention formatWindDisplay_
+// already used for its bare degree number) and writes the rounded
+// speed into the center of the dial. A missing direction just fades
+// the needle out rather than hiding it, so the dial's shape and the
+// speed number stay stable even when direction briefly drops out of
+// a feed. The full "165° 5 mph" text still lives on as this
+// element's title attribute, so hovering the compass gives the exact
+// reading.
+// ---------------------------------------------------------------------------
+
+function setWindCompass_(card, directionDeg, speedMph) {
+
+  if (!card) return;
+
+  const container = card.querySelector('[data-field="wind-compass"]');
+  const needle = card.querySelector('[data-field="wind-needle"]');
+  const speedEl = card.querySelector('[data-field="wind-speed"]');
+
+  const hasSpeed =
+    speedMph !== null && speedMph !== undefined && Number.isFinite(speedMph);
+
+  const hasDirection =
+    directionDeg !== null && directionDeg !== undefined && Number.isFinite(directionDeg);
+
+  if (speedEl) {
+    speedEl.textContent = hasSpeed ? Math.round(speedMph) : "\u2014";
+  }
+
+  if (needle) {
+    if (hasDirection) {
+      needle.style.transform = `rotate(${directionDeg}deg)`;
+      needle.style.opacity = "1";
+    } else {
+      needle.style.transform = "rotate(0deg)";
+      needle.style.opacity = "0.2";
+    }
+  }
+
+  if (container) {
+    container.title = formatWindDisplay_(directionDeg, speedMph);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1977,7 +2115,6 @@ async function refreshMansfieldObs() {
 
   // Existing fields in the actual Mount Mansfield card
   const tempEl = card.querySelector('[data-field="temp"]');
-const windEl = card.querySelector('[data-field="wind"]');
 const gustEl = card.querySelector('[data-field="gust"]');
 const chillEl = card.querySelector('[data-field="windchill"]');
 const elevationEl = card.querySelector('[data-field="elevation"]');
@@ -2018,17 +2155,14 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
 
 
     // ============================================================
-    // WIND
-    //
-    // "165° 5 mph" - direction in degrees, speed rounded to the
-    // nearest integer (see formatWindDisplay_).
+    // WIND — compass dial (direction + speed together)
     // ============================================================
 
-    if (windEl) {
-      windEl.textContent = wind
-        ? formatWindDisplay_(wind.directionDeg, wind.sustainedMph)
-        : "—";
-    }
+    setWindCompass_(
+      card,
+      wind ? wind.directionDeg : null,
+      wind ? wind.sustainedMph : null
+    );
 
     applyWindColor_(card, wind ? wind.sustainedMph : null);
 
@@ -2086,7 +2220,7 @@ if (gustEl) {
     ) {
 
       elevationEl.textContent =
-        `${STATION_CONFIG.MMNV1.elevationFt.toLocaleString()} ft`;
+        `@ ${STATION_CONFIG.MMNV1.elevationFt.toLocaleString()} ft`;
     }
 
 
@@ -2347,9 +2481,6 @@ async function refreshWhitefaceObs() {
   const tempEl =
     card.querySelector('[data-field="temp"]');
 
-  const windEl =
-    card.querySelector('[data-field="wind"]');
-
   const chillEl =
     card.querySelector('[data-field="windchill"]');
 
@@ -2373,9 +2504,7 @@ async function refreshWhitefaceObs() {
         tempEl.textContent = "—";
       }
 
-      if (windEl) {
-        windEl.textContent = "—";
-      }
+      setWindCompass_(card, null, null);
 
       if (chillEl) {
         chillEl.textContent = "—";
@@ -2404,28 +2533,31 @@ async function refreshWhitefaceObs() {
 
 
     // ============================================================
-    // WIND
+    // WIND — compass dial
     //
-    // "165° 5 mph" - same format as Mansfield. Whiteface sometimes
-    // only gives a compass label (e.g. "NW") instead of a numeric
-    // degree - formatWindDisplay_ needs a number, so that fallback
-    // stays handled here rather than folded into the shared helper.
+    // Whiteface sometimes only gives a compass label (e.g. "NW")
+    // instead of a numeric degree - the dial needs a number to
+    // rotate the needle, so in that case we still show the speed
+    // but leave the needle faded, and put the label into the
+    // tooltip instead.
     // ============================================================
 
-    if (windEl) {
+    if (obs.directionDeg != null && Number.isFinite(obs.directionDeg)) {
 
-      if (obs.directionDeg != null && Number.isFinite(obs.directionDeg)) {
+      setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
 
-        windEl.textContent = formatWindDisplay_(obs.directionDeg, obs.sustainedMph);
+    } else if (obs.directionLabel && obs.sustainedMph != null) {
 
-      } else if (obs.directionLabel && obs.sustainedMph != null) {
+      setWindCompass_(card, null, obs.sustainedMph);
 
-        windEl.textContent = `${obs.directionLabel} ${Math.round(obs.sustainedMph)} mph`;
-
-      } else {
-
-        windEl.textContent = formatWindDisplay_(null, obs.sustainedMph);
+      const container = card.querySelector('[data-field="wind-compass"]');
+      if (container) {
+        container.title = `${obs.directionLabel} ${Math.round(obs.sustainedMph)} mph`;
       }
+
+    } else {
+
+      setWindCompass_(card, null, obs.sustainedMph);
     }
 
     applyWindColor_(card, obs.sustainedMph);
@@ -2459,7 +2591,7 @@ async function refreshWhitefaceObs() {
     if (elevationEl) {
 
       elevationEl.textContent =
-        "4,867 ft";
+        "@ 4,867 ft";
     }
 
 
@@ -2753,9 +2885,6 @@ async function refreshBurkeObs() {
   const tempEl =
     card.querySelector('[data-field="temp"]');
 
-  const windEl =
-  card.querySelector('[data-field="wind"]');
-
 const gustEl =
   card.querySelector('[data-field="gust"]');
 
@@ -2786,9 +2915,7 @@ const chillEl =
         tempEl.textContent = "—";
       }
 
-      if (windEl) {
-        windEl.textContent = "—";
-      }
+      setWindCompass_(card, null, null);
 
       if (chillEl) {
         chillEl.textContent = "—";
@@ -2817,14 +2944,10 @@ const chillEl =
 
 
     // ============================================================
-    // WIND
-    //
-    // "165° 5 mph" - same format as Mansfield/Whiteface.
+    // WIND — compass dial
     // ============================================================
 
-    if (windEl) {
-      windEl.textContent = formatWindDisplay_(obs.directionDeg, obs.sustainedMph);
-    }
+    setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
 
     applyWindColor_(card, obs.sustainedMph);
 
@@ -2875,7 +2998,7 @@ if (gustEl) {
     ) {
 
       elevationEl.textContent =
-        `${obs.elevationFt.toLocaleString("en-US", {
+        `@ ${obs.elevationFt.toLocaleString("en-US", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         })} ft`;
@@ -3014,7 +3137,6 @@ async function refreshBoltonObs() {
   }
 
   const tempEl = card.querySelector('[data-field="temp"]');
-  const windEl = card.querySelector('[data-field="wind"]');
   const gustEl = card.querySelector('[data-field="gust"]');
   const chillEl = card.querySelector('[data-field="windchill"]');
   const elevationEl = card.querySelector('[data-field="elevation"]');
@@ -3026,7 +3148,7 @@ async function refreshBoltonObs() {
     if (!obs) {
 
       tempEl.textContent = "—";
-      windEl.textContent = "—";
+      setWindCompass_(card, null, null);
       gustEl.textContent = "—";
       chillEl.textContent = "—";
 
@@ -3038,7 +3160,7 @@ async function refreshBoltonObs() {
         ? `${Math.round(obs.tempF)}°`
         : "—";
 
-    windEl.textContent = formatWindDisplay_(obs.directionDeg, obs.sustainedMph);
+    setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
     applyWindColor_(card, obs.sustainedMph);
 
     gustEl.textContent = formatGustDisplay_(obs.gustMph);
@@ -3054,7 +3176,7 @@ async function refreshBoltonObs() {
     ) {
 
       elevationEl.textContent =
-        `${Math.round(obs.elevationFt)} ft`;
+        `@ ${Math.round(obs.elevationFt)} ft`;
     }
 
     console.log(
@@ -3079,7 +3201,7 @@ async function refreshBoltonObs() {
         const nameEl = document.querySelector(`.summit-card[data-station="${station}"] .name`);
         if (nameEl) nameEl.textContent = cfg.name;
         const elevEl = cardField(station, "elevation");
-        if (elevEl) elevEl.textContent = `${cfg.elevationFt.toLocaleString()} ft`;
+        if (elevEl) elevEl.textContent = `@ ${cfg.elevationFt.toLocaleString()} ft`;
       });
     }
 
