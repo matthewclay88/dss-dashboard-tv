@@ -750,14 +750,16 @@
 <div class="quad-stats">
 
     <div class="quad-card">
-        <div class="eyebrow">FREEZING LEVEL</div>
-        <div class="value" data-field="freezing-level">&mdash;</div>
-    </div>
+    <div class="eyebrow">FREEZING LEVEL</div>
+    <div class="value" data-field="freezing-level">&mdash;</div>
+    <div class="subtext" data-field="freezing-level-subtext"></div>
+</div>
 
-    <div class="quad-card">
-        <div class="eyebrow">WET-BULB ZERO</div>
-        <div class="value" data-field="wetbulb-zero">&mdash;</div>
-    </div>
+<div class="quad-card">
+    <div class="eyebrow">WET-BULB ZERO</div>
+    <div class="value" data-field="wetbulb-zero">&mdash;</div>
+    <div class="subtext" data-field="wetbulb-zero-subtext"></div>
+</div>
 
     <div class="quad-card shear-card">
         <div class="eyebrow">SHEAR (SFC–SUMMIT)</div>
@@ -1751,6 +1753,74 @@ function applyLapseColor(rate) {
       return `${Math.round(dirDeg)}/${Math.round(speedMph)}`;
     }
 
+function formatZeroLevel(data, prefix) {
+    const status = data[`${prefix}_status`];
+    const level = data[`${prefix}_ft`];
+    const lower = data[`${prefix}_lower_crossing_ft`];
+    const upper = data[`${prefix}_upper_crossing_ft`];
+
+    switch (status) {
+
+        // Entire observed profile is below freezing.
+        case "surface":
+            return {
+                value: "Surface",
+                subtext: ""
+            };
+
+        // Entire observed profile is above freezing.
+        case "above_layer":
+            return {
+                value: "Above layer",
+                subtext: ""
+            };
+
+        // Traditional warm-below / cold-above crossing.
+        case "normal":
+            return {
+                value: level !== null && level !== undefined
+                    ? `${Math.round(level).toLocaleString()} ft`
+                    : "—",
+                subtext: ""
+            };
+
+        // Cold surface with warmth beginning aloft.
+        case "warm_layer":
+            return {
+                value: "Warm Layer",
+                subtext: level !== null && level !== undefined
+                    ? `Begins ${Math.round(level).toLocaleString()} ft`
+                    : ""
+            };
+
+        // Elevated warm nose bounded by two zero crossings.
+        case "warm_nose":
+            return {
+                value: "Warm Layer",
+                subtext:
+                    lower !== null && lower !== undefined &&
+                    upper !== null && upper !== undefined
+                        ? `${Math.round(lower).toLocaleString()}–${Math.round(upper).toLocaleString()} ft`
+                        : ""
+            };
+
+        case "unavailable":
+            return {
+                value: "N/A",
+                subtext: ""
+            };
+
+        // Backward compatibility with the old JSON.
+        default:
+            return {
+                value: level !== null && level !== undefined
+                    ? `${Math.round(level).toLocaleString()} ft`
+                    : "None in layer",
+                subtext: ""
+            };
+    }
+}
+    
     async function refreshDiagnostics() {
       try {
         const res = await fetch(DATA_BASE + "vt_diagnostics_status.json", { cache: "no-store" });
@@ -1768,19 +1838,29 @@ function applyLapseColor(rate) {
         );
         setField("flow-regime", data.flow_regime ?? "\u2014");
 
-        setField(
-          "freezing-level",
-          data.freezing_level_ft !== null && data.freezing_level_ft !== undefined
-            ? `${Math.round(data.freezing_level_ft).toLocaleString()} ft`
-            : "None in layer"
-        );
+       const freezingDisplay = formatZeroLevel(data, "freezing_level");
+
+setField(
+    "freezing-level",
+    freezingDisplay.value
+);
+
+setField(
+    "freezing-level-subtext",
+    freezingDisplay.subtext
+);
+
+
+const wetBulbDisplay = formatZeroLevel(data, "wet_bulb_zero");
 
 setField(
     "wetbulb-zero",
-    data.wet_bulb_zero_ft !== null &&
-    data.wet_bulb_zero_ft !== undefined
-        ? `${Math.round(data.wet_bulb_zero_ft).toLocaleString()} ft`
-        : "None in layer"
+    wetBulbDisplay.value
+);
+
+setField(
+    "wetbulb-zero-subtext",
+    wetBulbDisplay.subtext
 );
         
         setField(
