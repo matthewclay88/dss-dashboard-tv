@@ -92,7 +92,7 @@
   .layout {
     flex: 1 1 auto;
     min-height: 0;
-    max-width: 1520px;
+    max-width: 1700px;
     width: 100%;
     margin: 0 auto;
     padding: 12px 20px;
@@ -146,7 +146,7 @@
        correct-looking on the viewport it was tested at, oversized on
        a wider one. This value is independent of viewport width
        entirely, so it now looks the same size everywhere. */
-    max-width: 850px;
+    max-width: 1100px;
   }
 
   .sounding-panel img {
@@ -268,7 +268,7 @@
     flex: 0 0 20%;
     min-width: 0;
     border-radius: 12px;
-    padding: 16px 18px;
+    padding: 20px 22px;
     background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
     color: white;
     display: flex;
@@ -276,7 +276,7 @@
   }
 
   .snow-summary .eyebrow {
-    font-size: 11.5px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.06em;
     color: #cfe0f2;
@@ -285,42 +285,42 @@
   .snow-summary .headline {
     display: flex;
     align-items: baseline;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 10px;
+    margin-top: 14px;
   }
 
   .snow-summary .headline .snowflake {
-    width: 24px;
-    height: 24px;
-    flex: 0 0 24px;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
     color: #bcd6f2;
     align-self: center;
   }
 
   .snow-summary .value {
-    font-size: 34px;
+    font-size: 52px;
     font-weight: 800;
     line-height: 1;
   }
 
   .snow-summary .unit {
-    font-size: 15px;
+    font-size: 20px;
     font-weight: 700;
     color: #bcd6f2;
   }
 
   .snow-summary .location {
-    font-size: 12px;
+    font-size: 14px;
     color: #cfe0f2;
-    margin-top: 4px;
+    margin-top: 6px;
   }
 
   .snow-summary .departure {
-    font-size: 11.5px;
+    font-size: 13px;
     font-weight: 700;
-    margin-top: 10px;
+    margin-top: 14px;
     display: inline-block;
-    padding: 3px 9px;
+    padding: 5px 12px;
     border-radius: 999px;
     background: rgba(255,255,255,0.12);
     align-self: flex-start;
@@ -333,36 +333,41 @@
   }
 
   .snow-summary .updated {
-    font-size: 10.5px;
+    font-size: 11.5px;
     color: #9db6d4;
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 16px;
   }
 
   .snow-summary .stats-mini {
-    margin-top: 12px;
-    padding-top: 10px;
+    margin-top: 28px;
+    padding-top: 20px;
     border-top: 1px solid rgba(255,255,255,0.14);
     display: flex;
-    flex-direction: column;
-    gap: 5px;
   }
 
-  .snow-summary .stat-mini-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 12px;
+  .snow-summary .stat-mini-col {
+    flex: 1;
+    text-align: center;
   }
 
-  .snow-summary .stat-mini-row .label {
-    color: #9db6d4;
-    font-weight: 600;
+  .snow-summary .stat-mini-col + .stat-mini-col {
+    border-left: 1px solid rgba(255,255,255,0.14);
   }
 
-  .snow-summary .stat-mini-row .value {
+  .snow-summary .stat-mini-col .label {
+    font-size: 11px;
     font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #9db6d4;
+  }
+
+  .snow-summary .stat-mini-col .value {
+    display: block;
+    font-size: 22px;
+    font-weight: 800;
     color: #eaf1fa;
+    margin-top: 6px;
   }
 
   .snow-chart-panel {
@@ -551,16 +556,16 @@
           rows will just show "—".
         -->
         <div class="stats-mini">
-          <div class="stat-mini-row">
-            <span class="label">Normal</span>
+          <div class="stat-mini-col">
+            <span class="label">NORMAL</span>
             <span class="value" data-field="snow-normal">—</span>
           </div>
-          <div class="stat-mini-row">
-            <span class="label">Record High</span>
+          <div class="stat-mini-col">
+            <span class="label">RECORD HIGH</span>
             <span class="value" data-field="snow-record-high">—</span>
           </div>
-          <div class="stat-mini-row">
-            <span class="label">Record Low</span>
+          <div class="stat-mini-col">
+            <span class="label">RECORD LOW</span>
             <span class="value" data-field="snow-record-low">—</span>
           </div>
         </div>
