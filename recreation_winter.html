@@ -306,6 +306,73 @@
     transition: opacity 0.25s ease;
   }
 
+  /* ================= WIND SPEED COLOR-CODING ================= */
+  /*
+    <30 kt green, 30-45 yellow/orange, 45-60 red, >60 purple (see
+    applyWindColor_ in the script below). summit-card is a light
+    card with dark text by default - a solid colored background
+    needs its own text/icon/border treatment to stay readable,
+    which is why this is more than just a background-color swap.
+  */
+
+  .summit-card.wind-calm    { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
+  .summit-card.wind-breezy  { background: linear-gradient(160deg, #f59f00, #a66a00); }
+  .summit-card.wind-strong  { background: linear-gradient(160deg, #e03131, #962020); }
+  .summit-card.wind-extreme { background: linear-gradient(160deg, #9c36b5, #6a1b7a); }
+
+  .summit-card.wind-calm,
+  .summit-card.wind-breezy,
+  .summit-card.wind-strong,
+  .summit-card.wind-extreme {
+    color: white;
+  }
+
+  .summit-card.wind-calm .elev,
+  .summit-card.wind-breezy .elev,
+  .summit-card.wind-strong .elev,
+  .summit-card.wind-extreme .elev,
+  .summit-card.wind-calm .stat .label,
+  .summit-card.wind-breezy .stat .label,
+  .summit-card.wind-strong .stat .label,
+  .summit-card.wind-extreme .stat .label {
+    color: rgba(255,255,255,0.78);
+  }
+
+  .summit-card.wind-calm .stat .value,
+  .summit-card.wind-breezy .stat .value,
+  .summit-card.wind-strong .stat .value,
+  .summit-card.wind-extreme .stat .value {
+    color: white;
+  }
+
+  .summit-card.wind-calm .stats,
+  .summit-card.wind-breezy .stats,
+  .summit-card.wind-strong .stats,
+  .summit-card.wind-extreme .stats {
+    border-top-color: rgba(255,255,255,0.28);
+  }
+
+  .summit-card.wind-calm .stat + .stat,
+  .summit-card.wind-breezy .stat + .stat,
+  .summit-card.wind-strong .stat + .stat,
+  .summit-card.wind-extreme .stat + .stat {
+    border-left-color: rgba(255,255,255,0.28);
+  }
+
+  .summit-card.wind-calm .icon,
+  .summit-card.wind-breezy .icon,
+  .summit-card.wind-strong .icon,
+  .summit-card.wind-extreme .icon {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .summit-card.wind-calm .icon svg,
+  .summit-card.wind-breezy .icon svg,
+  .summit-card.wind-strong .icon svg,
+  .summit-card.wind-extreme .icon svg {
+    stroke: white;
+  }
+
   /* ================= BOTTOM ROW: remaining height ================= */
 
   .bottom-row {
@@ -869,6 +936,69 @@ function calculateWindChill_(tempF, windMph) {
     (35.75 * windFactor) +
     (0.4275 * tempF * windFactor)
   );
+}
+
+// ---------------------------------------------------------------------------
+// Wind speed display: mph, rounded to the nearest integer.
+//
+// Every source station already reports mph natively (IEM/RRS
+// sustained speed, Whiteface's API, Weather.com PWS for
+// Burke/Bolton), so this is just formatting/rounding - no unit
+// conversion needed. (Earlier version converted to knots; reverted
+// per correction - mph throughout.)
+// ---------------------------------------------------------------------------
+
+// "165° 5 mph" - direction as a bare degree number, speed rounded to
+// the nearest integer. Falls back to just the speed if direction
+// isn't available, and to an em dash if neither is.
+function formatWindDisplay_(directionDeg, speedMph) {
+
+  if (speedMph === null || speedMph === undefined || !Number.isFinite(speedMph)) {
+    return "\u2014";
+  }
+
+  const speedText = `${Math.round(speedMph)} mph`;
+
+  if (directionDeg === null || directionDeg === undefined || !Number.isFinite(directionDeg)) {
+    return speedText;
+  }
+
+  return `${Math.round(directionDeg)}\u00b0 ${speedText}`;
+}
+
+// Gust doesn't carry a direction, just "23 mph" (or an em dash).
+function formatGustDisplay_(gustMph) {
+
+  if (gustMph === null || gustMph === undefined || !Number.isFinite(gustMph)) {
+    return "\u2014";
+  }
+
+  return `${Math.round(gustMph)} mph`;
+}
+
+// ---------------------------------------------------------------------------
+// Wind speed color-coding for the summit cards.
+//
+// Thresholds as given: <30 mph green, 30-45 mph orange, 45-60 mph
+// red, >60 mph purple - applied directly to the mph value shown on
+// the card.
+// ---------------------------------------------------------------------------
+
+const WIND_COLOR_CLASSES = ["wind-calm", "wind-breezy", "wind-strong", "wind-extreme"];
+
+function windColorClass_(speedMph) {
+  if (speedMph === null || speedMph === undefined) return null;
+  if (speedMph < 30) return "wind-calm";
+  if (speedMph < 45) return "wind-breezy";
+  if (speedMph < 60) return "wind-strong";
+  return "wind-extreme";
+}
+
+function applyWindColor_(cardEl, speedMph) {
+  if (!cardEl) return;
+  cardEl.classList.remove(...WIND_COLOR_CLASSES);
+  const cls = windColorClass_(speedMph);
+  if (cls) cardEl.classList.add(cls);
 }
 
 // ============================================================================
@@ -1734,58 +1864,27 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
     // ============================================================
     // WIND
     //
-    // Keep the existing dashboard format:
-    //
-    //     240/35
-    //
-    // direction degrees / sustained mph
+    // "165° 5 mph" - direction in degrees, speed rounded to the
+    // nearest integer (see formatWindDisplay_).
     // ============================================================
 
-    if (
-      windEl &&
-      wind &&
-      wind.sustainedMph != null
-    ) {
-
-      if (wind.directionDeg != null) {
-
-        const direction =
-          String(
-            Math.round(wind.directionDeg)
-          ).padStart(3, "0");
-
-        windEl.textContent =
-          `${direction}/${Math.round(wind.sustainedMph)}`;
-
-      } else {
-
-        windEl.textContent =
-          `${Math.round(wind.sustainedMph)} mph`;
-      }
-
-    } else if (windEl) {
-
-      windEl.textContent = "—";
+    if (windEl) {
+      windEl.textContent = wind
+        ? formatWindDisplay_(wind.directionDeg, wind.sustainedMph)
+        : "—";
     }
+
+    applyWindColor_(card, wind ? wind.sustainedMph : null);
 
 // ============================================================
 // WIND GUST
 //
-// UPERG from the RRSBTV product.
+// UPERG from the RRSBTV product. Same mph->kt conversion as
+// sustained wind.
 // ============================================================
 
-if (
-  gustEl &&
-  wind &&
-  wind.gustMph != null
-) {
-
-  gustEl.textContent =
-    `${Math.round(wind.gustMph)}`;
-
-} else if (gustEl) {
-
-  gustEl.textContent = "—";
+if (gustEl) {
+  gustEl.textContent = wind ? formatGustDisplay_(wind.gustMph) : "—";
 }
     
     // ============================================================
@@ -2151,50 +2250,29 @@ async function refreshWhitefaceObs() {
     // ============================================================
     // WIND
     //
-    // Match Mansfield's format:
-    //
-    //       240/35
-    //
-    // direction degrees / sustained mph
-    //
-    // If degrees aren't available, fall back to the API's
-    // compass direction.
+    // "165° 5 mph" - same format as Mansfield. Whiteface sometimes
+    // only gives a compass label (e.g. "NW") instead of a numeric
+    // degree - formatWindDisplay_ needs a number, so that fallback
+    // stays handled here rather than folded into the shared helper.
     // ============================================================
 
-    if (
-      windEl &&
-      obs.sustainedMph != null
-    ) {
+    if (windEl) {
 
-      if (
-        obs.directionDeg != null &&
-        Number.isFinite(obs.directionDeg)
-      ) {
+      if (obs.directionDeg != null && Number.isFinite(obs.directionDeg)) {
 
-        const direction =
-          String(
-            Math.round(obs.directionDeg)
-          ).padStart(3, "0");
+        windEl.textContent = formatWindDisplay_(obs.directionDeg, obs.sustainedMph);
 
+      } else if (obs.directionLabel && obs.sustainedMph != null) {
 
-        windEl.textContent =
-          `${direction}/${Math.round(obs.sustainedMph)}`;
-
-      } else if (obs.directionLabel) {
-
-        windEl.textContent =
-          `${obs.directionLabel}/${Math.round(obs.sustainedMph)}`;
+        windEl.textContent = `${obs.directionLabel} ${Math.round(obs.sustainedMph)} mph`;
 
       } else {
 
-        windEl.textContent =
-          `${Math.round(obs.sustainedMph)} mph`;
+        windEl.textContent = formatWindDisplay_(null, obs.sustainedMph);
       }
-
-    } else if (windEl) {
-
-      windEl.textContent = "—";
     }
+
+    applyWindColor_(card, obs.sustainedMph);
 
 
     // ============================================================
@@ -2585,39 +2663,14 @@ const chillEl =
     // ============================================================
     // WIND
     //
-    // Match Mansfield + Whiteface:
-    //
-    //       360/2
-    //
-    // direction / sustained mph
+    // "165° 5 mph" - same format as Mansfield/Whiteface.
     // ============================================================
 
-    if (
-      windEl &&
-      obs.sustainedMph != null
-    ) {
-
-      if (obs.directionDeg != null) {
-
-        const direction =
-          String(
-            Math.round(obs.directionDeg)
-          ).padStart(3, "0");
-
-
-        windEl.textContent =
-          `${direction}/${Math.round(obs.sustainedMph)}`;
-
-      } else {
-
-        windEl.textContent =
-          `${Math.round(obs.sustainedMph)} mph`;
-      }
-
-    } else if (windEl) {
-
-      windEl.textContent = "—";
+    if (windEl) {
+      windEl.textContent = formatWindDisplay_(obs.directionDeg, obs.sustainedMph);
     }
+
+    applyWindColor_(card, obs.sustainedMph);
 
 // ============================================================
 // WIND GUST
@@ -2625,17 +2678,8 @@ const chillEl =
 // Current gust reported by KVTEASTB15 / Weather.com PWS.
 // ============================================================
 
-if (
-  gustEl &&
-  obs.gustMph != null
-) {
-
-  gustEl.textContent =
-    `${Math.round(obs.gustMph)}`;
-
-} else if (gustEl) {
-
-  gustEl.textContent = "—";
+if (gustEl) {
+  gustEl.textContent = formatGustDisplay_(obs.gustMph);
 }
 
     // ============================================================
@@ -2838,32 +2882,10 @@ async function refreshBoltonObs() {
         ? `${Math.round(obs.tempF)}°`
         : "—";
 
-    if (obs.sustainedMph != null) {
+    windEl.textContent = formatWindDisplay_(obs.directionDeg, obs.sustainedMph);
+    applyWindColor_(card, obs.sustainedMph);
 
-      if (obs.directionDeg != null) {
-
-        const direction =
-          String(Math.round(obs.directionDeg))
-            .padStart(3, "0");
-
-        windEl.textContent =
-          `${direction}/${Math.round(obs.sustainedMph)}`;
-
-      } else {
-
-        windEl.textContent =
-          `${Math.round(obs.sustainedMph)} mph`;
-      }
-
-    } else {
-
-      windEl.textContent = "—";
-    }
-
-    gustEl.textContent =
-      obs.gustMph != null
-        ? `${Math.round(obs.gustMph)}`
-        : "—";
+    gustEl.textContent = formatGustDisplay_(obs.gustMph);
 
     chillEl.textContent =
       obs.windChillF != null
