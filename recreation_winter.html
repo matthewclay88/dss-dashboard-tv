@@ -284,9 +284,29 @@
   }
 
   .summit-card .stat {
-    flex: 1;
     text-align: center;
-  }
+    min-width: 0;
+}
+
+/* TEMP */
+.summit-card .stat:nth-child(1) {
+    flex: 0 0 18%;
+}
+
+/* WIND — give direction + speed room to breathe */
+.summit-card .stat:nth-child(2) {
+    flex: 0 0 36%;
+}
+
+/* GUST */
+.summit-card .stat:nth-child(3) {
+    flex: 0 0 23%;
+}
+
+/* CHILL */
+.summit-card .stat:nth-child(4) {
+    flex: 0 0 23%;
+}
 
   .summit-card .stat + .stat {
     border-left: 1px solid var(--card-border);
@@ -620,8 +640,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -638,8 +658,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -656,8 +676,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -674,8 +694,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
+            <div class="stat"><div class="label">WIND (mph)</div><div class="value" data-field="wind">—</div></div>
+            <div class="stat"><div class="label">GUST (mph)</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
         </div>
@@ -939,7 +959,7 @@ function formatWindDisplay_(directionDeg, speedMph) {
     return speedText;
   }
 
-  return `${Math.round(directionDeg)}\u00b0 ${speedText}`;
+  return `${Math.round(directionDeg)}\u00b0\u00a0\u00a0${speedText}`;
 }
 
 // Gust doesn't carry a direction, just "23 mph" (or an em dash).
