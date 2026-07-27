@@ -296,7 +296,7 @@
   }
 
   .summit-card .header,
-  .summit-card .stats {
+  .summit-card .mini-stats {
     position: relative;
     z-index: 1;
   }
@@ -347,8 +347,7 @@
     stroke-linejoin: round;
   }
 
-  /* Name + elevation share one line ("Mount Mansfield @ 3,891 ft"),
-     which is what frees up the vertical room the stats row uses below. */
+  /* Name + elevation share one line ("Mount Mansfield @ 3,891 ft"). */
 
   .summit-card .name-line {
     display: flex;
@@ -356,6 +355,7 @@
     flex-wrap: wrap;
     gap: 6px;
     min-width: 0;
+    flex: 1 1 auto;
   }
 
   .summit-card .name {
@@ -374,57 +374,74 @@
     white-space: nowrap;
   }
 
-  /* Five equal-width columns: TEMP / DIR / WIND / GUST / CHILL. Every
-     column shares the row with flex:1 1 0 rather than hand-tuned
-     percentages per column - with five of them, individually sized
-     basis values were the thing making this row fragile (any one
-     content change threw the others off). Equal columns plus
-     min-width:0 (so long numbers can't force the row wider than the
-     card) is simpler and holds up regardless of which values are
-     showing on a given refresh. */
+  /* Hero temperature now lives IN the header, right-aligned against
+     the name - co-equal with the mountain's name instead of buried
+     in a labeled stat column below. This is what actually breaks up
+     the "spreadsheet row" feel the old 5-equal-column layout had. */
 
-  .summit-card .stats {
-    display: flex;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px solid var(--card-border);
-  }
-
-  .summit-card .stat {
-    flex: 1 1 0;
-    min-width: 0;
-    text-align: center;
-    padding: 0 2px;
-  }
-
-  .summit-card .stat + .stat {
-    border-left: 1px solid var(--card-border);
-  }
-
-  .summit-card .stat .label {
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  .summit-card .stat .value {
-    font-size: 16px;
+  .summit-card .hero-temp {
+    font-size: 26px;
     font-weight: 800;
-    margin-top: 3px;
+    color: var(--mtn-accent, var(--ink));
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding-left: 8px;
     white-space: nowrap;
     transition: opacity 0.25s ease;
   }
 
-  /* TEMP is always the first stat - given a hero treatment (bigger,
-     in the mountain's own accent color) so it reads as the card's
-     headline number at a glance, the way the temp/DIR/WIND/GUST/
-     CHILL row otherwise treats every stat with equal visual weight. */
+  /* Compact icon+value row for DIR/WIND/GUST/CHILL - replaces the
+     old 5-column ALL-CAPS-label-over-number grid. Icons carry the
+     meaning (arrow/wind/gauge/snowflake) instead of a text label, so
+     each stat is a single line instead of two - this is what keeps
+     the card the same height (or shorter) despite the header row
+     growing to fit the hero temp. */
 
-  .summit-card .stat:first-child .value {
-    font-size: 22px;
-    color: var(--mtn-accent, var(--ink));
+  .summit-card .mini-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 7px;
+    border-top: 1px solid var(--card-border);
+  }
+
+  .summit-card .mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .summit-card .mini-icon {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* The DIR arrow actually rotates to the real wind direction (see
+     setWindDisplay_) - a small, decorative-but-functional detail,
+     not the full compass-dial widget that caused layout problems
+     before. Colored in the mountain's own accent to tie it to the
+     rest of the card's identity. */
+
+  .summit-card .mini-icon.dir-arrow {
+    stroke: var(--mtn-accent, var(--blue));
+    transform-origin: center;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  .summit-card .mini-value {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    transition: opacity 0.25s ease;
   }
 
   /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
@@ -484,7 +501,9 @@
      whole-card version of this used to gray out the entire card
      over a single bad field, hiding otherwise-good data. */
 
-  .summit-card .stat.stale-field {
+  .summit-card .stat.stale-field,
+  .summit-card .mini-stat.stale-field,
+  .summit-card .hero-temp.stale-field {
     filter: grayscale(0.85);
     opacity: 0.4;
   }
@@ -915,13 +934,25 @@
               <span class="name">Whiteface Mountain</span>
               <span class="elev-inline" data-field="elevation">@ 4,867 ft</span>
             </div>
+            <div class="hero-temp" data-field="temp">&mdash;</div>
           </div>
-          <div class="stats">
-            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
-            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span class="mini-value" data-field="dir">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
+              <span class="mini-value" data-field="wind">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
+              <span class="mini-value" data-field="gust">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              <span class="mini-value" data-field="windchill">&mdash;</span>
+            </div>
           </div>
         </div>
 
@@ -934,13 +965,25 @@
               <span class="name">Mount Mansfield</span>
               <span class="elev-inline" data-field="elevation">@ 3,891 ft</span>
             </div>
+            <div class="hero-temp" data-field="temp">&mdash;</div>
           </div>
-          <div class="stats">
-            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
-            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span class="mini-value" data-field="dir">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
+              <span class="mini-value" data-field="wind">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
+              <span class="mini-value" data-field="gust">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              <span class="mini-value" data-field="windchill">&mdash;</span>
+            </div>
           </div>
         </div>
 
@@ -953,13 +996,25 @@
               <span class="name">Bolton Vista Peak</span>
               <span class="elev-inline" data-field="elevation">@ 3,150 ft</span>
             </div>
+            <div class="hero-temp" data-field="temp">&mdash;</div>
           </div>
-          <div class="stats">
-            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
-            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span class="mini-value" data-field="dir">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
+              <span class="mini-value" data-field="wind">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
+              <span class="mini-value" data-field="gust">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              <span class="mini-value" data-field="windchill">&mdash;</span>
+            </div>
           </div>
         </div>
 
@@ -972,13 +1027,25 @@
               <span class="name">Burke Mountain</span>
               <span class="elev-inline" data-field="elevation">@ 3,058 ft</span>
             </div>
+            <div class="hero-temp" data-field="temp">&mdash;</div>
           </div>
-          <div class="stats">
-            <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
-            <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
-            <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span class="mini-value" data-field="dir">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
+              <span class="mini-value" data-field="wind">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
+              <span class="mini-value" data-field="gust">&mdash;</span>
+            </div>
+            <div class="mini-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              <span class="mini-value" data-field="windchill">&mdash;</span>
+            </div>
           </div>
         </div>
 
@@ -1213,6 +1280,7 @@ function setWindDisplay_(card, directionDeg, speedMph) {
 
   const dirEl = card.querySelector('[data-field="dir"]');
   const speedEl = card.querySelector('[data-field="wind"]');
+  const arrowEl = card.querySelector('[data-field="dir-arrow"]');
 
   const hasDirection =
     directionDeg !== null && directionDeg !== undefined && Number.isFinite(directionDeg);
@@ -1226,6 +1294,20 @@ function setWindDisplay_(card, directionDeg, speedMph) {
     dirEl.textContent = hasDirection ? degreesToCompass_(directionDeg) : "\u2014";
     dirEl.title = formatWindDisplay_(directionDeg, speedMph);
     pulseElement_(dirEl);
+  }
+
+  // Wind-vane convention: an arrow that points TOWARD the direction
+  // the wind is coming FROM, same as the original compass widget
+  // this card used before it was replaced - just tiny and decorative
+  // now, not a standalone dial.
+  if (arrowEl) {
+    if (hasDirection) {
+      arrowEl.style.transform = `rotate(${directionDeg}deg)`;
+      arrowEl.style.opacity = "1";
+    } else {
+      arrowEl.style.transform = "rotate(0deg)";
+      arrowEl.style.opacity = "0.3";
+    }
   }
 }
 
@@ -1483,8 +1565,18 @@ async function fetchMansfieldWind_() {
     }
 
     const timestamps = [];
-    if (sustained) timestamps.push(new Date(sustained.timestamp).getTime());
-    if (gust) timestamps.push(new Date(gust.timestamp).getTime());
+
+    if (sustained) {
+      timestamps.push(
+        new Date(sustained.timestamp).getTime()
+      );
+    }
+
+    if (gust) {
+      timestamps.push(
+        new Date(gust.timestamp).getTime()
+      );
+    }
 
     const windTimestamp = timestamps.length
       ? new Date(Math.max(...timestamps)).toISOString()
@@ -1799,7 +1891,7 @@ function parseRrsSeries_(text, stationId, code) {
       const valueEl = card.querySelector(`[data-field="${fieldName}"]`);
       if (!valueEl) return;
 
-      const statEl = valueEl.closest(".stat") || valueEl;
+      const statEl = valueEl.closest(".stat, .mini-stat, .hero-temp") || valueEl;
 
       const list = Array.isArray(timestamps) ? timestamps : [timestamps];
       const ages = list
