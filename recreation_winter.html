@@ -307,164 +307,124 @@
     margin-top: 1px;
   }
 
-  /* Scale strip + grid sit SIDE BY SIDE as real flex siblings - the
-     previous version stacked them via absolute positioning in the
-     same box, which put the scale directly underneath the
-     elevation-point column and made it invisible. Flexbox guarantees
-     they never overlap regardless of exact height. */
+  /* ================= MOUNTAIN OBSERVATIONS TABLE ================= */
+  /*
+    A real <table> - one header row, four data rows (one per
+    station). Real <tr>/<td> elements naturally share column widths
+    across rows, so this gets the "everything lines up in columns"
+    behavior the old CSS-grid ladder was simulating, for free and
+    more robustly. Per-mountain accent colors are still CSS custom
+    properties set on each <tr data-station="..."> - they inherit
+    down to every <td> inside it exactly like before, just through
+    a real DOM ancestor now instead of display:contents.
 
-  .mountain-ladder-wrap {
+    Existing JS lookups keep working unchanged:
+    `.summit-card[data-station="X"]` still resolves (it's now the
+    <tr>), and `[data-field="..."]` still resolves inside it -
+    only the internal class names for the badge/name/stat wrappers
+    changed (ladder-badge -> station-badge, ladder-stat -> stat-cell,
+    etc.), which are all updated to match below.
+  */
+
+  .mountain-table-wrap {
     flex: 1 1 auto;
     min-height: 0;
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-  }
-
-  /* Generic round-number elevation scale (5,000 ft down to 0),
-     evenly spaced - explicitly NOT to scale with the actual rows,
-     just ambient axis context. Matches the grid's height via the
-     row's default align-items:stretch, so its ticks still span the
-     full row range even though they're not tied to individual rows.
-     Numeric labels removed - now a plain black vertical bar with
-     small black tick marks only. */
-
-  .ladder-scale {
     position: relative;
-    flex: 0 0 14px;
-    border-left: 2px solid #000;
+    z-index: 1;
+    overflow: auto;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
   }
 
-  .ladder-scale-tick {
-    position: absolute;
-    left: 0;
-    width: 8px;
-    height: 2px;
-    background: #000;
-    transform: translateY(-50%);
+  .mountain-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
   }
 
-  /* Shared grid - header row + all 4 mountain rows are direct
-     children (real or via display:contents) of this one grid, so
-     they share one column template and align automatically. Column
-     1 = badge/node, column 2 = name+elevation, columns 3-7 = the
-     five stat values. The elevation number itself lives in the name
-     block below (.ladder-elev) - no separate elevation-point column
-     duplicating it. */
-
-  .mountain-ladder-grid {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: grid;
-    grid-template-columns: 22px minmax(120px, 1.3fr) repeat(5, 1fr);
-    align-items: center;
-    column-gap: 8px;
-    row-gap: 2px;
-  }
-
-  .ladder-header-cell {
+  .mountain-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(244, 246, 248, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-weight: 800;
+    letter-spacing: 0.05em;
     color: var(--muted);
     text-align: center;
-    padding-bottom: 5px;
+    padding: 7px 6px;
     border-bottom: 1px solid var(--card-border);
   }
 
-  .summit-card { display: contents; }
+  .mountain-table th.col-station {
+    text-align: left;
+    padding-left: 12px;
+  }
 
-  /* Per-mountain identity colors - static accent (badge border,
-     name, hero temp, dir-arrow) distinct from the wind-flash color
-     below, which is live/dynamic status, not identity. Custom
-     properties still inherit normally to children through
-     display:contents (it only affects box/layout generation, not
-     property inheritance). */
+  .summit-card {
+    transition: background 0.2s ease;
+  }
+
+  .summit-card:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.32);
+  }
+
+  .summit-card:hover {
+    background: rgba(255, 255, 255, 0.58);
+  }
+
+  .summit-card td {
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .summit-card:last-child td {
+    border-bottom: none;
+  }
+
+  /* Per-mountain identity colors - static accent (badge, name, hero
+     temp, dir-arrow, left rail) distinct from the wind-flash color
+     below, which is live/dynamic status, not identity. */
 
   .summit-card[data-station="WHITEFACE"] { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
   .summit-card[data-station="MMNV1"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
   .summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
   .summit-card[data-station="BURKE"]     { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
 
-  /* Badge + connecting line - the node stretches to fill its full
-     grid row (align-self:stretch overrides the grid's own
-     align-items:center just for this column) so the ::after line
-     can span the row's full height; the badge itself is
-     flex-centered within that stretched box. First/last rows only
-     draw half the line (down from center, or up to center) so the
-     line doesn't dangle above the first badge or below the last. */
+  .station-cell {
+    padding: 0;
+    border-left: 4px solid var(--mtn-accent, var(--muted));
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
 
-  .ladder-node {
-    align-self: stretch;
+  .station-inner {
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: relative;
+    padding: 10px 10px 10px 12px;
   }
 
-  .ladder-node::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    background: var(--card-border);
-    z-index: 0;
-  }
-
-  .summit-card:first-of-type .ladder-node::after { top: 50%; }
-  .summit-card:last-of-type .ladder-node::after { bottom: 50%; }
-
-  .ladder-badge {
-    position: relative;
-    z-index: 1;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--mtn-accent, var(--blue));
-    border: 3px solid rgba(255, 255, 255, 0.85);
-    box-shadow: 0 0 0 1px var(--mtn-accent, var(--blue));
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .ladder-badge::after {
-    content: "";
-    position: absolute;
-    top: -3px;
-    right: -3px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--live-green);
-    box-shadow: 0 0 0 0 rgba(47,191,113,0.6);
-    animation: pulse 2.2s infinite;
-  }
-
-  .ladder-name-block {
+  .station-name-block {
     min-width: 0;
   }
 
-  .ladder-name {
+  .station-name {
     font-weight: 800;
     font-size: 13.5px;
     color: var(--mtn-accent, var(--ink));
     line-height: 1.2;
+    white-space: nowrap;
   }
 
-  .ladder-elev {
+  .station-elev {
     font-size: 10px;
     color: var(--muted);
     font-weight: 600;
   }
 
-  .ladder-stat {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    min-width: 0;
+  .stat-cell {
+    text-align: center;
+    padding: 10px 6px;
     font-weight: 800;
     font-size: 14.5px;
     color: var(--ink);
@@ -472,16 +432,22 @@
     transition: opacity 0.25s ease;
   }
 
-  /* TEMP still reads as the headline number - bigger, in the
-     mountain's own accent color - even though it now shares a grid
-     column width with the other four stats. */
+  .stat-cell-inner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
 
-  .ladder-stat-temp {
+  /* TEMP still reads as the headline number - bigger, in the
+     mountain's own accent color. */
+
+  .stat-temp {
     font-size: 17px;
     color: var(--mtn-accent, var(--ink));
   }
 
-  .ladder-stat .mini-icon {
+  .stat-cell .mini-icon {
     width: 13px;
     height: 13px;
     flex: 0 0 13px;
@@ -496,7 +462,7 @@
      setWindDisplay_) - wind-vane convention, points toward where
      the wind is coming from. */
 
-  .ladder-stat .mini-icon.dir-arrow {
+  .stat-cell .mini-icon.dir-arrow {
     stroke: var(--mtn-accent, var(--blue));
     transform-origin: center;
     transition: transform 0.4s ease, opacity 0.4s ease;
@@ -505,48 +471,44 @@
   /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
   /*
     Based on whichever is HIGHER, sustained wind or gust (see
-    windColorClass_ in the script below). The flash now targets the
-    BADGE specifically (border + glow ring) rather than a card
-    border-left, since there's no longer an individual card per
-    mountain to put a border on - `.summit-card` (display:contents)
-    has no box of its own to style, so the class toggle still lands
-    on it exactly as before, and CSS reaches into `.ladder-badge` via
-    a descendant selector for the actual visual effect. Flash SPEED
-    escalates with severity (1.8s -> 0.7s) so more dangerous winds
-    read as more urgent even before you register the color.
+    windColorClass_ in the script below). No badge/dot anymore -
+    the flash now targets the station-cell's own left accent border
+    (color + outward glow) directly. Flash SPEED escalates with
+    severity (1.8s -> 0.7s) so more dangerous winds read as more
+    urgent even before you register the color.
   */
 
-  .summit-card.wind-calm .ladder-badge { border-color: #2f9e44; }
+  .summit-card.wind-calm .station-cell { border-left-color: #2f9e44; }
 
   @keyframes wind-flash-yellow {
-    0%, 100% { border-color: rgba(245, 196, 0, 0.35); box-shadow: 0 0 0 0 rgba(245, 196, 0, 0); }
-    50%      { border-color: #f5c400;                 box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.45); }
+    0%, 100% { border-left-color: rgba(245, 196, 0, 0.55); box-shadow: none; }
+    50%      { border-left-color: #f5c400;                 box-shadow: -2px 0 8px -2px rgba(245, 196, 0, 0.55); }
   }
-  .summit-card.wind-flash-yellow .ladder-badge {
+  .summit-card.wind-flash-yellow .station-cell {
     animation: wind-flash-yellow 1.8s ease-in-out infinite;
   }
 
   @keyframes wind-flash-orange {
-    0%, 100% { border-color: rgba(245, 159, 0, 0.35); box-shadow: 0 0 0 0 rgba(245, 159, 0, 0); }
-    50%      { border-color: #f59f00;                 box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.5); }
+    0%, 100% { border-left-color: rgba(245, 159, 0, 0.55); box-shadow: none; }
+    50%      { border-left-color: #f59f00;                 box-shadow: -2px 0 9px -2px rgba(245, 159, 0, 0.6); }
   }
-  .summit-card.wind-flash-orange .ladder-badge {
+  .summit-card.wind-flash-orange .station-cell {
     animation: wind-flash-orange 1.4s ease-in-out infinite;
   }
 
   @keyframes wind-flash-red {
-    0%, 100% { border-color: rgba(224, 49, 49, 0.35); box-shadow: 0 0 0 0 rgba(224, 49, 49, 0); }
-    50%      { border-color: #e03131;                 box-shadow: 0 0 0 4px rgba(224, 49, 49, 0.55); }
+    0%, 100% { border-left-color: rgba(224, 49, 49, 0.55); box-shadow: none; }
+    50%      { border-left-color: #e03131;                 box-shadow: -2px 0 10px -1px rgba(224, 49, 49, 0.65); }
   }
-  .summit-card.wind-flash-red .ladder-badge {
+  .summit-card.wind-flash-red .station-cell {
     animation: wind-flash-red 1.0s ease-in-out infinite;
   }
 
   @keyframes wind-flash-purple {
-    0%, 100% { border-color: rgba(156, 54, 181, 0.35); box-shadow: 0 0 0 0 rgba(156, 54, 181, 0); }
-    50%      { border-color: #9c36b5;                  box-shadow: 0 0 0 5px rgba(156, 54, 181, 0.6); }
+    0%, 100% { border-left-color: rgba(156, 54, 181, 0.55); box-shadow: none; }
+    50%      { border-left-color: #9c36b5;                  box-shadow: -2px 0 11px -1px rgba(156, 54, 181, 0.7); }
   }
-  .summit-card.wind-flash-purple .ladder-badge {
+  .summit-card.wind-flash-purple .station-cell {
     animation: wind-flash-purple 0.7s ease-in-out infinite;
   }
 
@@ -555,10 +517,47 @@
      in the script below), applied per stat cell rather than to the
      whole row. */
 
-  .ladder-stat.stale-field {
+  .stat-cell.stale-field {
     filter: grayscale(0.85);
     opacity: 0.4;
   }
+
+  /* ================= WIND THRESHOLD LEGEND ================= */
+  /* Sits under the table, tying the badge-flash colors back to
+     concrete mph thresholds so the color coding is self-explanatory
+     at a glance without a tooltip. */
+
+  .wind-legend {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding-top: 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .wind-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+
+  .wind-legend .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .wind-legend .legend-item.calm .legend-dot   { background: #2f9e44; }
+  .wind-legend .legend-item.yellow .legend-dot { background: #f5c400; }
+  .wind-legend .legend-item.orange .legend-dot { background: #f59f00; }
+  .wind-legend .legend-item.red .legend-dot    { background: #e03131; }
+  .wind-legend .legend-item.purple .legend-dot { background: #9c36b5; }
 
   /* ================= SNOW DEPTH ROW (left column, below Skew-T) ================= */
 
@@ -990,100 +989,114 @@
           <div class="mountain-panel-subtitle">Latest regional conditions</div>
         </div>
 
-        <div class="mountain-ladder-wrap">
+        <div class="mountain-table-wrap">
+          <table class="mountain-table">
+            <thead>
+              <tr>
+                <th class="col-station">STATION</th>
+                <th>TEMP</th>
+                <th>DIR</th>
+                <th>WIND</th>
+                <th>GUST</th>
+                <th>CHILL</th>
+              </tr>
+            </thead>
+            <tbody>
 
-          <div class="ladder-scale">
-            <div class="ladder-scale-tick" style="top: 0%;"></div>
-            <div class="ladder-scale-tick" style="top: 20%;"></div>
-            <div class="ladder-scale-tick" style="top: 40%;"></div>
-            <div class="ladder-scale-tick" style="top: 60%;"></div>
-            <div class="ladder-scale-tick" style="top: 80%;"></div>
-            <div class="ladder-scale-tick" style="top: 100%;"></div>
-          </div>
+              <tr class="summit-card" data-station="WHITEFACE">
+                <td class="station-cell">
+                  <div class="station-inner">
+                    <div class="station-name-block">
+                      <div class="station-name">Whiteface</div>
+                      <div class="station-elev" data-field="elevation">4,867 ft</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
+                <td class="stat-cell">
+                  <span class="stat-cell-inner">
+                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    <span data-field="dir">&mdash;</span>
+                  </span>
+                </td>
+                <td class="stat-cell" data-field="wind">&mdash;</td>
+                <td class="stat-cell" data-field="gust">&mdash;</td>
+                <td class="stat-cell" data-field="windchill">&mdash;</td>
+              </tr>
 
-        <div class="mountain-ladder-grid">
+              <tr class="summit-card" data-station="MMNV1">
+                <td class="station-cell">
+                  <div class="station-inner">
+                    <div class="station-name-block">
+                      <div class="station-name">Mount Mansfield</div>
+                      <div class="station-elev" data-field="elevation">3,891 ft</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
+                <td class="stat-cell">
+                  <span class="stat-cell-inner">
+                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    <span data-field="dir">&mdash;</span>
+                  </span>
+                </td>
+                <td class="stat-cell" data-field="wind">&mdash;</td>
+                <td class="stat-cell" data-field="gust">&mdash;</td>
+                <td class="stat-cell" data-field="windchill">&mdash;</td>
+              </tr>
 
-          <div class="ladder-header-cell"></div>
-          <div class="ladder-header-cell"></div>
-          <div class="ladder-header-cell">TEMP</div>
-          <div class="ladder-header-cell">DIR</div>
-          <div class="ladder-header-cell">WIND</div>
-          <div class="ladder-header-cell">GUST</div>
-          <div class="ladder-header-cell">CHILL</div>
+              <tr class="summit-card" data-station="BOLTON">
+                <td class="station-cell">
+                  <div class="station-inner">
+                    <div class="station-name-block">
+                      <div class="station-name">Bolton Vista Peak</div>
+                      <div class="station-elev" data-field="elevation">3,150 ft</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
+                <td class="stat-cell">
+                  <span class="stat-cell-inner">
+                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    <span data-field="dir">&mdash;</span>
+                  </span>
+                </td>
+                <td class="stat-cell" data-field="wind">&mdash;</td>
+                <td class="stat-cell" data-field="gust">&mdash;</td>
+                <td class="stat-cell" data-field="windchill">&mdash;</td>
+              </tr>
 
-          <div class="summit-card" data-station="WHITEFACE">
-            <div class="ladder-node">
-              <div class="ladder-badge"></div>
-            </div>
-            <div class="ladder-name-block">
-              <div class="ladder-name">Whiteface</div>
-              <div class="ladder-elev" data-field="elevation">4,867 ft</div>
-            </div>
-            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat">
-              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span data-field="dir">&mdash;</span>
-            </div>
-            <div class="ladder-stat" data-field="wind">&mdash;</div>
-            <div class="ladder-stat" data-field="gust">&mdash;</div>
-            <div class="ladder-stat" data-field="windchill">&mdash;</div>
-          </div>
+              <tr class="summit-card" data-station="BURKE">
+                <td class="station-cell">
+                  <div class="station-inner">
+                    <div class="station-name-block">
+                      <div class="station-name">Burke Mountain</div>
+                      <div class="station-elev" data-field="elevation">3,058 ft</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
+                <td class="stat-cell">
+                  <span class="stat-cell-inner">
+                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    <span data-field="dir">&mdash;</span>
+                  </span>
+                </td>
+                <td class="stat-cell" data-field="wind">&mdash;</td>
+                <td class="stat-cell" data-field="gust">&mdash;</td>
+                <td class="stat-cell" data-field="windchill">&mdash;</td>
+              </tr>
 
-          <div class="summit-card" data-station="MMNV1">
-            <div class="ladder-node">
-              <div class="ladder-badge"></div>
-            </div>
-            <div class="ladder-name-block">
-              <div class="ladder-name">Mount Mansfield</div>
-              <div class="ladder-elev" data-field="elevation">3,891 ft</div>
-            </div>
-            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat">
-              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span data-field="dir">&mdash;</span>
-            </div>
-            <div class="ladder-stat" data-field="wind">&mdash;</div>
-            <div class="ladder-stat" data-field="gust">&mdash;</div>
-            <div class="ladder-stat" data-field="windchill">&mdash;</div>
-          </div>
-
-          <div class="summit-card" data-station="BOLTON">
-            <div class="ladder-node">
-              <div class="ladder-badge"></div>
-            </div>
-            <div class="ladder-name-block">
-              <div class="ladder-name">Bolton Vista Peak</div>
-              <div class="ladder-elev" data-field="elevation">3,150 ft</div>
-            </div>
-            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat">
-              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span data-field="dir">&mdash;</span>
-            </div>
-            <div class="ladder-stat" data-field="wind">&mdash;</div>
-            <div class="ladder-stat" data-field="gust">&mdash;</div>
-            <div class="ladder-stat" data-field="windchill">&mdash;</div>
-          </div>
-
-          <div class="summit-card" data-station="BURKE">
-            <div class="ladder-node">
-              <div class="ladder-badge"></div>
-            </div>
-            <div class="ladder-name-block">
-              <div class="ladder-name">Burke Mountain</div>
-              <div class="ladder-elev" data-field="elevation">3,058 ft</div>
-            </div>
-            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat">
-              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span data-field="dir">&mdash;</span>
-            </div>
-            <div class="ladder-stat" data-field="wind">&mdash;</div>
-            <div class="ladder-stat" data-field="gust">&mdash;</div>
-            <div class="ladder-stat" data-field="windchill">&mdash;</div>
-          </div>
-
+            </tbody>
+          </table>
         </div>
+
+        <div class="wind-legend">
+          <span class="legend-item calm"><span class="legend-dot"></span>Calm</span>
+          <span class="legend-item yellow"><span class="legend-dot"></span>30+ mph</span>
+          <span class="legend-item orange"><span class="legend-dot"></span>45+ mph</span>
+          <span class="legend-item red"><span class="legend-dot"></span>60+ mph</span>
+          <span class="legend-item purple"><span class="legend-dot"></span>80+ mph</span>
         </div>
       </div>
 
@@ -1927,7 +1940,7 @@ function parseRrsSeries_(text, stationId, code) {
       const valueEl = card.querySelector(`[data-field="${fieldName}"]`);
       if (!valueEl) return;
 
-      const statEl = valueEl.closest(".ladder-stat") || valueEl;
+      const statEl = valueEl.closest(".stat-cell") || valueEl;
 
       const list = Array.isArray(timestamps) ? timestamps : [timestamps];
       const ages = list
@@ -3188,7 +3201,7 @@ async function refreshBoltonObs() {
 
     function seedStationConfig() {
       Object.entries(STATION_CONFIG).forEach(([station, cfg]) => {
-        const nameEl = document.querySelector(`.summit-card[data-station="${station}"] .ladder-name`);
+        const nameEl = document.querySelector(`.summit-card[data-station="${station}"] .station-name`);
         if (nameEl) nameEl.textContent = cfg.name;
         const elevEl = cardField(station, "elevation");
         if (elevEl) elevEl.textContent = `${cfg.elevationFt.toLocaleString()} ft`;
