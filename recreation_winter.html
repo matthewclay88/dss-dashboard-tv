@@ -251,7 +251,7 @@
   */
 
   .sidebar {
-    flex: 0 0 56%;
+    flex: 0 0 66%;
     min-height: 0;
     min-width: 0;
     overflow: hidden;
@@ -325,23 +325,23 @@
      evenly spaced - explicitly NOT to scale with the actual rows,
      just ambient axis context. Matches the grid's height via the
      row's default align-items:stretch, so its ticks still span the
-     full row range even though they're not tied to individual rows. */
+     full row range even though they're not tied to individual rows.
+     Numeric labels removed - now a plain black vertical bar with
+     small black tick marks only. */
 
   .ladder-scale {
     position: relative;
-    flex: 0 0 30px;
+    flex: 0 0 14px;
+    border-left: 2px solid #000;
   }
 
   .ladder-scale-tick {
     position: absolute;
     left: 0;
-    right: 2px;
+    width: 8px;
+    height: 2px;
+    background: #000;
     transform: translateY(-50%);
-    font-size: 8px;
-    font-weight: 700;
-    color: #000;
-    opacity: 0.7;
-    text-align: right;
   }
 
   /* Shared grid - header row + all 4 mountain rows are direct
@@ -356,7 +356,7 @@
     flex: 1 1 auto;
     min-width: 0;
     display: grid;
-    grid-template-columns: minmax(120px, 1.3fr) repeat(5, 1fr);
+    grid-template-columns: 22px minmax(120px, 1.3fr) repeat(5, 1fr);
     align-items: center;
     column-gap: 8px;
     row-gap: 2px;
@@ -374,11 +374,12 @@
 
   .summit-card { display: contents; }
 
-  /* Per-mountain identity colors - static accent (name, TEMP text)
-     distinct from the wind-flash color below, which is live/dynamic
-     status, not identity. Custom properties still inherit normally
-     to children through display:contents (it only affects
-     box/layout generation, not property inheritance). */
+  /* Per-mountain identity colors - static accent (badge border,
+     name, hero temp, dir-arrow) distinct from the wind-flash color
+     below, which is live/dynamic status, not identity. Custom
+     properties still inherit normally to children through
+     display:contents (it only affects box/layout generation, not
+     property inheritance). */
 
   .summit-card[data-station="WHITEFACE"] { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
   .summit-card[data-station="MMNV1"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
@@ -392,6 +393,54 @@
      flex-centered within that stretched box. First/last rows only
      draw half the line (down from center, or up to center) so the
      line doesn't dangle above the first badge or below the last. */
+
+  .ladder-node {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ladder-node::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    background: var(--card-border);
+    z-index: 0;
+  }
+
+  .summit-card:first-of-type .ladder-node::after { top: 50%; }
+  .summit-card:last-of-type .ladder-node::after { bottom: 50%; }
+
+  .ladder-badge {
+    position: relative;
+    z-index: 1;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--mtn-accent, var(--blue));
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 1px var(--mtn-accent, var(--blue));
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .ladder-badge::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--live-green);
+    box-shadow: 0 0 0 0 rgba(47,191,113,0.6);
+    animation: pulse 2.2s infinite;
+  }
 
   .ladder-name-block {
     min-width: 0;
@@ -420,7 +469,7 @@
     font-size: 14.5px;
     color: var(--ink);
     white-space: nowrap;
-    transition: opacity 0.25s ease, color 0.3s ease;
+    transition: opacity 0.25s ease;
   }
 
   /* TEMP still reads as the headline number - bigger, in the
@@ -432,48 +481,72 @@
     color: var(--mtn-accent, var(--ink));
   }
 
+  .ladder-stat .mini-icon {
+    width: 13px;
+    height: 13px;
+    flex: 0 0 13px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* The DIR arrow actually rotates to the real wind direction (see
+     setWindDisplay_) - wind-vane convention, points toward where
+     the wind is coming from. */
+
+  .ladder-stat .mini-icon.dir-arrow {
+    stroke: var(--mtn-accent, var(--blue));
+    transform-origin: center;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
   /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
   /*
     Based on whichever is HIGHER, sustained wind or gust (see
-    windColorClass_ in the script below). Card is text-only now, so
-    the alert colors/pulses the WIND value's own text (color +
-    text-shadow glow) instead of a badge or border - still just
-    text, no shapes. Flash SPEED escalates with severity
-    (1.8s -> 0.7s) so more dangerous winds read as more urgent even
-    before you register the color.
+    windColorClass_ in the script below). The flash now targets the
+    BADGE specifically (border + glow ring) rather than a card
+    border-left, since there's no longer an individual card per
+    mountain to put a border on - `.summit-card` (display:contents)
+    has no box of its own to style, so the class toggle still lands
+    on it exactly as before, and CSS reaches into `.ladder-badge` via
+    a descendant selector for the actual visual effect. Flash SPEED
+    escalates with severity (1.8s -> 0.7s) so more dangerous winds
+    read as more urgent even before you register the color.
   */
 
-  .summit-card.wind-calm .ladder-stat[data-field="wind"] { color: #2f9e44; }
+  .summit-card.wind-calm .ladder-badge { border-color: #2f9e44; }
 
   @keyframes wind-flash-yellow {
-    0%, 100% { color: var(--ink); text-shadow: none; }
-    50%      { color: #b38600;    text-shadow: 0 0 6px rgba(245, 196, 0, 0.6); }
+    0%, 100% { border-color: rgba(245, 196, 0, 0.35); box-shadow: 0 0 0 0 rgba(245, 196, 0, 0); }
+    50%      { border-color: #f5c400;                 box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.45); }
   }
-  .summit-card.wind-flash-yellow .ladder-stat[data-field="wind"] {
+  .summit-card.wind-flash-yellow .ladder-badge {
     animation: wind-flash-yellow 1.8s ease-in-out infinite;
   }
 
   @keyframes wind-flash-orange {
-    0%, 100% { color: var(--ink); text-shadow: none; }
-    50%      { color: #d9822b;    text-shadow: 0 0 6px rgba(245, 159, 0, 0.65); }
+    0%, 100% { border-color: rgba(245, 159, 0, 0.35); box-shadow: 0 0 0 0 rgba(245, 159, 0, 0); }
+    50%      { border-color: #f59f00;                 box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.5); }
   }
-  .summit-card.wind-flash-orange .ladder-stat[data-field="wind"] {
+  .summit-card.wind-flash-orange .ladder-badge {
     animation: wind-flash-orange 1.4s ease-in-out infinite;
   }
 
   @keyframes wind-flash-red {
-    0%, 100% { color: var(--ink); text-shadow: none; }
-    50%      { color: #e03131;    text-shadow: 0 0 7px rgba(224, 49, 49, 0.7); }
+    0%, 100% { border-color: rgba(224, 49, 49, 0.35); box-shadow: 0 0 0 0 rgba(224, 49, 49, 0); }
+    50%      { border-color: #e03131;                 box-shadow: 0 0 0 4px rgba(224, 49, 49, 0.55); }
   }
-  .summit-card.wind-flash-red .ladder-stat[data-field="wind"] {
+  .summit-card.wind-flash-red .ladder-badge {
     animation: wind-flash-red 1.0s ease-in-out infinite;
   }
 
   @keyframes wind-flash-purple {
-    0%, 100% { color: var(--ink); text-shadow: none; }
-    50%      { color: #9c36b5;    text-shadow: 0 0 8px rgba(156, 54, 181, 0.75); }
+    0%, 100% { border-color: rgba(156, 54, 181, 0.35); box-shadow: 0 0 0 0 rgba(156, 54, 181, 0); }
+    50%      { border-color: #9c36b5;                  box-shadow: 0 0 0 5px rgba(156, 54, 181, 0.6); }
   }
-  .summit-card.wind-flash-purple .ladder-stat[data-field="wind"] {
+  .summit-card.wind-flash-purple .ladder-badge {
     animation: wind-flash-purple 0.7s ease-in-out infinite;
   }
 
@@ -632,7 +705,7 @@
     display:grid;
     grid-template-columns:1fr 1fr;
     grid-template-rows:repeat(3,1fr);
-    gap:12px;
+    gap:8px;
 }
 
   /* Light card + colored left border + icon circle, same visual
@@ -647,7 +720,7 @@
     overflow: hidden;
     background: var(--sidebar-card-bg);
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 6px 12px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -664,10 +737,10 @@
   }
 
   .quad-card .quad-icon {
-    width: 26px;
-    height: 26px;
-    flex: 0 0 26px;
-    border-radius: 7px;
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    border-radius: 6px;
     background: var(--quad-accent-bg, #e4ecf5);
     display: flex;
     align-items: center;
@@ -675,8 +748,8 @@
   }
 
   .quad-card .quad-icon svg {
-    width: 15px;
-    height: 15px;
+    width: 13px;
+    height: 13px;
     stroke: var(--quad-accent, var(--blue));
     fill: none;
     stroke-width: 1.8;
@@ -685,7 +758,7 @@
   }
 
   .quad-card .eyebrow {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--muted);
@@ -693,17 +766,17 @@
   }
 
   .quad-card .value {
-    font-size: 21px;
+    font-size: 18px;
     font-weight: 800;
     line-height: 1.15;
-    margin-top: 5px;
+    margin-top: 3px;
     flex: 0 0 auto;
     color: var(--ink);
     transition: opacity 0.25s ease;
   }
 
   .quad-card .subtext {
-    font-size: 11px;
+    font-size: 10.5px;
     color: var(--muted);
     margin-top: 2px;
     flex: 0 0 auto;
@@ -719,7 +792,7 @@
   */
 
   .quad-card .gauge {
-    margin-top: 8px;
+    margin-top: 6px;
     flex: 0 0 auto;
   }
 
@@ -760,7 +833,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-top: 6px;
+    margin-top: 5px;
     padding: 3px 11px;
     border-radius: 999px;
     font-size: 11px;
@@ -920,16 +993,17 @@
         <div class="mountain-ladder-wrap">
 
           <div class="ladder-scale">
-            <div class="ladder-scale-tick" style="top: 0%;">5000</div>
-            <div class="ladder-scale-tick" style="top: 20%;">4000</div>
-            <div class="ladder-scale-tick" style="top: 40%;">3000</div>
-            <div class="ladder-scale-tick" style="top: 60%;">2000</div>
-            <div class="ladder-scale-tick" style="top: 80%;">1000</div>
-            <div class="ladder-scale-tick" style="top: 100%;">0</div>
+            <div class="ladder-scale-tick" style="top: 0%;"></div>
+            <div class="ladder-scale-tick" style="top: 20%;"></div>
+            <div class="ladder-scale-tick" style="top: 40%;"></div>
+            <div class="ladder-scale-tick" style="top: 60%;"></div>
+            <div class="ladder-scale-tick" style="top: 80%;"></div>
+            <div class="ladder-scale-tick" style="top: 100%;"></div>
           </div>
 
         <div class="mountain-ladder-grid">
 
+          <div class="ladder-header-cell"></div>
           <div class="ladder-header-cell"></div>
           <div class="ladder-header-cell">TEMP</div>
           <div class="ladder-header-cell">DIR</div>
@@ -938,48 +1012,72 @@
           <div class="ladder-header-cell">CHILL</div>
 
           <div class="summit-card" data-station="WHITEFACE">
+            <div class="ladder-node">
+              <div class="ladder-badge"></div>
+            </div>
             <div class="ladder-name-block">
-              <div class="ladder-name">Whiteface Mountain</div>
+              <div class="ladder-name">Whiteface</div>
               <div class="ladder-elev" data-field="elevation">4,867 ft</div>
             </div>
             <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat" data-field="dir">&mdash;</div>
+            <div class="ladder-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span data-field="dir">&mdash;</span>
+            </div>
             <div class="ladder-stat" data-field="wind">&mdash;</div>
             <div class="ladder-stat" data-field="gust">&mdash;</div>
             <div class="ladder-stat" data-field="windchill">&mdash;</div>
           </div>
 
           <div class="summit-card" data-station="MMNV1">
+            <div class="ladder-node">
+              <div class="ladder-badge"></div>
+            </div>
             <div class="ladder-name-block">
               <div class="ladder-name">Mount Mansfield</div>
               <div class="ladder-elev" data-field="elevation">3,891 ft</div>
             </div>
             <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat" data-field="dir">&mdash;</div>
+            <div class="ladder-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span data-field="dir">&mdash;</span>
+            </div>
             <div class="ladder-stat" data-field="wind">&mdash;</div>
             <div class="ladder-stat" data-field="gust">&mdash;</div>
             <div class="ladder-stat" data-field="windchill">&mdash;</div>
           </div>
 
           <div class="summit-card" data-station="BOLTON">
+            <div class="ladder-node">
+              <div class="ladder-badge"></div>
+            </div>
             <div class="ladder-name-block">
               <div class="ladder-name">Bolton Vista Peak</div>
               <div class="ladder-elev" data-field="elevation">3,150 ft</div>
             </div>
             <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat" data-field="dir">&mdash;</div>
+            <div class="ladder-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span data-field="dir">&mdash;</span>
+            </div>
             <div class="ladder-stat" data-field="wind">&mdash;</div>
             <div class="ladder-stat" data-field="gust">&mdash;</div>
             <div class="ladder-stat" data-field="windchill">&mdash;</div>
           </div>
 
           <div class="summit-card" data-station="BURKE">
+            <div class="ladder-node">
+              <div class="ladder-badge"></div>
+            </div>
             <div class="ladder-name-block">
               <div class="ladder-name">Burke Mountain</div>
               <div class="ladder-elev" data-field="elevation">3,058 ft</div>
             </div>
             <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
-            <div class="ladder-stat" data-field="dir">&mdash;</div>
+            <div class="ladder-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span data-field="dir">&mdash;</span>
+            </div>
             <div class="ladder-stat" data-field="wind">&mdash;</div>
             <div class="ladder-stat" data-field="gust">&mdash;</div>
             <div class="ladder-stat" data-field="windchill">&mdash;</div>
@@ -1218,6 +1316,7 @@ function setWindDisplay_(card, directionDeg, speedMph) {
 
   const dirEl = card.querySelector('[data-field="dir"]');
   const speedEl = card.querySelector('[data-field="wind"]');
+  const arrowEl = card.querySelector('[data-field="dir-arrow"]');
 
   const hasDirection =
     directionDeg !== null && directionDeg !== undefined && Number.isFinite(directionDeg);
@@ -1231,6 +1330,20 @@ function setWindDisplay_(card, directionDeg, speedMph) {
     dirEl.textContent = hasDirection ? degreesToCompass_(directionDeg) : "\u2014";
     dirEl.title = formatWindDisplay_(directionDeg, speedMph);
     pulseElement_(dirEl);
+  }
+
+  // Wind-vane convention: an arrow that points TOWARD the direction
+  // the wind is coming FROM, same as the original compass widget
+  // this card used before it was replaced - just tiny and decorative
+  // now, not a standalone dial.
+  if (arrowEl) {
+    if (hasDirection) {
+      arrowEl.style.transform = `rotate(${directionDeg}deg)`;
+      arrowEl.style.opacity = "1";
+    } else {
+      arrowEl.style.transform = "rotate(0deg)";
+      arrowEl.style.opacity = "0.3";
+    }
   }
 }
 
