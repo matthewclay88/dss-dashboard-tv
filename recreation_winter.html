@@ -265,19 +265,22 @@
   .summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
   .summit-card[data-station="BURKE"]     { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
 
-  /* Giant, near-transparent mountain silhouette bleeding off the
-     card's bottom-right corner - clipped by the card's own
-     border-radius/overflow:hidden, so it reads as a subtle texture
-     rather than a literal icon. Reuses the same triangle path as
-     the header icon SVGs for visual consistency. */
+  /* Near-transparent mountain silhouette bleeding off the card's
+     bottom-right corner - clipped by the card's own border-radius/
+     overflow:hidden, so it reads as a subtle texture rather than a
+     literal icon. Reuses the same triangle path as the header icon
+     SVGs for visual consistency. Sized for a short horizontal card
+     (~70px, not the ~130px used when cards were taller) - at the
+     old size the watermark's top edge reached up into the header
+     row and visually collided with the name/elevation pill. */
 
   .summit-card::before {
     content: "";
     position: absolute;
-    right: -16px;
-    bottom: -18px;
-    width: 130px;
-    height: 130px;
+    right: -8px;
+    bottom: -10px;
+    width: 70px;
+    height: 70px;
     background: var(--mtn-accent, var(--muted));
     opacity: 0.10;
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20 L11 6 L14 12 L17 9 L20 20 Z'/%3E%3C/svg%3E");
