@@ -423,66 +423,6 @@
     color: var(--mtn-accent, var(--ink));
   }
 
-  /* ---- Wind direction + speed compass (combined again now that
-     2x2 cards are wider but shorter per row than the old 4-stack -
-     folding DIR back into WIND drops the stat row to 4 columns,
-     which is what makes a 2-per-row card comfortable) ---- */
-
-  .stat.wind-dir-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .wind-compass {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    margin: 3px auto 0;
-  }
-
-  .compass-svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    overflow: visible;
-  }
-
-  .compass-ring {
-    fill: rgba(255, 255, 255, 0.35);
-    stroke: var(--card-border);
-    stroke-width: 2;
-  }
-
-  .compass-tick {
-    font-size: 7px;
-    font-weight: 800;
-    fill: var(--muted);
-    text-anchor: middle;
-  }
-
-  .compass-needle {
-    transform-box: view-box;
-    transform-origin: 30px 30px;
-    transition: transform 0.4s ease, opacity 0.4s ease;
-  }
-
-  .compass-needle polygon {
-    fill: var(--blue);
-  }
-
-  .compass-speed {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-    pointer-events: none;
-  }
-
   /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
   /*
     Based on whichever is HIGHER, sustained wind or gust (see
@@ -855,9 +795,9 @@
           Burke Mountain are all wired live - see the fetch*Observation_
           functions below. Wind chill is computed client-side (NWS
           formula) for Mansfield; Whiteface/Burke/Bolton report their
-          own via their respective APIs. Wind direction/speed render
-          as a small compass widget (see setWindCompass_) rather than
-          plain text.
+          own via their respective APIs. Wind direction shows as a
+          compass abbreviation (see setWindDisplay_) rather than a
+          graphic - simpler and just as readable at a glance.
         -->
 
         <div class="summit-card" data-station="WHITEFACE">
@@ -872,19 +812,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-dir-stat">
-              <div class="label">WIND</div>
-              <div class="wind-compass" data-field="wind-compass">
-                <svg class="compass-svg" viewBox="0 0 60 60">
-                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
-                  <text class="compass-tick" x="30" y="11">N</text>
-                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
-                    <polygon points="30,8 25,30 30,25 35,30"/>
-                  </g>
-                </svg>
-                <div class="compass-speed" data-field="wind">—</div>
-              </div>
-            </div>
+            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -902,19 +831,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-dir-stat">
-              <div class="label">WIND</div>
-              <div class="wind-compass" data-field="wind-compass">
-                <svg class="compass-svg" viewBox="0 0 60 60">
-                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
-                  <text class="compass-tick" x="30" y="11">N</text>
-                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
-                    <polygon points="30,8 25,30 30,25 35,30"/>
-                  </g>
-                </svg>
-                <div class="compass-speed" data-field="wind">—</div>
-              </div>
-            </div>
+            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -932,19 +850,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-dir-stat">
-              <div class="label">WIND</div>
-              <div class="wind-compass" data-field="wind-compass">
-                <svg class="compass-svg" viewBox="0 0 60 60">
-                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
-                  <text class="compass-tick" x="30" y="11">N</text>
-                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
-                    <polygon points="30,8 25,30 30,25 35,30"/>
-                  </g>
-                </svg>
-                <div class="compass-speed" data-field="wind">—</div>
-              </div>
-            </div>
+            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -962,19 +869,8 @@
           </div>
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
-            <div class="stat wind-dir-stat">
-              <div class="label">WIND</div>
-              <div class="wind-compass" data-field="wind-compass">
-                <svg class="compass-svg" viewBox="0 0 60 60">
-                  <circle class="compass-ring" cx="30" cy="30" r="26"/>
-                  <text class="compass-tick" x="30" y="11">N</text>
-                  <g class="compass-needle" data-field="wind-needle" style="opacity:0.2;">
-                    <polygon points="30,8 25,30 30,25 35,30"/>
-                  </g>
-                </svg>
-                <div class="compass-speed" data-field="wind">—</div>
-              </div>
-            </div>
+            <div class="stat"><div class="label">DIR</div><div class="value" data-field="dir">—</div></div>
+            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -1152,12 +1048,21 @@ function formatGustDisplay_(gustMph) {
   return `${Math.round(gustMph)} mph`;
 }
 
-function setWindCompass_(card, directionDeg, speedMph) {
+// ---------------------------------------------------------------------------
+// Wind direction + speed - plain text now, not a graphic. Direction
+// shows as a compass abbreviation (N, NE, E...) via degreesToCompass_
+// (defined further below - fine to call here since function
+// declarations are hoisted, this only ever runs after the whole
+// script has parsed). The full "165° 5 mph" reading still lives on
+// as the DIR cell's title attribute, so hovering it gives the exact
+// degree reading even though the display is just letters.
+// ---------------------------------------------------------------------------
+
+function setWindDisplay_(card, directionDeg, speedMph) {
 
   if (!card) return;
 
-  const container = card.querySelector('[data-field="wind-compass"]');
-  const needle = card.querySelector('[data-field="wind-needle"]');
+  const dirEl = card.querySelector('[data-field="dir"]');
   const speedEl = card.querySelector('[data-field="wind"]');
 
   const hasDirection =
@@ -1167,18 +1072,9 @@ function setWindCompass_(card, directionDeg, speedMph) {
     speedEl.textContent = formatGustDisplay_(speedMph);
   }
 
-  if (needle) {
-    if (hasDirection) {
-      needle.style.transform = `rotate(${directionDeg}deg)`;
-      needle.style.opacity = "1";
-    } else {
-      needle.style.transform = "rotate(0deg)";
-      needle.style.opacity = "0.2";
-    }
-  }
-
-  if (container) {
-    container.title = formatWindDisplay_(directionDeg, speedMph);
+  if (dirEl) {
+    dirEl.textContent = hasDirection ? degreesToCompass_(directionDeg) : "\u2014";
+    dirEl.title = formatWindDisplay_(directionDeg, speedMph);
   }
 }
 
@@ -2009,7 +1905,7 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
       tempEl.textContent = "—";
     }
 
-    setWindCompass_(
+    setWindDisplay_(
       card,
       wind ? wind.directionDeg : null,
       wind ? wind.sustainedMph : null
@@ -2290,7 +2186,7 @@ async function refreshWhitefaceObs() {
         tempEl.textContent = "—";
       }
 
-      setWindCompass_(card, null, null);
+      setWindDisplay_(card, null, null);
 
       if (chillEl) {
         chillEl.textContent = "—";
@@ -2314,20 +2210,21 @@ async function refreshWhitefaceObs() {
 
     if (obs.directionDeg != null && Number.isFinite(obs.directionDeg)) {
 
-      setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
+      setWindDisplay_(card, obs.directionDeg, obs.sustainedMph);
 
     } else if (obs.directionLabel && obs.sustainedMph != null) {
 
-      setWindCompass_(card, null, obs.sustainedMph);
+      setWindDisplay_(card, null, obs.sustainedMph);
 
-      const container = card.querySelector('[data-field="wind-compass"]');
-      if (container) {
-        container.title = `${obs.directionLabel} ${Math.round(obs.sustainedMph)} mph`;
+      const dirEl = card.querySelector('[data-field="dir"]');
+      if (dirEl) {
+        dirEl.textContent = obs.directionLabel;
+        dirEl.title = `${obs.directionLabel} ${Math.round(obs.sustainedMph)} mph`;
       }
 
     } else {
 
-      setWindCompass_(card, null, obs.sustainedMph);
+      setWindDisplay_(card, null, obs.sustainedMph);
     }
 
     applyWindColor_(card, obs.sustainedMph);
@@ -2572,7 +2469,7 @@ const chillEl =
         tempEl.textContent = "—";
       }
 
-      setWindCompass_(card, null, null);
+      setWindDisplay_(card, null, null);
 
       if (chillEl) {
         chillEl.textContent = "—";
@@ -2594,7 +2491,7 @@ const chillEl =
       tempEl.textContent = "—";
     }
 
-    setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
+    setWindDisplay_(card, obs.directionDeg, obs.sustainedMph);
 
     applyWindColor_(card, obs.sustainedMph, obs.gustMph);
 
@@ -2765,7 +2662,7 @@ async function refreshBoltonObs() {
     if (!obs) {
 
       tempEl.textContent = "—";
-      setWindCompass_(card, null, null);
+      setWindDisplay_(card, null, null);
       gustEl.textContent = "—";
       chillEl.textContent = "—";
 
@@ -2777,7 +2674,7 @@ async function refreshBoltonObs() {
         ? `${Math.round(obs.tempF)}°`
         : "—";
 
-    setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
+    setWindDisplay_(card, obs.directionDeg, obs.sustainedMph);
     applyWindColor_(card, obs.sustainedMph, obs.gustMph);
 
     gustEl.textContent = formatGustDisplay_(obs.gustMph);
