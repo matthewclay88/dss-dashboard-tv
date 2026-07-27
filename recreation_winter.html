@@ -307,82 +307,59 @@
     margin-top: 1px;
   }
 
-  /* Wraps just the grid area (not the header text above it) so the
-     decorative elevation scale can be absolutely positioned behind
-     it without also covering the panel title. */
+  /* Scale strip + grid sit SIDE BY SIDE as real flex siblings - the
+     previous version stacked them via absolute positioning in the
+     same box, which put the scale directly underneath the
+     elevation-point column and made it invisible. Flexbox guarantees
+     they never overlap regardless of exact height. */
 
   .mountain-ladder-wrap {
-    position: relative;
     flex: 1 1 auto;
     min-height: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
   }
 
   /* Generic round-number elevation scale (5,000 ft down to 0),
-     evenly spaced - explicitly NOT to scale with the actual rows
-     below it, just ambient axis context. Sits behind the grid
-     (z-index:0 vs. the grid's z-index:1). */
+     evenly spaced - explicitly NOT to scale with the actual rows,
+     just ambient axis context. Matches the grid's height via the
+     row's default align-items:stretch, so its ticks still span the
+     full row range even though they're not tied to individual rows. */
 
   .ladder-scale {
-    position: absolute;
-    inset: 0;
-    width: 32px;
-    z-index: 0;
-    pointer-events: none;
+    position: relative;
+    flex: 0 0 30px;
   }
 
   .ladder-scale-tick {
     position: absolute;
     left: 0;
-    right: 4px;
+    right: 2px;
     transform: translateY(-50%);
     font-size: 8px;
     font-weight: 700;
     color: var(--muted);
-    opacity: 0.5;
+    opacity: 0.55;
     text-align: right;
   }
 
   /* Shared grid - header row + all 4 mountain rows are direct
      children (real or via display:contents) of this one grid, so
      they share one column template and align automatically. Column
-     1 = the elevation point (dot + real elevation number), column 2
-     = badge/node, column 3 = name+elevation, columns 4-8 = the five
-     stat values. */
+     1 = badge/node, column 2 = name+elevation, columns 3-7 = the
+     five stat values. The elevation number itself lives in the name
+     block below (.ladder-elev) - no separate elevation-point column
+     duplicating it. */
 
   .mountain-ladder-grid {
-    position: relative;
-    z-index: 1;
-    height: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
     display: grid;
-    grid-template-columns: 46px 42px minmax(110px, 1.3fr) repeat(5, 1fr);
+    grid-template-columns: 40px minmax(120px, 1.3fr) repeat(5, 1fr);
     align-items: center;
     column-gap: 8px;
     row-gap: 2px;
-  }
-
-  .ladder-elev-point {
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-  }
-
-  .ladder-elev-num {
-    font-size: 9.5px;
-    font-weight: 700;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  .ladder-elev-dot {
-    position: relative;
-    z-index: 1;
-    width: 7px;
-    height: 7px;
-    flex: 0 0 7px;
-    border-radius: 50%;
-    background: var(--mtn-accent, var(--blue));
   }
 
   .ladder-header-cell {
@@ -1040,7 +1017,6 @@
 
           <div class="ladder-header-cell"></div>
           <div class="ladder-header-cell"></div>
-          <div class="ladder-header-cell"></div>
           <div class="ladder-header-cell">TEMP</div>
           <div class="ladder-header-cell">DIR</div>
           <div class="ladder-header-cell">WIND</div>
@@ -1048,10 +1024,6 @@
           <div class="ladder-header-cell">CHILL</div>
 
           <div class="summit-card" data-station="WHITEFACE">
-            <div class="ladder-elev-point">
-              <span class="ladder-elev-num">4,867'</span>
-              <span class="ladder-elev-dot"></span>
-            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
@@ -1066,25 +1038,12 @@
               <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
               <span data-field="dir">&mdash;</span>
             </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span data-field="wind">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span data-field="gust">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span data-field="windchill">&mdash;</span>
-            </div>
+            <div class="ladder-stat" data-field="wind">&mdash;</div>
+            <div class="ladder-stat" data-field="gust">&mdash;</div>
+            <div class="ladder-stat" data-field="windchill">&mdash;</div>
           </div>
 
           <div class="summit-card" data-station="MMNV1">
-            <div class="ladder-elev-point">
-              <span class="ladder-elev-num">3,891'</span>
-              <span class="ladder-elev-dot"></span>
-            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
@@ -1099,25 +1058,12 @@
               <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
               <span data-field="dir">&mdash;</span>
             </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span data-field="wind">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span data-field="gust">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span data-field="windchill">&mdash;</span>
-            </div>
+            <div class="ladder-stat" data-field="wind">&mdash;</div>
+            <div class="ladder-stat" data-field="gust">&mdash;</div>
+            <div class="ladder-stat" data-field="windchill">&mdash;</div>
           </div>
 
           <div class="summit-card" data-station="BOLTON">
-            <div class="ladder-elev-point">
-              <span class="ladder-elev-num">3,150'</span>
-              <span class="ladder-elev-dot"></span>
-            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
@@ -1132,25 +1078,12 @@
               <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
               <span data-field="dir">&mdash;</span>
             </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span data-field="wind">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span data-field="gust">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span data-field="windchill">&mdash;</span>
-            </div>
+            <div class="ladder-stat" data-field="wind">&mdash;</div>
+            <div class="ladder-stat" data-field="gust">&mdash;</div>
+            <div class="ladder-stat" data-field="windchill">&mdash;</div>
           </div>
 
           <div class="summit-card" data-station="BURKE">
-            <div class="ladder-elev-point">
-              <span class="ladder-elev-num">3,058'</span>
-              <span class="ladder-elev-dot"></span>
-            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
@@ -1165,18 +1098,9 @@
               <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
               <span data-field="dir">&mdash;</span>
             </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span data-field="wind">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span data-field="gust">&mdash;</span>
-            </div>
-            <div class="ladder-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span data-field="windchill">&mdash;</span>
-            </div>
+            <div class="ladder-stat" data-field="wind">&mdash;</div>
+            <div class="ladder-stat" data-field="gust">&mdash;</div>
+            <div class="ladder-stat" data-field="windchill">&mdash;</div>
           </div>
 
         </div>
