@@ -237,6 +237,7 @@
     flex: 1 1 0;
     min-height: 0;
     overflow: hidden;
+    position: relative;
     background: var(--sidebar-card-bg);
     border-radius: 12px;
     padding: 10px 14px;
@@ -247,6 +248,54 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-left: 4px solid transparent;
+  }
+
+  /* ---- Per-mountain identity colors ---- */
+  /*
+    Static per-mountain accent (icon tint, watermark, elevation pill,
+    hero temp) - distinct from the wind-speed border-left color
+    below, which is live/dynamic status, not identity. The two layer
+    on top of each other rather than competing: border-left answers
+    "is this mountain windy right now", everything else answers
+    "which mountain is this".
+  */
+
+  .summit-card[data-station="WHITEFACE"] { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
+  .summit-card[data-station="MMNV1"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
+  .summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
+  .summit-card[data-station="BURKE"]     { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
+
+  /* Giant, near-transparent mountain silhouette bleeding off the
+     card's bottom-right corner - clipped by the card's own
+     border-radius/overflow:hidden, so it reads as a subtle texture
+     rather than a literal icon. Reuses the same triangle path as
+     the header icon SVGs for visual consistency. */
+
+  .summit-card::before {
+    content: "";
+    position: absolute;
+    right: -16px;
+    bottom: -18px;
+    width: 130px;
+    height: 130px;
+    background: var(--mtn-accent, var(--muted));
+    opacity: 0.10;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20 L11 6 L14 12 L17 9 L20 20 Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20 L11 6 L14 12 L17 9 L20 20 Z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .summit-card .header,
+  .summit-card .stats {
+    position: relative;
+    z-index: 1;
   }
 
   .summit-card .header {
@@ -260,16 +309,34 @@
     height: 38px;
     flex: 0 0 38px;
     border-radius: 8px;
-    background: #e4ecf5;
+    background: var(--mtn-accent-bg, #e4ecf5);
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+  }
+
+  /* Small live-data pulse dot on the icon's corner - reuses the
+     same @keyframes pulse already defined for the navbar's LIVE
+     indicator, so it's visually consistent with "this is live". */
+
+  .summit-card .icon::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--live-green);
+    box-shadow: 0 0 0 0 rgba(47,191,113,0.6);
+    animation: pulse 2.2s infinite;
   }
 
   .summit-card .icon svg {
     width: 21px;
     height: 21px;
-    stroke: var(--blue);
+    stroke: var(--mtn-accent, var(--blue));
     fill: none;
     stroke-width: 1.8;
     stroke-linecap: round;
@@ -294,9 +361,12 @@
   }
 
   .summit-card .elev-inline {
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--mtn-accent, var(--muted));
+    background: var(--mtn-accent-bg, rgba(0,0,0,0.05));
+    padding: 2px 9px;
+    border-radius: 999px;
     white-space: nowrap;
   }
 
@@ -341,6 +411,16 @@
     margin-top: 4px;
     white-space: nowrap;
     transition: opacity 0.25s ease;
+  }
+
+  /* TEMP is always the first stat - given a hero treatment (bigger,
+     in the mountain's own accent color) so it reads as the card's
+     headline number at a glance, the way the temp/DIR/WIND/GUST/
+     CHILL row otherwise treats every stat with equal visual weight. */
+
+  .summit-card .stat:first-child .value {
+    font-size: 26px;
+    color: var(--mtn-accent, var(--ink));
   }
 
   /* ---- Wind direction compass (needle only — speed lives in its
