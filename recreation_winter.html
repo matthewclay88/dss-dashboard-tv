@@ -224,7 +224,7 @@
   }
 
   .sidebar {
-    flex: 0 0 56%;
+    flex: 0 0 50%;
     min-height: 0;
     min-width: 0;
     display: flex;
@@ -631,7 +631,7 @@
     min-height:0;
     display:grid;
     grid-template-columns:1fr 1fr;
-    grid-template-rows:repeat(3,1fr);
+    grid-template-rows:repeat(4,1fr);
     gap:12px;
 }
 
@@ -700,6 +700,18 @@
   .shear-card.shear-low { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
   .shear-card.shear-mod { background: linear-gradient(160deg, #f59f00, #a66a00); }
   .shear-card.shear-high { background: linear-gradient(160deg, #e03131, #962020); }
+
+  /* Shared Low/Moderate/High/Indeterminate coloring for the
+     mountain-wave and rime-icing cards - same green/amber/red/gray
+     scheme already used on the Skew-T image's own annotation boxes,
+     so the category reads the same whether you're looking at the
+     PNG or this card. Generic (not scoped to .wave-card/.rime-card)
+     since both cards use the identical four categories. */
+
+  .quad-card.cat-low { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
+  .quad-card.cat-moderate { background: linear-gradient(160deg, #f59f00, #a66a00); }
+  .quad-card.cat-high { background: linear-gradient(160deg, #e03131, #962020); }
+  .quad-card.cat-indeterminate { background: linear-gradient(160deg, #6b7688, #4a5568); }
 
 </style>
 </head>
@@ -917,6 +929,18 @@
         <div class="quad-card ptype-card">
           <div class="eyebrow">EXPECTED P-TYPE</div>
           <div class="value" data-field="precip-type">—</div>
+        </div>
+
+        <div class="quad-card wave-card">
+          <div class="eyebrow">MOUNTAIN WAVE</div>
+          <div class="value" data-field="mountain-wave-value">&mdash;</div>
+          <div class="subtext" data-field="mountain-wave-subtext"></div>
+        </div>
+
+        <div class="quad-card rime-card">
+          <div class="eyebrow">RIME ICING</div>
+          <div class="value" data-field="rime-icing-value">&mdash;</div>
+          <div class="subtext" data-field="rime-icing-subtext"></div>
         </div>
 
       </div>
@@ -1649,6 +1673,27 @@ function parseRrsSeries_(text, stationId, code) {
       });
     }
 
+    // Shared Low/Moderate/High/Indeterminate coloring for the
+    // mountain-wave and rime-icing cards - same categories the
+    // Python side already produces (mountain_wave_category /
+    // rime_icing_category), same green/amber/red/gray scheme the
+    // Skew-T image's own annotation boxes already use.
+    const CATEGORY_CLASS = {
+      "Low": "cat-low",
+      "Moderate": "cat-moderate",
+      "High": "cat-high",
+      "Indeterminate": "cat-indeterminate",
+    };
+    const CATEGORY_CLASSES = Object.values(CATEGORY_CLASS);
+
+    function applyCategoryColor(selector, category) {
+      document.querySelectorAll(selector).forEach((card) => {
+        card.classList.remove(...CATEGORY_CLASSES);
+        const cls = CATEGORY_CLASS[category];
+        if (cls) card.classList.add(cls);
+      });
+    }
+
     function lapseColorClass(rate) {
 
     if (rate === null || rate === undefined)
@@ -1816,6 +1861,71 @@ setField(
 );
 
 applyLapseColor(data.mean_lapse_rate_C_km);
+
+        // ---------------- Mountain wave ----------------
+        //
+        // Headline mirrors the Skew-T image's own annotation box
+        // exactly (category + score); subtext leads with the
+        // critical-level detail when one was found, same as the
+        // PNG - that's the load-bearing, most decisive ingredient
+        // when it's actually present. Full reason list goes into
+        // the card's hover tooltip rather than being crammed onto
+        // the card itself.
+
+        const waveCategory = data.mountain_wave_category ?? null;
+
+        setField(
+          "mountain-wave-value",
+          waveCategory
+            ? `${waveCategory} (${data.mountain_wave_score}/${data.mountain_wave_max_score})`
+            : "\u2014"
+        );
+
+        let waveSubtext = "\u2014";
+
+        if (data.mountain_wave_critical_level) {
+          const cl = data.mountain_wave_critical_level;
+          waveSubtext = `Critical level: ${Math.round(cl.height_ft)} ft (${cl.reason})`;
+        } else if (waveCategory) {
+          waveSubtext = "No critical level in RAP profile";
+        }
+
+        setField("mountain-wave-subtext", waveSubtext);
+        applyCategoryColor(".wave-card", waveCategory);
+
+        const waveReasons = Array.isArray(data.mountain_wave_reasons) ? data.mountain_wave_reasons : [];
+        document.querySelectorAll(".wave-card").forEach((card) => {
+          card.title = waveReasons.join("\n");
+        });
+
+        // ---------------- Rime icing ----------------
+        //
+        // Subtext leads with reasons[1] - the moisture reading -
+        // same load-bearing-ingredient logic as the Skew-T box
+        // (see rime_icing_potential's docstring for why moisture is
+        // the one that decides "unavailable" vs. a real score).
+
+        const rimeCategory = data.rime_icing_category ?? null;
+
+        setField(
+          "rime-icing-value",
+          rimeCategory
+            ? `${rimeCategory} (${data.rime_icing_score}/${data.rime_icing_max_score})`
+            : "\u2014"
+        );
+
+        const rimeReasons = Array.isArray(data.rime_icing_reasons) ? data.rime_icing_reasons : [];
+
+        setField(
+          "rime-icing-subtext",
+          rimeReasons.length > 1 ? rimeReasons[1] : "\u2014"
+        );
+
+        applyCategoryColor(".rime-card", rimeCategory);
+
+        document.querySelectorAll(".rime-card").forEach((card) => {
+          card.title = rimeReasons.join("\n");
+        });
         
       } catch (err) {
         console.warn("Diagnostics status fetch failed:", err);
