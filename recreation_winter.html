@@ -356,7 +356,7 @@
     flex: 1 1 auto;
     min-width: 0;
     display: grid;
-    grid-template-columns: 40px minmax(120px, 1.3fr) repeat(5, 1fr);
+    grid-template-columns: 22px minmax(120px, 1.3fr) repeat(5, 1fr);
     align-items: center;
     column-gap: 8px;
     row-gap: 2px;
@@ -420,38 +420,26 @@
   .ladder-badge {
     position: relative;
     z-index: 1;
-    width: 34px;
-    height: 34px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.75);
-    border: 3px solid var(--mtn-accent, var(--blue));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background: var(--mtn-accent, var(--blue));
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 1px var(--mtn-accent, var(--blue));
+    transition: background 0.3s ease, box-shadow 0.3s ease;
   }
 
   .ladder-badge::after {
     content: "";
     position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 7px;
-    height: 7px;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: var(--live-green);
     box-shadow: 0 0 0 0 rgba(47,191,113,0.6);
     animation: pulse 2.2s infinite;
-  }
-
-  .ladder-badge svg {
-    width: 16px;
-    height: 16px;
-    stroke: var(--mtn-accent, var(--blue));
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   .ladder-name-block {
@@ -1025,9 +1013,7 @@
 
           <div class="summit-card" data-station="WHITEFACE">
             <div class="ladder-node">
-              <div class="ladder-badge">
-                <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
-              </div>
+              <div class="ladder-badge"></div>
             </div>
             <div class="ladder-name-block">
               <div class="ladder-name">Whiteface Mountain</div>
@@ -1045,9 +1031,7 @@
 
           <div class="summit-card" data-station="MMNV1">
             <div class="ladder-node">
-              <div class="ladder-badge">
-                <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
-              </div>
+              <div class="ladder-badge"></div>
             </div>
             <div class="ladder-name-block">
               <div class="ladder-name">Mount Mansfield</div>
@@ -1065,9 +1049,7 @@
 
           <div class="summit-card" data-station="BOLTON">
             <div class="ladder-node">
-              <div class="ladder-badge">
-                <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
-              </div>
+              <div class="ladder-badge"></div>
             </div>
             <div class="ladder-name-block">
               <div class="ladder-name">Bolton Vista Peak</div>
@@ -1085,9 +1067,7 @@
 
           <div class="summit-card" data-station="BURKE">
             <div class="ladder-node">
-              <div class="ladder-badge">
-                <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
-              </div>
+              <div class="ladder-badge"></div>
             </div>
             <div class="ladder-name-block">
               <div class="ladder-name">Burke Mountain</div>
