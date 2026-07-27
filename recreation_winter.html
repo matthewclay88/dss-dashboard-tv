@@ -475,6 +475,22 @@
     animation: wind-flash-purple 0.7s ease-in-out infinite;
   }
 
+  /* Stale-data treatment - mirrors tempprofile.py's 100-minute
+     staleness threshold (see MAX_OBSERVATION_AGE_MINUTES in the
+     script below) so "too old to trust" means the same thing here
+     as it does for the sounding. Overrides the wind-flash rules
+     above with !important: a card whose data is stale should never
+     still LOOK like an active high-wind alert - that would be
+     actively misleading, worse than just looking muted. */
+
+  .summit-card.stale {
+    filter: grayscale(0.65);
+    opacity: 0.55;
+    animation: none !important;
+    border-left-color: transparent !important;
+    box-shadow: none !important;
+  }
+
   /* ================= SNOW DEPTH ROW (left column, below Skew-T) ================= */
 
   .snow-summary {
@@ -1076,11 +1092,13 @@ function setWindDisplay_(card, directionDeg, speedMph) {
 
   if (speedEl) {
     speedEl.textContent = formatGustDisplay_(speedMph);
+    pulseElement_(speedEl);
   }
 
   if (dirEl) {
     dirEl.textContent = hasDirection ? degreesToCompass_(directionDeg) : "\u2014";
     dirEl.title = formatWindDisplay_(directionDeg, speedMph);
+    pulseElement_(dirEl);
   }
 }
 
@@ -1608,10 +1626,78 @@ function parseRrsSeries_(text, stationId, code) {
       MMNV1: { name: "Mount Mansfield", elevationFt: 3891 },
     };
 
+    // Brief opacity dip-and-recover on any value that just got
+    // updated - relies entirely on the `transition: opacity 0.25s
+    // ease` already defined on .value/.subtext elements throughout
+    // the CSS, so no new CSS rule is needed here. Gives each ~5 min
+    // refresh cycle a visible "this just updated" moment instead of
+    // numbers silently snapping to new values. Double
+    // requestAnimationFrame forces the browser to actually paint
+    // the dimmed state before transitioning back to full opacity -
+    // setting both in the same synchronous tick would just get
+    // coalesced into the final value and skip the transition.
+    function pulseElement_(el) {
+      if (!el) return;
+      el.style.opacity = "0.25";
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          el.style.opacity = "1";
+        });
+      });
+    }
+
     function setField(fieldName, text) {
       document.querySelectorAll(`[data-field="${fieldName}"]`).forEach((el) => {
         el.textContent = text;
+        pulseElement_(el);
       });
+    }
+
+    // ---------------------------------------------------------------------------
+    // Staleness check for the mountain summit cards.
+    //
+    // Mirrors the same 100-minute threshold tempprofile.py already
+    // applies server-side to the sounding stations (see
+    // MAX_OBSERVATION_AGE_MINUTES / is_stale() there) - "this
+    // reading is too old to trust" should mean the same thing
+    // everywhere on the dashboard, not just in the Skew-T. Unlike
+    // the sounding's per-field filtering, this is a simpler
+    // whole-card treatment: if the OLDEST of a card's available
+    // timestamps exceeds the threshold, the whole card fades/grays
+    // rather than individual stats being singled out.
+    // ---------------------------------------------------------------------------
+
+    const MAX_OBSERVATION_AGE_MINUTES = 100;
+
+    function ageMinutes_(isoString) {
+      if (!isoString) return null;
+      const then = new Date(isoString).getTime();
+      if (Number.isNaN(then)) return null;
+      return (Date.now() - then) / 60000;
+    }
+
+    function applyStaleness_(card, timestamps) {
+      if (!card) return;
+
+      const ages = timestamps
+        .map(ageMinutes_)
+        .filter((age) => age !== null && Number.isFinite(age));
+
+      if (!ages.length) {
+        card.classList.remove("stale");
+        card.removeAttribute("title");
+        return;
+      }
+
+      const oldest = Math.max(...ages);
+
+      if (oldest > MAX_OBSERVATION_AGE_MINUTES) {
+        card.classList.add("stale");
+        card.title = `Data is ${Math.round(oldest)} min old`;
+      } else {
+        card.classList.remove("stale");
+        card.removeAttribute("title");
+      }
     }
 
     function cardField(station, fieldName) {
@@ -1911,6 +1997,16 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
       tempEl.textContent = "—";
     }
 
+    if (tempEl) pulseElement_(tempEl);
+
+    applyStaleness_(
+      card,
+      [
+        temperature ? temperature.timestamp : null,
+        wind ? wind.timestamp : null,
+      ]
+    );
+
     setWindDisplay_(
       card,
       wind ? wind.directionDeg : null,
@@ -1921,6 +2017,7 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
 
 if (gustEl) {
   gustEl.textContent = wind ? formatGustDisplay_(wind.gustMph) : "—";
+  pulseElement_(gustEl);
 }
     
     if (
@@ -1946,6 +2043,8 @@ if (gustEl) {
 
       chillEl.textContent = "—";
     }
+
+    if (chillEl) pulseElement_(chillEl);
 
     if (
       elevationEl &&
