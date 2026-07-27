@@ -223,17 +223,12 @@
     gap: 14px;
   }
 
-  /* 2x2 grid instead of a 4-tall stack - the freed-up width from
-     shrinking .left-column goes here, giving each card real room
-     instead of being squeezed into a narrow single column. */
-
   .sidebar {
     flex: 0 0 56%;
     min-height: 0;
     min-width: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
     overflow: hidden;
   }
@@ -488,19 +483,54 @@
     pointer-events: none;
   }
 
-  /* ================= WIND SPEED COLOR-CODING ================= */
+  /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
   /*
-    <30 mph green, 30-45 orange, 45-60 red, >60 purple (see
-    applyWindColor_ in the script below). Accent left-border only -
-    same vernacular as the dashboard card in tempprofile.py
-    (plot_dashboard_card) - rather than filling the whole card, so
-    the card stays its normal light background/dark text throughout.
+    Based on whichever is HIGHER, sustained wind or gust (see
+    windColorClass_ in the script below) - a card should alert on a
+    gusty-but-calm-average day just as much as a steady-strong one.
+    Below 30 mph the border stays a static calm green (matches the
+    old always-on color coding); at/above 30 it starts flashing
+    instead of just changing color, since a static border shift is
+    easy to miss on a TV dashboard glanced at from across a room.
+    Flash SPEED escalates with severity (1.8s -> 0.7s) so more
+    dangerous winds read as more urgent even before you register the
+    color - both the border and a glow ring pulse together so the
+    alert is visible even if the border itself is partly obscured.
   */
 
-  .summit-card.wind-calm    { border-left-color: #2f9e44; }
-  .summit-card.wind-breezy  { border-left-color: #f59f00; }
-  .summit-card.wind-strong  { border-left-color: #e03131; }
-  .summit-card.wind-extreme { border-left-color: #9c36b5; }
+  .summit-card.wind-calm { border-left-color: #2f9e44; }
+
+  @keyframes wind-flash-yellow {
+    0%, 100% { border-left-color: rgba(245, 196, 0, 0.25); box-shadow: 0 0 0 0 rgba(245, 196, 0, 0); }
+    50%      { border-left-color: #f5c400;                 box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.45); }
+  }
+  .summit-card.wind-flash-yellow {
+    animation: wind-flash-yellow 1.8s ease-in-out infinite;
+  }
+
+  @keyframes wind-flash-orange {
+    0%, 100% { border-left-color: rgba(245, 159, 0, 0.25); box-shadow: 0 0 0 0 rgba(245, 159, 0, 0); }
+    50%      { border-left-color: #f59f00;                 box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.5); }
+  }
+  .summit-card.wind-flash-orange {
+    animation: wind-flash-orange 1.4s ease-in-out infinite;
+  }
+
+  @keyframes wind-flash-red {
+    0%, 100% { border-left-color: rgba(224, 49, 49, 0.25); box-shadow: 0 0 0 0 rgba(224, 49, 49, 0); }
+    50%      { border-left-color: #e03131;                 box-shadow: 0 0 0 4px rgba(224, 49, 49, 0.55); }
+  }
+  .summit-card.wind-flash-red {
+    animation: wind-flash-red 1.0s ease-in-out infinite;
+  }
+
+  @keyframes wind-flash-purple {
+    0%, 100% { border-left-color: rgba(156, 54, 181, 0.25); box-shadow: 0 0 0 0 rgba(156, 54, 181, 0); }
+    50%      { border-left-color: #9c36b5;                  box-shadow: 0 0 0 5px rgba(156, 54, 181, 0.6); }
+  }
+  .summit-card.wind-flash-purple {
+    animation: wind-flash-purple 0.7s ease-in-out infinite;
+  }
 
   /* ================= SNOW DEPTH ROW (left column, below Skew-T) ================= */
 
@@ -1152,20 +1182,50 @@ function setWindCompass_(card, directionDeg, speedMph) {
   }
 }
 
-const WIND_COLOR_CLASSES = ["wind-calm", "wind-breezy", "wind-strong", "wind-extreme"];
+// ---------------------------------------------------------------------------
+// Wind threshold alerts - flashing border + glow ring on the card, driven
+// by whichever is HIGHER: sustained wind or gust. A day with a calm
+// average but a sharp gust should still alert, not just a steadily
+// strong one - see the CSS keyframes (wind-flash-yellow/orange/red/
+// purple) for the actual animation.
+//
+// Thresholds (mph, applied to max(sustained, gust)):
+//   < 30        calm   - static green border, no flash
+//   30 - 44.9   yellow - flashes, 1.8s cycle
+//   45 - 59.9   orange - flashes, 1.4s cycle
+//   60 - 79.9   red    - flashes, 1.0s cycle
+//   >= 80       purple - flashes, 0.7s cycle (fastest = most urgent)
+// ---------------------------------------------------------------------------
 
-function windColorClass_(speedMph) {
-  if (speedMph === null || speedMph === undefined) return null;
-  if (speedMph < 30) return "wind-calm";
-  if (speedMph < 45) return "wind-breezy";
-  if (speedMph < 60) return "wind-strong";
-  return "wind-extreme";
+const WIND_COLOR_CLASSES = [
+  "wind-calm",
+  "wind-flash-yellow",
+  "wind-flash-orange",
+  "wind-flash-red",
+  "wind-flash-purple"
+];
+
+function windColorClass_(sustainedMph, gustMph) {
+
+  const candidates = [sustainedMph, gustMph].filter(
+    (value) => value !== null && value !== undefined && Number.isFinite(value)
+  );
+
+  if (!candidates.length) return null;
+
+  const maxSpeed = Math.max(...candidates);
+
+  if (maxSpeed >= 80) return "wind-flash-purple";
+  if (maxSpeed >= 60) return "wind-flash-red";
+  if (maxSpeed >= 45) return "wind-flash-orange";
+  if (maxSpeed >= 30) return "wind-flash-yellow";
+  return "wind-calm";
 }
 
-function applyWindColor_(cardEl, speedMph) {
+function applyWindColor_(cardEl, sustainedMph, gustMph) {
   if (!cardEl) return;
   cardEl.classList.remove(...WIND_COLOR_CLASSES);
-  const cls = windColorClass_(speedMph);
+  const cls = windColorClass_(sustainedMph, gustMph);
   if (cls) cardEl.classList.add(cls);
 }
 
@@ -1955,7 +2015,7 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
       wind ? wind.sustainedMph : null
     );
 
-    applyWindColor_(card, wind ? wind.sustainedMph : null);
+    applyWindColor_(card, wind ? wind.sustainedMph : null, wind ? wind.gustMph : null);
 
 if (gustEl) {
   gustEl.textContent = wind ? formatGustDisplay_(wind.gustMph) : "—";
@@ -2536,7 +2596,7 @@ const chillEl =
 
     setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
 
-    applyWindColor_(card, obs.sustainedMph);
+    applyWindColor_(card, obs.sustainedMph, obs.gustMph);
 
 if (gustEl) {
   gustEl.textContent = formatGustDisplay_(obs.gustMph);
@@ -2718,7 +2778,7 @@ async function refreshBoltonObs() {
         : "—";
 
     setWindCompass_(card, obs.directionDeg, obs.sustainedMph);
-    applyWindColor_(card, obs.sustainedMph);
+    applyWindColor_(card, obs.sustainedMph, obs.gustMph);
 
     gustEl.textContent = formatGustDisplay_(obs.gustMph);
 
