@@ -1483,18 +1483,8 @@ async function fetchMansfieldWind_() {
     }
 
     const timestamps = [];
-
-    if (sustained) {
-      timestamps.push(
-        new Date(sustained.timestamp).getTime()
-      );
-    }
-
-    if (gust) {
-      timestamps.push(
-        new Date(gust.timestamp).getTime()
-      );
-    }
+    if (sustained) timestamps.push(new Date(sustained.timestamp).getTime());
+    if (gust) timestamps.push(new Date(gust.timestamp).getTime());
 
     const windTimestamp = timestamps.length
       ? new Date(Math.max(...timestamps)).toISOString()
