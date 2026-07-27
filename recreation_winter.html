@@ -307,22 +307,82 @@
     margin-top: 1px;
   }
 
+  /* Wraps just the grid area (not the header text above it) so the
+     decorative elevation scale can be absolutely positioned behind
+     it without also covering the panel title. */
+
+  .mountain-ladder-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* Generic round-number elevation scale (5,000 ft down to 0),
+     evenly spaced - explicitly NOT to scale with the actual rows
+     below it, just ambient axis context. Sits behind the grid
+     (z-index:0 vs. the grid's z-index:1). */
+
+  .ladder-scale {
+    position: absolute;
+    inset: 0;
+    width: 32px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .ladder-scale-tick {
+    position: absolute;
+    left: 0;
+    right: 4px;
+    transform: translateY(-50%);
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--muted);
+    opacity: 0.5;
+    text-align: right;
+  }
+
   /* Shared grid - header row + all 4 mountain rows are direct
      children (real or via display:contents) of this one grid, so
      they share one column template and align automatically. Column
-     1 = badge/node, column 2 = name+elevation, columns 3-7 = the
-     five stat values. */
+     1 = the elevation point (dot + real elevation number), column 2
+     = badge/node, column 3 = name+elevation, columns 4-8 = the five
+     stat values. */
 
   .mountain-ladder-grid {
     position: relative;
     z-index: 1;
-    flex: 1 1 auto;
-    min-height: 0;
+    height: 100%;
     display: grid;
-    grid-template-columns: 42px minmax(110px, 1.3fr) repeat(5, 1fr);
+    grid-template-columns: 46px 42px minmax(110px, 1.3fr) repeat(5, 1fr);
     align-items: center;
     column-gap: 8px;
     row-gap: 2px;
+  }
+
+  .ladder-elev-point {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .ladder-elev-num {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .ladder-elev-dot {
+    position: relative;
+    z-index: 1;
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: var(--mtn-accent, var(--blue));
   }
 
   .ladder-header-cell {
@@ -965,8 +1025,20 @@
           <div class="mountain-panel-subtitle">Latest regional conditions</div>
         </div>
 
+        <div class="mountain-ladder-wrap">
+
+          <div class="ladder-scale">
+            <div class="ladder-scale-tick" style="top: 0%;">5000</div>
+            <div class="ladder-scale-tick" style="top: 20%;">4000</div>
+            <div class="ladder-scale-tick" style="top: 40%;">3000</div>
+            <div class="ladder-scale-tick" style="top: 60%;">2000</div>
+            <div class="ladder-scale-tick" style="top: 80%;">1000</div>
+            <div class="ladder-scale-tick" style="top: 100%;">0</div>
+          </div>
+
         <div class="mountain-ladder-grid">
 
+          <div class="ladder-header-cell"></div>
           <div class="ladder-header-cell"></div>
           <div class="ladder-header-cell"></div>
           <div class="ladder-header-cell">TEMP</div>
@@ -976,6 +1048,10 @@
           <div class="ladder-header-cell">CHILL</div>
 
           <div class="summit-card" data-station="WHITEFACE">
+            <div class="ladder-elev-point">
+              <span class="ladder-elev-num">4,867'</span>
+              <span class="ladder-elev-dot"></span>
+            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
@@ -1005,6 +1081,10 @@
           </div>
 
           <div class="summit-card" data-station="MMNV1">
+            <div class="ladder-elev-point">
+              <span class="ladder-elev-num">3,891'</span>
+              <span class="ladder-elev-dot"></span>
+            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
@@ -1034,6 +1114,10 @@
           </div>
 
           <div class="summit-card" data-station="BOLTON">
+            <div class="ladder-elev-point">
+              <span class="ladder-elev-num">3,150'</span>
+              <span class="ladder-elev-dot"></span>
+            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
@@ -1063,6 +1147,10 @@
           </div>
 
           <div class="summit-card" data-station="BURKE">
+            <div class="ladder-elev-point">
+              <span class="ladder-elev-num">3,058'</span>
+              <span class="ladder-elev-dot"></span>
+            </div>
             <div class="ladder-node">
               <div class="ladder-badge">
                 <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
@@ -1091,6 +1179,7 @@
             </div>
           </div>
 
+        </div>
         </div>
       </div>
 
