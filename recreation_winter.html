@@ -223,112 +223,182 @@
     gap: 14px;
   }
 
+  /* ================= MOUNTAIN OBSERVATIONS PANEL ================= */
+  /*
+    ONE unified card (not four separate ones) - an elevation ladder
+    with each mountain positioned in real elevation order, a single
+    shared column-header row explaining TEMP/DIR/WIND/GUST/CHILL
+    once instead of repeating labels per row, and a background
+    skyline watermark. Ordered top-to-bottom by real elevation but
+    EVENLY spaced rather than pixel-proportional - Bolton (3,150 ft)
+    and Burke (3,058 ft) are only 92 ft apart, and true proportional
+    spacing on a 0-5,000 ft scale would crowd their badges into each
+    other.
+
+    The column alignment (header labels landing directly above their
+    values in every row) uses a CSS trick: each mountain's row is a
+    `.summit-card` with `display: contents` - it contributes no box
+    of its own, so its children (badge, name block, 5 stat cells)
+    become direct grid items of `.mountain-ladder-grid` itself,
+    sharing its column template automatically. That's what makes
+    alignment robust without duplicating pixel widths between a
+    separate header grid and 4 separate row grids - `.summit-card`
+    stays fully intact in the DOM (data-station attribute, contains
+    all the data-field elements), so every existing JS lookup
+    (`document.querySelector('.summit-card[data-station="X"]')`,
+    `card.querySelector('[data-field="temp"]')`, staleness, wind-
+    flash) keeps working completely unchanged.
+  */
+
   .sidebar {
     flex: 0 0 56%;
     min-height: 0;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow: hidden;
-  }
-
-  .summit-card {
-    flex: 1 1 0;
-    min-height: 0;
     overflow: hidden;
     position: relative;
-    background: linear-gradient(135deg, var(--mtn-accent-bg, var(--sidebar-card-bg)) 0%, var(--sidebar-card-bg) 60%);
+    background: var(--sidebar-card-bg);
     border-radius: 12px;
-    padding: 10px 14px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    transition: background 0.4s ease;
+    gap: 8px;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border-left: 5px solid transparent;
   }
 
-  /* ---- Per-mountain identity colors ---- */
-  /*
-    Static per-mountain accent (icon tint, watermark, elevation pill,
-    hero temp) - distinct from the wind-speed border-left color
-    below, which is live/dynamic status, not identity. The two layer
-    on top of each other rather than competing: border-left answers
-    "is this mountain windy right now", everything else answers
-    "which mountain is this".
-  */
+  /* Background skyline watermark - a simple jagged multi-peak
+     silhouette spanning the whole card, very low opacity, sitting
+     behind everything (z-index:0). This is what answers "I want
+     some sort of background on that card" without needing an actual
+     photographic image asset. */
+
+  .sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--navy);
+    opacity: 0.05;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,200 L0,140 L45,70 L80,120 L130,30 L175,110 L215,55 L260,130 L300,80 L340,125 L400,60 L400,200 Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,200 L0,140 L45,70 L80,120 L130,30 L175,110 L215,55 L260,130 L300,80 L340,125 L400,60 L400,200 Z'/%3E%3C/svg%3E");
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .mountain-panel-header {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+  }
+
+  .mountain-panel-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+
+  .mountain-panel-subtitle {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  /* Shared grid - header row + all 4 mountain rows are direct
+     children (real or via display:contents) of this one grid, so
+     they share one column template and align automatically. Column
+     1 = badge/node, column 2 = name+elevation, columns 3-7 = the
+     five stat values. */
+
+  .mountain-ladder-grid {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 42px minmax(110px, 1.3fr) repeat(5, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+  }
+
+  .ladder-header-cell {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    text-align: center;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .summit-card { display: contents; }
+
+  /* Per-mountain identity colors - static accent (badge border,
+     name, hero temp, dir-arrow) distinct from the wind-flash color
+     below, which is live/dynamic status, not identity. Custom
+     properties still inherit normally to children through
+     display:contents (it only affects box/layout generation, not
+     property inheritance). */
 
   .summit-card[data-station="WHITEFACE"] { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
   .summit-card[data-station="MMNV1"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
   .summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
   .summit-card[data-station="BURKE"]     { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
 
-  /* Near-transparent mountain silhouette bleeding off the card's
-     bottom-right corner - clipped by the card's own border-radius/
-     overflow:hidden, so it reads as a subtle texture rather than a
-     literal icon. Reuses the same triangle path as the header icon
-     SVGs for visual consistency. Sized for a short horizontal card
-     (~70px, not the ~130px used when cards were taller) - at the
-     old size the watermark's top edge reached up into the header
-     row and visually collided with the name/elevation pill. */
+  /* Badge + connecting line - the node stretches to fill its full
+     grid row (align-self:stretch overrides the grid's own
+     align-items:center just for this column) so the ::after line
+     can span the row's full height; the badge itself is
+     flex-centered within that stretched box. First/last rows only
+     draw half the line (down from center, or up to center) so the
+     line doesn't dangle above the first badge or below the last. */
 
-  .summit-card::before {
-    content: "";
-    position: absolute;
-    right: -8px;
-    bottom: -10px;
-    width: 70px;
-    height: 70px;
-    background: var(--mtn-accent, var(--muted));
-    opacity: 0.10;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20 L11 6 L14 12 L17 9 L20 20 Z'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20 L11 6 L14 12 L17 9 L20 20 Z'/%3E%3C/svg%3E");
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .summit-card .header,
-  .summit-card .mini-stats {
-    position: relative;
-    z-index: 1;
-  }
-
-  .summit-card .header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .summit-card .icon {
-    width: 36px;
-    height: 36px;
-    flex: 0 0 36px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.55);
-    box-shadow: 0 1px 2px rgba(20, 30, 50, 0.08);
+  .ladder-node {
+    align-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
   }
 
-  /* Small live-data pulse dot on the icon's corner - reuses the
-     same @keyframes pulse already defined for the navbar's LIVE
-     indicator, so it's visually consistent with "this is live". */
-
-  .summit-card .icon::after {
+  .ladder-node::after {
     content: "";
     position: absolute;
-    top: -3px;
-    right: -3px;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    background: var(--card-border);
+    z-index: 0;
+  }
+
+  .summit-card:first-of-type .ladder-node::after { top: 50%; }
+  .summit-card:last-of-type .ladder-node::after { bottom: 50%; }
+
+  .ladder-badge {
+    position: relative;
+    z-index: 1;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.75);
+    border: 3px solid var(--mtn-accent, var(--blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .ladder-badge::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -2px;
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -337,9 +407,9 @@
     animation: pulse 2.2s infinite;
   }
 
-  .summit-card .icon svg {
-    width: 20px;
-    height: 20px;
+  .ladder-badge svg {
+    width: 16px;
+    height: 16px;
     stroke: var(--mtn-accent, var(--blue));
     fill: none;
     stroke-width: 1.8;
@@ -347,76 +417,49 @@
     stroke-linejoin: round;
   }
 
-  /* Name + elevation share one line ("Mount Mansfield @ 3,891 ft"). */
-
-  .summit-card .name-line {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 6px;
+  .ladder-name-block {
     min-width: 0;
-    flex: 1 1 auto;
   }
 
-  .summit-card .name {
+  .ladder-name {
     font-weight: 800;
-    font-size: 15.5px;
-    line-height: 1.15;
-  }
-
-  .summit-card .elev-inline {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--mtn-accent, var(--muted));
-    background: rgba(255, 255, 255, 0.55);
-    padding: 1px 7px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-
-  /* Hero temperature now lives IN the header, right-aligned against
-     the name - co-equal with the mountain's name instead of buried
-     in a labeled stat column below. This is what actually breaks up
-     the "spreadsheet row" feel the old 5-equal-column layout had. */
-
-  .summit-card .hero-temp {
-    font-size: 26px;
-    font-weight: 800;
+    font-size: 13.5px;
     color: var(--mtn-accent, var(--ink));
-    flex: 0 0 auto;
-    margin-left: auto;
-    padding-left: 8px;
+    line-height: 1.2;
+  }
+
+  .ladder-elev {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .ladder-stat {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    font-weight: 800;
+    font-size: 14.5px;
+    color: var(--ink);
     white-space: nowrap;
     transition: opacity 0.25s ease;
   }
 
-  /* Compact icon+value row for DIR/WIND/GUST/CHILL - replaces the
-     old 5-column ALL-CAPS-label-over-number grid. Icons carry the
-     meaning (arrow/wind/gauge/snowflake) instead of a text label, so
-     each stat is a single line instead of two - this is what keeps
-     the card the same height (or shorter) despite the header row
-     growing to fit the hero temp. */
+  /* TEMP still reads as the headline number - bigger, in the
+     mountain's own accent color - even though it now shares a grid
+     column width with the other four stats. */
 
-  .summit-card .mini-stats {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-    padding-top: 7px;
-    border-top: 1px solid var(--card-border);
+  .ladder-stat-temp {
+    font-size: 17px;
+    color: var(--mtn-accent, var(--ink));
   }
 
-  .summit-card .mini-stat {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    min-width: 0;
-  }
-
-  .summit-card .mini-icon {
-    width: 15px;
-    height: 15px;
-    flex: 0 0 15px;
+  .ladder-stat .mini-icon {
+    width: 13px;
+    height: 13px;
+    flex: 0 0 13px;
     stroke: var(--muted);
     fill: none;
     stroke-width: 1.8;
@@ -425,85 +468,69 @@
   }
 
   /* The DIR arrow actually rotates to the real wind direction (see
-     setWindDisplay_) - a small, decorative-but-functional detail,
-     not the full compass-dial widget that caused layout problems
-     before. Colored in the mountain's own accent to tie it to the
-     rest of the card's identity. */
+     setWindDisplay_) - wind-vane convention, points toward where
+     the wind is coming from. */
 
-  .summit-card .mini-icon.dir-arrow {
+  .ladder-stat .mini-icon.dir-arrow {
     stroke: var(--mtn-accent, var(--blue));
     transform-origin: center;
     transition: transform 0.4s ease, opacity 0.4s ease;
   }
 
-  .summit-card .mini-value {
-    font-size: 14.5px;
-    font-weight: 700;
-    color: var(--ink);
-    white-space: nowrap;
-    transition: opacity 0.25s ease;
-  }
-
   /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
   /*
     Based on whichever is HIGHER, sustained wind or gust (see
-    windColorClass_ in the script below) - a card should alert on a
-    gusty-but-calm-average day just as much as a steady-strong one.
-    Below 30 mph the border stays a static calm green (matches the
-    old always-on color coding); at/above 30 it starts flashing
-    instead of just changing color, since a static border shift is
-    easy to miss on a TV dashboard glanced at from across a room.
-    Flash SPEED escalates with severity (1.8s -> 0.7s) so more
-    dangerous winds read as more urgent even before you register the
-    color - both the border and a glow ring pulse together so the
-    alert is visible even if the border itself is partly obscured.
+    windColorClass_ in the script below). The flash now targets the
+    BADGE specifically (border + glow ring) rather than a card
+    border-left, since there's no longer an individual card per
+    mountain to put a border on - `.summit-card` (display:contents)
+    has no box of its own to style, so the class toggle still lands
+    on it exactly as before, and CSS reaches into `.ladder-badge` via
+    a descendant selector for the actual visual effect. Flash SPEED
+    escalates with severity (1.8s -> 0.7s) so more dangerous winds
+    read as more urgent even before you register the color.
   */
 
-  .summit-card.wind-calm { border-left-color: #2f9e44; }
+  .summit-card.wind-calm .ladder-badge { border-color: #2f9e44; }
 
   @keyframes wind-flash-yellow {
-    0%, 100% { border-left-color: rgba(245, 196, 0, 0.25); box-shadow: 0 0 0 0 rgba(245, 196, 0, 0); }
-    50%      { border-left-color: #f5c400;                 box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.45); }
+    0%, 100% { border-color: rgba(245, 196, 0, 0.35); box-shadow: 0 0 0 0 rgba(245, 196, 0, 0); }
+    50%      { border-color: #f5c400;                 box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.45); }
   }
-  .summit-card.wind-flash-yellow {
+  .summit-card.wind-flash-yellow .ladder-badge {
     animation: wind-flash-yellow 1.8s ease-in-out infinite;
   }
 
   @keyframes wind-flash-orange {
-    0%, 100% { border-left-color: rgba(245, 159, 0, 0.25); box-shadow: 0 0 0 0 rgba(245, 159, 0, 0); }
-    50%      { border-left-color: #f59f00;                 box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.5); }
+    0%, 100% { border-color: rgba(245, 159, 0, 0.35); box-shadow: 0 0 0 0 rgba(245, 159, 0, 0); }
+    50%      { border-color: #f59f00;                 box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.5); }
   }
-  .summit-card.wind-flash-orange {
+  .summit-card.wind-flash-orange .ladder-badge {
     animation: wind-flash-orange 1.4s ease-in-out infinite;
   }
 
   @keyframes wind-flash-red {
-    0%, 100% { border-left-color: rgba(224, 49, 49, 0.25); box-shadow: 0 0 0 0 rgba(224, 49, 49, 0); }
-    50%      { border-left-color: #e03131;                 box-shadow: 0 0 0 4px rgba(224, 49, 49, 0.55); }
+    0%, 100% { border-color: rgba(224, 49, 49, 0.35); box-shadow: 0 0 0 0 rgba(224, 49, 49, 0); }
+    50%      { border-color: #e03131;                 box-shadow: 0 0 0 4px rgba(224, 49, 49, 0.55); }
   }
-  .summit-card.wind-flash-red {
+  .summit-card.wind-flash-red .ladder-badge {
     animation: wind-flash-red 1.0s ease-in-out infinite;
   }
 
   @keyframes wind-flash-purple {
-    0%, 100% { border-left-color: rgba(156, 54, 181, 0.25); box-shadow: 0 0 0 0 rgba(156, 54, 181, 0); }
-    50%      { border-left-color: #9c36b5;                  box-shadow: 0 0 0 5px rgba(156, 54, 181, 0.6); }
+    0%, 100% { border-color: rgba(156, 54, 181, 0.35); box-shadow: 0 0 0 0 rgba(156, 54, 181, 0); }
+    50%      { border-color: #9c36b5;                  box-shadow: 0 0 0 5px rgba(156, 54, 181, 0.6); }
   }
-  .summit-card.wind-flash-purple {
+  .summit-card.wind-flash-purple .ladder-badge {
     animation: wind-flash-purple 0.7s ease-in-out infinite;
   }
 
   /* Per-field stale/missing treatment - mirrors tempprofile.py's
      100-minute staleness threshold (see MAX_OBSERVATION_AGE_MINUTES
-     in the script below), applied per STAT rather than to the whole
-     card. A card can easily have one fresh field (e.g. wind) and
-     one stale/missing one (e.g. temperature) at the same time - the
-     whole-card version of this used to gray out the entire card
-     over a single bad field, hiding otherwise-good data. */
+     in the script below), applied per stat cell rather than to the
+     whole row. */
 
-  .summit-card .stat.stale-field,
-  .summit-card .mini-stat.stale-field,
-  .summit-card .hero-temp.stale-field {
+  .ladder-stat.stale-field {
     filter: grayscale(0.85);
     opacity: 0.4;
   }
@@ -923,132 +950,148 @@
           own via their respective APIs. Wind direction shows as a
           compass abbreviation (see setWindDisplay_) rather than a
           graphic - simpler and just as readable at a glance.
+
+          ONE unified panel (elevation ladder), not four separate
+          cards - see the CSS comment above .mountain-ladder-grid for
+          how `.summit-card` (display:contents) keeps every existing
+          JS lookup working unchanged despite the visual restructure.
+          Ordered top-to-bottom by real elevation, evenly spaced
+          rather than pixel-proportional (see that same CSS comment
+          for why).
         -->
 
-        <div class="summit-card" data-station="WHITEFACE">
-          <div class="header">
-            <div class="icon">
-              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
-            </div>
-            <div class="name-line">
-              <span class="name">Whiteface Mountain</span>
-              <span class="elev-inline" data-field="elevation">@ 4,867 ft</span>
-            </div>
-            <div class="hero-temp" data-field="temp">&mdash;</div>
-          </div>
-          <div class="mini-stats">
-            <div class="mini-stat">
-              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span class="mini-value" data-field="dir">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span class="mini-value" data-field="wind">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span class="mini-value" data-field="gust">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span class="mini-value" data-field="windchill">&mdash;</span>
-            </div>
-          </div>
+        <div class="mountain-panel-header">
+          <div class="mountain-panel-title">MOUNTAIN OBSERVATIONS</div>
+          <div class="mountain-panel-subtitle">Latest regional conditions</div>
         </div>
 
-        <div class="summit-card" data-station="MMNV1">
-          <div class="header">
-            <div class="icon">
-              <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
-            </div>
-            <div class="name-line">
-              <span class="name">Mount Mansfield</span>
-              <span class="elev-inline" data-field="elevation">@ 3,891 ft</span>
-            </div>
-            <div class="hero-temp" data-field="temp">&mdash;</div>
-          </div>
-          <div class="mini-stats">
-            <div class="mini-stat">
-              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span class="mini-value" data-field="dir">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span class="mini-value" data-field="wind">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span class="mini-value" data-field="gust">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span class="mini-value" data-field="windchill">&mdash;</span>
-            </div>
-          </div>
-        </div>
+        <div class="mountain-ladder-grid">
 
-        <div class="summit-card" data-station="BOLTON">
-          <div class="header">
-            <div class="icon">
-              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
-            </div>
-            <div class="name-line">
-              <span class="name">Bolton Vista Peak</span>
-              <span class="elev-inline" data-field="elevation">@ 3,150 ft</span>
-            </div>
-            <div class="hero-temp" data-field="temp">&mdash;</div>
-          </div>
-          <div class="mini-stats">
-            <div class="mini-stat">
-              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span class="mini-value" data-field="dir">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span class="mini-value" data-field="wind">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span class="mini-value" data-field="gust">&mdash;</span>
-            </div>
-            <div class="mini-stat">
-              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span class="mini-value" data-field="windchill">&mdash;</span>
-            </div>
-          </div>
-        </div>
+          <div class="ladder-header-cell"></div>
+          <div class="ladder-header-cell"></div>
+          <div class="ladder-header-cell">TEMP</div>
+          <div class="ladder-header-cell">DIR</div>
+          <div class="ladder-header-cell">WIND</div>
+          <div class="ladder-header-cell">GUST</div>
+          <div class="ladder-header-cell">CHILL</div>
 
-        <div class="summit-card" data-station="BURKE">
-          <div class="header">
-            <div class="icon">
-              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+          <div class="summit-card" data-station="WHITEFACE">
+            <div class="ladder-node">
+              <div class="ladder-badge">
+                <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+              </div>
             </div>
-            <div class="name-line">
-              <span class="name">Burke Mountain</span>
-              <span class="elev-inline" data-field="elevation">@ 3,058 ft</span>
+            <div class="ladder-name-block">
+              <div class="ladder-name">Whiteface Mountain</div>
+              <div class="ladder-elev" data-field="elevation">4,867 ft</div>
             </div>
-            <div class="hero-temp" data-field="temp">&mdash;</div>
-          </div>
-          <div class="mini-stats">
-            <div class="mini-stat">
+            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
+            <div class="ladder-stat">
               <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-              <span class="mini-value" data-field="dir">&mdash;</span>
+              <span data-field="dir">&mdash;</span>
             </div>
-            <div class="mini-stat">
+            <div class="ladder-stat">
               <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
-              <span class="mini-value" data-field="wind">&mdash;</span>
+              <span data-field="wind">&mdash;</span>
             </div>
-            <div class="mini-stat">
+            <div class="ladder-stat">
               <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
-              <span class="mini-value" data-field="gust">&mdash;</span>
+              <span data-field="gust">&mdash;</span>
             </div>
-            <div class="mini-stat">
+            <div class="ladder-stat">
               <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-              <span class="mini-value" data-field="windchill">&mdash;</span>
+              <span data-field="windchill">&mdash;</span>
             </div>
           </div>
-        </div>
 
+          <div class="summit-card" data-station="MMNV1">
+            <div class="ladder-node">
+              <div class="ladder-badge">
+                <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+              </div>
+            </div>
+            <div class="ladder-name-block">
+              <div class="ladder-name">Mount Mansfield</div>
+              <div class="ladder-elev" data-field="elevation">3,891 ft</div>
+            </div>
+            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
+            <div class="ladder-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span data-field="dir">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
+              <span data-field="wind">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
+              <span data-field="gust">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              <span data-field="windchill">&mdash;</span>
+            </div>
+          </div>
+
+          <div class="summit-card" data-station="BOLTON">
+            <div class="ladder-node">
+              <div class="ladder-badge">
+                <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+              </div>
+            </div>
+            <div class="ladder-name-block">
+              <div class="ladder-name">Bolton Vista Peak</div>
+              <div class="ladder-elev" data-field="elevation">3,150 ft</div>
+            </div>
+            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
+            <div class="ladder-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span data-field="dir">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
+              <span data-field="wind">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
+              <span data-field="gust">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              <span data-field="windchill">&mdash;</span>
+            </div>
+          </div>
+
+          <div class="summit-card" data-station="BURKE">
+            <div class="ladder-node">
+              <div class="ladder-badge">
+                <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+              </div>
+            </div>
+            <div class="ladder-name-block">
+              <div class="ladder-name">Burke Mountain</div>
+              <div class="ladder-elev" data-field="elevation">3,058 ft</div>
+            </div>
+            <div class="ladder-stat ladder-stat-temp" data-field="temp">&mdash;</div>
+            <div class="ladder-stat">
+              <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+              <span data-field="dir">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M3 7 H15 M3 12 H19 M3 17 H11"/></svg>
+              <span data-field="wind">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M4 17 A8 8 0 0 1 20 17 M12 17 L16 11"/></svg>
+              <span data-field="gust">&mdash;</span>
+            </div>
+            <div class="ladder-stat">
+              <svg class="mini-icon" viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              <span data-field="windchill">&mdash;</span>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       <div class="quad-stats">
@@ -1891,7 +1934,7 @@ function parseRrsSeries_(text, stationId, code) {
       const valueEl = card.querySelector(`[data-field="${fieldName}"]`);
       if (!valueEl) return;
 
-      const statEl = valueEl.closest(".stat, .mini-stat, .hero-temp") || valueEl;
+      const statEl = valueEl.closest(".ladder-stat") || valueEl;
 
       const list = Array.isArray(timestamps) ? timestamps : [timestamps];
       const ages = list
@@ -2329,7 +2372,7 @@ if (gustEl) {
     ) {
 
       elevationEl.textContent =
-        `@ ${STATION_CONFIG.MMNV1.elevationFt.toLocaleString()} ft`;
+        `${STATION_CONFIG.MMNV1.elevationFt.toLocaleString()} ft`;
     }
 
     console.log("MMNV1 LIVE OBS:", {
@@ -2642,7 +2685,7 @@ async function refreshWhitefaceObs() {
     if (elevationEl) {
 
       elevationEl.textContent =
-        "@ 4,867 ft";
+        "4,867 ft";
     }
 
     console.log(
@@ -2938,7 +2981,7 @@ if (gustEl) {
     ) {
 
       elevationEl.textContent =
-        `@ ${obs.elevationFt.toLocaleString("en-US", {
+        `${obs.elevationFt.toLocaleString("en-US", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         })} ft`;
@@ -3133,7 +3176,7 @@ async function refreshBoltonObs() {
     ) {
 
       elevationEl.textContent =
-        `@ ${Math.round(obs.elevationFt)} ft`;
+        `${Math.round(obs.elevationFt)} ft`;
     }
 
     console.log(
@@ -3152,10 +3195,10 @@ async function refreshBoltonObs() {
 
     function seedStationConfig() {
       Object.entries(STATION_CONFIG).forEach(([station, cfg]) => {
-        const nameEl = document.querySelector(`.summit-card[data-station="${station}"] .name`);
+        const nameEl = document.querySelector(`.summit-card[data-station="${station}"] .ladder-name`);
         if (nameEl) nameEl.textContent = cfg.name;
         const elevEl = cardField(station, "elevation");
-        if (elevEl) elevEl.textContent = `@ ${cfg.elevationFt.toLocaleString()} ft`;
+        if (elevEl) elevEl.textContent = `${cfg.elevationFt.toLocaleString()} ft`;
       });
     }
 
