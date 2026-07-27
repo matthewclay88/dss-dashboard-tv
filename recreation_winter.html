@@ -627,18 +627,6 @@
     display: block;
   }
 
-  .lapse-card.lapse-low {
-    background: linear-gradient(160deg,#2f9e44,#1c6b2c);
-  }
-
-.lapse-card.lapse-medium {
-    background: linear-gradient(160deg,#f59f00,#a66a00);
-  }
-
-.lapse-card.lapse-high {
-    background: linear-gradient(160deg,#e03131,#962020);
-  }
-  
   /* ================= 2x2 STAT GRID (right column, below mountain cards) ================= */
 
   .quad-stats {
@@ -651,71 +639,169 @@
     gap:12px;
 }
 
+  /* Light card + colored left border + icon circle, same visual
+     language as .summit-card - a deliberate move away from the
+     dark gradient tiles these used to be, so the diagnostic cards
+     and the mountain-observation cards read as one consistent
+     design instead of two different styles glued together. */
+
   .quad-card {
     min-width: 0;
     min-height: 0;
     overflow: hidden;
+    background: var(--sidebar-card-bg);
     border-radius: 10px;
-    padding: 10px 16px;
-    background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
-    color: white;
+    padding: 10px 14px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    border-left: 4px solid var(--quad-accent, var(--muted));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: border-color 0.4s ease;
+  }
+
+  .quad-card .quad-header {
+    display: flex;
     align-items: center;
-    justify-content: flex-start;
-    text-align: center;
-    transition: background 0.4s ease;
+    gap: 8px;
+  }
+
+  .quad-card .quad-icon {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    border-radius: 7px;
+    background: var(--quad-accent-bg, #e4ecf5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quad-card .quad-icon svg {
+    width: 15px;
+    height: 15px;
+    stroke: var(--quad-accent, var(--blue));
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .quad-card .eyebrow {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.05em;
-    color: #cfe0f2;
+    letter-spacing: 0.04em;
+    color: var(--muted);
     flex: 0 0 auto;
   }
 
   .quad-card .value {
-    font-size: 22px;
+    font-size: 21px;
     font-weight: 800;
     line-height: 1.15;
-    margin-top: 4px;
+    margin-top: 5px;
     flex: 0 0 auto;
+    color: var(--ink);
     transition: opacity 0.25s ease;
   }
 
   .quad-card .subtext {
-    font-size: 12px;
-    color: #cfe0f2;
-    margin-top: 3px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
     flex: 0 0 auto;
   }
 
-  .froude-card {
-    background: linear-gradient(160deg, var(--froude-card-from), var(--froude-card-to));
+  /* ---- Gauge slider (Shear / Lapse Rate / Mountain Flow) ---- */
+  /*
+    Dot position is computed from the real value in JS (see
+    setGauge_) and expressed purely as a CSS custom property
+    (--gauge-pct, 0-100) - the markup/CSS never hardcodes a
+    position, so the dot always reflects whatever the data actually
+    says rather than sitting at a fixed decorative spot.
+  */
+
+  .quad-card .gauge {
+    margin-top: 8px;
+    flex: 0 0 auto;
   }
 
-  .froude-card .eyebrow {
-    color: #e3d9fc;
+  .quad-card .gauge-track {
+    position: relative;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(107, 118, 136, 0.25);
   }
 
-  .froude-card .value {
-    font-size: 26px;
+  .quad-card .gauge-dot {
+    position: absolute;
+    top: 50%;
+    left: var(--gauge-pct, 0%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--quad-accent, var(--blue));
+    border: 2px solid var(--card-bg);
+    transform: translate(-50%, -50%);
+    transition: left 0.4s ease, background 0.4s ease;
   }
 
-  .froude-card .subtext {
+  .quad-card .gauge-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 9px;
     font-weight: 700;
-    color: #e3d9fc;
+    letter-spacing: 0.03em;
+    color: var(--muted);
   }
 
-  .ptype-card.ptype-rain { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
-  .ptype-card.ptype-snow { background: linear-gradient(160deg, #1971c2, #0b4a85); }
-  .ptype-card.ptype-mix { background: linear-gradient(160deg, #f59f00, #a66a00); }
-  .ptype-card.ptype-frz { background: linear-gradient(160deg, #e03131, #962020); }
+  /* ---- P-Type pill (colored dot + label, replaces the old
+     whole-card gradient fill) ---- */
 
-  .shear-card.shear-low { background: linear-gradient(160deg, #2f9e44, #1c6b2c); }
-  .shear-card.shear-mod { background: linear-gradient(160deg, #f59f00, #a66a00); }
-  .shear-card.shear-high { background: linear-gradient(160deg, #e03131, #962020); }
+  .quad-card .ptype-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 3px 11px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    align-self: flex-start;
+    background: var(--quad-accent-bg, #e4ecf5);
+    color: var(--quad-accent, var(--ink));
+  }
+
+  .quad-card .ptype-pill .ptype-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* Per-card static identity accents - freezing level/wet-bulb zero
+     keep a fixed color (they're readouts, not a Low/Med/High
+     category); shear/lapse/p-type still recolor dynamically via the
+     classes below, applied on top of these defaults. */
+
+  .quad-card.freezing-card { --quad-accent: #1c7ed6; --quad-accent-bg: #dceafb; }
+  .quad-card.wetbulb-card  { --quad-accent: #0c8599; --quad-accent-bg: #d3f1f5; }
+  .quad-card.froude-card   { --quad-accent: #7048a3; --quad-accent-bg: #ece3f7; }
+
+  .quad-card.shear-card.shear-low  { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+  .quad-card.shear-card.shear-mod  { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+  .quad-card.shear-card.shear-high { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
+
+  .quad-card.lapse-card.lapse-low    { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+  .quad-card.lapse-card.lapse-medium { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+  .quad-card.lapse-card.lapse-high   { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
+
+  .quad-card.ptype-card.ptype-rain { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+  .quad-card.ptype-card.ptype-snow { --quad-accent: #1c7ed6; --quad-accent-bg: #dceafb; }
+  .quad-card.ptype-card.ptype-mix  { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+  .quad-card.ptype-card.ptype-frz  { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
 
 </style>
 </head>
@@ -902,37 +988,80 @@
 
       <div class="quad-stats">
 
-        <div class="quad-card">
-          <div class="eyebrow">FREEZING LEVEL</div>
+        <div class="quad-card freezing-card">
+          <div class="quad-header">
+            <div class="quad-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+            </div>
+            <div class="eyebrow">FREEZING LEVEL</div>
+          </div>
           <div class="value" data-field="freezing-level">&mdash;</div>
           <div class="subtext" data-field="freezing-level-subtext"></div>
         </div>
 
-        <div class="quad-card">
-          <div class="eyebrow">WET-BULB ZERO</div>
+        <div class="quad-card wetbulb-card">
+          <div class="quad-header">
+            <div class="quad-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2 C12 2 5 11 5 15 A7 7 0 0 0 19 15 C19 11 12 2 12 2 Z"/></svg>
+            </div>
+            <div class="eyebrow">WET-BULB ZERO</div>
+          </div>
           <div class="value" data-field="wetbulb-zero">&mdash;</div>
           <div class="subtext" data-field="wetbulb-zero-subtext"></div>
         </div>
 
         <div class="quad-card shear-card">
-          <div class="eyebrow">SHEAR (SFC–SUMMIT)</div>
+          <div class="quad-header">
+            <div class="quad-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 8 H21 M3 16 H15 M17 12 L21 16 L17 20"/></svg>
+            </div>
+            <div class="eyebrow">SHEAR (SFC&ndash;SUMMIT)</div>
+          </div>
           <div class="value" data-field="bulk-shear">&mdash;</div>
+          <div class="gauge">
+            <div class="gauge-track"><div class="gauge-dot" data-gauge="shear"></div></div>
+            <div class="gauge-labels"><span>WEAK</span><span>STRONG</span></div>
+          </div>
         </div>
 
         <div class="quad-card lapse-card">
-          <div class="eyebrow">MEAN LAPSE RATE</div>
+          <div class="quad-header">
+            <div class="quad-icon">
+              <svg viewBox="0 0 24 24"><path d="M7 17 L17 7 M9 7 H17 V15"/></svg>
+            </div>
+            <div class="eyebrow">MEAN LAPSE RATE</div>
+          </div>
           <div class="value" data-field="lapse-rate">&mdash;</div>
+          <div class="gauge">
+            <div class="gauge-track"><div class="gauge-dot" data-gauge="lapse"></div></div>
+            <div class="gauge-labels"><span>STABLE</span><span>STEEP</span></div>
+          </div>
         </div>
 
         <div class="quad-card froude-card">
-          <div class="eyebrow">FROUDE NUMBER</div>
-          <div class="value" data-field="froude-number">—</div>
-          <div class="subtext" data-field="flow-regime">—</div>
+          <div class="quad-header">
+            <div class="quad-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+            </div>
+            <div class="eyebrow">MOUNTAIN FLOW</div>
+          </div>
+          <div class="value" data-field="flow-regime">&mdash;</div>
+          <div class="subtext">Fr <span data-field="froude-number">&mdash;</span></div>
+          <div class="gauge">
+            <div class="gauge-track"><div class="gauge-dot" data-gauge="froude"></div></div>
+            <div class="gauge-labels"><span>BLOCKED</span><span>CROSS-BARRIER</span></div>
+          </div>
         </div>
 
         <div class="quad-card ptype-card">
-          <div class="eyebrow">EXPECTED P-TYPE</div>
-          <div class="value" data-field="precip-type">—</div>
+          <div class="quad-header">
+            <div class="quad-icon">
+              <svg viewBox="0 0 24 24"><path d="M6 15 A5 5 0 0 1 7 5.1 A6 6 0 0 1 18 8 A4 4 0 0 1 17 15 Z M8 18 V20 M12 18 V21 M16 18 V20"/></svg>
+            </div>
+            <div class="eyebrow">EXPECTED P-TYPE</div>
+          </div>
+          <div class="value" data-field="precip-type">&mdash;</div>
+          <div class="ptype-pill"><span class="ptype-dot"></span><span data-field="precip-type-pill">&mdash;</span></div>
         </div>
 
       </div>
@@ -1720,6 +1849,35 @@ function parseRrsSeries_(text, stationId, code) {
       });
     }
 
+    // ---------------------------------------------------------------------------
+    // Gauge sliders (Shear / Lapse Rate / Mountain Flow). The dot's
+    // position is a CSS custom property (--gauge-pct), computed here
+    // from the real value against a defined range - never hardcoded
+    // in the markup/CSS. Range choices, so a value outside the
+    // "interesting" band still clamps to an end rather than running
+    // off the track:
+    //   Shear:   0-35 kt   (existing thresholds: <15 low, 15-25 mod, >=25 high)
+    //   Lapse:   0-10 C/km (dry adiabatic is 9.8 C/km; existing thresholds <=6/6-8/>8)
+    //   Froude:  0-1.5     (existing thresholds: <0.5 blocked, 0.5-1.0 partial, >=1.0 unblocked)
+    // ---------------------------------------------------------------------------
+
+    function setGauge_(gaugeName, value, minValue, maxValue) {
+      const dot = document.querySelector(`[data-gauge="${gaugeName}"]`);
+      if (!dot) return;
+
+      if (value === null || value === undefined || !Number.isFinite(value)) {
+        dot.style.setProperty("--gauge-pct", "0%");
+        dot.style.opacity = "0.25";
+        return;
+      }
+
+      const clamped = Math.min(maxValue, Math.max(minValue, value));
+      const pct = ((clamped - minValue) / (maxValue - minValue)) * 100;
+
+      dot.style.setProperty("--gauge-pct", `${pct}%`);
+      dot.style.opacity = "1";
+    }
+
     function shearColorClass(shearKt) {
       if (shearKt === null || shearKt === undefined) return null;
       if (shearKt < 15) return "shear-low";
@@ -1851,6 +2009,7 @@ function formatZeroLevel(data, prefix) {
         const data = await res.json();
 
         setField("precip-type", data.precip_type ?? "\u2014");
+        setField("precip-type-pill", data.precip_type ?? "\u2014");
         applyPrecipColor(data.precip_type);
 
         setField(
@@ -1860,6 +2019,7 @@ function formatZeroLevel(data, prefix) {
             : "\u2014"
         );
         setField("flow-regime", data.flow_regime ?? "\u2014");
+        setGauge_("froude", data.froude_number, 0, 1.5);
 
        const freezingDisplay = formatZeroLevel(data, "freezing_level");
 
@@ -1892,6 +2052,7 @@ setField(
             : "\u2014"
         );
         applyShearColor(data.bulk_shear_kt);
+        setGauge_("shear", data.bulk_shear_kt, 0, 35);
 
         setField(
     "lapse-rate",
@@ -1902,6 +2063,7 @@ setField(
 );
 
 applyLapseColor(data.mean_lapse_rate_C_km);
+setGauge_("lapse", data.mean_lapse_rate_C_km, 0, 10);
         
       } catch (err) {
         console.warn("Diagnostics status fetch failed:", err);
