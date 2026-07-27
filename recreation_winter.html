@@ -169,7 +169,7 @@
   /* ================= LEFT COLUMN: Skew-T + snow row ================= */
 
   .left-column {
-    flex: 0 0 70%;
+    flex: 0 0 55%;
     min-width: 0;
     min-height: 0;
     display: flex;
@@ -223,12 +223,17 @@
     gap: 14px;
   }
 
+  /* 2x2 grid instead of a 4-tall stack - the freed-up width from
+     shrinking .left-column goes here, giving each card real room
+     instead of being squeezed into a narrow single column. */
+
   .sidebar {
     flex: 0 0 56%;
     min-height: 0;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: 10px;
     overflow: hidden;
   }
@@ -423,8 +428,10 @@
     color: var(--mtn-accent, var(--ink));
   }
 
-  /* ---- Wind direction compass (needle only — speed lives in its
-     own numeric column, see the WIND stat) ---- */
+  /* ---- Wind direction + speed compass (combined again now that
+     2x2 cards are wider but shorter per row than the old 4-stack -
+     folding DIR back into WIND drops the stat row to 4 columns,
+     which is what makes a 2-per-row card comfortable) ---- */
 
   .stat.wind-dir-stat {
     display: flex;
@@ -435,8 +442,8 @@
 
   .wind-compass {
     position: relative;
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     margin: 3px auto 0;
   }
 
@@ -468,6 +475,17 @@
 
   .compass-needle polygon {
     fill: var(--blue);
+  }
+
+  .compass-speed {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--ink);
+    pointer-events: none;
   }
 
   /* ================= WIND SPEED COLOR-CODING ================= */
@@ -825,7 +843,7 @@
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
             <div class="stat wind-dir-stat">
-              <div class="label">DIR</div>
+              <div class="label">WIND</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -834,9 +852,9 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
+                <div class="compass-speed" data-field="wind">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -855,7 +873,7 @@
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
             <div class="stat wind-dir-stat">
-              <div class="label">DIR</div>
+              <div class="label">WIND</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -864,9 +882,9 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
+                <div class="compass-speed" data-field="wind">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -885,7 +903,7 @@
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
             <div class="stat wind-dir-stat">
-              <div class="label">DIR</div>
+              <div class="label">WIND</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -894,9 +912,9 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
+                <div class="compass-speed" data-field="wind">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
@@ -915,7 +933,7 @@
           <div class="stats">
             <div class="stat"><div class="label">TEMP</div><div class="value" data-field="temp">—</div></div>
             <div class="stat wind-dir-stat">
-              <div class="label">DIR</div>
+              <div class="label">WIND</div>
               <div class="wind-compass" data-field="wind-compass">
                 <svg class="compass-svg" viewBox="0 0 60 60">
                   <circle class="compass-ring" cx="30" cy="30" r="26"/>
@@ -924,9 +942,9 @@
                     <polygon points="30,8 25,30 30,25 35,30"/>
                   </g>
                 </svg>
+                <div class="compass-speed" data-field="wind">—</div>
               </div>
             </div>
-            <div class="stat"><div class="label">WIND</div><div class="value" data-field="wind">—</div></div>
             <div class="stat"><div class="label">GUST</div><div class="value" data-field="gust">—</div></div>
             <div class="stat"><div class="label">CHILL</div><div class="value" data-field="windchill">—</div></div>
           </div>
