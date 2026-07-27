@@ -476,20 +476,17 @@
     animation: wind-flash-purple 0.7s ease-in-out infinite;
   }
 
-  /* Stale-data treatment - mirrors tempprofile.py's 100-minute
-     staleness threshold (see MAX_OBSERVATION_AGE_MINUTES in the
-     script below) so "too old to trust" means the same thing here
-     as it does for the sounding. Overrides the wind-flash rules
-     above with !important: a card whose data is stale should never
-     still LOOK like an active high-wind alert - that would be
-     actively misleading, worse than just looking muted. */
+  /* Per-field stale/missing treatment - mirrors tempprofile.py's
+     100-minute staleness threshold (see MAX_OBSERVATION_AGE_MINUTES
+     in the script below), applied per STAT rather than to the whole
+     card. A card can easily have one fresh field (e.g. wind) and
+     one stale/missing one (e.g. temperature) at the same time - the
+     whole-card version of this used to gray out the entire card
+     over a single bad field, hiding otherwise-good data. */
 
-  .summit-card.stale {
-    filter: grayscale(0.65);
-    opacity: 0.55;
-    animation: none !important;
-    border-left-color: transparent !important;
-    box-shadow: none !important;
+  .summit-card .stat.stale-field {
+    filter: grayscale(0.85);
+    opacity: 0.4;
   }
 
   /* ================= SNOW DEPTH ROW (left column, below Skew-T) ================= */
@@ -1784,17 +1781,17 @@ function parseRrsSeries_(text, stationId, code) {
     }
 
     // ---------------------------------------------------------------------------
-    // Staleness check for the mountain summit cards.
-    //
-    // Mirrors the same 100-minute threshold tempprofile.py already
-    // applies server-side to the sounding stations (see
+    // Staleness check for the mountain summit cards - PER FIELD, not
+    // per card. Mirrors the same 100-minute threshold tempprofile.py
+    // already applies server-side to the sounding stations (see
     // MAX_OBSERVATION_AGE_MINUTES / is_stale() there) - "this
     // reading is too old to trust" should mean the same thing
-    // everywhere on the dashboard, not just in the Skew-T. Unlike
-    // the sounding's per-field filtering, this is a simpler
-    // whole-card treatment: if the OLDEST of a card's available
-    // timestamps exceeds the threshold, the whole card fades/grays
-    // rather than individual stats being singled out.
+    // everywhere on the dashboard. A card can easily have one fresh
+    // field (wind) and one stale/missing one (temperature) at the
+    // same time, so this grays just the one .stat wrapper that's
+    // actually bad rather than the whole card - `timestamps` can be
+    // a single ISO string or an array (CHILL depends on both a temp
+    // AND a wind reading, so it checks whichever is older of the two).
     // ---------------------------------------------------------------------------
 
     const MAX_OBSERVATION_AGE_MINUTES = 100;
@@ -1806,27 +1803,28 @@ function parseRrsSeries_(text, stationId, code) {
       return (Date.now() - then) / 60000;
     }
 
-    function applyStaleness_(card, timestamps) {
+    function applyFieldStaleness_(card, fieldName, hasValue, timestamps) {
       if (!card) return;
 
-      const ages = timestamps
+      const valueEl = card.querySelector(`[data-field="${fieldName}"]`);
+      if (!valueEl) return;
+
+      const statEl = valueEl.closest(".stat") || valueEl;
+
+      const list = Array.isArray(timestamps) ? timestamps : [timestamps];
+      const ages = list
         .map(ageMinutes_)
         .filter((age) => age !== null && Number.isFinite(age));
 
-      if (!ages.length) {
-        card.classList.remove("stale");
-        card.removeAttribute("title");
-        return;
-      }
+      const oldest = ages.length ? Math.max(...ages) : null;
+      const isStale = !hasValue || (oldest !== null && oldest > MAX_OBSERVATION_AGE_MINUTES);
 
-      const oldest = Math.max(...ages);
+      statEl.classList.toggle("stale-field", isStale);
 
-      if (oldest > MAX_OBSERVATION_AGE_MINUTES) {
-        card.classList.add("stale");
-        card.title = `Data is ${Math.round(oldest)} min old`;
+      if (isStale) {
+        statEl.title = hasValue ? `Data is ${Math.round(oldest)} min old` : "No data available";
       } else {
-        card.classList.remove("stale");
-        card.removeAttribute("title");
+        statEl.removeAttribute("title");
       }
     }
 
@@ -2162,13 +2160,40 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
 
     if (tempEl) pulseElement_(tempEl);
 
-    applyStaleness_(
-      card,
-      [
-        temperature ? temperature.timestamp : null,
-        wind ? wind.timestamp : null,
-      ]
+    const tempTimestamp = temperature ? temperature.timestamp : null;
+    const windTimestamp = wind ? wind.timestamp : null;
+
+    applyFieldStaleness_(
+      card, "temp",
+      !!(temperature && temperature.tempF != null),
+      tempTimestamp
     );
+
+    applyFieldStaleness_(
+      card, "dir",
+      !!(wind && wind.directionDeg != null),
+      windTimestamp
+    );
+
+    applyFieldStaleness_(
+      card, "wind",
+      !!(wind && wind.sustainedMph != null),
+      windTimestamp
+    );
+
+    applyFieldStaleness_(
+      card, "gust",
+      !!(wind && wind.gustMph != null),
+      windTimestamp
+    );
+
+    // A flashing "high wind!" alert should never be driven by a
+    // stale wind reading - if the wind data itself is too old to
+    // trust, treat it as unavailable for coloring purposes even
+    // though the number is still displayed (grayed via
+    // applyFieldStaleness_ above).
+    const windAge = ageMinutes_(windTimestamp);
+    const windIsStale = windAge !== null && windAge > MAX_OBSERVATION_AGE_MINUTES;
 
     setWindDisplay_(
       card,
@@ -2176,36 +2201,43 @@ const elevationEl = card.querySelector('[data-field="elevation"]');
       wind ? wind.sustainedMph : null
     );
 
-    applyWindColor_(card, wind ? wind.sustainedMph : null, wind ? wind.gustMph : null);
+    applyWindColor_(
+      card,
+      windIsStale ? null : (wind ? wind.sustainedMph : null),
+      windIsStale ? null : (wind ? wind.gustMph : null)
+    );
 
 if (gustEl) {
   gustEl.textContent = wind ? formatGustDisplay_(wind.gustMph) : "—";
   pulseElement_(gustEl);
 }
-    
+
+    let windChillValue = null;
+
     if (
-      chillEl &&
       temperature &&
       temperature.tempF != null &&
       wind &&
       wind.sustainedMph != null
     ) {
-
-      const windChill =
-        calculateWindChill_(
-          temperature.tempF,
-          wind.sustainedMph
-        );
-
-      chillEl.textContent =
-        windChill != null
-          ? `${Math.round(windChill)}°`
-          : "—";
-
-    } else if (chillEl) {
-
-      chillEl.textContent = "—";
+      windChillValue = calculateWindChill_(
+        temperature.tempF,
+        wind.sustainedMph
+      );
     }
+
+    if (chillEl) {
+      chillEl.textContent =
+        windChillValue != null
+          ? `${Math.round(windChillValue)}°`
+          : "—";
+    }
+
+    applyFieldStaleness_(
+      card, "windchill",
+      windChillValue != null,
+      [tempTimestamp, windTimestamp]
+    );
 
     if (chillEl) pulseElement_(chillEl);
 
@@ -2221,18 +2253,7 @@ if (gustEl) {
     console.log("MMNV1 LIVE OBS:", {
       temperature,
       wind,
-      windChill:
-        temperature &&
-        wind &&
-        temperature.tempF != null &&
-        wind.sustainedMph != null
-          ? Math.round(
-              calculateWindChill_(
-                temperature.tempF,
-                wind.sustainedMph
-              )
-            )
-          : null
+      windChill: windChillValue != null ? Math.round(windChillValue) : null
     });
 
   } catch (error) {
@@ -2460,6 +2481,12 @@ async function refreshWhitefaceObs() {
         chillEl.textContent = "—";
       }
 
+      applyFieldStaleness_(card, "temp", false, null);
+      applyFieldStaleness_(card, "dir", false, null);
+      applyFieldStaleness_(card, "wind", false, null);
+      applyFieldStaleness_(card, "gust", false, null);
+      applyFieldStaleness_(card, "windchill", false, null);
+
       return;
     }
 
@@ -2495,7 +2522,25 @@ async function refreshWhitefaceObs() {
       setWindDisplay_(card, null, obs.sustainedMph);
     }
 
-    applyWindColor_(card, obs.sustainedMph);
+    // A flashing "high wind!" alert should never be driven by a
+    // stale reading - Whiteface reports temp/wind/chill together
+    // from one API call, so they share obs.timestamp.
+    const wfAge = ageMinutes_(obs.timestamp);
+    const wfIsStale = wfAge !== null && wfAge > MAX_OBSERVATION_AGE_MINUTES;
+
+    applyWindColor_(card, wfIsStale ? null : obs.sustainedMph);
+
+    const hasDirection =
+      (obs.directionDeg != null && Number.isFinite(obs.directionDeg)) ||
+      !!obs.directionLabel;
+
+    applyFieldStaleness_(card, "temp", obs.tempF != null, obs.timestamp);
+    applyFieldStaleness_(card, "dir", hasDirection, obs.timestamp);
+    applyFieldStaleness_(card, "wind", obs.sustainedMph != null, obs.timestamp);
+
+    // Whiteface's API has no gust field at all, not just a missing
+    // reading this cycle - always shown as unavailable.
+    applyFieldStaleness_(card, "gust", false, null);
 
     if (
       chillEl &&
@@ -2509,6 +2554,8 @@ async function refreshWhitefaceObs() {
 
       chillEl.textContent = "—";
     }
+
+    applyFieldStaleness_(card, "windchill", obs.windChillF != null, obs.timestamp);
 
     if (elevationEl) {
 
@@ -2743,6 +2790,12 @@ const chillEl =
         chillEl.textContent = "—";
       }
 
+      applyFieldStaleness_(card, "temp", false, null);
+      applyFieldStaleness_(card, "dir", false, null);
+      applyFieldStaleness_(card, "wind", false, null);
+      applyFieldStaleness_(card, "gust", false, null);
+      applyFieldStaleness_(card, "windchill", false, null);
+
       return;
     }
 
@@ -2761,11 +2814,26 @@ const chillEl =
 
     setWindDisplay_(card, obs.directionDeg, obs.sustainedMph);
 
-    applyWindColor_(card, obs.sustainedMph, obs.gustMph);
+    // A flashing "high wind!" alert should never be driven by a
+    // stale reading - Burke reports everything from one PWS
+    // observation, so all fields share obs.timestamp.
+    const burkeAge = ageMinutes_(obs.timestamp);
+    const burkeIsStale = burkeAge !== null && burkeAge > MAX_OBSERVATION_AGE_MINUTES;
+
+    applyWindColor_(
+      card,
+      burkeIsStale ? null : obs.sustainedMph,
+      burkeIsStale ? null : obs.gustMph
+    );
 
 if (gustEl) {
   gustEl.textContent = formatGustDisplay_(obs.gustMph);
 }
+
+    applyFieldStaleness_(card, "temp", obs.tempF != null, obs.timestamp);
+    applyFieldStaleness_(card, "dir", obs.directionDeg != null, obs.timestamp);
+    applyFieldStaleness_(card, "wind", obs.sustainedMph != null, obs.timestamp);
+    applyFieldStaleness_(card, "gust", obs.gustMph != null, obs.timestamp);
 
     if (
       chillEl &&
@@ -2779,6 +2847,8 @@ if (gustEl) {
 
       chillEl.textContent = "—";
     }
+
+    applyFieldStaleness_(card, "windchill", obs.windChillF != null, obs.timestamp);
 
     if (
       elevationEl &&
@@ -2934,6 +3004,12 @@ async function refreshBoltonObs() {
       gustEl.textContent = "—";
       chillEl.textContent = "—";
 
+      applyFieldStaleness_(card, "temp", false, null);
+      applyFieldStaleness_(card, "dir", false, null);
+      applyFieldStaleness_(card, "wind", false, null);
+      applyFieldStaleness_(card, "gust", false, null);
+      applyFieldStaleness_(card, "windchill", false, null);
+
       return;
     }
 
@@ -2943,7 +3019,18 @@ async function refreshBoltonObs() {
         : "—";
 
     setWindDisplay_(card, obs.directionDeg, obs.sustainedMph);
-    applyWindColor_(card, obs.sustainedMph, obs.gustMph);
+
+    // A flashing "high wind!" alert should never be driven by a
+    // stale reading - Bolton reports everything from one PWS
+    // observation, so all fields share obs.timestamp.
+    const boltonAge = ageMinutes_(obs.timestamp);
+    const boltonIsStale = boltonAge !== null && boltonAge > MAX_OBSERVATION_AGE_MINUTES;
+
+    applyWindColor_(
+      card,
+      boltonIsStale ? null : obs.sustainedMph,
+      boltonIsStale ? null : obs.gustMph
+    );
 
     gustEl.textContent = formatGustDisplay_(obs.gustMph);
 
@@ -2951,6 +3038,12 @@ async function refreshBoltonObs() {
       obs.windChillF != null
         ? `${Math.round(obs.windChillF)}°`
         : "—";
+
+    applyFieldStaleness_(card, "temp", obs.tempF != null, obs.timestamp);
+    applyFieldStaleness_(card, "dir", obs.directionDeg != null, obs.timestamp);
+    applyFieldStaleness_(card, "wind", obs.sustainedMph != null, obs.timestamp);
+    applyFieldStaleness_(card, "gust", obs.gustMph != null, obs.timestamp);
+    applyFieldStaleness_(card, "windchill", obs.windChillF != null, obs.timestamp);
 
     if (
       elevationEl &&
