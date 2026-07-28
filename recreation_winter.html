@@ -26,7 +26,7 @@
      vertical space is left over in each column.
      ===================================================================== */
 
-  :root {
+:root {
   --navy: #0e2a4d;
   --navy-light: #16457c;
   --page-bg: #eef1f5;
@@ -36,22 +36,22 @@
   --muted: #6b7688;
   --blue: #1e5fa8;
   --sidebar-card-bg: rgba(244, 246, 248, 0.68);
-    --snow-card-from: #123a63;
-    --snow-card-to: #0a2647;
-    --froude-card-from: #5f3dc4;
-    --froude-card-to: #362174;
-    --live-green: #2fbf71;
-     --bg-image: url('https://raw.githubusercontent.com/matthewclay88/dss-dashboard-tv/main/assets/dashboard-bg.jpg');
-  }
+  --snow-card-from: #123a63;
+  --snow-card-to: #0a2647;
+  --froude-card-from: #5f3dc4;
+  --froude-card-to: #362174;
+  --live-green: #2fbf71;
+  --bg-image: url('https://raw.githubusercontent.com/matthewclay88/dss-dashboard-tv/main/assets/dashboard-bg.jpg');
+}
 
-  * { box-sizing: border-box; }
+* { box-sizing: border-box; }
 
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
+html, body {
+  height: 100%;
+  margin: 0;
+}
 
-  body {
+body {
   background:
     linear-gradient(180deg, rgba(14,32,64,0.62) 0%, rgba(238,241,245,0.90) 40%, rgba(238,241,245,0.94) 100%),
     var(--bg-image) center / cover no-repeat fixed;
@@ -63,848 +63,739 @@
   overflow: hidden;
 }
 
-  /* ================= NAVBAR (fixed height) ================= */
+/* ================= NAVBAR ================= */
+
+.navbar {
+  flex: 0 0 52px;
+  background: linear-gradient(120deg, #0a2040 0%, var(--navy) 55%, #163a68 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.navbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navbar .brand-icon {
+  width: 34px;
+  height: 34px;
+  background: var(--navy-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+.navbar h1 {
+  font-size: 16px;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.navbar .subtitle {
+  font-size: 11px;
+  color: #a9bdd6;
+  margin-top: 1px;
+}
+
+.navbar .right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.navbar .live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #bcd6f2;
+}
+
+.navbar .live .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live-green);
+  box-shadow: 0 0 0 0 rgba(47,191,113,0.6);
+  animation: pulse 2.2s infinite;
+}
+
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(47,191,113,0.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(47,191,113,0); }
+  100% { box-shadow: 0 0 0 0 rgba(47,191,113,0); }
+}
+
+.navbar .clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+/* ================= MAIN ================= */
+
+.main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  max-width: 1700px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 10px 20px;
+  gap: 12px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
 
-  .navbar {
-    flex: 0 0 62px;
-    background: linear-gradient(120deg, #0a2040 0%, var(--navy) 55%, #163a68 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-  }
+/* ================= LEFT COLUMN ================= */
 
-  .navbar .brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .navbar .brand-icon {
-    width: 34px;
-    height: 34px;
-    background: var(--navy-light);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
-  }
-
-  .navbar h1 {
-    font-size: 16px;
-    margin: 0;
-    letter-spacing: 0.02em;
-  }
-
-  .navbar .subtitle {
-    font-size: 11px;
-    color: #a9bdd6;
-    margin-top: 1px;
-  }
-
-  .navbar .right {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-  }
-
-  .navbar .live {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: #bcd6f2;
-  }
-
-  .navbar .live .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--live-green);
-    box-shadow: 0 0 0 0 rgba(47,191,113,0.6);
-    animation: pulse 2.2s infinite;
-  }
-
-  @keyframes pulse {
-    0%   { box-shadow: 0 0 0 0 rgba(47,191,113,0.55); }
-    70%  { box-shadow: 0 0 0 7px rgba(47,191,113,0); }
-    100% { box-shadow: 0 0 0 0 rgba(47,191,113,0); }
-  }
-
-  .navbar .clock {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 700;
-    font-size: 14.5px;
-  }
-
-  /* ================= MAIN (everything below the navbar) ================= */
-
-  .main {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: row;
-    max-width: 1700px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 14px 22px;
-    gap: 16px;
-  }
-
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
-
-  /* ================= LEFT COLUMN: Skew-T + snow row ================= */
-
-  .left-column {
-    flex: 0 0 59.5%;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  /* Sized directly from the Skew-T's own aspect ratio (matches
-     tempprofile.py's fig_width_in / fig_height_in) - update this
-     pair if those final numbers ever change. Height is fully
-     derived from width via aspect-ratio, so there's no percentage
-     to guess and no letterboxing: the box IS the chart's shape. */
-
-  .sounding-panel {
-    width: 100%;
-    aspect-ratio: 15.03 / 6.02;
-    flex: 0 0 auto;
-    min-width: 0;
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .sounding-panel img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    display: block;
-    border-radius: 6px;
-  }
-
-  .snow-row {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    gap: 16px;
-  }
-
-  /* ================= RIGHT COLUMN: mountain cards + diagnostics ================= */
-
-  .right-column {
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  /* ================= MOUNTAIN OBSERVATIONS PANEL ================= */
-  /*
-    ONE unified card (not four separate ones) - an elevation ladder
-    with each mountain positioned in real elevation order, a single
-    shared column-header row explaining TEMP/DIR/WIND/GUST/CHILL
-    once instead of repeating labels per row, and a background
-    skyline watermark. Ordered top-to-bottom by real elevation but
-    EVENLY spaced rather than pixel-proportional - Bolton (3,150 ft)
-    and Burke (3,058 ft) are only 92 ft apart, and true proportional
-    spacing on a 0-5,000 ft scale would crowd their badges into each
-    other.
-
-    The column alignment (header labels landing directly above their
-    values in every row) uses a CSS trick: each mountain's row is a
-    `.summit-card` with `display: contents` - it contributes no box
-    of its own, so its children (badge, name block, 5 stat cells)
-    become direct grid items of `.mountain-ladder-grid` itself,
-    sharing its column template automatically. That's what makes
-    alignment robust without duplicating pixel widths between a
-    separate header grid and 4 separate row grids - `.summit-card`
-    stays fully intact in the DOM (data-station attribute, contains
-    all the data-field elements), so every existing JS lookup
-    (`document.querySelector('.summit-card[data-station="X"]')`,
-    `card.querySelector('[data-field="temp"]')`, staleness, wind-
-    flash) keeps working completely unchanged.
-  */
-
-  .sidebar {
-    flex: 0 0 60%;
-    min-height: 0;
-    min-width: 0;
-    overflow: hidden;
-    position: relative;
-    background: var(--sidebar-card-bg);
-    border-radius: 12px;
-    padding: 14px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
-
-  /* Background skyline watermark - a simple jagged multi-peak
-     silhouette spanning the whole card, very low opacity, sitting
-     behind everything (z-index:0). This is what answers "I want
-     some sort of background on that card" without needing an actual
-     photographic image asset. */
-
-  .sidebar::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: var(--navy);
-    opacity: 0.05;
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,200 L0,140 L45,70 L80,120 L130,30 L175,110 L215,55 L260,130 L300,80 L340,125 L400,60 L400,200 Z'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,200 L0,140 L45,70 L80,120 L130,30 L175,110 L215,55 L260,130 L300,80 L340,125 L400,60 L400,200 Z'/%3E%3C/svg%3E");
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  /* ================= MOUNTAIN OBSERVATIONS CARDS ================= */
-  /*
-    Four illustrated cards stacked vertically (one per station)
-    instead of a table - each card pairs a colored mountain-art
-    panel on the left (accent-tinted per station, same --mtn-accent
-    vars as before) with the station name, headline temp, and the
-    DIRECTION / WIND / GUST / WIND CHILL stats on the right.
-
-    `.summit-card` is a real element with `data-station="..."` (no
-    longer a <tr>), and every `[data-field="..."]` element inside it
-    keeps the exact same field names as before (temp, dir,
-    dir-arrow, wind, gust, windchill, elevation), so all existing JS
-    lookups - `.summit-card[data-station="X"]`,
-    `card.querySelector('[data-field="temp"]')`, staleness handling,
-    wind-flash coloring - keep working completely unchanged. Only
-    the markup shape and the class names for the wrapping/decorative
-    elements changed.
-  */
-
-  .mountain-table-wrap {
-    flex: 1 1 auto;
-    min-height: 0;
-    position: relative;
-    z-index: 1;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 2px;
-  }
-
-  .summit-card {
-    flex: 1 1 0;
-    min-height: 0;
-    display: flex;
-  }
-
-  /* Per-mountain identity colors - static accent (illustration tint,
-     name, hero temp, dir-arrow, left rail) distinct from the
-     wind-flash color below, which is live/dynamic status, not
-     identity. */
-
-  .summit-card[data-station="WHITEFACE"] { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
-  .summit-card[data-station="MMNV1"]     { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
-  .summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
-  .summit-card[data-station="BURKE"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
-
-  .station-cell {
-    display: flex;
-    align-items: stretch;
-    flex: 1 1 auto;
-    width: 100%;
-    min-height: 0;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-left: 4px solid var(--mtn-accent, var(--muted));
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  /* ---- Left illustration panel ---- */
-
-  .card-illustration {
-    position: relative;
-    flex: 0 0 34%;
-    min-width: 120px;
-    overflow: hidden;
-    background: linear-gradient(180deg, var(--mtn-accent-bg, #e4ecf5) 0%, rgba(255,255,255,0.4) 100%);
-  }
-
-  .mountain-art {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-
-  .mountain-art .layer-back  { fill: var(--mtn-accent); opacity: 0.30; }
-  .mountain-art .layer-front { fill: var(--mtn-accent); opacity: 0.62; }
-  .mountain-art .layer-snow  { fill: #ffffff; opacity: 0.92; }
-  .mountain-art .layer-tree  { fill: var(--mtn-accent); opacity: 0.5; }
-
-  .elevation-badge {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.88);
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--mtn-accent, var(--ink));
-    box-shadow: 0 1px 2px rgba(20,30,50,0.12);
-  }
-
-  .elevation-badge svg {
-    width: 11px;
-    height: 11px;
-    flex: 0 0 11px;
-    stroke: var(--mtn-accent, var(--ink));
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* ---- Right info panel ---- */
-
-  .card-body {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px 16px;
-  }
-
-  .station-name {
-    font-weight: 800;
-    font-size: 15px;
-    letter-spacing: 0.01em;
-    color: var(--mtn-accent, var(--ink));
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .stat-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .temp-block {
-    flex: 0 0 auto;
-    padding-right: 14px;
-    margin-right: 10px;
-    border-right: 1px solid var(--card-border);
-  }
-
-  .stat-temp {
-    font-size: 30px;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--mtn-accent, var(--ink));
-    white-space: nowrap;
-  }
-
-  .stat-col {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    text-align: center;
-  }
-
-  .stat-col .stat-label {
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-  }
-
-  .stat-col .stat-value {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-    white-space: nowrap;
-    transition: opacity 0.25s ease;
-  }
-
-  .stat-cell-inner {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  .mini-icon {
-    width: 13px;
-    height: 13px;
-    flex: 0 0 13px;
-    stroke: var(--muted);
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* The DIR arrow actually rotates to the real wind direction (see
-     setWindDisplay_) - wind-vane convention, points toward where
-     the wind is coming from. */
-
-  .mini-icon.dir-arrow {
-    stroke: var(--mtn-accent, var(--blue));
-    transform-origin: center;
-    transition: transform 0.4s ease, opacity 0.4s ease;
-  }
-
-  /* Per-field stale/missing treatment - mirrors tempprofile.py's
-     100-minute staleness threshold (see MAX_OBSERVATION_AGE_MINUTES
-     in the script below), applied per stat cell rather than to the
-     whole row. */
-
-  .stat-cell.stale-field,
-  .stat-value.stale-field {
-    filter: grayscale(0.85);
-    opacity: 0.4;
-  }
-
-  /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
-  /*
-    Based on whichever is HIGHER, sustained wind or gust (see
-    windColorClass_ in the script below). No badge/dot anymore -
-    the flash now targets the station-cell's own left accent border
-    (color + outward glow) directly. Flash SPEED escalates with
-    severity (1.8s -> 0.7s) so more dangerous winds read as more
-    urgent even before you register the color.
-  */
-
-  .summit-card.wind-calm .station-cell { border-left-color: #2f9e44; }
-
-  @keyframes wind-flash-yellow {
-    0%, 100% { border-left-color: rgba(245, 196, 0, 0.55); box-shadow: none; }
-    50%      { border-left-color: #f5c400;                 box-shadow: -2px 0 8px -2px rgba(245, 196, 0, 0.55); }
-  }
-  .summit-card.wind-flash-yellow .station-cell {
-    animation: wind-flash-yellow 1.8s ease-in-out infinite;
-  }
-
-  @keyframes wind-flash-orange {
-    0%, 100% { border-left-color: rgba(245, 159, 0, 0.55); box-shadow: none; }
-    50%      { border-left-color: #f59f00;                 box-shadow: -2px 0 9px -2px rgba(245, 159, 0, 0.6); }
-  }
-  .summit-card.wind-flash-orange .station-cell {
-    animation: wind-flash-orange 1.4s ease-in-out infinite;
-  }
-
-  @keyframes wind-flash-red {
-    0%, 100% { border-left-color: rgba(224, 49, 49, 0.55); box-shadow: none; }
-    50%      { border-left-color: #e03131;                 box-shadow: -2px 0 10px -1px rgba(224, 49, 49, 0.65); }
-  }
-  .summit-card.wind-flash-red .station-cell {
-    animation: wind-flash-red 1.0s ease-in-out infinite;
-  }
-
-  @keyframes wind-flash-purple {
-    0%, 100% { border-left-color: rgba(156, 54, 181, 0.55); box-shadow: none; }
-    50%      { border-left-color: #9c36b5;                  box-shadow: -2px 0 11px -1px rgba(156, 54, 181, 0.7); }
-  }
-  .summit-card.wind-flash-purple .station-cell {
-    animation: wind-flash-purple 0.7s ease-in-out infinite;
-  }
-
-  /* ================= WIND THRESHOLD LEGEND ================= */
-  /* Sits under the cards, tying the badge-flash colors back to
-     concrete mph thresholds so the color coding is self-explanatory
-     at a glance without a tooltip. */
-
-  .wind-legend {
-    flex: 0 0 auto;
-    display: flex;
-    justify-content: center;
-    gap: 14px;
-    padding-top: 4px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .wind-legend .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--muted);
-  }
-
-  .wind-legend .legend-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-
-  .wind-legend .legend-item.calm .legend-dot   { background: #2f9e44; }
-  .wind-legend .legend-item.yellow .legend-dot { background: #f5c400; }
-  .wind-legend .legend-item.orange .legend-dot { background: #f59f00; }
-  .wind-legend .legend-item.red .legend-dot    { background: #e03131; }
-  .wind-legend .legend-item.purple .legend-dot { background: #9c36b5; }
-
-  /* ================= SNOW DEPTH ROW (left column, below Skew-T) ================= */
-
-  .snow-summary {
-    flex: 0 0 30%;
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    padding: 18px 20px;
-    background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
-    color: white;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .snow-summary .eyebrow {
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: #cfe0f2;
-  }
-
-  .snow-summary .headline {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  .snow-summary .headline .snowflake {
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
-    color: #bcd6f2;
-    align-self: center;
-  }
-
-  .snow-summary .value {
-    font-size: 46px;
-    font-weight: 800;
-    line-height: 1;
-  }
-
-  .snow-summary .unit {
-    font-size: 18px;
-    font-weight: 700;
-    color: #bcd6f2;
-  }
-
-  .snow-summary .location {
-    font-size: 13px;
-    color: #cfe0f2;
-    margin-top: 6px;
-  }
-
-  .snow-summary .departure {
-    font-size: 12.5px;
-    font-weight: 700;
-    margin-top: 12px;
-    display: inline-block;
-    padding: 4px 11px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.12);
-    align-self: flex-start;
-  }
-
-  .snow-summary .departure.placeholder {
-    color: #bcd6f2;
-    font-weight: 600;
-    background: rgba(255,255,255,0.08);
-  }
-
-  .snow-summary .updated {
-    font-size: 11px;
-    color: #9db6d4;
-    margin-top: auto;
-    padding-top: 12px;
-  }
-
-  .snow-summary .stats-mini {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,0.14);
-    display: flex;
-  }
-
-  .snow-summary .stat-mini-col {
-    flex: 1;
-    text-align: center;
-    min-width: 0;
-  }
-
-  .snow-summary .stat-mini-col + .stat-mini-col {
-    border-left: 1px solid rgba(255,255,255,0.14);
-  }
-
-  .snow-summary .stat-mini-col .label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: #9db6d4;
-  }
-
-  .snow-summary .stat-mini-col .value {
-    display: block;
-    font-size: 19px;
-    font-weight: 800;
-    color: #eaf1fa;
-    margin-top: 5px;
-  }
-
-  .snow-chart-panel {
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 0;
-    border-radius: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
-
-  .snow-chart-panel img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    display: block;
-  }
-
-  /* ================= 2x2 STAT GRID (right column, below mountain cards) ================= */
-
-  .quad-stats {
-  flex: 0 0 40%;   /* was: flex: 1 1 0 */
+.left-column {
+  flex: 0 0 59.5%;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;  /* add this as a safety net */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sounding-panel {
+  width: 100%;
+  aspect-ratio: 15.03 / 6.02;
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sounding-panel img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 6px;
+}
+
+.snow-row {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  gap: 16px;
+}
+
+/* ================= RIGHT COLUMN ================= */
+
+.right-column {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ================= MOUNTAIN OBSERVATIONS SIDEBAR ================= */
+
+.sidebar {
+  flex: 0 0 58%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+  background: var(--sidebar-card-bg);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--navy);
+  opacity: 0.05;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,200 L0,140 L45,70 L80,120 L130,30 L175,110 L215,55 L260,130 L300,80 L340,125 L400,60 L400,200 Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cpath d='M0,200 L0,140 L45,70 L80,120 L130,30 L175,110 L215,55 L260,130 L300,80 L340,125 L400,60 L400,200 Z'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.mountain-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px;
+}
+
+.summit-card {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+}
+
+.summit-card[data-station="WHITEFACE"] { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
+.summit-card[data-station="MMNV1"]     { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
+.summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
+.summit-card[data-station="BURKE"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
+
+.station-cell {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-left: 4px solid var(--mtn-accent, var(--muted));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-illustration {
+  position: relative;
+  flex: 0 0 28%;
+  min-width: 100px;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--mtn-accent-bg, #e4ecf5) 0%, rgba(255,255,255,0.4) 100%);
+}
+
+.mountain-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mountain-art .layer-back  { fill: var(--mtn-accent); opacity: 0.30; }
+.mountain-art .layer-front { fill: var(--mtn-accent); opacity: 0.62; }
+.mountain-art .layer-snow  { fill: #ffffff; opacity: 0.92; }
+.mountain-art .layer-tree  { fill: var(--mtn-accent); opacity: 0.5; }
+
+.elevation-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.88);
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--mtn-accent, var(--ink));
+  box-shadow: 0 1px 2px rgba(20,30,50,0.12);
+}
+
+.elevation-badge svg {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 11px;
+  stroke: var(--mtn-accent, var(--ink));
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.card-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.station-name {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: var(--mtn-accent, var(--ink));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.temp-block {
+  flex: 0 0 auto;
+  padding-right: 10px;
+  margin-right: 8px;
+  border-right: 1px solid var(--card-border);
+}
+
+.stat-temp {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--mtn-accent, var(--ink));
+  white-space: nowrap;
+}
+
+.stat-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+}
+
+.stat-col .stat-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.stat-col .stat-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  transition: opacity 0.25s ease;
+}
+
+.stat-cell-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mini-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  stroke: var(--muted);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mini-icon.dir-arrow {
+  stroke: var(--mtn-accent, var(--blue));
+  transform-origin: center;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.stat-cell.stale-field,
+.stat-value.stale-field {
+  filter: grayscale(0.85);
+  opacity: 0.4;
+}
+
+/* ================= WIND THRESHOLD ALERTS ================= */
+
+.summit-card.wind-calm .station-cell { border-left-color: #2f9e44; }
+
+@keyframes wind-flash-yellow {
+  0%, 100% { border-left-color: rgba(245, 196, 0, 0.55); box-shadow: none; }
+  50%      { border-left-color: #f5c400;                 box-shadow: -2px 0 8px -2px rgba(245, 196, 0, 0.55); }
+}
+.summit-card.wind-flash-yellow .station-cell {
+  animation: wind-flash-yellow 1.8s ease-in-out infinite;
+}
+
+@keyframes wind-flash-orange {
+  0%, 100% { border-left-color: rgba(245, 159, 0, 0.55); box-shadow: none; }
+  50%      { border-left-color: #f59f00;                 box-shadow: -2px 0 9px -2px rgba(245, 159, 0, 0.6); }
+}
+.summit-card.wind-flash-orange .station-cell {
+  animation: wind-flash-orange 1.4s ease-in-out infinite;
+}
+
+@keyframes wind-flash-red {
+  0%, 100% { border-left-color: rgba(224, 49, 49, 0.55); box-shadow: none; }
+  50%      { border-left-color: #e03131;                 box-shadow: -2px 0 10px -1px rgba(224, 49, 49, 0.65); }
+}
+.summit-card.wind-flash-red .station-cell {
+  animation: wind-flash-red 1.0s ease-in-out infinite;
+}
+
+@keyframes wind-flash-purple {
+  0%, 100% { border-left-color: rgba(156, 54, 181, 0.55); box-shadow: none; }
+  50%      { border-left-color: #9c36b5;                  box-shadow: -2px 0 11px -1px rgba(156, 54, 181, 0.7); }
+}
+.summit-card.wind-flash-purple .station-cell {
+  animation: wind-flash-purple 0.7s ease-in-out infinite;
+}
+
+/* ================= WIND THRESHOLD LEGEND ================= */
+
+.wind-legend {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  padding-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.wind-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.wind-legend .legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.wind-legend .legend-item.calm .legend-dot   { background: #2f9e44; }
+.wind-legend .legend-item.yellow .legend-dot { background: #f5c400; }
+.wind-legend .legend-item.orange .legend-dot { background: #f59f00; }
+.wind-legend .legend-item.red .legend-dot    { background: #e03131; }
+.wind-legend .legend-item.purple .legend-dot { background: #9c36b5; }
+
+/* ================= SNOW DEPTH ROW ================= */
+
+.snow-summary {
+  flex: 0 0 30%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: linear-gradient(160deg, var(--snow-card-from), var(--snow-card-to));
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.snow-summary .eyebrow {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #cfe0f2;
+}
+
+.snow-summary .headline {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.snow-summary .headline .snowflake {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  color: #bcd6f2;
+  align-self: center;
+}
+
+.snow-summary .value {
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.snow-summary .unit {
+  font-size: 18px;
+  font-weight: 700;
+  color: #bcd6f2;
+}
+
+.snow-summary .location {
+  font-size: 13px;
+  color: #cfe0f2;
+  margin-top: 6px;
+}
+
+.snow-summary .departure {
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-top: 12px;
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  align-self: flex-start;
+}
+
+.snow-summary .departure.placeholder {
+  color: #bcd6f2;
+  font-weight: 600;
+  background: rgba(255,255,255,0.08);
+}
+
+.snow-summary .updated {
+  font-size: 11px;
+  color: #9db6d4;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.snow-summary .stats-mini {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.14);
+  display: flex;
+}
+
+.snow-summary .stat-mini-col {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+}
+
+.snow-summary .stat-mini-col + .stat-mini-col {
+  border-left: 1px solid rgba(255,255,255,0.14);
+}
+
+.snow-summary .stat-mini-col .label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #9db6d4;
+}
+
+.snow-summary .stat-mini-col .value {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  color: #eaf1fa;
+  margin-top: 5px;
+}
+
+.snow-chart-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.snow-chart-panel img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* ================= DIAGNOSTIC CARD GRID ================= */
+
+.quad-stats {
+  flex: 0 0 42%;
+  min-width: 0;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
-  /* Light card + colored left border + icon circle, same visual
-     language as .summit-card - a deliberate move away from the
-     dark gradient tiles these used to be, so the diagnostic cards
-     and the mountain-observation cards read as one consistent
-     design instead of two different styles glued together. */
+.quad-card {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--sidebar-card-bg);
+  border-radius: 10px;
+  padding: 8px 10px;
 
-  .quad-card {
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
-    background: var(--sidebar-card-bg);
-    border-radius: 10px;
-    padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  border-left: 4px solid var(--quad-accent, var(--muted));
 
-    border-left: 4px solid var(--quad-accent, var(--muted));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-
-    transition: border-color 0.4s ease;
+  transition: border-color 0.4s ease;
 }
 
-  .quad-card .quad-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+.quad-card .quad-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-  .quad-card .quad-icon {
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
-    border-radius: 6px;
-    background: var(--quad-accent-bg, #e4ecf5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.quad-card .quad-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 5px;
+  background: var(--quad-accent-bg, #e4ecf5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .quad-card .quad-icon svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--quad-accent, var(--blue));
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
+.quad-card .quad-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--quad-accent, var(--blue));
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
-  .quad-card .eyebrow {
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    flex: 0 0 auto;
-  }
+.quad-card .eyebrow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
 
-  .quad-card .value {
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1.15;
-    margin-top: 3px;
-    flex: 0 0 auto;
-    color: var(--ink);
-    transition: opacity 0.25s ease;
-  }
+.quad-card .value {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-top: 2px;
+  flex: 0 0 auto;
+  color: var(--ink);
+  transition: opacity 0.25s ease;
+}
 
-  .quad-card .subtext {
-    font-size: 10.5px;
-    color: var(--muted);
-    margin-top: 2px;
-    flex: 0 0 auto;
-  }
+.quad-card .subtext {
+  font-size: 9.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
 
-  /* ---- Gauge slider (Shear / Lapse Rate / Mountain Flow) ---- */
-  /*
-    Dot position is computed from the real value in JS (see
-    setGauge_) and expressed purely as a CSS custom property
-    (--gauge-pct, 0-100) - the markup/CSS never hardcodes a
-    position, so the dot always reflects whatever the data actually
-    says rather than sitting at a fixed decorative spot.
-  */
+.quad-card .gauge {
+  margin-top: 4px;
+  flex: 0 0 auto;
+}
 
-  .quad-card .gauge {
-    margin-top: 6px;
-    flex: 0 0 auto;
-  }
+.quad-card .gauge-track {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(107, 118, 136, 0.25);
+}
 
-  .quad-card .gauge-track {
-    position: relative;
-    height: 4px;
-    border-radius: 999px;
-    background: rgba(107, 118, 136, 0.25);
-  }
+.quad-card .gauge-dot {
+  position: absolute;
+  top: 50%;
+  left: var(--gauge-pct, 0%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--quad-accent, var(--blue));
+  border: 2px solid var(--card-bg);
+  transform: translate(-50%, -50%);
+  transition: left 0.4s ease, background 0.4s ease;
+}
 
-  .quad-card .gauge-dot {
-    position: absolute;
-    top: 50%;
-    left: var(--gauge-pct, 0%);
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--quad-accent, var(--blue));
-    border: 2px solid var(--card-bg);
-    transform: translate(-50%, -50%);
-    transition: left 0.4s ease, background 0.4s ease;
-  }
+.quad-card .gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
 
-  .quad-card .gauge-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 4px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: var(--muted);
-  }
+.quad-card .ptype-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  align-self: flex-start;
+  background: var(--quad-accent-bg, #e4ecf5);
+  color: var(--quad-accent, var(--ink));
+}
 
-  /* ---- P-Type pill (colored dot + label, replaces the old
-     whole-card gradient fill) ---- */
+.quad-card .ptype-pill .ptype-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
 
-  .quad-card .ptype-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 5px;
-    padding: 3px 11px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
-    align-self: flex-start;
-    background: var(--quad-accent-bg, #e4ecf5);
-    color: var(--quad-accent, var(--ink));
-  }
+.quad-card.freezing-card { --quad-accent: #1c7ed6; --quad-accent-bg: #dceafb; }
+.quad-card.wetbulb-card  { --quad-accent: #0c8599; --quad-accent-bg: #d3f1f5; }
+.quad-card.froude-card   { --quad-accent: #7048a3; --quad-accent-bg: #ece3f7; }
 
-  .quad-card .ptype-pill .ptype-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: currentColor;
-  }
+.quad-card.shear-card.shear-low  { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+.quad-card.shear-card.shear-mod  { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+.quad-card.shear-card.shear-high { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
 
-  /* Per-card static identity accents - freezing level/wet-bulb zero
-     keep a fixed color (they're readouts, not a Low/Med/High
-     category); shear/lapse/p-type still recolor dynamically via the
-     classes below, applied on top of these defaults. */
+.quad-card.lapse-card.lapse-low    { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+.quad-card.lapse-card.lapse-medium { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+.quad-card.lapse-card.lapse-high   { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
 
-  .quad-card.freezing-card { --quad-accent: #1c7ed6; --quad-accent-bg: #dceafb; }
-  .quad-card.wetbulb-card  { --quad-accent: #0c8599; --quad-accent-bg: #d3f1f5; }
-  .quad-card.froude-card   { --quad-accent: #7048a3; --quad-accent-bg: #ece3f7; }
-
-  .quad-card.shear-card.shear-low  { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
-  .quad-card.shear-card.shear-mod  { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
-  .quad-card.shear-card.shear-high { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
-
-  .quad-card.lapse-card.lapse-low    { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
-  .quad-card.lapse-card.lapse-medium { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
-  .quad-card.lapse-card.lapse-high   { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
-
-  .quad-card.ptype-card.ptype-rain { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
-  .quad-card.ptype-card.ptype-snow { --quad-accent: #1c7ed6; --quad-accent-bg: #dceafb; }
-  .quad-card.ptype-card.ptype-mix  { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
-  .quad-card.ptype-card.ptype-frz  { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
+.quad-card.ptype-card.ptype-rain { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+.quad-card.ptype-card.ptype-snow { --quad-accent: #1c7ed6; --quad-accent-bg: #dceafb; }
+.quad-card.ptype-card.ptype-mix  { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+.quad-card.ptype-card.ptype-frz  { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
 
 </style>
 </head>
