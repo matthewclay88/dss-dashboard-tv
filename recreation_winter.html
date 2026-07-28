@@ -328,7 +328,7 @@ body {
   padding: 5px 11px;
   border-radius: 999px;
   background: rgba(255,255,255,0.88);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--mtn-accent, var(--ink));
   box-shadow: 0 1px 2px rgba(20,30,50,0.12);
@@ -368,24 +368,43 @@ body {
 .stat-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .temp-block {
   flex: 0 0 auto;
-  padding-right: 20px;
-  margin-right: 16px;
+  padding-right: 14px;
+  margin-right: 10px;
   border-right: 1px solid var(--card-border);
 }
 
 .stat-temp {
-  font-size: 49px;  /* was 50px */
-  font-weight: 800;
+  font-size: 44px;  /* was 50px */
+  font-weight: 700;
   line-height: 1;
   color: var(--mtn-accent, var(--ink));
   white-space: nowrap;
 }
 
+.stat-col:nth-child(2) {
+    flex: 0.8;
+}
+
+/* Wind */
+.stat-col:nth-child(3) {
+    flex: 1.35;
+}
+
+/* Gust */
+.stat-col:nth-child(4) {
+    flex: 1.35;
+}
+
+/* Wind Chill */
+.stat-col:nth-child(5) {
+    flex: 0.9;
+}
+  
 .stat-col {
   flex: 1 1 0;
   min-width: 0;
@@ -994,11 +1013,12 @@ body {
                     <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">WIND</span>
+                    <span class="stat-label">WIND (mph)
+                    </span>
                     <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">GUST</span>
+                    <span class="stat-label">GUST (mph)</span>
                     <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
                   </div>
                   <div class="stat-col">
@@ -1038,11 +1058,11 @@ body {
                     <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">WIND</span>
+                    <span class="stat-label">WIND (mph)</span>
                     <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">GUST</span>
+                    <span class="stat-label">GUST (mph)</span>
                     <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
                   </div>
                   <div class="stat-col">
@@ -1081,11 +1101,11 @@ body {
                     <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">WIND</span>
+                    <span class="stat-label">WIND (mph)</span>
                     <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">GUST</span>
+                    <span class="stat-label">GUST (mph)</span>
                     <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
                   </div>
                   <div class="stat-col">
@@ -1124,11 +1144,11 @@ body {
                     <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">WIND</span>
+                    <span class="stat-label">WIND (mph)</span>
                     <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
                   </div>
                   <div class="stat-col">
-                    <span class="stat-label">GUST</span>
+                    <span class="stat-label">GUST (mph)</span>
                     <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
                   </div>
                   <div class="stat-col">
