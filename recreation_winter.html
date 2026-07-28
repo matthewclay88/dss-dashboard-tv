@@ -169,7 +169,7 @@
   /* ================= LEFT COLUMN: Skew-T + snow row ================= */
 
   .left-column {
-    flex: 0 0 58%;
+    flex: 0 0 70%;
     min-width: 0;
     min-height: 0;
     display: flex;
@@ -185,6 +185,7 @@
 
   .sounding-panel {
     width: 100%;
+    aspect-ratio: 15.03 / 6.02;
     flex: 0 0 auto;
     min-width: 0;
     padding: 14px;
@@ -194,14 +195,15 @@
     overflow: hidden;
   }
 
-  .sounding-panel .sounding-frame {
-    width: 82%;
-    max-width: 82%;
+  .sounding-panel img {
+    max-width: 88%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 6px;
     margin: 0 auto;
-    aspect-ratio: 15.03 / 6.02;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .sounding-panel img {
@@ -260,7 +262,7 @@
   */
 
   .sidebar {
-    flex: 0 0 76%;
+    flex: 0 0 66%;
     min-height: 0;
     min-width: 0;
     overflow: hidden;
@@ -952,9 +954,7 @@
           load on the live page. raw.githubusercontent.com has no such
           quota for public repos.
         -->
-        <div class="sounding-frame">
-          <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
-        </div>
+        <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
       </div>
 
       <div class="snow-row">
