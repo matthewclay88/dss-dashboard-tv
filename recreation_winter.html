@@ -307,23 +307,23 @@
     margin-top: 1px;
   }
 
-  /* ================= MOUNTAIN OBSERVATIONS TABLE ================= */
+  /* ================= MOUNTAIN OBSERVATIONS CARDS ================= */
   /*
-    A real <table> - one header row, four data rows (one per
-    station). Real <tr>/<td> elements naturally share column widths
-    across rows, so this gets the "everything lines up in columns"
-    behavior the old CSS-grid ladder was simulating, for free and
-    more robustly. Per-mountain accent colors are still CSS custom
-    properties set on each <tr data-station="..."> - they inherit
-    down to every <td> inside it exactly like before, just through
-    a real DOM ancestor now instead of display:contents.
+    Four illustrated cards stacked vertically (one per station)
+    instead of a table - each card pairs a colored mountain-art
+    panel on the left (accent-tinted per station, same --mtn-accent
+    vars as before) with the station name, headline temp, and the
+    DIRECTION / WIND / GUST / WIND CHILL stats on the right.
 
-    Existing JS lookups keep working unchanged:
-    `.summit-card[data-station="X"]` still resolves (it's now the
-    <tr>), and `[data-field="..."]` still resolves inside it -
-    only the internal class names for the badge/name/stat wrappers
-    changed (ladder-badge -> station-badge, ladder-stat -> stat-cell,
-    etc.), which are all updated to match below.
+    `.summit-card` is a real element with `data-station="..."` (no
+    longer a <tr>), and every `[data-field="..."]` element inside it
+    keeps the exact same field names as before (temp, dir,
+    dir-arrow, wind, gust, windchill, elevation), so all existing JS
+    lookups - `.summit-card[data-station="X"]`,
+    `card.querySelector('[data-field="temp"]')`, staleness handling,
+    wind-flash coloring - keep working completely unchanged. Only
+    the markup shape and the class names for the wrapping/decorative
+    elements changed.
   */
 
   .mountain-table-wrap {
@@ -332,101 +332,153 @@
     position: relative;
     z-index: 1;
     overflow: auto;
-    border-radius: 10px;
-    border: 1px solid var(--card-border);
-  }
-
-  .mountain-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-
-  .mountain-table thead th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background: rgba(244, 246, 248, 0.94);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    font-size: 9.5px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-    text-align: center;
-    padding: 7px 6px;
-    border-bottom: 1px solid var(--card-border);
-  }
-
-  .mountain-table th.col-station {
-    text-align: left;
-    padding-left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 2px;
   }
 
   .summit-card {
-    transition: background 0.2s ease;
+    flex: 0 0 auto;
   }
 
-  .summit-card:nth-child(odd) {
-    background: rgba(255, 255, 255, 0.32);
-  }
+  /* Per-mountain identity colors - static accent (illustration tint,
+     name, hero temp, dir-arrow, left rail) distinct from the
+     wind-flash color below, which is live/dynamic status, not
+     identity. */
 
-  .summit-card:hover {
-    background: rgba(255, 255, 255, 0.58);
-  }
-
-  .summit-card td {
-    border-bottom: 1px solid var(--card-border);
-  }
-
-  .summit-card:last-child td {
-    border-bottom: none;
-  }
-
-  /* Per-mountain identity colors - static accent (badge, name, hero
-     temp, dir-arrow, left rail) distinct from the wind-flash color
-     below, which is live/dynamic status, not identity. */
-
-  .summit-card[data-station="WHITEFACE"] { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
-  .summit-card[data-station="MMNV1"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
+  .summit-card[data-station="WHITEFACE"] { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
+  .summit-card[data-station="MMNV1"]     { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
   .summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
-  .summit-card[data-station="BURKE"]     { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
+  .summit-card[data-station="BURKE"]     { --mtn-accent: #d9822b; --mtn-accent-bg: #faead3; }
 
   .station-cell {
-    padding: 0;
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-left: 4px solid var(--mtn-accent, var(--muted));
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(20, 30, 50, 0.05);
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .station-inner {
-    display: flex;
-    align-items: center;
-    padding: 10px 10px 10px 12px;
+  /* ---- Left illustration panel ---- */
+
+  .card-illustration {
+    position: relative;
+    flex: 0 0 34%;
+    min-width: 120px;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--mtn-accent-bg, #e4ecf5) 0%, rgba(255,255,255,0.4) 100%);
   }
 
-  .station-name-block {
+  .mountain-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .mountain-art .layer-back  { fill: var(--mtn-accent); opacity: 0.30; }
+  .mountain-art .layer-front { fill: var(--mtn-accent); opacity: 0.62; }
+  .mountain-art .layer-snow  { fill: #ffffff; opacity: 0.92; }
+  .mountain-art .layer-tree  { fill: var(--mtn-accent); opacity: 0.5; }
+
+  .elevation-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.88);
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--mtn-accent, var(--ink));
+    box-shadow: 0 1px 2px rgba(20,30,50,0.12);
+  }
+
+  .elevation-badge svg {
+    width: 11px;
+    height: 11px;
+    flex: 0 0 11px;
+    stroke: var(--mtn-accent, var(--ink));
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---- Right info panel ---- */
+
+  .card-body {
+    flex: 1 1 auto;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
   }
 
   .station-name {
     font-weight: 800;
-    font-size: 13.5px;
+    font-size: 15px;
+    letter-spacing: 0.01em;
     color: var(--mtn-accent, var(--ink));
-    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .temp-block {
+    flex: 0 0 auto;
+    padding-right: 14px;
+    margin-right: 10px;
+    border-right: 1px solid var(--card-border);
+  }
+
+  .stat-temp {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--mtn-accent, var(--ink));
     white-space: nowrap;
   }
 
-  .station-elev {
-    font-size: 10px;
-    color: var(--muted);
-    font-weight: 600;
+  .stat-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    text-align: center;
   }
 
-  .stat-cell {
-    text-align: center;
-    padding: 10px 6px;
+  .stat-col .stat-label {
+    font-size: 9px;
     font-weight: 800;
-    font-size: 14.5px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+
+  .stat-col .stat-value {
+    font-size: 14px;
+    font-weight: 800;
     color: var(--ink);
     white-space: nowrap;
     transition: opacity 0.25s ease;
@@ -439,15 +491,7 @@
     gap: 4px;
   }
 
-  /* TEMP still reads as the headline number - bigger, in the
-     mountain's own accent color. */
-
-  .stat-temp {
-    font-size: 17px;
-    color: var(--mtn-accent, var(--ink));
-  }
-
-  .stat-cell .mini-icon {
+  .mini-icon {
     width: 13px;
     height: 13px;
     flex: 0 0 13px;
@@ -462,10 +506,58 @@
      setWindDisplay_) - wind-vane convention, points toward where
      the wind is coming from. */
 
-  .stat-cell .mini-icon.dir-arrow {
+  .mini-icon.dir-arrow {
     stroke: var(--mtn-accent, var(--blue));
     transform-origin: center;
     transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  /* Per-field stale/missing treatment - mirrors tempprofile.py's
+     100-minute staleness threshold (see MAX_OBSERVATION_AGE_MINUTES
+     in the script below), applied per stat cell rather than to the
+     whole row. */
+
+  .stat-cell.stale-field,
+  .stat-value.stale-field {
+    filter: grayscale(0.85);
+    opacity: 0.4;
+  }
+
+  /* ================= COLUMN LEGEND (what each stat means) ================= */
+  /* Sits above the wind-threshold legend, tying the icon+label
+     pairs on each card back to plain-English column names, mirroring
+     the header row a table would have had. */
+
+  .column-legend {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    padding: 6px 4px 2px;
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--card-border);
+  }
+
+  .column-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+  }
+
+  .column-legend .legend-item svg {
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
@@ -512,18 +604,8 @@
     animation: wind-flash-purple 0.7s ease-in-out infinite;
   }
 
-  /* Per-field stale/missing treatment - mirrors tempprofile.py's
-     100-minute staleness threshold (see MAX_OBSERVATION_AGE_MINUTES
-     in the script below), applied per stat cell rather than to the
-     whole row. */
-
-  .stat-cell.stale-field {
-    filter: grayscale(0.85);
-    opacity: 0.4;
-  }
-
   /* ================= WIND THRESHOLD LEGEND ================= */
-  /* Sits under the table, tying the badge-flash colors back to
+  /* Sits under the cards, tying the badge-flash colors back to
      concrete mph thresholds so the color coding is self-explanatory
      at a glance without a tooltip. */
 
@@ -975,13 +1057,11 @@
           compass abbreviation (see setWindDisplay_) rather than a
           graphic - simpler and just as readable at a glance.
 
-          ONE unified panel (elevation ladder), not four separate
-          cards - see the CSS comment above .mountain-ladder-grid for
-          how `.summit-card` (display:contents) keeps every existing
-          JS lookup working unchanged despite the visual restructure.
-          Ordered top-to-bottom by real elevation, evenly spaced
-          rather than pixel-proportional (see that same CSS comment
-          for why).
+          Four illustrated cards (one per station), ordered top-to-
+          bottom by real elevation - see the CSS comment above
+          .mountain-table-wrap for how `.summit-card` keeps every
+          existing JS lookup working unchanged despite the visual
+          restructure from a table into cards.
         -->
 
         <div class="mountain-panel-header">
@@ -990,105 +1070,201 @@
         </div>
 
         <div class="mountain-table-wrap">
-          <table class="mountain-table">
-            <thead>
-              <tr>
-                <th class="col-station">STATION</th>
-                <th>TEMP</th>
-                <th>DIR</th>
-                <th>WIND</th>
-                <th>GUST</th>
-                <th>CHILL</th>
-              </tr>
-            </thead>
-            <tbody>
 
-              <tr class="summit-card" data-station="WHITEFACE">
-                <td class="station-cell">
-                  <div class="station-inner">
-                    <div class="station-name-block">
-                      <div class="station-name">Whiteface</div>
-                      <div class="station-elev" data-field="elevation">4,867 ft</div>
-                    </div>
+          <div class="summit-card" data-station="WHITEFACE">
+            <div class="station-cell">
+              <div class="card-illustration">
+                <svg class="mountain-art" viewBox="0 0 300 200" preserveAspectRatio="xMidYMax slice">
+                  <polygon class="layer-back" points="0,200 0,140 55,60 95,120 150,30 195,110 240,55 280,125 300,95 300,200"/>
+                  <polygon class="layer-front" points="0,200 30,150 80,70 125,140 175,50 220,145 270,90 300,150 300,200"/>
+                  <polygon class="layer-snow" points="160,58 175,50 190,72 178,80 162,78"/>
+                  <polygon class="layer-snow" points="30,150 45,132 58,150"/>
+                  <polygon class="layer-tree" points="14,200 22,178 30,200"/>
+                  <polygon class="layer-tree" points="255,200 264,176 273,200"/>
+                  <polygon class="layer-tree" points="240,200 248,182 256,200"/>
+                </svg>
+                <div class="elevation-badge">
+                  <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+                  <span data-field="elevation">4,867 ft</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="station-name">Whiteface Mountain</div>
+                <div class="stat-row">
+                  <div class="temp-block">
+                    <span class="stat-cell stat-temp" data-field="temp">&mdash;</span>
                   </div>
-                </td>
-                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
-                <td class="stat-cell">
-                  <span class="stat-cell-inner">
-                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-                    <span data-field="dir">&mdash;</span>
-                  </span>
-                </td>
-                <td class="stat-cell" data-field="wind">&mdash;</td>
-                <td class="stat-cell" data-field="gust">&mdash;</td>
-                <td class="stat-cell" data-field="windchill">&mdash;</td>
-              </tr>
-
-              <tr class="summit-card" data-station="MMNV1">
-                <td class="station-cell">
-                  <div class="station-inner">
-                    <div class="station-name-block">
-                      <div class="station-name">Mount Mansfield</div>
-                      <div class="station-elev" data-field="elevation">3,891 ft</div>
-                    </div>
+                  <div class="stat-col">
+                    <span class="stat-label">DIRECTION</span>
+                    <span class="stat-cell-inner">
+                      <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    </span>
+                    <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
                   </div>
-                </td>
-                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
-                <td class="stat-cell">
-                  <span class="stat-cell-inner">
-                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-                    <span data-field="dir">&mdash;</span>
-                  </span>
-                </td>
-                <td class="stat-cell" data-field="wind">&mdash;</td>
-                <td class="stat-cell" data-field="gust">&mdash;</td>
-                <td class="stat-cell" data-field="windchill">&mdash;</td>
-              </tr>
-
-              <tr class="summit-card" data-station="BOLTON">
-                <td class="station-cell">
-                  <div class="station-inner">
-                    <div class="station-name-block">
-                      <div class="station-name">Bolton Vista Peak</div>
-                      <div class="station-elev" data-field="elevation">3,150 ft</div>
-                    </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND</span>
+                    <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
                   </div>
-                </td>
-                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
-                <td class="stat-cell">
-                  <span class="stat-cell-inner">
-                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-                    <span data-field="dir">&mdash;</span>
-                  </span>
-                </td>
-                <td class="stat-cell" data-field="wind">&mdash;</td>
-                <td class="stat-cell" data-field="gust">&mdash;</td>
-                <td class="stat-cell" data-field="windchill">&mdash;</td>
-              </tr>
-
-              <tr class="summit-card" data-station="BURKE">
-                <td class="station-cell">
-                  <div class="station-inner">
-                    <div class="station-name-block">
-                      <div class="station-name">Burke Mountain</div>
-                      <div class="station-elev" data-field="elevation">3,058 ft</div>
-                    </div>
+                  <div class="stat-col">
+                    <span class="stat-label">GUST</span>
+                    <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
                   </div>
-                </td>
-                <td class="stat-cell stat-temp" data-field="temp">&mdash;</td>
-                <td class="stat-cell">
-                  <span class="stat-cell-inner">
-                    <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
-                    <span data-field="dir">&mdash;</span>
-                  </span>
-                </td>
-                <td class="stat-cell" data-field="wind">&mdash;</td>
-                <td class="stat-cell" data-field="gust">&mdash;</td>
-                <td class="stat-cell" data-field="windchill">&mdash;</td>
-              </tr>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND CHILL</span>
+                    <span class="stat-cell stat-value" data-field="windchill">&mdash;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            </tbody>
-          </table>
+          <div class="summit-card" data-station="MMNV1">
+            <div class="station-cell">
+              <div class="card-illustration">
+                <svg class="mountain-art" viewBox="0 0 300 200" preserveAspectRatio="xMidYMax slice">
+                  <polygon class="layer-back" points="0,200 0,130 50,65 100,125 145,40 190,115 235,60 280,130 300,100 300,200"/>
+                  <polygon class="layer-front" points="0,200 35,145 90,75 135,135 180,55 225,140 265,95 300,145 300,200"/>
+                  <polygon class="layer-snow" points="165,63 180,55 195,77 183,85 167,83"/>
+                  <polygon class="layer-snow" points="35,145 50,127 63,145"/>
+                  <polygon class="layer-tree" points="18,200 26,178 34,200"/>
+                  <polygon class="layer-tree" points="248,200 257,176 266,200"/>
+                  <polygon class="layer-tree" points="233,200 241,182 249,200"/>
+                </svg>
+                <div class="elevation-badge">
+                  <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+                  <span data-field="elevation">3,891 ft</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="station-name">Mount Mansfield</div>
+                <div class="stat-row">
+                  <div class="temp-block">
+                    <span class="stat-cell stat-temp" data-field="temp">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">DIRECTION</span>
+                    <span class="stat-cell-inner">
+                      <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    </span>
+                    <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND</span>
+                    <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">GUST</span>
+                    <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND CHILL</span>
+                    <span class="stat-cell stat-value" data-field="windchill">&mdash;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="summit-card" data-station="BOLTON">
+            <div class="station-cell">
+              <div class="card-illustration">
+                <svg class="mountain-art" viewBox="0 0 300 200" preserveAspectRatio="xMidYMax slice">
+                  <polygon class="layer-back" points="0,200 0,150 60,85 105,135 155,55 200,130 245,80 285,140 300,120 300,200"/>
+                  <polygon class="layer-front" points="0,200 40,160 95,95 140,150 185,80 230,155 270,110 300,155 300,200"/>
+                  <polygon class="layer-tree" points="20,200 30,170 40,200"/>
+                  <polygon class="layer-tree" points="45,200 55,168 65,200"/>
+                  <polygon class="layer-tree" points="250,200 260,172 270,200"/>
+                  <polygon class="layer-tree" points="270,200 279,178 288,200"/>
+                </svg>
+                <div class="elevation-badge">
+                  <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+                  <span data-field="elevation">3,150 ft</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="station-name">Bolton Vista Peak</div>
+                <div class="stat-row">
+                  <div class="temp-block">
+                    <span class="stat-cell stat-temp" data-field="temp">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">DIRECTION</span>
+                    <span class="stat-cell-inner">
+                      <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    </span>
+                    <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND</span>
+                    <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">GUST</span>
+                    <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND CHILL</span>
+                    <span class="stat-cell stat-value" data-field="windchill">&mdash;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="summit-card" data-station="BURKE">
+            <div class="station-cell">
+              <div class="card-illustration">
+                <svg class="mountain-art" viewBox="0 0 300 200" preserveAspectRatio="xMidYMax slice">
+                  <polygon class="layer-back" points="0,200 0,150 60,85 105,135 155,55 200,130 245,80 285,140 300,120 300,200"/>
+                  <polygon class="layer-front" points="0,200 40,160 95,95 140,150 185,80 230,155 270,110 300,155 300,200"/>
+                  <polygon class="layer-tree" points="20,200 30,170 40,200"/>
+                  <polygon class="layer-tree" points="45,200 55,168 65,200"/>
+                  <polygon class="layer-tree" points="250,200 260,172 270,200"/>
+                  <polygon class="layer-tree" points="270,200 279,178 288,200"/>
+                </svg>
+                <div class="elevation-badge">
+                  <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+                  <span data-field="elevation">3,058 ft</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="station-name">Burke Mountain</div>
+                <div class="stat-row">
+                  <div class="temp-block">
+                    <span class="stat-cell stat-temp" data-field="temp">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">DIRECTION</span>
+                    <span class="stat-cell-inner">
+                      <svg class="mini-icon dir-arrow" data-field="dir-arrow" viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>
+                    </span>
+                    <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND</span>
+                    <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">GUST</span>
+                    <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND CHILL</span>
+                    <span class="stat-cell stat-value" data-field="windchill">&mdash;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="column-legend">
+            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>TEMP (&deg;F)</span>
+            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>DIRECTION</span>
+            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M3 12 H17 M3 6 H21 M3 18 H13"/></svg>WIND (MPH)</span>
+            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M3 8 H17 M3 16 H21"/></svg>GUST (MPH)</span>
+            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M12 2 C12 2 5 11 5 15 A7 7 0 0 0 19 15 C19 11 12 2 12 2 Z"/></svg>WIND CHILL (&deg;F)</span>
+          </div>
+
         </div>
 
         <div class="wind-legend">
