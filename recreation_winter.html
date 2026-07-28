@@ -169,7 +169,7 @@
   /* ================= LEFT COLUMN: Skew-T + snow row ================= */
 
   .left-column {
-    flex: 0 0 70%;
+    flex: 0 0 58%;
     min-width: 0;
     min-height: 0;
     display: flex;
@@ -185,7 +185,6 @@
 
   .sounding-panel {
     width: 100%;
-    aspect-ratio: 15.03 / 6.02;
     flex: 0 0 auto;
     min-width: 0;
     padding: 14px;
@@ -193,6 +192,16 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+  }
+
+  .sounding-panel .sounding-frame {
+    width: 82%;
+    max-width: 82%;
+    margin: 0 auto;
+    aspect-ratio: 15.03 / 6.02;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .sounding-panel img {
@@ -251,7 +260,7 @@
   */
 
   .sidebar {
-    flex: 0 0 66%;
+    flex: 0 0 76%;
     min-height: 0;
     min-width: 0;
     overflow: hidden;
@@ -288,25 +297,6 @@
     pointer-events: none;
   }
 
-  .mountain-panel-header {
-    position: relative;
-    z-index: 1;
-    flex: 0 0 auto;
-  }
-
-  .mountain-panel-title {
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    color: var(--ink);
-  }
-
-  .mountain-panel-subtitle {
-    font-size: 10.5px;
-    color: var(--muted);
-    margin-top: 1px;
-  }
-
   /* ================= MOUNTAIN OBSERVATIONS CARDS ================= */
   /*
     Four illustrated cards stacked vertically (one per station)
@@ -339,7 +329,9 @@
   }
 
   .summit-card {
-    flex: 0 0 auto;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
   }
 
   /* Per-mountain identity colors - static accent (illustration tint,
@@ -355,6 +347,8 @@
   .station-cell {
     display: flex;
     align-items: stretch;
+    flex: 1 1 auto;
+    width: 100%;
     min-height: 0;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -521,43 +515,6 @@
   .stat-value.stale-field {
     filter: grayscale(0.85);
     opacity: 0.4;
-  }
-
-  /* ================= COLUMN LEGEND (what each stat means) ================= */
-  /* Sits above the wind-threshold legend, tying the icon+label
-     pairs on each card back to plain-English column names, mirroring
-     the header row a table would have had. */
-
-  .column-legend {
-    flex: 0 0 auto;
-    display: flex;
-    justify-content: center;
-    gap: 18px;
-    padding: 6px 4px 2px;
-    position: relative;
-    z-index: 1;
-    border-top: 1px solid var(--card-border);
-  }
-
-  .column-legend .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: var(--muted);
-  }
-
-  .column-legend .legend-item svg {
-    width: 12px;
-    height: 12px;
-    flex: 0 0 12px;
-    stroke: var(--muted);
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
   }
 
   /* ================= WIND THRESHOLD ALERTS (flashing) ================= */
@@ -995,7 +952,9 @@
           load on the live page. raw.githubusercontent.com has no such
           quota for public repos.
         -->
-        <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+        <div class="sounding-frame">
+          <img id="sounding-image" src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_pseudo_sounding.png" alt="Mount Mansfield observed slope profile">
+        </div>
       </div>
 
       <div class="snow-row">
@@ -1063,11 +1022,6 @@
           existing JS lookup working unchanged despite the visual
           restructure from a table into cards.
         -->
-
-        <div class="mountain-panel-header">
-          <div class="mountain-panel-title">MOUNTAIN OBSERVATIONS</div>
-          <div class="mountain-panel-subtitle">Latest regional conditions</div>
-        </div>
 
         <div class="mountain-table-wrap">
 
@@ -1255,14 +1209,6 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="column-legend">
-            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>TEMP (&deg;F)</span>
-            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M12 2 L12 20 M12 2 L7 8 M12 2 L17 8"/></svg>DIRECTION</span>
-            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M3 12 H17 M3 6 H21 M3 18 H13"/></svg>WIND (MPH)</span>
-            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M3 8 H17 M3 16 H21"/></svg>GUST (MPH)</span>
-            <span class="legend-item"><svg viewBox="0 0 24 24"><path d="M12 2 C12 2 5 11 5 15 A7 7 0 0 0 19 15 C19 11 12 2 12 2 Z"/></svg>WIND CHILL (&deg;F)</span>
           </div>
 
         </div>
