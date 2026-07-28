@@ -856,9 +856,84 @@ body {
           <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
         </div>
 
-        <div class="snow-chart-panel">
-          <img src="https://raw.githubusercontent.com/matthewclay88/severe-dashboard/main/outputs/vt_snow_depth_chart.png"
-               alt="Mount Mansfield snow depth, current season vs. historical max/min/average">
+        <div class="quad-stats">
+
+          <div class="quad-card freezing-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
+              </div>
+              <div class="eyebrow">FREEZING LEVEL</div>
+            </div>
+            <div class="value" data-field="freezing-level">&mdash;</div>
+            <div class="subtext" data-field="freezing-level-subtext"></div>
+          </div>
+
+          <div class="quad-card wetbulb-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2 C12 2 5 11 5 15 A7 7 0 0 0 19 15 C19 11 12 2 12 2 Z"/></svg>
+              </div>
+              <div class="eyebrow">WET-BULB ZERO</div>
+            </div>
+            <div class="value" data-field="wetbulb-zero">&mdash;</div>
+            <div class="subtext" data-field="wetbulb-zero-subtext"></div>
+          </div>
+
+          <div class="quad-card shear-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 8 H21 M3 16 H15 M17 12 L21 16 L17 20"/></svg>
+              </div>
+              <div class="eyebrow">SHEAR (SFC&ndash;SUMMIT)</div>
+            </div>
+            <div class="value" data-field="bulk-shear">&mdash;</div>
+            <div class="gauge">
+              <div class="gauge-track"><div class="gauge-dot" data-gauge="shear"></div></div>
+              <div class="gauge-labels"><span>WEAK</span><span>STRONG</span></div>
+            </div>
+          </div>
+
+          <div class="quad-card lapse-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M7 17 L17 7 M9 7 H17 V15"/></svg>
+              </div>
+              <div class="eyebrow">MEAN LAPSE RATE</div>
+            </div>
+            <div class="value" data-field="lapse-rate">&mdash;</div>
+            <div class="gauge">
+              <div class="gauge-track"><div class="gauge-dot" data-gauge="lapse"></div></div>
+              <div class="gauge-labels"><span>STABLE</span><span>STEEP</span></div>
+            </div>
+          </div>
+
+          <div class="quad-card froude-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
+              </div>
+              <div class="eyebrow">MOUNTAIN FLOW</div>
+            </div>
+            <div class="value" data-field="flow-regime">&mdash;</div>
+            <div class="subtext">Fr <span data-field="froude-number">&mdash;</span></div>
+            <div class="gauge">
+              <div class="gauge-track"><div class="gauge-dot" data-gauge="froude"></div></div>
+              <div class="gauge-labels"><span>BLOCKED</span><span>CROSS-BARRIER</span></div>
+            </div>
+          </div>
+
+          <div class="quad-card ptype-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M6 15 A5 5 0 0 1 7 5.1 A6 6 0 0 1 18 8 A4 4 0 0 1 17 15 Z M8 18 V20 M12 18 V21 M16 18 V20"/></svg>
+              </div>
+              <div class="eyebrow">EXPECTED P-TYPE</div>
+            </div>
+            <div class="value" data-field="precip-type">&mdash;</div>
+            <div class="ptype-pill"><span class="ptype-dot"></span><span data-field="precip-type-pill">&mdash;</span></div>
+          </div>
+
         </div>
 
       </div>
@@ -1073,84 +1148,6 @@ body {
             </div>
           </div>
 
-        </div>
-
-      <div class="quad-stats">
-
-        <div class="quad-card freezing-card">
-          <div class="quad-header">
-            <div class="quad-icon">
-              <svg viewBox="0 0 24 24"><path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/></svg>
-            </div>
-            <div class="eyebrow">FREEZING LEVEL</div>
-          </div>
-          <div class="value" data-field="freezing-level">&mdash;</div>
-          <div class="subtext" data-field="freezing-level-subtext"></div>
-        </div>
-
-        <div class="quad-card wetbulb-card">
-          <div class="quad-header">
-            <div class="quad-icon">
-              <svg viewBox="0 0 24 24"><path d="M12 2 C12 2 5 11 5 15 A7 7 0 0 0 19 15 C19 11 12 2 12 2 Z"/></svg>
-            </div>
-            <div class="eyebrow">WET-BULB ZERO</div>
-          </div>
-          <div class="value" data-field="wetbulb-zero">&mdash;</div>
-          <div class="subtext" data-field="wetbulb-zero-subtext"></div>
-        </div>
-
-        <div class="quad-card shear-card">
-          <div class="quad-header">
-            <div class="quad-icon">
-              <svg viewBox="0 0 24 24"><path d="M3 8 H21 M3 16 H15 M17 12 L21 16 L17 20"/></svg>
-            </div>
-            <div class="eyebrow">SHEAR (SFC&ndash;SUMMIT)</div>
-          </div>
-          <div class="value" data-field="bulk-shear">&mdash;</div>
-          <div class="gauge">
-            <div class="gauge-track"><div class="gauge-dot" data-gauge="shear"></div></div>
-            <div class="gauge-labels"><span>WEAK</span><span>STRONG</span></div>
-          </div>
-        </div>
-
-        <div class="quad-card lapse-card">
-          <div class="quad-header">
-            <div class="quad-icon">
-              <svg viewBox="0 0 24 24"><path d="M7 17 L17 7 M9 7 H17 V15"/></svg>
-            </div>
-            <div class="eyebrow">MEAN LAPSE RATE</div>
-          </div>
-          <div class="value" data-field="lapse-rate">&mdash;</div>
-          <div class="gauge">
-            <div class="gauge-track"><div class="gauge-dot" data-gauge="lapse"></div></div>
-            <div class="gauge-labels"><span>STABLE</span><span>STEEP</span></div>
-          </div>
-        </div>
-
-        <div class="quad-card froude-card">
-          <div class="quad-header">
-            <div class="quad-icon">
-              <svg viewBox="0 0 24 24"><path d="M4 20 L11 6 L14 12 L17 9 L20 20 Z"/></svg>
-            </div>
-            <div class="eyebrow">MOUNTAIN FLOW</div>
-          </div>
-          <div class="value" data-field="flow-regime">&mdash;</div>
-          <div class="subtext">Fr <span data-field="froude-number">&mdash;</span></div>
-          <div class="gauge">
-            <div class="gauge-track"><div class="gauge-dot" data-gauge="froude"></div></div>
-            <div class="gauge-labels"><span>BLOCKED</span><span>CROSS-BARRIER</span></div>
-          </div>
-        </div>
-
-        <div class="quad-card ptype-card">
-          <div class="quad-header">
-            <div class="quad-icon">
-              <svg viewBox="0 0 24 24"><path d="M6 15 A5 5 0 0 1 7 5.1 A6 6 0 0 1 18 8 A4 4 0 0 1 17 15 Z M8 18 V20 M12 18 V21 M16 18 V20"/></svg>
-            </div>
-            <div class="eyebrow">EXPECTED P-TYPE</div>
-          </div>
-          <div class="value" data-field="precip-type">&mdash;</div>
-          <div class="ptype-pill"><span class="ptype-dot"></span><span data-field="precip-type-pill">&mdash;</span></div>
         </div>
 
       </div>
