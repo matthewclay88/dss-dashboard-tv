@@ -169,7 +169,7 @@ body {
 /* ================= LEFT COLUMN: Skew-T + snow/diagnostics row ================= */
 
 .left-column {
-  flex: 0 0 59.5%;
+  flex: 0 0 65%;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -230,10 +230,10 @@ body {
   position: relative;
   background: var(--sidebar-card-bg);
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -262,7 +262,7 @@ body {
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   padding: 2px;
 }
 
@@ -272,6 +272,7 @@ body {
   display: flex;
 }
 
+.summit-card[data-station="WASHINGTON"] { --mtn-accent: #c9203a; --mtn-accent-bg: #fbdde1; }
 .summit-card[data-station="WHITEFACE"] { --mtn-accent: #7048a3; --mtn-accent-bg: #ece3f7; }
 .summit-card[data-station="MMNV1"]     { --mtn-accent: #1c7ed6; --mtn-accent-bg: #dceafb; }
 .summit-card[data-station="BOLTON"]    { --mtn-accent: #2f9e6e; --mtn-accent-bg: #ddf3e8; }
@@ -294,8 +295,8 @@ body {
 
 .card-illustration {
   position: relative;
-  flex: 0 0 18%;
-  min-width: 85px;
+  flex: 0 0 16%;
+  min-width: 66px;
   overflow: hidden;
   background: linear-gradient(
     180deg,
@@ -319,25 +320,25 @@ body {
 
 .elevation-badge {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 7px;
+  left: 7px;
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
+  gap: 4px;
+  padding: 4px 9px;
   border-radius: 999px;
   background: rgba(255,255,255,0.88);
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 800;
   color: var(--mtn-accent, var(--ink));
   box-shadow: 0 1px 2px rgba(20,30,50,0.12);
 }
 
 .elevation-badge svg {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
   stroke: var(--mtn-accent, var(--ink));
   fill: none;
   stroke-width: 2;
@@ -351,13 +352,13 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
-  padding: 18px 18px;
+  gap: 8px;
+  padding: 10px 16px;
 }
 
 .station-name {
   font-weight: 800;
-  font-size: 23px;  /* was 24px */
+  font-size: 18px;  /* was 24px, compressed to fit 5 cards */
   letter-spacing: 0.01em;
   color: var(--mtn-accent, var(--ink));
   white-space: nowrap;
@@ -379,7 +380,7 @@ body {
 }
 
 .stat-temp {
-  font-size: 44px;  /* was 50px */
+  font-size: 32px;  /* was 50px, compressed to fit 5 cards */
   font-weight: 700;
   line-height: 1;
   color: var(--mtn-accent, var(--ink));
@@ -422,14 +423,14 @@ body {
    were colored. One consistent voice per card. */
 
 .stat-col .stat-label {
-  font-size: 11.5px; /* was 12.5px */
+  font-size: 9.5px; /* was 12.5px, compressed to fit 5 cards */
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   color: var(--mtn-accent, var(--muted));
 }
 
 .stat-col .stat-value {
-  font-size: 21px;  /* was 22px */
+  font-size: 16px;  /* was 22px, compressed to fit 5 cards */
   font-weight: 800;
   color: var(--mtn-accent, var(--ink));
   white-space: nowrap;
@@ -649,7 +650,7 @@ body {
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -797,6 +798,22 @@ body {
 .quad-card.ptype-card.ptype-snow { --quad-accent: #1c7ed6; --quad-accent-bg: #dceafb; }
 .quad-card.ptype-card.ptype-mix  { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
 .quad-card.ptype-card.ptype-frz  { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
+
+/* Mountain Wave Potential and Rime Icing Potential - same
+   low/moderate/high traffic-light convention as shear/lapse above.
+   NOTE: the exact score thresholds here are inferred from the
+   "Low (2/10)" / "Moderate (4/6)" labels already annotated onto the
+   sounding image by tempprofile.py - that script wasn't part of what
+   was uploaded, so double check these bands and field names in
+   vt_diagnostics_status.json against the real script before relying
+   on this in production. */
+.quad-card.wave-card.wave-low    { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+.quad-card.wave-card.wave-mod    { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+.quad-card.wave-card.wave-high   { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
+
+.quad-card.rime-card.rime-low    { --quad-accent: #2f9e44; --quad-accent-bg: #ddf3e8; }
+.quad-card.rime-card.rime-mod    { --quad-accent: #d9822b; --quad-accent-bg: #faead3; }
+.quad-card.rime-card.rime-high   { --quad-accent: #e03131; --quad-accent-bg: #fbdcdc; }
 </style>
 </head>
 <body>
@@ -957,6 +974,36 @@ body {
             <div class="ptype-pill"><span class="ptype-dot"></span><span data-field="precip-type-pill">&mdash;</span></div>
           </div>
 
+          <div class="quad-card wave-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M2 12 C5 8, 7 16, 10 12 S15 8, 18 12 S21 16, 22 12"/></svg>
+              </div>
+              <div class="eyebrow">MOUNTAIN WAVE POTENTIAL</div>
+            </div>
+            <div class="value" data-field="mountain-wave-potential">&mdash;</div>
+            <div class="subtext"><span data-field="mountain-wave-score">&mdash;</span>/10</div>
+            <div class="gauge">
+              <div class="gauge-track"><div class="gauge-dot" data-gauge="wave"></div></div>
+              <div class="gauge-labels"><span>LOW</span><span>HIGH</span></div>
+            </div>
+          </div>
+
+          <div class="quad-card rime-card">
+            <div class="quad-header">
+              <div class="quad-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 3 V21 M12 3 L9 6 M12 3 L15 6 M12 21 L9 18 M12 21 L15 18 M4.5 7.5 L19.5 16.5 M4.5 7.5 L7 7.2 M4.5 7.5 L5.6 9.8 M19.5 16.5 L17 16.8 M19.5 16.5 L18.4 14.2 M19.5 7.5 L4.5 16.5 M19.5 7.5 L17 7.2 M19.5 7.5 L18.4 9.8 M4.5 16.5 L7 16.8 M4.5 16.5 L5.6 14.2"/></svg>
+              </div>
+              <div class="eyebrow">RIME ICING POTENTIAL</div>
+            </div>
+            <div class="value" data-field="rime-icing-potential">&mdash;</div>
+            <div class="subtext"><span data-field="rime-icing-score">&mdash;</span>/6</div>
+            <div class="gauge">
+              <div class="gauge-track"><div class="gauge-dot" data-gauge="rime"></div></div>
+              <div class="gauge-labels"><span>LOW</span><span>HIGH</span></div>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -984,6 +1031,50 @@ body {
         -->
 
         <div class="mountain-table-wrap">
+
+          <div class="summit-card" data-station="WASHINGTON">
+            <div class="station-cell">
+              <div class="card-illustration">
+                <svg class="mountain-art" viewBox="0 0 300 200" preserveAspectRatio="xMidYMax slice">
+                  <polygon class="layer-back" points="0,200 0,120 60,45 105,110 150,15 195,105 240,50 280,115 300,90 300,200"/>
+                  <polygon class="layer-front" points="0,200 30,140 80,55 125,130 175,35 220,135 270,80 300,140 300,200"/>
+                  <polygon class="layer-snow" points="160,42 175,15 190,58 178,66 162,64"/>
+                  <polygon class="layer-snow" points="30,140 45,120 58,140"/>
+                  <polygon class="layer-tree" points="14,200 22,178 30,200"/>
+                  <polygon class="layer-tree" points="255,200 264,176 273,200"/>
+                  <polygon class="layer-tree" points="240,200 248,182 256,200"/>
+                </svg>
+                <div class="elevation-badge">
+                  <svg viewBox="0 0 24 24"><path d="M3 20 L9 8 L13 15 L16 10 L21 20 Z"/></svg>
+                  <span data-field="elevation">6,288 ft</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="station-name">Mount Washington</div>
+                <div class="stat-row">
+                  <div class="temp-block">
+                    <span class="stat-cell stat-temp" data-field="temp">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">DIR</span>
+                    <span class="stat-cell stat-value" data-field="dir">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND (mph)</span>
+                    <span class="stat-cell stat-value" data-field="wind">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">GUST (mph)</span>
+                    <span class="stat-cell stat-value" data-field="gust">&mdash;</span>
+                  </div>
+                  <div class="stat-col">
+                    <span class="stat-label">WIND CHILL</span>
+                    <span class="stat-cell stat-value" data-field="windchill">&mdash;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div class="summit-card" data-station="WHITEFACE">
             <div class="station-cell">
@@ -2037,6 +2128,48 @@ function applyLapseColor(rate) {
             card.classList.add(cls);
     });
 }
+
+// ---------------------------------------------------------------------------
+// Mountain Wave Potential (0-10) and Rime Icing Potential (0-6) -
+// thresholds and field names below are BEST-GUESS, inferred from the
+// "Low (2/10)" / "Moderate (4/6)" annotations already drawn onto the
+// sounding PNG by tempprofile.py. That script's actual scoring logic
+// wasn't available when this was wired up, so confirm the real
+// vt_diagnostics_status.json field names (mountain_wave_score /
+// mountain_wave_potential / rime_icing_score / rime_icing_potential
+// assumed here) and the low/mod/high cut points against tempprofile.py
+// before trusting the colors on the TV.
+// ---------------------------------------------------------------------------
+
+function waveColorClass(score) {
+    if (score === null || score === undefined) return null;
+    if (score <= 3) return "wave-low";
+    if (score <= 6) return "wave-mod";
+    return "wave-high";
+}
+
+function applyWaveColor(score) {
+    document.querySelectorAll(".wave-card").forEach((card) => {
+        card.classList.remove("wave-low", "wave-mod", "wave-high");
+        const cls = waveColorClass(score);
+        if (cls) card.classList.add(cls);
+    });
+}
+
+function rimeColorClass(score) {
+    if (score === null || score === undefined) return null;
+    if (score <= 2) return "rime-low";
+    if (score <= 4) return "rime-mod";
+    return "rime-high";
+}
+
+function applyRimeColor(score) {
+    document.querySelectorAll(".rime-card").forEach((card) => {
+        card.classList.remove("rime-low", "rime-mod", "rime-high");
+        const cls = rimeColorClass(score);
+        if (cls) card.classList.add(cls);
+    });
+}
     
     function formatDateUTC(isoString) {
       if (!isoString) return "\u2014";
@@ -2178,6 +2311,32 @@ setField(
 
 applyLapseColor(data.mean_lapse_rate_C_km);
 setGauge_("lapse", data.mean_lapse_rate_C_km, 0, 10);
+
+setField(
+    "mountain-wave-potential",
+    data.mountain_wave_potential ?? "\u2014"
+);
+setField(
+    "mountain-wave-score",
+    data.mountain_wave_score !== null && data.mountain_wave_score !== undefined
+        ? data.mountain_wave_score
+        : "\u2014"
+);
+applyWaveColor(data.mountain_wave_score);
+setGauge_("wave", data.mountain_wave_score, 0, 10);
+
+setField(
+    "rime-icing-potential",
+    data.rime_icing_potential ?? "\u2014"
+);
+setField(
+    "rime-icing-score",
+    data.rime_icing_score !== null && data.rime_icing_score !== undefined
+        ? data.rime_icing_score
+        : "\u2014"
+);
+applyRimeColor(data.rime_icing_score);
+setGauge_("rime", data.rime_icing_score, 0, 6);
         
       } catch (err) {
         console.warn("Diagnostics status fetch failed:", err);
@@ -2692,6 +2851,94 @@ async function refreshWhitefaceObs() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Mount Washington - NOT wired to a live source yet. The Mount
+// Washington Observatory publishes current conditions, but no API
+// endpoint/key was provided alongside the other three stations'
+// credentials, so this deliberately mirrors the null-observation
+// path the other refresh*Obs functions already fall back to (card
+// renders with dashes + stale styling) rather than guessing at a URL.
+// Point fetchWashingtonObservation_ at the real endpoint (expected
+// shape: { tempF, sustainedMph, gustMph, directionDeg, windChillF,
+// timestamp }) to bring this card live - everything downstream
+// (setWindDisplay_, applyWindColor_, applyFieldStaleness_) already
+// matches the pattern used by Whiteface/Burke/Bolton above.
+// ---------------------------------------------------------------------------
+
+async function fetchWashingtonObservation_() {
+  console.warn("Washington: no data source configured yet.");
+  return null;
+}
+
+async function refreshWashingtonObs() {
+
+  const card = document.querySelector(
+    '.summit-card[data-station="WASHINGTON"]'
+  );
+
+  if (!card) {
+    console.warn("Washington summit card not found.");
+    return;
+  }
+
+  const tempEl = card.querySelector('[data-field="temp"]');
+  const gustEl = card.querySelector('[data-field="gust"]');
+  const chillEl = card.querySelector('[data-field="windchill"]');
+
+  try {
+
+    const obs = await fetchWashingtonObservation_();
+
+    if (!obs) {
+
+      if (tempEl) tempEl.textContent = "—";
+      setWindDisplay_(card, null, null);
+      if (gustEl) gustEl.textContent = "—";
+      if (chillEl) chillEl.textContent = "—";
+
+      applyFieldStaleness_(card, "temp", false, null);
+      applyFieldStaleness_(card, "dir", false, null);
+      applyFieldStaleness_(card, "wind", false, null);
+      applyFieldStaleness_(card, "gust", false, null);
+      applyFieldStaleness_(card, "windchill", false, null);
+
+      return;
+    }
+
+    if (tempEl) {
+      tempEl.textContent = obs.tempF != null ? `${Math.round(obs.tempF)}°` : "—";
+    }
+
+    setWindDisplay_(card, obs.directionDeg, obs.sustainedMph);
+
+    const wxAge = ageMinutes_(obs.timestamp);
+    const wxIsStale = wxAge !== null && wxAge > MAX_OBSERVATION_AGE_MINUTES;
+
+    applyWindColor_(
+      card,
+      wxIsStale ? null : obs.sustainedMph,
+      wxIsStale ? null : obs.gustMph
+    );
+
+    if (gustEl) gustEl.textContent = formatGustDisplay_(obs.gustMph);
+
+    if (chillEl) {
+      chillEl.textContent = obs.windChillF != null ? `${Math.round(obs.windChillF)}°` : "—";
+    }
+
+    applyFieldStaleness_(card, "temp", obs.tempF != null, obs.timestamp);
+    applyFieldStaleness_(card, "dir", obs.directionDeg != null, obs.timestamp);
+    applyFieldStaleness_(card, "wind", obs.sustainedMph != null, obs.timestamp);
+    applyFieldStaleness_(card, "gust", obs.gustMph != null, obs.timestamp);
+    applyFieldStaleness_(card, "windchill", obs.windChillF != null, obs.timestamp);
+
+    console.log("WASHINGTON LIVE OBS:", obs);
+
+  } catch (error) {
+    console.error("Washington observation refresh failed:", error);
+  }
+}
+
 const BURKE_STATION = "KVTEASTB15";
 const BOLTON_STATION = "KVTBOLTO4";
     
@@ -3195,6 +3442,7 @@ async function refreshBoltonObs() {
     function refreshAll() {
       refreshDiagnostics();
       refreshSnowDepth();
+      refreshWashingtonObs();
       refreshMansfieldObs();
       refreshWhitefaceObs();
       refreshBurkeObs();
