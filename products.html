@@ -6,8 +6,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <style>
   * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
   body {
-    margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     font-size: 13px;
     color: #e8edf4;
@@ -16,8 +16,9 @@
       radial-gradient(ellipse 100% 60% at 92% 0%, rgba(111,168,220,0.16), transparent 55%),
       radial-gradient(ellipse 140% 80% at 50% 115%, rgba(20,35,60,0.65), transparent 60%),
       linear-gradient(180deg, #0c1726 0%, #0a1420 100%);
-    background-attachment: fixed;
-    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   .header {
     background: #0a1320;
@@ -26,6 +27,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
   }
   .header-left { display: flex; align-items: center; gap: 14px; }
   .logo {
@@ -47,14 +49,25 @@
   .refresh-btn:hover { color: #fff; border-color: #3a6ea8; }
   .refresh-btn.spinning { transform: rotate(360deg); }
 
-  .container { padding: 20px 28px 40px; max-width: 1700px; margin: 0 auto; }
+  .container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 14px 24px 18px;
+    max-width: 2400px;
+    width: 100%;
+    margin: 0 auto;
+    gap: 10px;
+  }
 
   /* Stat cards row (stays at the top, full width) */
   .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    margin-bottom: 10px;
+    flex-shrink: 0;
   }
 
   /* Map (left half) + table (right half) */
@@ -62,7 +75,9 @@
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 10px;
-    align-items: start;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .panel {
@@ -70,16 +85,22 @@
     border: 1px solid #1c2c41;
     border-radius: 10px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
   }
   .panel-title {
     font-size: 12px; font-weight: 600; color: #cdd8e6;
     padding: 9px 16px; border-bottom: 1px solid #1c2c41;
+    flex-shrink: 0;
   }
 
   .map-toggles {
     display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
     padding: 10px 16px; border-bottom: 1px solid #1c2c41;
     background: #0b1726;
+    flex-shrink: 0;
   }
   .toggle-btn {
     background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
@@ -105,16 +126,19 @@
   }
   .action-btn:hover { border-color: #3a6ea8; color: #fff; background: #16324f; }
 
-  #map { height: 480px; width: 100%; background: #08101c; }
+  #map { height: 100%; width: 100%; background: #08101c; }
   .map-status {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     color: #93a3b8; font-size: 13px; pointer-events: none; z-index: 500;
   }
-  .map-wrap { position: relative; height: 480px; }
+  .map-wrap { position: relative; flex: 1; min-height: 0; }
   .map-legend {
     display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
     padding: 8px 16px; border-top: 1px solid #1c2c41;
     background: #0b1726; font-size: 11px; color: #cdd8e6;
+    flex-shrink: 0;
+    max-height: 92px;
+    overflow-y: auto;
   }
   .map-legend .swatch { display: inline-flex; align-items: center; gap: 6px; }
   .map-legend .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
@@ -143,10 +167,13 @@
   .v-watches { color: #f0c419; }
   .v-advisories { color: #5fd07a; }
 
-  .active-products-panel { background: #0f1d30; border: 1px solid #1c2c41; border-radius: 10px; overflow: hidden; }
-  .active-products-title { font-size: 15px; font-weight: 700; color: #fff; padding: 14px 20px; border-bottom: 1px solid #1c2c41; }
+  .active-products-panel {
+    background: #0f1d30; border: 1px solid #1c2c41; border-radius: 10px; overflow: hidden;
+    display: flex; flex-direction: column; height: 100%; min-height: 0;
+  }
+  .active-products-title { font-size: 15px; font-weight: 700; color: #fff; padding: 14px 20px; border-bottom: 1px solid #1c2c41; flex-shrink: 0; }
 
-  .table-scroll { max-height: 580px; overflow-y: auto; }
+  .table-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 
   table { width: 100%; border-collapse: collapse; }
   thead th {
@@ -195,85 +222,21 @@
 
   .empty-state { padding: 50px 20px; text-align: center; color: #93a3b8; font-size: 14px; }
 
-  .footer { text-align: center; color: #5a6a80; font-size: 12px; padding: 24px 0 8px; }
+  .footer { text-align: center; color: #5a6a80; font-size: 12px; padding: 6px 0 2px; flex-shrink: 0; }
 
   .leaflet-popup-content-wrapper { background: #0f1d30; color: #e8edf4; }
   .leaflet-popup-tip { background: #0f1d30; }
 
   @media (max-width: 1200px) {
+    html, body { height: auto; }
+    body { overflow: auto; }
+    .container { overflow: visible; height: auto; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .main-grid { grid-template-columns: 1fr; }
-    #map, .map-wrap { height: 320px; }
-    .table-scroll { max-height: 420px; }
+    .main-grid { grid-template-columns: 1fr; overflow: visible; height: auto; }
+    .panel, .active-products-panel { height: auto; }
+    #map, .map-wrap { height: 320px; flex: none; }
+    .table-scroll { max-height: 420px; flex: none; }
   }
-
-  /* ==========================================================================
-     NWS Official Hazard Colors
-     Source: https://www.weather.gov/help-map  (last verified update: Mar 10, 2025)
-     Utility classes keyed to VTEC "phenomenon-significance" codes (dots -> hyphens),
-     matching the PRODUCT_NAMES keys used below (e.g. 'SV.W' -> .hazard-SV-W).
-     ========================================================================== */
-  [class^="hazard-"], [class*=" hazard-"] {
-    --hazard-color: #cdd8e6;
-    color: var(--hazard-color);
-  }
-  .hazard-dot::before {
-    content: "";
-    display: inline-block;
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    background: var(--hazard-color);
-    margin-right: 6px;
-    vertical-align: middle;
-  }
-
-  .hazard-TO-W { --hazard-color: #FF0000; } /* Tornado Warning */
-  .hazard-TO-A { --hazard-color: #FFFF00; } /* Tornado Watch */
-  .hazard-SV-W { --hazard-color: #FFA500; } /* Severe Thunderstorm Warning */
-  .hazard-SV-A { --hazard-color: #DB7093; } /* Severe Thunderstorm Watch */
-  .hazard-FF-W { --hazard-color: #8B0000; } /* Flash Flood Warning */
-  .hazard-FF-A { --hazard-color: #2E8B57; } /* Flash Flood Watch */
-  .hazard-FF-S { --hazard-color: #8B0000; } /* Flash Flood Statement */
-  .hazard-FA-W { --hazard-color: #00FF00; } /* Flood Warning */
-  .hazard-FA-A { --hazard-color: #2E8B57; } /* Flood Watch */
-  .hazard-FA-Y { --hazard-color: #00FF7F; } /* Flood Advisory */
-  .hazard-MA-W { --hazard-color: #FFA500; } /* Special Marine Warning */
-  .hazard-SW-Y { --hazard-color: #D8BFD8; } /* Small Craft Advisory */
-  .hazard-WI-Y { --hazard-color: #D2B48C; } /* Wind Advisory */
-  .hazard-HW-W { --hazard-color: #DAA520; } /* High Wind Warning */
-  .hazard-HW-A { --hazard-color: #B8860B; } /* High Wind Watch */
-  .hazard-EW-W { --hazard-color: #FF8C00; } /* Extreme Wind Warning */
-  .hazard-WS-W { --hazard-color: #FF69B4; } /* Winter Storm Warning */
-  .hazard-WS-A { --hazard-color: #4682B4; } /* Winter Storm Watch */
-  .hazard-WW-Y { --hazard-color: #7B68EE; } /* Winter Weather Advisory */
-  .hazard-BZ-W { --hazard-color: #FF4500; } /* Blizzard Warning */
-  .hazard-IS-W { --hazard-color: #8B008B; } /* Ice Storm Warning */
-  .hazard-SQ-W { --hazard-color: #C71585; } /* Snow Squall Warning */
-  .hazard-FZ-W { --hazard-color: #483D8B; } /* Freeze Warning */
-  .hazard-FZ-A { --hazard-color: #00FFFF; } /* Freeze Watch */
-  .hazard-FR-Y { --hazard-color: #6495ED; } /* Frost Advisory */
-  .hazard-HT-Y { --hazard-color: #FF7F50; } /* Heat Advisory */
-  .hazard-XH-W { --hazard-color: #C71585; } /* Extreme Heat Warning (formerly Excessive Heat Warning; VTEC EH.W -> XH.W as of Mar 2025) */
-  .hazard-XH-A { --hazard-color: #800000; } /* Extreme Heat Watch (formerly Excessive Heat Watch; VTEC EH.A -> XH.A as of Mar 2025) */
-  .hazard-DS-W { --hazard-color: #FFE4C4; } /* Dust Storm Warning */
-  .hazard-DU-Y { --hazard-color: #BDB76B; } /* Blowing Dust Advisory */
-  .hazard-FG-Y { --hazard-color: #708090; } /* Dense Fog Advisory */
-  .hazard-SM-Y { --hazard-color: #F0E68C; } /* Dense Smoke Advisory */
-  .hazard-RP-S { --hazard-color: #40E0D0; } /* Rip Current Statement */
-  .hazard-SU-Y { --hazard-color: #BA55D3; } /* High Surf Advisory */
-  .hazard-SU-W { --hazard-color: #228B22; } /* High Surf Warning */
-  .hazard-CF-Y { --hazard-color: #7CFC00; } /* Coastal Flood Advisory */
-  .hazard-CF-W { --hazard-color: #228B22; } /* Coastal Flood Warning */
-  .hazard-CF-A { --hazard-color: #66CDAA; } /* Coastal Flood Watch */
-  .hazard-LS-Y { --hazard-color: #7CFC00; } /* Lakeshore Flood Advisory */
-  .hazard-LS-W { --hazard-color: #228B22; } /* Lakeshore Flood Warning */
-  .hazard-RF-W { --hazard-color: #FF1493; } /* Red Flag Warning */
-  .hazard-FW-A { --hazard-color: #FFDEAD; } /* Fire Weather Watch */
-  .hazard-AF-Y { --hazard-color: #696969; } /* Ashfall Advisory */
-  .hazard-TS-W { --hazard-color: #FD6347; } /* Tsunami Warning */
-  .hazard-TS-A { --hazard-color: #FF00FF; } /* Tsunami Watch */
-  .hazard-TS-Y { --hazard-color: #D2691E; } /* Tsunami Advisory */
-  .hazard-AS-O { --hazard-color: #808080; } /* Air Stagnation (Advisory color used) */
 </style>
 </head>
 <body>
@@ -414,8 +377,7 @@ const PRODUCT_CODES = {
 // Official NWS hazard colors, keyed by "PHEN.SIG" (matches PRODUCT_NAMES).
 // Source: https://www.weather.gov/help-map (verified update: Mar 10, 2025)
 // Single source of truth for: table text color, map zone shading, warning
-// polygon fill/stroke, and popup swatch colors. The CSS hazard-XX-Y classes
-// in <style> use the exact same values for anything styled via class.
+// polygon fill/stroke, and popup swatch colors.
 // ---------------------------------------------------------------------------
 const HAZARD_COLORS = {
   'TO.W':'#FF0000','TO.A':'#FFFF00',
@@ -483,15 +445,40 @@ let zonesReady = false;
 
 function initMap(filteredGeojson){
 
+  // preferCanvas + disabled animations are meaningfully lighter on
+  // low-power / embedded browsers (e.g. Samsung Tizen TV browser) than the
+  // SVG renderer + Leaflet's default zoom/fade/marker animations.
   map = L.map('map', {
     zoomControl:true,
-    attributionControl:false
+    attributionControl:false,
+    preferCanvas:true,
+    zoomAnimation:false,
+    fadeAnimation:false,
+    markerZoomAnimation:false,
+    inertia:false
   });
 
-  L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { maxZoom:12 }
+  // Switched from ArcGIS World Imagery (heavy photographic satellite tiles)
+  // to CartoDB's dark basemap: much smaller tile payloads and far less
+  // decode work per tile, which matters a lot on constrained TV hardware.
+  const tileLayer = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {
+      subdomains: 'abcd',
+      maxZoom: 19,
+      crossOrigin: true
+    }
   ).addTo(map);
+
+  // Basic tile-load diagnostics/retry — helps on flaky TV network stacks
+  // where a handful of tile requests occasionally just stall out.
+  tileLayer.on('tileerror', function(err){
+    console.warn('tile load error, retrying once', err && err.coords);
+    if(err && err.tile && !err.tile._retried){
+      err.tile._retried = true;
+      setTimeout(function(){ err.tile.src = err.tile.src; }, 800);
+    }
+  });
 
   polygonLayer = L.layerGroup().addTo(map);
 
@@ -523,14 +510,27 @@ function initMap(filteredGeojson){
 
   resetMapView();
 
+  // The map's container size can change after Leaflet has already measured
+  // it once (flex layout settling, TV browser reporting a stale viewport
+  // size on first paint, etc). Keep it honest.
+  window.addEventListener('resize', function(){
+    if(map) map.invalidateSize();
+  });
+  if(window.ResizeObserver){
+    const ro = new ResizeObserver(function(){
+      if(map) map.invalidateSize();
+    });
+    ro.observe(document.getElementById('map'));
+  }
+
 }
 
 // Fits the map to the full BTV CWA zone set (the "default" view). Used both
 // on initial load and by the Reset Zoom button.
 function resetMapView(){
   if(!map) return;
+  map.invalidateSize();
   if(geoLayer && geoLayer.getLayers().length){
-    map.invalidateSize();
     map.fitBounds(geoLayer.getBounds(),{
       padding:[10,10]
     });
@@ -1130,7 +1130,7 @@ function renderTable(prods){
     tr.className = 'product-row';
     tr.dataset.id = p.id;
     tr.innerHTML =
-      '<td class="product-name hazard-dot '+p.hazardClass+'"><span class="expand-caret">&#9656;</span>'+p.name+etnHtml+badgeHtml+'</td>' +
+      '<td class="product-name" style="color:'+p.color+'"><span class="expand-caret">&#9656;</span>'+p.name+etnHtml+badgeHtml+'</td>' +
       '<td>'+fmtTime(p.onset)+'</td>' +
       '<td>'+fmtTime(p.expires)+'</td>' +
       '<td>'+fmtTime(p.updateBy)+'</td>' +
@@ -1180,6 +1180,7 @@ function tickCountdowns(){
     if(!p) return;
     const updateCell = tr.querySelector('[data-target="update"]');
     const expireCell = tr.querySelector('[data-target="expire"]');
+    if(!updateCell || !expireCell) return;
     const updateMs = p.updateBy - now;
     const expireMs = p.expires ? (p.expires - now) : 0;
     updateCell.textContent = fmtCountdown(updateMs);
@@ -1197,15 +1198,15 @@ async function refresh(){
     const alerts = await fetchAlerts();
     products = buildProducts(alerts);
 
-  polygonProducts = products.filter(p =>
-  p.sig === "W" &&
-  ["TO","SV","FF","FA"].includes(p.phen)
-);
+    polygonProducts = products.filter(p =>
+      p.sig === "W" &&
+      ["TO","SV","FF","FA"].includes(p.phen)
+    );
 
-zoneProducts = products.filter(p =>
-  !(p.sig === "W" &&
-    ["TO","SV","FF","FA"].includes(p.phen))
-);
+    zoneProducts = products.filter(p =>
+      !(p.sig === "W" &&
+        ["TO","SV","FF","FA"].includes(p.phen))
+    );
 
     renderStats(products);
     renderTable(products);
