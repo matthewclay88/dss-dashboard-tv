@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BTV CWA Active Watches, Warnings & Advisories</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 13px;
+    color: #e8edf4;
+    background:
+      radial-gradient(ellipse 120% 70% at 12% -10%, rgba(58,110,168,0.28), transparent 60%),
+      radial-gradient(ellipse 100% 60% at 92% 0%, rgba(111,168,220,0.16), transparent 55%),
+      radial-gradient(ellipse 140% 80% at 50% 115%, rgba(20,35,60,0.65), transparent 60%),
+      linear-gradient(180deg, #0c1726 0%, #0a1420 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .header {
+    background: #0a1320;
+    border-bottom: 1px solid #1c2c41;
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #0d1f33; border: 2px solid #3a6ea8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: #6fa8dc; text-align: center;
+  }
+  .header h1 { font-size: 17px; font-weight: 700; margin: 0; color: #fff; }
+  .header-right { text-align: right; display: flex; align-items: center; gap: 14px; }
+  .header-right .label { font-size: 11px; color: #93a3b8; }
+  .header-right .time { font-size: 13px; font-weight: 600; color: #fff; }
+  .refresh-btn {
+    background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    transition: transform .4s ease;
+  }
+  .refresh-btn:hover { color: #fff; border-color: #3a6ea8; }
+  .refresh-btn.spinning { transform: rotate(360deg); }
+
+  .container { padding: 20px 28px 40px; max-width: 1700px; margin: 0 auto; }
+
+  /* Stat cards row (stays at the top, full width) */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  /* Map (left half) + table (right half) */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .panel {
+    background: #0f1d30;
+    border: 1px solid #1c2c41;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .panel-title {
+    font-size: 12px; font-weight: 600; color: #cdd8e6;
+    padding: 9px 16px; border-bottom: 1px solid #1c2c41;
+  }
+
+  .map-toggles {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    padding: 10px 16px; border-bottom: 1px solid #1c2c41;
+    background: #0b1726;
+  }
+  .toggle-btn {
+    background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
+    font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 6px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+    font-family: inherit;
+  }
+  .toggle-btn:hover { border-color: #3a6ea8; color: #cdd8e6; }
+  .toggle-btn .toggle-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #4a5a70;
+    transition: background .15s ease;
+  }
+  .toggle-btn.active { background: #16324f; border-color: #3a6ea8; color: #fff; }
+  .toggle-btn.active .toggle-dot { background: #5fd07a; }
+
+  .action-btn {
+    background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
+    font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 6px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+    font-family: inherit;
+  }
+  .action-btn:hover { border-color: #3a6ea8; color: #fff; background: #16324f; }
+
+  #map { height: 480px; width: 100%; background: #08101c; }
+  .map-status {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #93a3b8; font-size: 13px; pointer-events: none; z-index: 500;
+  }
+  .map-wrap { position: relative; height: 480px; }
+  .map-legend {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    padding: 8px 16px; border-top: 1px solid #1c2c41;
+    background: #0b1726; font-size: 11px; color: #cdd8e6;
+  }
+  .map-legend .swatch { display: inline-flex; align-items: center; gap: 6px; }
+  .map-legend .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .map-legend .note { color: #6b7c93; font-size: 10px; }
+  .legend-toggle {
+    cursor: pointer; padding: 4px 8px; border-radius: 6px; user-select: none;
+    border: 1px solid transparent;
+    transition: opacity .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .legend-toggle:hover { background: #16233a; border-color: #2a3f5c; }
+  .legend-toggle .count { color: #6b7c93; font-weight: 600; margin-left: 2px; }
+  .legend-toggle.off { opacity: 0.35; }
+  .legend-toggle.off .dot { filter: grayscale(60%); }
+
+  .stat-card {
+    background: #0f1d30; border: 1px solid #1c2c41; border-radius: 10px;
+    padding: 10px 10px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 82px;
+  }
+  .stat-card .stat-label { font-size: 13px; color: #cdd8e6; font-weight: 700; margin-bottom: 6px; }
+  .stat-card .stat-value { font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 8px; }
+  .stat-card .stat-sub { font-size: 11px; font-weight: 500; color: #a9b7c9; line-height: 1.4; }
+  .v-total { color: #fff; }
+  .v-warnings { color: #e6534b; }
+  .v-watches { color: #f0c419; }
+  .v-advisories { color: #5fd07a; }
+
+  .active-products-panel { background: #0f1d30; border: 1px solid #1c2c41; border-radius: 10px; overflow: hidden; }
+  .active-products-title { font-size: 15px; font-weight: 700; color: #fff; padding: 14px 20px; border-bottom: 1px solid #1c2c41; }
+
+  .table-scroll { max-height: 580px; overflow-y: auto; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left; font-size: 11px; font-weight: 600; color: #93a3b8;
+    padding: 10px 10px; border-bottom: 1px solid #1c2c41; background: #0b1726;
+    white-space: nowrap;
+    position: sticky; top: 0; z-index: 2;
+  }
+  thead th:first-child { padding-left: 16px; }
+  thead th:last-child { padding-right: 16px; }
+  tbody td { padding: 11px 10px; font-size: 12px; border-bottom: 1px solid #16223588; white-space: nowrap; }
+  tbody td:first-child { padding-left: 16px; }
+  tbody td:last-child { padding-right: 16px; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #0b1726; }
+  tbody tr:hover { background: #17263d; }
+  tbody tr.product-row { cursor: pointer; }
+  .expand-caret {
+    display: inline-block; width: 10px; margin-right: 8px;
+    color: #6b7c93; transition: transform .15s ease; font-size: 11px;
+  }
+  .expand-caret.open { transform: rotate(90deg); }
+  tr.detail-row { display: none; }
+  tr.detail-row.open { display: table-row; }
+  tr.detail-row td {
+    background: #0b1726; padding: 4px 16px 14px 38px;
+    font-size: 11px; color: #a9b7c9; white-space: normal; line-height: 1.5;
+    border-bottom: 1px solid #16223588;
+  }
+  tr.detail-row .detail-label { color: #6b7c93; font-weight: 600; margin-right: 6px; }
+  .tag-badge {
+    display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: 0.4px;
+    padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
+    white-space: nowrap;
+  }
+  tr.detail-row .detail-line { display: block; margin-top: 4px; }
+  tr.detail-row .detail-line:first-child { margin-top: 0; }
+  .product-name { font-weight: 700; }
+  .product-etn { font-weight: 600; color: #93a3b8; margin-left: 6px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 10px; }
+  .mono { font-family: "SFMono-Regular", Consolas, monospace; color: #cdd8e6; }
+  .countdown { font-weight: 700; font-family: "SFMono-Regular", Consolas, monospace; font-size: 11px; }
+  .c-red { color: #ef5b53; }
+  .c-amber { color: #f0c419; }
+  .c-green { color: #5fd07a; }
+  .c-gray { color: #93a3b8; }
+
+  .empty-state { padding: 50px 20px; text-align: center; color: #93a3b8; font-size: 14px; }
+
+  .footer { text-align: center; color: #5a6a80; font-size: 12px; padding: 24px 0 8px; }
+
+  .leaflet-popup-content-wrapper { background: #0f1d30; color: #e8edf4; }
+  .leaflet-popup-tip { background: #0f1d30; }
+
+  @media (max-width: 1200px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .main-grid { grid-template-columns: 1fr; }
+    #map, .map-wrap { height: 320px; }
+    .table-scroll { max-height: 420px; }
+  }
+
+  /* ==========================================================================
+     NWS Official Hazard Colors
+     Source: https://www.weather.gov/help-map  (last verified update: Mar 10, 2025)
+     Utility classes keyed to VTEC "phenomenon-significance" codes (dots -> hyphens),
+     matching the PRODUCT_NAMES keys used below (e.g. 'SV.W' -> .hazard-SV-W).
+     ========================================================================== */
+  [class^="hazard-"], [class*=" hazard-"] {
+    --hazard-color: #cdd8e6;
+    color: var(--hazard-color);
+  }
+  .hazard-dot::before {
+    content: "";
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    background: var(--hazard-color);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .hazard-TO-W { --hazard-color: #FF0000; } /* Tornado Warning */
+  .hazard-TO-A { --hazard-color: #FFFF00; } /* Tornado Watch */
+  .hazard-SV-W { --hazard-color: #FFA500; } /* Severe Thunderstorm Warning */
+  .hazard-SV-A { --hazard-color: #DB7093; } /* Severe Thunderstorm Watch */
+  .hazard-FF-W { --hazard-color: #8B0000; } /* Flash Flood Warning */
+  .hazard-FF-A { --hazard-color: #2E8B57; } /* Flash Flood Watch */
+  .hazard-FF-S { --hazard-color: #8B0000; } /* Flash Flood Statement */
+  .hazard-FA-W { --hazard-color: #00FF00; } /* Flood Warning */
+  .hazard-FA-A { --hazard-color: #2E8B57; } /* Flood Watch */
+  .hazard-FA-Y { --hazard-color: #00FF7F; } /* Flood Advisory */
+  .hazard-MA-W { --hazard-color: #FFA500; } /* Special Marine Warning */
+  .hazard-SW-Y { --hazard-color: #D8BFD8; } /* Small Craft Advisory */
+  .hazard-WI-Y { --hazard-color: #D2B48C; } /* Wind Advisory */
+  .hazard-HW-W { --hazard-color: #DAA520; } /* High Wind Warning */
+  .hazard-HW-A { --hazard-color: #B8860B; } /* High Wind Watch */
+  .hazard-EW-W { --hazard-color: #FF8C00; } /* Extreme Wind Warning */
+  .hazard-WS-W { --hazard-color: #FF69B4; } /* Winter Storm Warning */
+  .hazard-WS-A { --hazard-color: #4682B4; } /* Winter Storm Watch */
+  .hazard-WW-Y { --hazard-color: #7B68EE; } /* Winter Weather Advisory */
+  .hazard-BZ-W { --hazard-color: #FF4500; } /* Blizzard Warning */
+  .hazard-IS-W { --hazard-color: #8B008B; } /* Ice Storm Warning */
+  .hazard-SQ-W { --hazard-color: #C71585; } /* Snow Squall Warning */
+  .hazard-FZ-W { --hazard-color: #483D8B; } /* Freeze Warning */
+  .hazard-FZ-A { --hazard-color: #00FFFF; } /* Freeze Watch */
+  .hazard-FR-Y { --hazard-color: #6495ED; } /* Frost Advisory */
+  .hazard-HT-Y { --hazard-color: #FF7F50; } /* Heat Advisory */
+  .hazard-XH-W { --hazard-color: #C71585; } /* Extreme Heat Warning (formerly Excessive Heat Warning; VTEC EH.W -> XH.W as of Mar 2025) */
+  .hazard-XH-A { --hazard-color: #800000; } /* Extreme Heat Watch (formerly Excessive Heat Watch; VTEC EH.A -> XH.A as of Mar 2025) */
+  .hazard-DS-W { --hazard-color: #FFE4C4; } /* Dust Storm Warning */
+  .hazard-DU-Y { --hazard-color: #BDB76B; } /* Blowing Dust Advisory */
+  .hazard-FG-Y { --hazard-color: #708090; } /* Dense Fog Advisory */
+  .hazard-SM-Y { --hazard-color: #F0E68C; } /* Dense Smoke Advisory */
+  .hazard-RP-S { --hazard-color: #40E0D0; } /* Rip Current Statement */
+  .hazard-SU-Y { --hazard-color: #BA55D3; } /* High Surf Advisory */
+  .hazard-SU-W { --hazard-color: #228B22; } /* High Surf Warning */
+  .hazard-CF-Y { --hazard-color: #7CFC00; } /* Coastal Flood Advisory */
+  .hazard-CF-W { --hazard-color: #228B22; } /* Coastal Flood Warning */
+  .hazard-CF-A { --hazard-color: #66CDAA; } /* Coastal Flood Watch */
+  .hazard-LS-Y { --hazard-color: #7CFC00; } /* Lakeshore Flood Advisory */
+  .hazard-LS-W { --hazard-color: #228B22; } /* Lakeshore Flood Warning */
+  .hazard-RF-W { --hazard-color: #FF1493; } /* Red Flag Warning */
+  .hazard-FW-A { --hazard-color: #FFDEAD; } /* Fire Weather Watch */
+  .hazard-AF-Y { --hazard-color: #696969; } /* Ashfall Advisory */
+  .hazard-TS-W { --hazard-color: #FD6347; } /* Tsunami Warning */
+  .hazard-TS-A { --hazard-color: #FF00FF; } /* Tsunami Watch */
+  .hazard-TS-Y { --hazard-color: #D2691E; } /* Tsunami Advisory */
+  .hazard-AS-O { --hazard-color: #808080; } /* Air Stagnation (Advisory color used) */
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">NWS</div>
+    <h1>BTV CWA Active Watches, Warnings &amp; Advisories</h1>
+  </div>
+  <div class="header-right">
+    <div>
+      <div class="label">Last Updated:</div>
+      <div class="time" id="last-updated">--</div>
+    </div>
+    <button class="refresh-btn" id="refresh-btn" aria-label="Refresh"><i style="font-style:normal">&#8635;</i></button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Active Products</div>
+      <div class="stat-value v-total" id="stat-total">0</div>
+      <div class="stat-sub" id="stat-total-sub">0 Warnings &middot; 0 Watch &middot; 0 Advisory</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Warnings</div>
+      <div class="stat-value v-warnings" id="stat-warnings">0</div>
+      <div class="stat-sub" id="stat-warnings-sub">&nbsp;</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Watches</div>
+      <div class="stat-value v-watches" id="stat-watches">0</div>
+      <div class="stat-sub" id="stat-watches-sub">&nbsp;</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Advisories</div>
+      <div class="stat-value v-advisories" id="stat-advisories">0</div>
+      <div class="stat-sub" id="stat-advisories-sub">&nbsp;</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <div class="panel">
+      <div class="panel-title">BTV CWA Map -- Click the Legend below to turn off and on warning types</div>
+      <div class="map-toggles">
+        <button class="toggle-btn active" id="toggle-zone" type="button">
+          <span class="toggle-dot"></span>Zone Based WWA
+        </button>
+        <button class="toggle-btn active" id="toggle-polygon" type="button">
+          <span class="toggle-dot"></span>Polygon Based Warnings
+        </button>
+        <button class="action-btn" id="reset-zoom-btn" type="button">
+          <span>&#8635;</span>Reset Zoom
+        </button>
+      </div>
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="map-status" id="map-status">Loading zone boundaries…</div>
+      </div>
+      <div class="map-legend" id="map-legend">
+        <span class="note">Loading…</span>
+      </div>
+    </div>
+
+    <div class="active-products-panel">
+      <div class="active-products-title">Active Products</div>
+      <div class="table-scroll" id="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Start Time (EDT)</th>
+              <th>End Time (EDT)</th>
+              <th>Update By (EDT)</th>
+              <th>Time Until Update</th>
+              <th>Expires In</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state" style="display:none;">No active watches, warnings, or advisories for the BTV CWA.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer"> Created by Matthew Clay | All times are Eastern Time | Alerts: NWS api.weather.gov | Colors: weather.gov/help-map | Auto-refresh every 2 minutes</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// Zone geometry is fetched at runtime from the community-maintained
+// "allzones.geojson" file. That file covers every NWS forecast zone
+// nationwide, so we filter it down to the zones BTV (Burlington) actually
+// services, which historically includes a few border Albany (ALY) zones too
+// (Bennington, Western Windham, Eastern Windham).
+// ---------------------------------------------------------------------------
+const GEOJSON_URL =
+  "https://raw.githubusercontent.com/matthewclay88/severe-climatology/main/allzones.geojson";
+const TARGET_CWAS = ['BTV'];
+const EXTRA_ZONES = ['VT013', 'VT014', 'VT015']; // Bennington, W. Windham, E. Windham (ALY, borders BTV)
+
+const PRODUCT_NAMES = {
+  'SV.W':'Severe Thunderstorm Warning','SV.A':'Severe Thunderstorm Watch',
+  'TO.W':'Tornado Warning','TO.A':'Tornado Watch',
+  'FF.W':'Flash Flood Warning','FF.A':'Flash Flood Watch','FF.S':'Flash Flood Statement',
+  'FA.W':'Flood Warning','FA.A':'Flood Watch','FA.Y':'Flood Advisory',
+  'MA.W':'Special Marine Warning',
+  'WI.Y':'Wind Advisory','HW.W':'High Wind Warning','HW.A':'High Wind Watch',
+  'WS.W':'Winter Storm Warning','WS.A':'Winter Storm Watch',
+  'WW.Y':'Winter Weather Advisory','BZ.W':'Blizzard Warning',
+  'IS.W':'Ice Storm Warning','FZ.W':'Freeze Warning','FZ.A':'Freeze Watch',
+  'FR.Y':'Frost Advisory','HT.Y':'Heat Advisory','XH.W':'Extreme Heat Warning','XH.A':'Extreme Heat Watch',
+  'DS.W':'Dust Storm Warning','DU.Y':'Blowing Dust Advisory',
+  'FG.Y':'Dense Fog Advisory','SM.Y':'Dense Smoke Advisory',
+  'RP.S':'Rip Current Statement','SU.Y':'High Surf Advisory','SU.W':'High Surf Warning',
+  'CF.Y':'Coastal Flood Advisory','CF.W':'Coastal Flood Warning','CF.A':'Coastal Flood Watch',
+  'LS.Y':'Lakeshore Flood Advisory','LS.W':'Lakeshore Flood Warning',
+  'RF.W':'Red Flag Warning','FW.A':'Fire Weather Watch',
+  'SQ.W':'Snow Squall Warning','AF.Y':'Ashfall Advisory',
+  'EW.W':'Extreme Wind Warning','TS.W':'Tsunami Warning','TS.A':'Tsunami Watch','TS.Y':'Tsunami Advisory',
+  'AS.O':'Air Stagnation Outlook','SW.Y':'Small Craft Advisory'
+};
+const PRODUCT_CODES = {
+  'SV.W':'SVR','SV.A':'SVA','TO.W':'TOR','TO.A':'TOA','FF.W':'FFW','FF.A':'FFA','FF.S':'FFS',
+  'FA.W':'FLW','FA.A':'FLA','FA.Y':'FLS','MA.W':'SMW','WI.Y':'WIND','HW.W':'HWW','HW.A':'HWA',
+  'WS.W':'WSW','WS.A':'WSA','WW.Y':'WSW','BZ.W':'BZW','IS.W':'ISW','FZ.W':'FZW','FZ.A':'FZA',
+  'FR.Y':'FRY','HT.Y':'HTY','XH.W':'XHW','XH.A':'XHA','FG.Y':'FGY','SM.Y':'SMY',
+  'CF.Y':'CFY','CF.W':'CFW','LS.Y':'LSY','LS.W':'LSW','RF.W':'RFW','FW.A':'FWA',
+  'SQ.W':'SQW'
+};
+
+// ---------------------------------------------------------------------------
+// Official NWS hazard colors, keyed by "PHEN.SIG" (matches PRODUCT_NAMES).
+// Source: https://www.weather.gov/help-map (verified update: Mar 10, 2025)
+// Single source of truth for: table text color, map zone shading, warning
+// polygon fill/stroke, and popup swatch colors. The CSS hazard-XX-Y classes
+// in <style> use the exact same values for anything styled via class.
+// ---------------------------------------------------------------------------
+const HAZARD_COLORS = {
+  'TO.W':'#FF0000','TO.A':'#FFFF00',
+  'SV.W':'#FFA500','SV.A':'#DB7093',
+  'FF.W':'#8B0000','FF.A':'#2E8B57','FF.S':'#8B0000',
+  'FA.W':'#00FF00','FA.A':'#2E8B57','FA.Y':'#00FF7F',
+  'MA.W':'#FFA500','SW.Y':'#D8BFD8',
+  'WI.Y':'#D2B48C','HW.W':'#DAA520','HW.A':'#B8860B','EW.W':'#FF8C00',
+  'WS.W':'#FF69B4','WS.A':'#4682B4','WW.Y':'#7B68EE','BZ.W':'#FF4500','IS.W':'#8B008B','SQ.W':'#C71585',
+  'FZ.W':'#483D8B','FZ.A':'#00FFFF','FR.Y':'#6495ED','HT.Y':'#FF7F50','XH.W':'#C71585','XH.A':'#800000',
+  'DS.W':'#FFE4C4','DU.Y':'#BDB76B','FG.Y':'#708090','SM.Y':'#F0E68C',
+  'RP.S':'#40E0D0','SU.Y':'#BA55D3','SU.W':'#228B22',
+  'CF.Y':'#7CFC00','CF.W':'#228B22','CF.A':'#66CDAA','LS.Y':'#7CFC00','LS.W':'#228B22',
+  'RF.W':'#FF1493','FW.A':'#FFDEAD',
+  'AF.Y':'#696969','TS.W':'#FD6347','TS.A':'#FF00FF','TS.Y':'#D2691E',
+  'AS.O':'#808080'
+};
+
+// ---------------------------------------------------------------------------
+// Opacity tuning — adjust these to make hazard shading more/less prominent.
+// ---------------------------------------------------------------------------
+const ZONE_FILL_OPACITY = 0.45;       // active zone shading on the map
+const ZONE_BASE_FILL_OPACITY = 0.05;  // inactive/no-product zones
+const POLYGON_FILL_OPACITY = 0.12;    // warning polygons (tornado/SVR/FFW/FLW)
+const POLYGON_HOVER_FILL_OPACITY = 0.35; // warning polygons on mouseover (cap)
+
+const POLYGON_STYLE = {
+  TO: { color: HAZARD_COLORS['TO.W'], weight: 4, fillColor: HAZARD_COLORS['TO.W'], fillOpacity: POLYGON_FILL_OPACITY },
+  SV: { color: HAZARD_COLORS['SV.W'], weight: 3, fillColor: HAZARD_COLORS['SV.W'], fillOpacity: POLYGON_FILL_OPACITY },
+  FF: { color: HAZARD_COLORS['FF.W'], weight: 3, fillColor: HAZARD_COLORS['FF.W'], fillOpacity: POLYGON_FILL_OPACITY },
+  FA: { color: HAZARD_COLORS['FA.W'], weight: 3, fillColor: HAZARD_COLORS['FA.W'], fillOpacity: POLYGON_FILL_OPACITY }
+};
+
+// County-based products (e.g. SPC severe thunderstorm / tornado WATCHES) use
+// FIPS county UGC codes ("VTC007"), not forecast-zone codes ("VTZ007"). The
+// two numbering schemes are unrelated, so county-form alerts need a manual
+// crosswalk to the forecast zones. Covers every VT/NY county overlapping BTV.
+const COUNTY_TO_ZONES = {
+  'VT001': ['009','018'], 'VT005': ['007'], 'VT007': ['017','005'], 'VT009': ['004'],
+  'VT011': ['016','002'], 'VT013': ['001'], 'VT015': ['006'], 'VT017': ['010'],
+  'VT019': ['003'], 'VT021': ['011','019'], 'VT023': ['008'], 'VT027': ['020','021'],
+  'NY019': ['028','031'], 'NY031': ['034','035'], 'NY033': ['027','030'],
+  'NY089': ['026','029','087']
+};
+
+let polygonLayer = null;
+let zoneProducts = [];
+let polygonProducts = [];
+
+// Map control toggles — user-facing filters for what gets drawn on the map.
+// The underlying alert data (stats, table) is always complete regardless of
+// these; they only affect map rendering.
+let showZoneWarnings = true;
+let showPolygonWarnings = true;
+
+// Per-hazard-type toggle, driven by clicking items in the map legend. A key
+// present in this set (e.g. "SV.W") is currently hidden from the map.
+let disabledHazards = new Set();
+
+function zoneKey(state, zoneNum){ return state + zoneNum; }
+
+let map, geoLayer;
+let BTV_ZONE_SET = new Set();
+let zonesReady = false;
+
+function initMap(filteredGeojson){
+
+  map = L.map('map', {
+    zoomControl:true,
+    attributionControl:false
+  });
+
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom:12 }
+  ).addTo(map);
+
+  polygonLayer = L.layerGroup().addTo(map);
+
+  geoLayer = L.geoJSON(filteredGeojson,{
+    style:function(){
+      return {
+        color:"#000000",
+        weight:2.5,
+        fillColor:"#3a4f6c",
+        fillOpacity:ZONE_BASE_FILL_OPACITY
+      };
+    },
+    onEachFeature:function(feature,layer){
+      layer._baseWeight=2.5;
+
+      layer.on("mouseover",function(){
+        layer.setStyle({
+          weight:layer._baseWeight+1
+        });
+      });
+
+      layer.on("mouseout",function(){
+        layer.setStyle({
+          weight:layer._baseWeight
+        });
+      });
+    }
+  }).addTo(map);
+
+  resetMapView();
+
+}
+
+// Fits the map to the full BTV CWA zone set (the "default" view). Used both
+// on initial load and by the Reset Zoom button.
+function resetMapView(){
+  if(!map) return;
+  if(geoLayer && geoLayer.getLayers().length){
+    map.invalidateSize();
+    map.fitBounds(geoLayer.getBounds(),{
+      padding:[10,10]
+    });
+  }else{
+    map.setView([44.3,-72.9],8);
+  }
+}
+
+async function loadZones(){
+  const statusEl = document.getElementById('map-status');
+  try{
+    const res = await fetch(GEOJSON_URL);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const features = (data.features || []).filter(function(f){
+      const p = f.properties || {};
+      if(TARGET_CWAS.includes(p.CWA)) return true;
+      if(EXTRA_ZONES.includes(p.STATE_ZONE)) return true;
+      return false;
+    });
+    const filtered = { type: 'FeatureCollection', features: features };
+    BTV_ZONE_SET = new Set(features.map(f => zoneKey(f.properties.STATE, f.properties.ZONE)));
+    initMap(filtered);
+    statusEl.style.display = 'none';
+    zonesReady = true;
+  } catch(e){
+    console.error('zone load error', e);
+    statusEl.textContent = 'Could not load zone boundaries (' + e.message + ')';
+    // Still init an empty map so the rest of the dashboard (table/stats) works.
+    initMap({ type:'FeatureCollection', features: [] });
+    zonesReady = true;
+  }
+}
+
+function activeZoneLayers(){ return geoLayer ? geoLayer.getLayers() : []; }
+
+// Priority ranking: Warning > Advisory > Watch (used to pick which product
+// "wins" a zone when several are active at once; actual color always comes
+// from HAZARD_COLORS for that specific product).
+const SIG_RANK = { W: 3, Y: 2, A: 1 };
+function rankOf(sig){ return SIG_RANK[sig] || 0; }
+
+// Removes any product whose PHEN.SIG key is currently toggled off in the
+// legend. Applied on top of the zone/polygon master toggles.
+function filterDisabled(prods){
+  return prods.filter(p => !disabledHazards.has(p.phen + '.' + p.sig));
+}
+
+function bestProductPerZone(prods){
+  const map = {};
+  prods.forEach(function(p){
+    p.zoneKeys.forEach(function(k){
+      const existingList = map[k] ? map[k].all : [];
+      const all = existingList.concat([p]);
+      const best = all.reduce((a,b) => rankOf(b.sig) > rankOf(a.sig) ? b : a, all[0]);
+      map[k] = { best: best, all: all };
+    });
+  });
+  return map;
+}
+
+// prods = the zone/county products to actually shade. Pass [] to reset every
+// zone back to its plain outline (used when the zone/county toggle is off) —
+// the outline itself always stays, only the hazard color fill is removed.
+function highlightZones(prods){
+  if(!geoLayer) return;
+  const zoneMap = bestProductPerZone(prods);
+  activeZoneLayers().forEach(function(layer){
+    const p = layer.feature.properties;
+    const key = zoneKey(p.STATE, p.ZONE);
+    const entry = zoneMap[key];
+    if(entry){
+      const color = entry.best.color || '#cdd8e6';
+      layer._baseWeight = 2;
+      layer.setStyle({ color: color, weight: 2, fillOpacity: ZONE_FILL_OPACITY, fillColor: color, opacity: 0.9 });
+      const list = entry.all
+        .slice()
+        .sort((a,b) => rankOf(b.sig) - rankOf(a.sig))
+        .map(a => '<div style="margin-bottom:6px;">'
+          + '<div style="color:'+(a.color||'#cdd8e6')+';font-weight:700;">'+a.name+'</div>'
+          + '<div style="font-size:11px;color:#93a3b8;">'+a.code+' &middot; expires '+fmtTime(a.expires)+'</div>'
+          + '</div>')
+        .join('');
+      layer.bindPopup(
+        '<div style="min-width:200px;"><b>'+p.NAME+'</b><br>Zone '+p.STATE_ZONE
+        + '<hr style="border-color:#2a3f5c;margin:6px 0;">' + list + '</div>',
+        { maxWidth: 280 }
+      );
+    } else {
+      layer._baseWeight = 2.5;
+      layer.setStyle({ color:'#000000', weight:2.5, fillOpacity:ZONE_BASE_FILL_OPACITY, fillColor:'#3a4f6c', opacity:0.9 });
+      layer.bindPopup('<b>'+p.NAME+'</b><br>Zone '+p.STATE_ZONE+'<hr style="border-color:#2a3f5c;margin:6px 0;">No active products');
+    }
+  });
+}
+
+function drawWarningPolygons(products){
+
+  if(!polygonLayer) return;
+
+  polygonLayer.clearLayers();
+
+  products.forEach(function(p){
+
+    // Only polygon warning products
+    if(p.sig !== "W") return;
+
+    if(!["TO","SV","FF","FA"].includes(p.phen)) return;
+
+    if(!p.geometry) return;
+
+    const style = POLYGON_STYLE[p.phen];
+
+    if(!style) return;
+
+    const popupHtml =
+      '<div style="min-width:240px">' +
+        '<div style="font-weight:700;font-size:15px;color:' + style.color + ';margin-bottom:8px;">' +
+          p.name +
+        '</div>' +
+        '<table style="width:100%;font-size:12px">' +
+          '<tr><td><b>VTEC</b></td><td>' + p.code + '</td></tr>' +
+          '<tr><td><b>Issued</b></td><td>' + fmtTime(p.onset) + '</td></tr>' +
+          '<tr><td><b>Expires</b></td><td>' + fmtTime(p.expires) + '</td></tr>' +
+          '<tr><td><b>Update By</b></td><td>' + fmtTime(p.updateBy) + '</td></tr>' +
+        '</table>' +
+      '</div>';
+
+    const gj = L.geoJSON(p.geometry,{
+
+      style: style,
+
+      onEachFeature:function(feature,layer){
+
+        layer.on({
+
+          mouseover:function(){
+
+            layer.setStyle({
+              weight: style.weight + 2,
+              fillOpacity: Math.min(style.fillOpacity + 0.10, POLYGON_HOVER_FILL_OPACITY)
+            });
+
+            layer.bringToFront();
+
+          },
+
+          mouseout:function(){
+
+            layer.setStyle(style);
+
+          }
+
+        });
+
+      }
+
+    })
+
+    .bindPopup(popupHtml)
+
+    .addTo(polygonLayer);
+
+    // Keep a handle to this feature's Leaflet layer so the table can zoom
+    // to it (and open its popup) when a matching row is clicked.
+    p._mapLayer = gj;
+
+  });
+
+}
+
+// Re-applies the current map toggle state (zone/polygon master toggles PLUS
+// per-hazard legend toggles) to the already-computed product lists. Called
+// after every refresh AND whenever any toggle/legend item is clicked (no
+// need to refetch alerts just to show/hide something already fetched).
+function applyMapFilters(){
+  const zProds = filterDisabled(showZoneWarnings ? zoneProducts : []);
+  const pProds = filterDisabled(showPolygonWarnings ? polygonProducts : []);
+  highlightZones(zProds);
+  drawWarningPolygons(pProds);
+  // Legend always reflects the full active product set (not just what's
+  // currently shown) so hidden hazard types remain clickable to re-enable.
+  renderLegend(products);
+}
+
+function parseVtec(vtecStr){
+  if(!vtecStr) return null;
+  const parts = vtecStr.replace(/^\/|\/$/g,'').split('.');
+  if(parts.length < 7) return null;
+  return {
+    productClass: parts[0], action: parts[1], office: parts[2],
+    phenomenon: parts[3], significance: parts[4], etn: parts[5], times: parts[6]
+  };
+}
+
+function fmtTime(d){
+  if(!d) return '—';
+  return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZone:'America/New_York' });
+}
+
+function fmtCountdown(ms){
+  if(ms <= 0) return '00:00';
+  const totalSec = Math.floor(ms/1000);
+  const days = Math.floor(totalSec/86400);
+  const hours = Math.floor((totalSec%86400)/3600);
+  const mins = Math.floor((totalSec%3600)/60);
+  const secs = totalSec%60;
+
+  if(days > 0){
+    return days+'d '+String(hours).padStart(2,'0')+'h '+String(mins).padStart(2,'0')+'m '+String(secs).padStart(2,'0')+'s';
+  }
+  if(hours > 0){
+    return hours+'h '+String(mins).padStart(2,'0')+'m '+String(secs).padStart(2,'0')+'s';
+  }
+  return String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
+}
+
+function countdownClass(ms){
+  if(ms <= 0) return 'c-gray';
+  if(ms < 15*60*1000) return 'c-red';
+  if(ms < 60*60*1000) return 'c-amber';
+  return 'c-green';
+}
+
+let products = [];
+
+async function fetchAlerts(){
+  const states = ['VT','NY'];
+  let all = [];
+  for(const st of states){
+    try{
+      const res = await fetch('https://api.weather.gov/alerts/active?area='+st, { headers: { 'Accept':'application/geo+json' } });
+      const data = await res.json();
+      if(data.features) all = all.concat(data.features);
+    } catch(e){ console.error('fetch error', st, e); }
+  }
+  return all;
+}
+
+function extractUgcZoneKeys(geocodeUGC){
+  const keys = [];
+  if(!geocodeUGC) return keys;
+  geocodeUGC.forEach(function(ugc){
+    if(ugc.length >= 6){
+      const state = ugc.substring(0,2);
+      const type = ugc.substring(2,3); // 'C' = county FIPS, 'Z' = forecast zone
+      const num = ugc.substring(3,6);
+      if(type === 'C'){
+        const crossed = COUNTY_TO_ZONES[state+num];
+        if(crossed) crossed.forEach(z => keys.push(state+z));
+      } else {
+        keys.push(state+num);
+      }
+    }
+  });
+  return keys;
+}
+
+function firstParam(p, key){
+  return (p.parameters && p.parameters[key] && p.parameters[key][0]) || null;
+}
+
+// Impact-Based Warning tag styling. "BASE" isn't a value NWS sends — it's
+// what we display when a taggable warning (TO.W/SV.W/FF.W) has no elevated
+// damage-threat parameter, i.e. a routine warning.
+const DAMAGE_THREAT_STYLE = {
+  'BASE':          { bg:'#1c2c41', color:'#93a3b8' },
+  'CONSIDERABLE':  { bg:'#4a3a12', color:'#f0c419' },
+  'DESTRUCTIVE':   { bg:'#4a1f1f', color:'#ef5b53' },
+  'CATASTROPHIC':  { bg:'#3a0d0d', color:'#ff4136' }
+};
+const DETECTION_STYLE = {
+  'OBSERVED':          { bg:'#3a0d0d', color:'#ff4136' },
+  'RADAR INDICATED':   { bg:'#1c2c41', color:'#93a3b8' }
+};
+
+function buildProducts(alerts){
+  const seen = new Set();
+  const out = [];
+
+  alerts.forEach(function(f){
+
+    const p = f.properties || {};
+
+    const ugcKeys = extractUgcZoneKeys(
+      p.geocode ? p.geocode.UGC : null
+    );
+
+    const matchedKeys = ugcKeys.filter(k => BTV_ZONE_SET.has(k));
+
+    if (matchedKeys.length === 0) return;
+
+    if(seen.has(p.id)) return;
+    seen.add(p.id);
+
+    const vtecRaw =
+      (p.parameters &&
+       p.parameters.VTEC &&
+       p.parameters.VTEC[0]) || null;
+
+    const vtec = parseVtec(vtecRaw);
+
+    const onset =
+      p.onset ? new Date(p.onset) :
+      (p.effective ? new Date(p.effective) :
+      new Date(p.sent));
+
+    // NWS CAP alerts carry two different end-time fields:
+    //   - p.expires: when this MESSAGE must be reissued/updated (short-fuse,
+    //     e.g. "5 AM tomorrow" for a multi-day Heat Warning)
+    //   - p.ends: when the HAZARD ITSELF actually ends (e.g. "July 3rd")
+    // messageExpires drives the "Time Until Update" heuristic below.
+    // expires (used for display + "Expires In") prefers the true hazard end.
+    const messageExpires = p.expires ? new Date(p.expires) : null;
+    const expires =
+      p.ends ? new Date(p.ends) :
+      (p.expires ? new Date(p.expires) : null);
+
+    const action = vtec
+      ? vtec.action
+      : (p.messageType === "Update" ? "CON" : "NEW");
+
+    const sig = vtec
+      ? vtec.significance
+      : (
+          p.event &&
+          p.event.toLowerCase().includes("watch")
+            ? "A"
+            : (
+                p.event &&
+                p.event.toLowerCase().includes("advisory")
+                  ? "Y"
+                  : "W"
+              )
+        );
+
+    const phen = vtec ? vtec.phenomenon : "";
+
+    if(
+      sig === "S" ||
+      (p.event &&
+       p.event.toLowerCase().includes("special weather statement"))
+    ){
+      return;
+    }
+
+    let updateBy;
+
+    const now = new Date();
+
+    if(["CAN","EXP"].includes(action)){
+
+      updateBy = now;
+
+    }else if(messageExpires){
+
+      // NWS already tells us exactly when this message needs to be
+      // reissued/updated via CAP's `expires` field — use it directly
+      // instead of guessing off the (now longer) display `expires`.
+      updateBy = messageExpires;
+
+    }else if(["NEW","CON","EXT","EXB","EXA"].includes(action)){
+
+      const span =
+        expires
+          ? (expires - onset)
+          : (2 * 60 * 60 * 1000);
+
+      const cap = Math.min(
+        span / 2,
+        2 * 60 * 60 * 1000
+      );
+
+      updateBy = new Date(onset.getTime() + cap);
+
+    }else{
+
+      updateBy = new Date(
+        onset.getTime() + 6 * 60 * 60 * 1000
+      );
+
+    }
+
+    if(expires && updateBy > expires){
+      updateBy = expires;
+    }
+
+    const key = (phen || "XX") + "." + (sig || "W");
+
+    const name =
+      PRODUCT_NAMES[key] ||
+      p.event ||
+      "Alert";
+
+    // Event Tracking Number — NWS's own per-product sequence number (e.g.
+    // the "010" in "FFW.010.BTV"). This is what distinguishes multiple
+    // concurrent products of the same type (SVR #1 vs SVR #2, etc).
+    const etn = vtec && vtec.etn ? String(parseInt(vtec.etn, 10)).padStart(3, '0') : null;
+
+    const code =
+      (PRODUCT_CODES[key] || (phen + sig))
+      + (etn ? etn : '')
+      + "."
+      + action
+      + "."
+      + (
+          vtec
+            ? vtec.office
+            : (p.senderName || "NWS").slice(0,4)
+        );
+
+    // Official NWS hazard color, keyed by PHEN.SIG. Falls back to a neutral
+    // gray-blue for any product type not in the official color table.
+    const color = HAZARD_COLORS[key] || "#cdd8e6";
+
+    // CSS class counterpart of `key`, for elements styled via classList
+    // instead of inline style (dots aren't valid in CSS class names).
+    const hazardClass = 'hazard-' + key.replace('.', '-');
+
+    // Impact-Based Warning tags — only meaningful for Tornado/Severe
+    // Thunderstorm/Flash Flood Warnings, straight from CAP `parameters`.
+    const isTaggable = sig === 'W' && ['TO','SV','FF'].includes(phen);
+    const rawThreat =
+      firstParam(p, 'tornadoDamageThreat') ||
+      firstParam(p, 'thunderstormDamageThreat') ||
+      firstParam(p, 'flashFloodDamageThreat');
+    const damageThreat = isTaggable ? (rawThreat ? rawThreat.toUpperCase() : 'BASE') : null;
+    const hailTag = firstParam(p, 'hailTag');           // e.g. "1.75" (inches)
+    const windTag = firstParam(p, 'windTag');            // e.g. "70" (mph)
+    const detection =
+      firstParam(p, 'tornadoDetection') ||
+      firstParam(p, 'flashFloodDetection');
+    const stormMotion = firstParam(p, 'eventMotionDescription');
+
+    out.push({
+
+      feature: f,
+      properties: p,
+      geometry: f.geometry,
+
+      id: p.id,
+      name,
+      etn,
+      code,
+      sig,
+      action,
+      phen,
+      color,
+      hazardClass,
+      areaDesc: p.areaDesc || '',
+      damageThreat,
+      hailTag,
+      windTag,
+      detection,
+      stormMotion,
+
+      onset,
+      expires,
+      updateBy,
+
+      zoneKeys: matchedKeys
+
+    });
+
+  });
+
+  out.sort((a,b)=>a.updateBy-b.updateBy);
+
+  return out;
+}
+
+// Legend now lists every hazard type currently present in `products`
+// (regardless of the zone/polygon master toggles) with a live count, and is
+// clickable: clicking a chip toggles that hazard type on/off on the map.
+function renderLegend(prods){
+  const legend = document.getElementById('map-legend');
+  if(!prods.length){
+    legend.innerHTML = '<span class="note">No active watches, warnings, or advisories currently active.</span>';
+    return;
+  }
+  const counts = new Map(); // key -> { name, color, sig, count }
+  prods.forEach(function(p){
+    const key = p.phen + '.' + p.sig;
+    if(!counts.has(key)){
+      counts.set(key, { key, name: p.name, color: p.color, sig: p.sig, count: 0 });
+    }
+    counts.get(key).count++;
+  });
+  const items = [...counts.values()].sort(function(a,b){
+    return rankOf(b.sig) - rankOf(a.sig) || a.name.localeCompare(b.name);
+  });
+  legend.innerHTML = items.map(function(i){
+    const isOff = disabledHazards.has(i.key);
+    return '<span class="swatch legend-toggle'+(isOff ? ' off' : '')+'" data-key="'+i.key+'" title="Click to '+(isOff ? 'show' : 'hide')+' on map">'
+      + '<span class="dot" style="background:'+i.color+'"></span>'
+      + i.name + '<span class="count">(' + i.count + ')</span>'
+      + '</span>';
+  }).join('');
+
+  legend.querySelectorAll('.legend-toggle').forEach(function(el){
+    el.addEventListener('click', function(){
+      const key = el.dataset.key;
+      if(disabledHazards.has(key)){
+        disabledHazards.delete(key);
+      } else {
+        disabledHazards.add(key);
+      }
+      applyMapFilters();
+    });
+  });
+}
+
+function renderStats(prods){
+  const total = prods.length;
+  const warnings = prods.filter(p => p.sig === 'W').length;
+  const watches = prods.filter(p => p.sig === 'A').length;
+  const advisories = prods.filter(p => p.sig === 'Y').length;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-warnings').textContent = warnings;
+  document.getElementById('stat-watches').textContent = watches;
+  document.getElementById('stat-advisories').textContent = advisories;
+
+  document.getElementById('stat-total-sub').textContent = warnings+' Warnings, '+watches+' Watch, '+advisories+' Advisory';
+
+  const sevCounts = {};
+  prods.filter(p=>p.sig==='W').forEach(p => { sevCounts[p.name]=(sevCounts[p.name]||0)+1; });
+  document.getElementById('stat-warnings-sub').textContent = Object.keys(sevCounts).length
+    ? Object.entries(sevCounts).map(([n,c]) => n.replace(' Warning','')+': '+c).join(', ')
+    : 'None active';
+
+  const watchNames = [...new Set(prods.filter(p=>p.sig==='A').map(p=>p.name))];
+  document.getElementById('stat-watches-sub').textContent = watchNames.length ? watchNames.join(', ') : 'None active';
+
+  const advNames = [...new Set(prods.filter(p=>p.sig==='Y').map(p=>p.name))];
+  document.getElementById('stat-advisories-sub').textContent = advNames.length ? advNames.join(', ') : 'None active';
+}
+
+// Zoom the map to a specific product's geometry when its table row is
+// clicked. Prefers the exact warning polygon (TO/SV/FF/FA warnings); falls
+// back to the union of the forecast zones the product covers.
+function zoomToProduct(p){
+  if(!map) return;
+
+  let bounds = null;
+
+  if(p.geometry){
+    try{
+      bounds = L.geoJSON(p.geometry).getBounds();
+    }catch(e){ bounds = null; }
+  }
+
+  if(!bounds || !bounds.isValid()){
+    const layers = activeZoneLayers().filter(function(layer){
+      const pr = layer.feature.properties;
+      return p.zoneKeys.includes(zoneKey(pr.STATE, pr.ZONE));
+    });
+    if(layers.length){
+      bounds = L.featureGroup(layers).getBounds();
+    }
+  }
+
+  if(!bounds || !bounds.isValid()) return;
+
+  map.fitBounds(bounds, { padding: [30,30], maxZoom: 11 });
+
+  // If this product has its own warning-polygon layer on the map (drawn in
+  // drawWarningPolygons), pop it open so it's obvious which one got selected.
+  if(p._mapLayer){
+    try{ p._mapLayer.openPopup(bounds.getCenter()); }catch(e){}
+  }
+}
+
+function renderTable(prods){
+  const tbody = document.getElementById('table-body');
+  const emptyState = document.getElementById('empty-state');
+  tbody.innerHTML = '';
+  if(prods.length === 0){
+    emptyState.style.display = 'block';
+    return;
+  }
+  emptyState.style.display = 'none';
+  prods.forEach(function(p){
+    let badgeHtml = '';
+    if(p.damageThreat && DAMAGE_THREAT_STYLE[p.damageThreat]){
+      const st = DAMAGE_THREAT_STYLE[p.damageThreat];
+      badgeHtml += '<span class="tag-badge" style="background:'+st.bg+';color:'+st.color+'">'+p.damageThreat+'</span>';
+    }
+    if(p.detection && DETECTION_STYLE[p.detection]){
+      const st = DETECTION_STYLE[p.detection];
+      badgeHtml += '<span class="tag-badge" style="background:'+st.bg+';color:'+st.color+'">'+p.detection+'</span>';
+    }
+
+    const etnHtml = p.etn ? '<span class="product-etn">#'+p.etn+'</span>' : '';
+
+    const tr = document.createElement('tr');
+    tr.className = 'product-row';
+    tr.dataset.id = p.id;
+    tr.innerHTML =
+      '<td class="product-name hazard-dot '+p.hazardClass+'"><span class="expand-caret">&#9656;</span>'+p.name+etnHtml+badgeHtml+'</td>' +
+      '<td>'+fmtTime(p.onset)+'</td>' +
+      '<td>'+fmtTime(p.expires)+'</td>' +
+      '<td>'+fmtTime(p.updateBy)+'</td>' +
+      '<td class="countdown" data-target="update">--:--:--</td>' +
+      '<td class="countdown" data-target="expire">--:--:--</td>';
+
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'detail-row';
+    const detailTd = document.createElement('td');
+    detailTd.colSpan = 6;
+    let detailHtml = '<span class="detail-line"><span class="detail-label">Areas Affected:</span>' + (p.areaDesc || 'Not specified') + '</span>';
+    if(p.damageThreat){
+      detailHtml += '<span class="detail-line"><span class="detail-label">Damage Threat:</span>' + p.damageThreat + '</span>';
+    }
+    if(p.detection){
+      detailHtml += '<span class="detail-line"><span class="detail-label">Detection:</span>' + p.detection + '</span>';
+    }
+    if(p.hailTag){
+      detailHtml += '<span class="detail-line"><span class="detail-label">Max Hail Size:</span>' + p.hailTag + ' in</span>';
+    }
+    if(p.windTag){
+      detailHtml += '<span class="detail-line"><span class="detail-label">Max Wind Gust:</span>' + p.windTag + ' mph</span>';
+    }
+    if(p.stormMotion){
+      detailHtml += '<span class="detail-line"><span class="detail-label">Storm Motion:</span>' + p.stormMotion + '</span>';
+    }
+    detailTd.innerHTML = detailHtml;
+    detailTr.appendChild(detailTd);
+
+    tr.addEventListener('click', function(){
+      const caret = tr.querySelector('.expand-caret');
+      detailTr.classList.toggle('open');
+      caret.classList.toggle('open');
+      zoomToProduct(p);
+    });
+
+    tbody.appendChild(tr);
+    tbody.appendChild(detailTr);
+  });
+}
+
+function tickCountdowns(){
+  const now = new Date();
+  document.querySelectorAll('#table-body tr').forEach(function(tr){
+    const id = tr.dataset.id;
+    const p = products.find(x => x.id === id);
+    if(!p) return;
+    const updateCell = tr.querySelector('[data-target="update"]');
+    const expireCell = tr.querySelector('[data-target="expire"]');
+    const updateMs = p.updateBy - now;
+    const expireMs = p.expires ? (p.expires - now) : 0;
+    updateCell.textContent = fmtCountdown(updateMs);
+    updateCell.className = 'countdown ' + countdownClass(updateMs);
+    expireCell.textContent = p.expires ? fmtCountdown(expireMs) : '—';
+    expireCell.className = 'countdown ' + countdownClass(expireMs);
+  });
+}
+
+async function refresh(){
+  if(!zonesReady) return; // wait for zone geometry to finish loading first
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  try{
+    const alerts = await fetchAlerts();
+    products = buildProducts(alerts);
+
+  polygonProducts = products.filter(p =>
+  p.sig === "W" &&
+  ["TO","SV","FF","FA"].includes(p.phen)
+);
+
+zoneProducts = products.filter(p =>
+  !(p.sig === "W" &&
+    ["TO","SV","FF","FA"].includes(p.phen))
+);
+
+    renderStats(products);
+    renderTable(products);
+    tickCountdowns();
+    applyMapFilters();
+    document.getElementById('last-updated').textContent = new Date().toLocaleString('en-US', { hour:'numeric', minute:'2-digit', timeZone:'America/New_York' }) + ' EDT';
+  } catch(e){
+    console.error('refresh error', e);
+  }
+  setTimeout(() => btn.classList.remove('spinning'), 600);
+}
+
+document.getElementById('refresh-btn').addEventListener('click', refresh);
+
+document.getElementById('toggle-zone').addEventListener('click', function(){
+  showZoneWarnings = !showZoneWarnings;
+  this.classList.toggle('active', showZoneWarnings);
+  applyMapFilters();
+});
+
+document.getElementById('toggle-polygon').addEventListener('click', function(){
+  showPolygonWarnings = !showPolygonWarnings;
+  this.classList.toggle('active', showPolygonWarnings);
+  applyMapFilters();
+});
+
+document.getElementById('reset-zoom-btn').addEventListener('click', function(){
+  resetMapView();
+});
+
+(async function start(){
+  await loadZones();
+  await refresh();
+  setInterval(tickCountdowns, 1000);
+  setInterval(refresh, 2*60*1000);
+})();
+</script>
+</body>
+</html>
