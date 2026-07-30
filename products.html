@@ -126,7 +126,7 @@
   }
   .action-btn:hover { border-color: #3a6ea8; color: #fff; background: #16324f; }
 
-  #map { height: 100%; width: 100%; background: #08101c; }
+  #map { height: 100%; width: 100%; background: #cfd5dc; }
   .map-status {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     color: #93a3b8; font-size: 13px; pointer-events: none; z-index: 500;
@@ -459,10 +459,11 @@ function initMap(filteredGeojson){
   });
 
   // Switched from ArcGIS World Imagery (heavy photographic satellite tiles)
-  // to CartoDB's dark basemap: much smaller tile payloads and far less
-  // decode work per tile, which matters a lot on constrained TV hardware.
+  // to CartoDB's Voyager basemap: much smaller tile payloads and far less
+  // decode work per tile than satellite imagery (good for constrained TV
+  // hardware), while staying lighter/more legible than the dark variant.
   const tileLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
     {
       subdomains: 'abcd',
       maxZoom: 19,
