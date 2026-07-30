@@ -640,6 +640,43 @@ body {
   margin-top: 5px;
 }
 
+.snow-summary .pct-normal-row {
+  margin-top: 16px;
+}
+
+.snow-summary .pct-normal-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #9db6d4;
+}
+
+.snow-summary .pct-normal-label .readout {
+  font-size: 13px;
+  font-weight: 800;
+  color: #eaf1fa;
+  letter-spacing: 0;
+}
+
+.snow-summary .pct-normal-track {
+  margin-top: 6px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.14);
+  overflow: hidden;
+}
+
+.snow-summary .pct-normal-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #bcd6f2, #eaf1fa);
+  width: 0%;
+  transition: width 0.5s ease;
+}
+  
 /* ================= DIAGNOSTIC CARD GRID (moved into snow-row) ================= */
 
 .quad-stats {
@@ -731,7 +768,7 @@ body {
 
 .quad-card .gauge-track {
   position: relative;
-  height: 4px;
+  height: 5px;
   border-radius: 999px;
   background: rgba(107, 118, 136, 0.25);
 }
@@ -740,11 +777,12 @@ body {
   position: absolute;
   top: 50%;
   left: var(--gauge-pct, 0%);
-  width: 9px;
-  height: 9px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background: var(--quad-accent, var(--blue));
-  border: 2px solid var(--card-bg);
+  border: 3px solid var(--card-bg);
+  box-shadow: 0 1px 3px rgba(20, 30, 50, 0.25);
   transform: translate(-50%, -50%);
   transition: left 0.4s ease, background 0.4s ease;
 }
@@ -889,6 +927,16 @@ body {
             </div>
           </div>
 
+          <div class="pct-normal-row">
+            <div class="pct-normal-label">
+              <span>% OF NORMAL</span>
+              <span class="readout" data-field="snow-pct-readout">&mdash;</span>
+            </div>
+            <div class="pct-normal-track">
+              <div class="pct-normal-fill" data-field="snow-pct-fill"></div>
+            </div>
+          </div>
+          
           <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
         </div>
 
@@ -2400,6 +2448,25 @@ document.querySelectorAll('[data-field="rime-icing-potential"]').forEach((el) =>
             : "\u2014"
         );
 
+        const currentIn = data.current_depth_in;
+        const normalIn = data.normal_depth_in;
+        let pctOfNormal = null;
+        if (
+          currentIn !== null && currentIn !== undefined &&
+          normalIn !== null && normalIn !== undefined && normalIn > 0
+        ) {
+          pctOfNormal = (currentIn / normalIn) * 100;
+        }
+
+        setField(
+          "snow-pct-readout",
+          pctOfNormal !== null ? `${Math.round(pctOfNormal)}% of normal` : "\u2014"
+        );
+
+        document.querySelectorAll('[data-field="snow-pct-fill"]').forEach((el) => {
+          el.style.width = pctOfNormal !== null ? `${Math.min(100, Math.max(0, pctOfNormal))}%` : "0%";
+        });
+        
         setField("updated", formatDateUTC(data.generated_at));
       } catch (err) {
         console.warn("Snow depth status fetch failed:", err);
