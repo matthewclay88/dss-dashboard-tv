@@ -516,7 +516,10 @@ const LSR_TYPE_COLOR = {
   H: '#22c55e',                  // hail — green
   F: '#065f46',                  // flooding — dark green
   q: '#3b82f6',                  // snow squall — blue
-  T: '#ef4444'                   // tornado — red
+  T: '#b91c1c'                   // tornado — deep crimson (distinct from the
+                                  // TOR warning polygon's #ef4444, so a
+                                  // tornado LSR sitting inside its own
+                                  // warning polygon doesn't visually vanish)
 };
 const LSR_TYPE_DEFAULT_COLOR = '#94a3b8';
 const STATUS_META = {
@@ -1120,6 +1123,7 @@ function renderMapLegend(){
   let html = Object.keys(PHEN_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${PHEN_META[k].color};"></span>${PHEN_META[k].code}</span>`).join('');
   if(showLsrs){
     html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">LSR:</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.T};border-radius:50%;"></span>Tornado</span>`;
     html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.G};border-radius:50%;"></span>Wind</span>`;
     html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.H};border-radius:50%;"></span>Hail</span>`;
     html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.F};border-radius:50%;"></span>Flooding</span>`;
