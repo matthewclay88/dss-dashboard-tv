@@ -12,7 +12,7 @@
   .leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,
   .leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0;}
   .leaflet-container{overflow:hidden;}
-  .leaflet-tile{filter:inherit;}
+  .leaflet-tile{filter:none !important;}
   .leaflet-zoom-box{width:0;height:0;box-sizing:border-box;z-index:800;}
   .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important;}
   .leaflet-tile-pane{z-index:200;}
@@ -478,7 +478,7 @@ function initMap(filteredGeojson){
   map = L.map('map', {
     zoomControl:true,
     attributionControl:false,
-    preferCanvas:true,
+    preferCanvas:false,
     zoomAnimation:false,
     fadeAnimation:false,
     markerZoomAnimation:false,
@@ -489,8 +489,6 @@ function initMap(filteredGeojson){
     // coarser, more-zoomed-out level than the bounds actually need.
     // That extra zoomed-out step is what was making labels and basemap
     // detail look faint/washed out. Fractional zoom lets it fill exactly.
-    zoomSnap: 0,
-    zoomDelta: 0.25
   });
 
   // Switched from CartoDB Voyager to Esri World Topo Map tiles — this is
