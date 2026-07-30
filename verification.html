@@ -87,7 +87,7 @@
   .main { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
   .col-left { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
   .col-center { flex: 1.6; min-width: 0; display: flex; flex-direction: column; gap: 0; min-height: 0; }
-  .col-right { width: 360px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; }
+  .col-right { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; gap: 10px; }
 
   .panel { background: #0f1620; border: 1px solid #1e2a3a; border-radius: 10px; overflow: hidden; }
   .panel-title {
@@ -104,8 +104,8 @@
   .queue-card .qc-label { font-size: 10px; font-weight: 700; margin-top: 2px; opacity: 0.9; }
   .queue-card.tor { background: #2a0f0f; border-color: #7f1d1d; }
   .queue-card.tor .qc-count, .queue-card.tor .qc-label { color: #f87171; }
-  .queue-card.svr { background: #2a1a05; border-color: #92400e; }
-  .queue-card.svr .qc-count, .queue-card.svr .qc-label { color: #fbbf24; }
+  .queue-card.svr { background: #2a2405; border-color: #a16207; }
+  .queue-card.svr .qc-count, .queue-card.svr .qc-label { color: #facc15; }
   .queue-card.ffw { background: #05240f; border-color: #166534; }
   .queue-card.ffw .qc-count, .queue-card.ffw .qc-label { color: #4ade80; }
   .queue-card.sqw { background: #190f2e; border-color: #6d28d9; }
@@ -270,6 +270,15 @@
   .archive-stat .as-val { font-size: 19px; font-weight: 800; color: #fff; }
   .archive-stat .as-label { font-size: 9.5px; color: #7a8ba3; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 3px; }
 
+  .daystat-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding: 6px 0; border-bottom: 1px solid #16202e;
+  }
+  .daystat-row:last-child { border-bottom: none; }
+  .daystat-row .ds-name { font-size: 11px; color: #cbd5e1; font-weight: 700; }
+  .daystat-row .ds-formula { font-size: 9.5px; color: #5a6b82; font-family: "SFMono-Regular", Consolas, monospace; display: block; margin-top: 1px; }
+  .daystat-row .ds-val { font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0; }
+
   .about-body p { margin-bottom: 10px; line-height: 1.55; color: #cbd5e1; font-size: 12.5px; }
   .about-body a { color: #60a5fa; }
   .about-body code { background: #0d1622; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
@@ -375,10 +384,16 @@
   </div>
 
   <!-- RIGHT COLUMN -->
-  <div class="col-right panel">
-    <div class="panel-title">Warning Details</div>
-    <div class="details-empty" id="detailsEmpty">Select a warning from the table or map to view verification details.</div>
-    <div class="details-scroll" id="detailsScroll" style="display:none;"></div>
+  <div class="col-right">
+    <div class="panel" id="dayStatsPanel">
+      <div class="panel-title">Day Verification Stats</div>
+      <div id="dayStatsBody" style="padding:12px 14px;"></div>
+    </div>
+    <div class="panel" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+      <div class="panel-title">Warning Details</div>
+      <div class="details-empty" id="detailsEmpty">Select a warning from the table or map to view verification details.</div>
+      <div class="details-scroll" id="detailsScroll" style="display:none;"></div>
+    </div>
   </div>
 
 </div>
@@ -459,10 +474,21 @@
 // ══════════════════════════════════════════════════════════════
 const PHEN_META = {
   TO: { code: 'TOR', name: 'Tornado Warning',            queueClass: 'tor', color: '#ef4444' },
-  SV: { code: 'SVR', name: 'Severe Thunderstorm Warning', queueClass: 'svr', color: '#f59e0b' },
+  SV: { code: 'SVR', name: 'Severe Thunderstorm Warning', queueClass: 'svr', color: '#facc15' },
   FF: { code: 'FFW', name: 'Flash Flood Warning',         queueClass: 'ffw', color: '#22c55e' },
   SQ: { code: 'SQW', name: 'Snow Squall Warning',         queueClass: 'sqw', color: '#a855f7' }
 };
+// LSR marker colors, keyed by IEM's single-character LSR type code:
+// G/D = wind (gust/damage), H = hail, F = flash flood, q = snow squall,
+// T = tornado. Confirmed these exact codes via live API samples.
+const LSR_TYPE_COLOR = {
+  G: '#3b82f6', D: '#3b82f6',   // wind — blue
+  H: '#22c55e',                  // hail — green
+  F: '#065f46',                  // flooding — dark green
+  q: '#3b82f6',                  // snow squall — blue
+  T: '#ef4444'                   // tornado — red
+};
+const LSR_TYPE_DEFAULT_COLOR = '#94a3b8';
 const STATUS_META = {
   verified:           { label: 'Verified',            color: '#4ade80' },
   pending:            { label: 'Pending',             color: '#f0c419' },
@@ -478,6 +504,7 @@ let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 
 let selectedDateStr = null;   // 'YYYY-MM-DD' in settings.timezone
 let currentEvents = [];       // parsed + status-enriched event objects
 let currentReports = [];      // parsed report objects
+let dayStats = null;          // client-computed FAR/POD/CSI/lead-time stats for the selected day
 let selectedEventId = null;
 let showLsrs = true;
 let zoneGeoJsonCache = null;
@@ -559,6 +586,68 @@ function computeStatus(props){
   return 'needs_verification';
 }
 
+// Computed client-side from OUR calendar-day-corrected event/report set
+// (rather than trusting IEM's own 'stats' object, which reflects
+// whatever padded query window we actually sent it, not the true day).
+//   FAR = C / (Aw + C)              — false alarm ratio
+//   POD = Ae / (Ae + B)             — probability of detection
+//   CSI = (POD^-1 + (1-FAR)^-1 - 1)^-1
+// Ae/Aw = verified (hit) events, B = unwarned reports (misses),
+// C = events that fully expired without ever verifying (false alarms).
+// Only events with a *final* outcome (not still-pending) count toward
+// these — a still-active warning hasn't produced a verdict yet.
+function computeDayStats(){
+  const decided = currentEvents.filter(e => e.status !== 'pending');
+  const hits = decided.filter(e => e.status === 'verified').length;
+  const falseAlarms = decided.filter(e => e.status === 'needs_verification').length;
+  const misses = currentReports.filter(r => r.inSelectedDay && !r.warned).length;
+
+  const pod = (hits + misses) > 0 ? hits / (hits + misses) : null;
+  const far = (hits + falseAlarms) > 0 ? falseAlarms / (hits + falseAlarms) : null;
+  const csi = (pod !== null && far !== null && pod > 0 && (1-far) > 0)
+    ? 1 / ((1/pod) + (1/(1-far)) - 1)
+    : null;
+
+  const matchedReportsAll = [];
+  const lead0s = [];
+  currentEvents.forEach(e => {
+    if(e.lead0 !== null && e.lead0 !== undefined) lead0s.push(e.lead0);
+    e.stormreports.forEach(rid => {
+      const r = currentReports.find(x => String(x.id) === rid);
+      if(r && r.leadtime !== null && r.leadtime !== undefined) matchedReportsAll.push(r.leadtime);
+    });
+  });
+
+  dayStats = {
+    hits, falseAlarms, misses,
+    pod, far, csi,
+    avgLead1st: lead0s.length ? lead0s.reduce((a,b)=>a+b,0)/lead0s.length : null,
+    avgLeadAll: matchedReportsAll.length ? matchedReportsAll.reduce((a,b)=>a+b,0)/matchedReportsAll.length : null,
+    maxLead: matchedReportsAll.length ? Math.max(...matchedReportsAll) : null,
+    minLead: matchedReportsAll.length ? Math.min(...matchedReportsAll) : null
+  };
+}
+
+function renderDayStats(){
+  const body = document.getElementById('dayStatsBody');
+  if(!dayStats || currentEvents.length === 0){
+    body.innerHTML = `<div style="color:#5a6b82;font-size:11.5px;">No decided warnings for this day yet.</div>`;
+    return;
+  }
+  const fmtPct = v => v === null ? '—' : (v*100).toFixed(0) + '%';
+  const fmtNum = v => v === null ? '—' : v.toFixed(2);
+  const fmtMin = v => v === null ? '—' : v.toFixed(1) + ' min';
+  body.innerHTML = `
+    <div class="daystat-row"><div><div class="ds-name">FAR</div><span class="ds-formula">C / (Aw + C)</span></div><div class="ds-val">${fmtPct(dayStats.far)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">POD</div><span class="ds-formula">Ae / (Ae + B)</span></div><div class="ds-val">${fmtPct(dayStats.pod)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">CSI</div><span class="ds-formula">(POD⁻¹ + (1−FAR)⁻¹ − 1)⁻¹</span></div><div class="ds-val">${fmtNum(dayStats.csi)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Avg Lead Time, 1st Event</div></div><div class="ds-val">${fmtMin(dayStats.avgLead1st)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Avg Lead Time, All Events</div></div><div class="ds-val">${fmtMin(dayStats.avgLeadAll)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Max Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.maxLead)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Min Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.minLead)}</div></div>
+  `;
+}
+
 // ══════════════════════════════════════════════════════════════
 //  FETCHING
 // ══════════════════════════════════════════════════════════════
@@ -570,22 +659,34 @@ function setStatus(msg, isError){
   el.classList.toggle('error', !!isError);
 }
 
+// Warnings can start just before local midnight and still be active
+// (or verify) into the selected day. IEM's own query only includes an
+// event if it was ISSUED after begints — so a warning issued at 11:41pm
+// that's still active at 12:05am would be silently excluded entirely,
+// and any LSR it covers would incorrectly show as "unwarned". Padding
+// the query window and filtering back down to the true day afterward
+// fixes this (confirmed against a real BTV case on 2026-07-15).
+const BOUNDARY_PAD_HOURS = 6;
+
 async function fetchCowData(dateStr){
-  const startUTC = localMidnightToUTC(dateStr, settings.timezone);
-  const endUTC = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
+  const dayStart = localMidnightToUTC(dateStr, settings.timezone);
+  const dayEnd = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
+  const queryStart = new Date(dayStart.getTime() - BOUNDARY_PAD_HOURS*3600*1000);
+  const queryEnd = new Date(dayEnd.getTime() + BOUNDARY_PAD_HOURS*3600*1000);
 
   const params = new URLSearchParams();
   params.set('wfo', settings.wfo);
   ['TO','SV','FF','SQ'].forEach(p => params.append('phenomena', p));
-  params.set('begints', isoZ(startUTC));
-  params.set('endts', isoZ(endUTC));
+  params.set('begints', isoZ(queryStart));
+  params.set('endts', isoZ(queryEnd));
   params.set('hailsize', settings.hailsize);
   params.set('wind', settings.wind);
   params.set('lsrbuffer', settings.lsrbuffer);
 
   const res = await fetch(COW_API + '?' + params.toString());
   if(!res.ok) throw new Error('IEM Cow API returned HTTP ' + res.status);
-  return res.json();
+  const data = await res.json();
+  return { data, dayStart, dayEnd };
 }
 
 async function loadDay(dateStr){
@@ -594,8 +695,10 @@ async function loadDay(dateStr){
   document.getElementById('datePicker').value = dateStr;
   setStatus('Loading warnings for ' + dateStr + ' from IEM Cow…', false);
   try{
-    const data = await fetchCowData(dateStr);
-    currentEvents = (data.events.features || []).map(f => {
+    const { data, dayStart, dayEnd } = await fetchCowData(dateStr);
+    const dayStartMs = dayStart.getTime(), dayEndMs = dayEnd.getTime();
+
+    const allEvents = (data.events.features || []).map(f => {
       const p = f.properties;
       return {
         id: f.id,
@@ -622,23 +725,40 @@ async function loadDay(dateStr){
         status: computeStatus(p)
       };
     });
+    // Keep any warning whose active window overlaps the selected calendar
+    // day at all — not just ones issued strictly within it.
+    currentEvents = allEvents.filter(e => {
+      const expMs = new Date(e.expire).getTime();
+      const issMs = new Date(e.issue).getTime();
+      return expMs > dayStartMs && issMs < dayEndMs;
+    });
+
+    // Keep the FULL padded report set for cross-referencing (an event
+    // shown today may have verified via a report from just before
+    // midnight), but flag which ones actually fall in the selected day
+    // for anything that displays "today's reports" specifically.
     currentReports = (data.stormreports.features || []).map(f => {
       const p = f.properties;
+      const validMs = new Date(p.valid).getTime();
       return {
         id: f.id,
         lat: f.geometry.coordinates[1],
         lon: f.geometry.coordinates[0],
         city: p.city, county: p.county, state: p.state,
-        valid: p.valid, lsrtype: p.lsrtype, magnitude: p.magnitude,
+        valid: p.valid, lsrtype: p.lsrtype, type: p.type, magnitude: p.magnitude,
         remark: p.remark, source: p.source, leadtime: p.leadtime,
-        warned: p.warned, events: p.events, typetext: p.typetext
+        warned: p.warned, events: p.events, typetext: p.typetext,
+        inSelectedDay: validMs >= dayStartMs && validMs < dayEndMs
       };
     });
+
+    computeDayStats();
     setStatus(null);
   } catch(err){
     console.error(err);
     currentEvents = [];
     currentReports = [];
+    dayStats = null;
     setStatus('Could not load data from IEM: ' + err.message, true);
   }
   renderAll();
@@ -753,7 +873,7 @@ function renderSummary(){
 // ══════════════════════════════════════════════════════════════
 function renderReportsTable(){
   const tbody = document.getElementById('reportsTableBody');
-  const rows = currentReports.slice().sort((a,b) => new Date(a.valid) - new Date(b.valid));
+  const rows = currentReports.filter(r => r.inSelectedDay).sort((a,b) => new Date(a.valid) - new Date(b.valid));
   tbody.innerHTML = rows.map(r => {
     const loc = [r.city, r.county ? r.county+' Co, ' : '', r.state].filter(Boolean).join(', ').replace(', ,', ',');
     const assoc = (r.events || '').split(',').filter(Boolean);
@@ -814,12 +934,13 @@ function drawWarningsOnMap(){
   const bounds = [];
   currentEvents.forEach(e => {
     if(!e.geometry) return;
-    const color = STATUS_META[e.status].color;
+    const meta = PHEN_META[e.phenomena] || { code: e.phenomena, color: '#94a3b8' };
+    const color = meta.color;
     const gj = L.geoJSON(e.geometry, {
       style: { color: color, weight: e.id === selectedEventId ? 3.5 : 2, fillColor: color, fillOpacity: e.id === selectedEventId ? 0.4 : 0.22 }
     });
     gj.on('click', () => selectEvent(e.id));
-    gj.bindTooltip(`${(PHEN_META[e.phenomena]||{}).code || e.phenomena} #${e.etn} — ${STATUS_META[e.status].label}`, { sticky: true });
+    gj.bindTooltip(`${meta.code} #${e.etn} — ${STATUS_META[e.status].label}`, { sticky: true });
     gj.addTo(warningLayer);
     try{ bounds.push(gj.getBounds()); }catch(err){}
     e._mapLayer = gj;
@@ -834,10 +955,10 @@ function drawWarningsOnMap(){
 function drawLsrsOnMap(){
   lsrLayer.clearLayers();
   if(!showLsrs) return;
-  currentReports.forEach(r => {
-    const color = r.warned ? '#4ade80' : '#f87171';
+  currentReports.filter(r => r.inSelectedDay).forEach(r => {
+    const color = LSR_TYPE_COLOR[r.type] || LSR_TYPE_DEFAULT_COLOR;
     const marker = L.circleMarker([r.lat, r.lon], {
-      radius: 5, color: '#fff', weight: 1, fillColor: color, fillOpacity: 0.9
+      radius: 5, color: r.warned ? '#ffffff' : '#dc2626', weight: r.warned ? 1 : 2.5, fillColor: color, fillOpacity: 0.9
     });
     const assoc = (r.events || '').split(',').filter(Boolean);
     let assocHtml = assoc.map(a => {
@@ -861,10 +982,14 @@ function drawLsrsOnMap(){
 
 function renderMapLegend(){
   const bar = document.getElementById('mapLegendBar');
-  let html = Object.keys(STATUS_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${STATUS_META[k].color};"></span>${STATUS_META[k].label}</span>`).join('');
+  let html = Object.keys(PHEN_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${PHEN_META[k].color};"></span>${PHEN_META[k].code}</span>`).join('');
   if(showLsrs){
-    html += `<span class="lg-item"><span class="lg-dot" style="background:#4ade80;border-radius:50%;"></span>Warned LSR</span>`;
-    html += `<span class="lg-item"><span class="lg-dot" style="background:#f87171;border-radius:50%;"></span>Unwarned LSR</span>`;
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">LSR:</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.G};border-radius:50%;"></span>Wind</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.H};border-radius:50%;"></span>Hail</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.F};border-radius:50%;"></span>Flooding</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.q};border-radius:50%;"></span>Snow Squall</span>`;
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">White ring = warned · Red ring = unwarned</span>`;
   }
   bar.innerHTML = html;
 }
@@ -915,16 +1040,6 @@ function extractWarningBody(text){
   return lines.slice(startIdx).join('\n').trim();
 }
 
-function computeConfidence(e, topReport){
-  if(e.status === 'pending') return null;
-  if(!e.verify) return 8;
-  let score = 55;
-  if(e.lead0 !== null && e.lead0 !== undefined) score += Math.min(20, e.lead0 / 2);
-  score += Math.min(15, e.stormreports.length * 6);
-  if(topReport && topReport.leadtime !== null && topReport.leadtime !== undefined && topReport.leadtime >= 0) score += 8;
-  return Math.max(5, Math.min(99, Math.round(score)));
-}
-
 async function renderDetails(e){
   document.getElementById('detailsEmpty').style.display = 'none';
   const scroll = document.getElementById('detailsScroll');
@@ -934,9 +1049,6 @@ async function renderDetails(e){
   const st = STATUS_META[e.status];
   const matchedReports = e.stormreports.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
   const allNearbyReports = e.stormreports_all.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
-  const topReport = matchedReports[0] || null;
-
-  const centerLat = e.geometry && e.geometry.coordinates ? null : null;
 
   scroll.innerHTML = `
     <div class="details-header">
@@ -966,7 +1078,6 @@ async function renderDetails(e){
         <thead><tr><th>Time</th><th>Type</th><th>Mag.</th><th>Location</th><th>Dist.</th></tr></thead>
         <tbody>
           ${matchedReports.map(r => {
-            const dist = (e.lead0 !== null && r) ? '' : '';
             return `<tr data-report-id="${r.id}">
               <td>${fmtLocal(r.valid, settings.timezone)}</td>
               <td>${escapeHtml(r.typetext || r.lsrtype)}</td>
@@ -978,36 +1089,7 @@ async function renderDetails(e){
         </tbody>
       </table>`}
     </div>
-    <div class="details-section">
-      <div class="ds-title">Verification</div>
-      <div class="confidence-row">
-        <div class="conf-ring" id="confRing-${e.id}"><div class="conf-val" id="confVal-${e.id}">–</div></div>
-        <div class="match-list">
-          <div class="mi ${e.verify ? 'yes':'no'}"><span class="mi-icon">${e.verify?'✓':'—'}</span>Report inside warning polygon</div>
-          <div class="mi ${e.verify ? 'yes':'no'}"><span class="mi-icon">${e.verify?'✓':'—'}</span>Report time within warning window</div>
-          <div class="mi ${e.status==='pending' ? 'no':'yes'}"><span class="mi-icon">${e.status==='pending'?'…':'✓'}</span>${e.status==='pending' ? 'Warning still active' : 'Warning window closed'}</div>
-          ${e.phenomena === 'SV' && topReport ? `<div class="mi ${criteriaMetForSV(e, topReport) ? 'yes':'no'}"><span class="mi-icon">${criteriaMetForSV(e, topReport)?'✓':'✕'}</span>Severe criteria met (wind ${settings.wind}+ mph / hail ${settings.hailsize}+ in)</div>` : ''}
-          ${topReport && topReport.leadtime !== null && topReport.leadtime !== undefined ? `<div class="mi yes"><span class="mi-icon">✓</span>Lead time: ${topReport.leadtime} min</div>` : ''}
-        </div>
-      </div>
-      <div class="conf-note">Confidence is an unofficial heuristic based on lead time and matching-report count — not an NWS/IEM statistic. See About for methodology.</div>
-    </div>
   `;
-
-  // Confidence ring
-  const conf = computeConfidence(e, topReport);
-  const ringEl = document.getElementById('confRing-'+e.id);
-  const valEl = document.getElementById('confVal-'+e.id);
-  if(ringEl && valEl){
-    if(conf === null){
-      valEl.textContent = 'N/A';
-      ringEl.style.background = `conic-gradient(#374151 0% 100%)`;
-    } else {
-      valEl.textContent = conf + '%';
-      const color = conf >= 70 ? '#4ade80' : conf >= 35 ? '#f0c419' : '#ef4444';
-      ringEl.style.background = `conic-gradient(${color} 0% ${conf}%, #1e2a3a ${conf}% 100%)`;
-    }
-  }
 
   // Async: VTEC + warning text
   const text = await getProductText(e);
@@ -1032,11 +1114,6 @@ function distToEventMi(e, r){
   }catch(err){ return 0; }
 }
 
-function criteriaMetForSV(e, report){
-  if(report.lsrtype === 'H') return e.hailtag ? report.magnitude >= e.hailtag : report.magnitude >= settings.hailsize;
-  if(report.lsrtype === 'G' || report.lsrtype === 'D') return e.windtag ? (report.magnitude||0) >= e.windtag : (report.magnitude||0) >= settings.wind;
-  return true;
-}
 
 // ══════════════════════════════════════════════════════════════
 //  RENDER ALL
@@ -1046,6 +1123,7 @@ function renderAll(){
   renderWarnTable();
   renderSummary();
   renderReportsTable();
+  renderDayStats();
   drawZoneLayer();
   drawWarningsOnMap();
   drawLsrsOnMap();
