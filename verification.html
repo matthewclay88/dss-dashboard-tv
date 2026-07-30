@@ -83,6 +83,12 @@
   .status-banner.error { background: #2a0f0f; color: #fca5a5; }
   .status-banner.hidden { display: none; }
 
+  .range-banner {
+    padding: 7px 20px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center;
+    justify-content: center; gap: 14px;
+    background: #1e2205; color: #facc15; border-bottom: 1px solid #a16207; flex-shrink: 0;
+  }
+
   /* ── MAIN 3-COLUMN LAYOUT ── */
   .main { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
   .col-left { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
@@ -319,6 +325,10 @@
 </div>
 
 <div class="status-banner hidden" id="statusBanner">Loading…</div>
+<div class="range-banner" id="rangeBanner" style="display:none;">
+  <span id="rangeBannerText">Viewing range</span>
+  <button class="btn secondary" id="exitRangeBtn" style="padding:4px 12px;font-size:11px;">Back to single day</button>
+</div>
 
 <div class="main">
 
@@ -386,7 +396,7 @@
   <!-- RIGHT COLUMN -->
   <div class="col-right">
     <div class="panel" id="dayStatsPanel">
-      <div class="panel-title">Day Verification Stats</div>
+      <div class="panel-title" id="dayStatsTitle">Day Verification Stats</div>
       <div id="dayStatsBody" style="padding:12px 14px;"></div>
     </div>
     <div class="panel" style="flex:1; min-height:0; display:flex; flex-direction:column;">
@@ -439,15 +449,17 @@
 <!-- ARCHIVE MODAL -->
 <div class="modal-overlay" id="archiveModal">
   <div class="modal-box">
-    <div class="modal-header"><h2>Archive — Date Range Stats</h2><button class="modal-close" data-close="archiveModal">&times;</button></div>
+    <div class="modal-header"><h2>Archive — View a Date Range</h2><button class="modal-close" data-close="archiveModal">&times;</button></div>
     <div class="modal-body">
       <div class="field-row-pair">
         <div class="field-row"><label>Start date</label><input type="date" id="archiveStart"></div>
         <div class="field-row"><label>End date</label><input type="date" id="archiveEnd"></div>
       </div>
-      <div class="hint" style="margin-bottom:10px;">Range is inclusive, using the same calendar-day timezone as the main view. Large ranges may take a few seconds.</div>
-      <button class="btn primary" id="runArchiveBtn">Run</button>
-      <div id="archiveResults"></div>
+      <div class="hint">Range is inclusive, using the same calendar-day timezone as the main view. This loads every matching warning and LSR for the whole range onto the map, table, and stats — large ranges may take a few seconds.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" data-close="archiveModal">Cancel</button>
+      <button class="btn primary" id="runArchiveBtn">Load Range</button>
     </div>
   </div>
 </div>
@@ -462,7 +474,9 @@
       <p><strong>Calendar day:</strong> dates here are bounded by local midnight in the configured timezone (Settings), not 00Z UTC — so an overnight event isn't split across two different "days" the way a strict UTC day would.</p>
       <p><strong>Confidence score:</strong> the percentage shown per-warning is a simple, unofficial heuristic (based on lead time and number of matching reports) meant to give a quick visual sense of how solid the verification is — it is <em>not</em> an NWS or IEM statistic.</p>
       <p><strong>Data is unofficial.</strong> Per IEM's own disclaimer, this data is intended for educational/situational-awareness use, not as an official verification record.</p>
-      <p>Basemap: CartoDB Voyager. Zone boundaries: community-maintained NWS forecast zone GeoJSON. Map library: Leaflet.</p>
+      <p><strong>Switching offices:</strong> changing the WFO in Settings re-queries live NWS zone boundaries for that office and re-centers the map — works for any WFO nationwide, not just BTV.</p>
+      <p><strong>Date ranges:</strong> the Archive picker loads every matching warning and LSR for the whole range directly onto the map, table, and stats (using the same boundary-safe padding logic as single-day view), rather than just showing a summary.</p>
+      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Map library: Leaflet.</p>
     </div>
   </div>
 </div>
@@ -494,7 +508,11 @@ const STATUS_META = {
   pending:            { label: 'Pending',             color: '#f0c419' },
   needs_verification: { label: 'Needs Verification',  color: '#ef4444' }
 };
-const ZONE_GEOJSON_URL = 'https://raw.githubusercontent.com/matthewclay88/severe-climatology/main/allzones.geojson';
+// Live, official NWS zone boundaries — queryable by CWA on demand, so
+// this works for ANY office, not just a pre-baked static extract.
+// (Confirmed nationwide coverage: BTV, OUN, LOX, MFL all return real
+// zone sets from this service.)
+const ZONE_QUERY_URL = 'https://mapservices.weather.noaa.gov/static/rest/services/nws_reference_maps/nws_reference_map/MapServer/8/query';
 const COW_API = 'https://mesonet.agron.iastate.edu/api/1/cow.json';
 
 // ══════════════════════════════════════════════════════════════
@@ -504,10 +522,14 @@ let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 
 let selectedDateStr = null;   // 'YYYY-MM-DD' in settings.timezone
 let currentEvents = [];       // parsed + status-enriched event objects
 let currentReports = [];      // parsed report objects
-let dayStats = null;          // client-computed FAR/POD/CSI/lead-time stats for the selected day
+let dayStats = null;          // client-computed FAR/POD/CSI/lead-time stats for the selected window
 let selectedEventId = null;
 let showLsrs = true;
-let zoneGeoJsonCache = null;
+let zoneCacheByWfo = {};    // fetched zone features, cached per WFO so switching dates doesn't re-fetch
+let viewMode = 'day';         // 'day' or 'range'
+let rangeLabel = '';
+let lastSingleDate = null;    // last single day viewed, so exiting a range returns somewhere sensible
+let lastZoneFitWfo = null;    // tracks which WFO the map was last auto-fit to
 let map, zoneLayer, warningLayer, lsrLayer;
 let productTextCache = {};
 
@@ -600,7 +622,7 @@ function computeDayStats(){
   const decided = currentEvents.filter(e => e.status !== 'pending');
   const hits = decided.filter(e => e.status === 'verified').length;
   const falseAlarms = decided.filter(e => e.status === 'needs_verification').length;
-  const misses = currentReports.filter(r => r.inSelectedDay && !r.warned).length;
+  const misses = currentReports.filter(r => r.inRange && !r.warned).length;
 
   const pod = (hits + misses) > 0 ? hits / (hits + misses) : null;
   const far = (hits + falseAlarms) > 0 ? falseAlarms / (hits + falseAlarms) : null;
@@ -660,19 +682,20 @@ function setStatus(msg, isError){
 }
 
 // Warnings can start just before local midnight and still be active
-// (or verify) into the selected day. IEM's own query only includes an
+// (or verify) into the selected window. IEM's own query only includes an
 // event if it was ISSUED after begints — so a warning issued at 11:41pm
 // that's still active at 12:05am would be silently excluded entirely,
 // and any LSR it covers would incorrectly show as "unwarned". Padding
-// the query window and filtering back down to the true day afterward
+// the query window and filtering back down to the true window afterward
 // fixes this (confirmed against a real BTV case on 2026-07-15).
 const BOUNDARY_PAD_HOURS = 6;
 
-async function fetchCowData(dateStr){
-  const dayStart = localMidnightToUTC(dateStr, settings.timezone);
-  const dayEnd = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
-  const queryStart = new Date(dayStart.getTime() - BOUNDARY_PAD_HOURS*3600*1000);
-  const queryEnd = new Date(dayEnd.getTime() + BOUNDARY_PAD_HOURS*3600*1000);
+// Shared by both single-day and date-range loading: fetches a padded
+// window from IEM, then filters back down to whatever the true window
+// (windowStart/windowEnd, both real Date objects) actually is.
+async function fetchAndParseCow(windowStart, windowEnd){
+  const queryStart = new Date(windowStart.getTime() - BOUNDARY_PAD_HOURS*3600*1000);
+  const queryEnd = new Date(windowEnd.getTime() + BOUNDARY_PAD_HOURS*3600*1000);
 
   const params = new URLSearchParams();
   params.set('wfo', settings.wfo);
@@ -686,72 +709,79 @@ async function fetchCowData(dateStr){
   const res = await fetch(COW_API + '?' + params.toString());
   if(!res.ok) throw new Error('IEM Cow API returned HTTP ' + res.status);
   const data = await res.json();
-  return { data, dayStart, dayEnd };
+
+  const windowStartMs = windowStart.getTime(), windowEndMs = windowEnd.getTime();
+
+  const allEvents = (data.events.features || []).map(f => {
+    const p = f.properties;
+    return {
+      id: f.id,
+      geometry: f.geometry,
+      etn: p.eventid,
+      phenomena: p.phenomena,
+      significance: p.significance,
+      wfo: p.wfo,
+      issue: p.issue,
+      expire: p.expire,
+      counties: p.ar_ugcname || [],
+      fcster: p.fcster,
+      verify: p.verify,
+      lead0: p.lead0,
+      windtag: p.windtag,
+      hailtag: p.hailtag,
+      stormreports: (p.stormreports || '').split(',').filter(Boolean),
+      stormreports_all: (p.stormreports_all || '').split(',').filter(Boolean),
+      product_id: p.product_id,
+      product_href: p.product_href,
+      product_text_url: p.product_text,
+      link: p.link,
+      year: p.year,
+      status: computeStatus(p)
+    };
+  });
+  // Keep any warning whose active window overlaps the true window at
+  // all — not just ones issued strictly within it.
+  const events = allEvents.filter(e => {
+    const expMs = new Date(e.expire).getTime();
+    const issMs = new Date(e.issue).getTime();
+    return expMs > windowStartMs && issMs < windowEndMs;
+  });
+
+  // Keep the FULL padded report set for cross-referencing (an event
+  // shown may have verified via a report from just outside the true
+  // window), but flag which ones actually fall inside it, for anything
+  // that displays "reports in view" specifically.
+  const reports = (data.stormreports.features || []).map(f => {
+    const p = f.properties;
+    const validMs = new Date(p.valid).getTime();
+    return {
+      id: f.id,
+      lat: f.geometry.coordinates[1],
+      lon: f.geometry.coordinates[0],
+      city: p.city, county: p.county, state: p.state,
+      valid: p.valid, lsrtype: p.lsrtype, type: p.type, magnitude: p.magnitude,
+      remark: p.remark, source: p.source, leadtime: p.leadtime,
+      warned: p.warned, events: p.events, typetext: p.typetext,
+      inRange: validMs >= windowStartMs && validMs < windowEndMs
+    };
+  });
+
+  return { events, reports };
 }
 
 async function loadDay(dateStr){
+  viewMode = 'day';
   selectedDateStr = dateStr;
+  lastSingleDate = dateStr;
   selectedEventId = null;
   document.getElementById('datePicker').value = dateStr;
   setStatus('Loading warnings for ' + dateStr + ' from IEM Cow…', false);
   try{
-    const { data, dayStart, dayEnd } = await fetchCowData(dateStr);
-    const dayStartMs = dayStart.getTime(), dayEndMs = dayEnd.getTime();
-
-    const allEvents = (data.events.features || []).map(f => {
-      const p = f.properties;
-      return {
-        id: f.id,
-        geometry: f.geometry,
-        etn: p.eventid,
-        phenomena: p.phenomena,
-        significance: p.significance,
-        wfo: p.wfo,
-        issue: p.issue,
-        expire: p.expire,
-        counties: p.ar_ugcname || [],
-        fcster: p.fcster,
-        verify: p.verify,
-        lead0: p.lead0,
-        windtag: p.windtag,
-        hailtag: p.hailtag,
-        stormreports: (p.stormreports || '').split(',').filter(Boolean),
-        stormreports_all: (p.stormreports_all || '').split(',').filter(Boolean),
-        product_id: p.product_id,
-        product_href: p.product_href,
-        product_text_url: p.product_text,
-        link: p.link,
-        year: p.year,
-        status: computeStatus(p)
-      };
-    });
-    // Keep any warning whose active window overlaps the selected calendar
-    // day at all — not just ones issued strictly within it.
-    currentEvents = allEvents.filter(e => {
-      const expMs = new Date(e.expire).getTime();
-      const issMs = new Date(e.issue).getTime();
-      return expMs > dayStartMs && issMs < dayEndMs;
-    });
-
-    // Keep the FULL padded report set for cross-referencing (an event
-    // shown today may have verified via a report from just before
-    // midnight), but flag which ones actually fall in the selected day
-    // for anything that displays "today's reports" specifically.
-    currentReports = (data.stormreports.features || []).map(f => {
-      const p = f.properties;
-      const validMs = new Date(p.valid).getTime();
-      return {
-        id: f.id,
-        lat: f.geometry.coordinates[1],
-        lon: f.geometry.coordinates[0],
-        city: p.city, county: p.county, state: p.state,
-        valid: p.valid, lsrtype: p.lsrtype, type: p.type, magnitude: p.magnitude,
-        remark: p.remark, source: p.source, leadtime: p.leadtime,
-        warned: p.warned, events: p.events, typetext: p.typetext,
-        inSelectedDay: validMs >= dayStartMs && validMs < dayEndMs
-      };
-    });
-
+    const dayStart = localMidnightToUTC(dateStr, settings.timezone);
+    const dayEnd = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
+    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd);
+    currentEvents = events;
+    currentReports = reports;
     computeDayStats();
     setStatus(null);
   } catch(err){
@@ -761,7 +791,45 @@ async function loadDay(dateStr){
     dayStats = null;
     setStatus('Could not load data from IEM: ' + err.message, true);
   }
+  updateRangeBanner();
   renderAll();
+}
+
+async function loadRange(startStr, endStr){
+  viewMode = 'range';
+  rangeLabel = startStr + '  →  ' + endStr;
+  selectedEventId = null;
+  setStatus('Loading warnings for ' + rangeLabel + ' from IEM Cow…', false);
+  try{
+    const rangeStart = localMidnightToUTC(startStr, settings.timezone);
+    const rangeEnd = localMidnightToUTC(addDaysToDateStr(endStr, 1), settings.timezone);
+    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd);
+    currentEvents = events;
+    currentReports = reports;
+    computeDayStats();
+    setStatus(null);
+  } catch(err){
+    console.error(err);
+    currentEvents = [];
+    currentReports = [];
+    dayStats = null;
+    setStatus('Could not load range data from IEM: ' + err.message, true);
+  }
+  updateRangeBanner();
+  renderAll();
+}
+
+function updateRangeBanner(){
+  const banner = document.getElementById('rangeBanner');
+  const statsTitle = document.getElementById('dayStatsTitle');
+  if(viewMode === 'range'){
+    banner.style.display = 'flex';
+    document.getElementById('rangeBannerText').textContent = 'Viewing range: ' + rangeLabel;
+    statsTitle.textContent = 'Range Verification Stats';
+  } else {
+    banner.style.display = 'none';
+    statsTitle.textContent = 'Day Verification Stats';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -873,7 +941,7 @@ function renderSummary(){
 // ══════════════════════════════════════════════════════════════
 function renderReportsTable(){
   const tbody = document.getElementById('reportsTableBody');
-  const rows = currentReports.filter(r => r.inSelectedDay).sort((a,b) => new Date(a.valid) - new Date(b.valid));
+  const rows = currentReports.filter(r => r.inRange).sort((a,b) => new Date(a.valid) - new Date(b.valid));
   tbody.innerHTML = rows.map(r => {
     const loc = [r.city, r.county ? r.county+' Co, ' : '', r.state].filter(Boolean).join(', ').replace(', ,', ',');
     const assoc = (r.events || '').split(',').filter(Boolean);
@@ -913,20 +981,48 @@ function initMap(){
   warningLayer = L.layerGroup().addTo(map);
   lsrLayer = L.layerGroup().addTo(map);
   map.setView([44.3,-72.9], 7);
-
-  fetch(ZONE_GEOJSON_URL).then(r=>r.json()).then(data => {
-    zoneGeoJsonCache = data;
-    drawZoneLayer();
-  }).catch(err => console.warn('zone geojson load failed', err));
+  drawZoneLayer();
 }
 
-function drawZoneLayer(){
-  if(!zoneGeoJsonCache) return;
+async function drawZoneLayer(){
+  const wfo = settings.wfo;
+  let features = zoneCacheByWfo[wfo];
+  if(!features){
+    try{
+      const params = new URLSearchParams();
+      params.set('where', `cwa='${wfo}'`);
+      params.set('outFields', 'cwa,zone,state,state_zone,name');
+      params.set('f', 'geojson');
+      params.set('returnGeometry', 'true');
+      const res = await fetch(ZONE_QUERY_URL + '?' + params.toString());
+      const data = await res.json();
+      features = data.features || [];
+      zoneCacheByWfo[wfo] = features;
+    }catch(err){
+      console.warn('zone fetch failed for', wfo, err);
+      features = [];
+    }
+  }
+  // If the WFO changed again while this fetch was in flight, don't
+  // clobber the current (newer) view with now-stale results.
+  if(wfo !== settings.wfo) return;
+
   zoneLayer.clearLayers();
-  const features = zoneGeoJsonCache.features.filter(f => f.properties && f.properties.CWA === settings.wfo);
-  L.geoJSON({ type:'FeatureCollection', features }, {
+  const gj = L.geoJSON({ type:'FeatureCollection', features }, {
     style: { color:'#3a4f6c', weight:1, opacity:0.5, fillOpacity:0 }
   }).addTo(zoneLayer);
+
+  // Only auto-fit when the WFO actually changed — otherwise this would
+  // fight the user's own panning/zooming every time the same-WFO date
+  // or range is reloaded.
+  if(wfo !== lastZoneFitWfo){
+    lastZoneFitWfo = wfo;
+    if(features.length > 0){
+      try{ map.fitBounds(gj.getBounds(), { padding: [20,20], maxZoom: 9 }); }catch(err){}
+    } else {
+      console.warn('No CWA zones found for WFO "' + wfo + '" — check the 3-letter office code in Settings.');
+    }
+  }
 }
 
 function drawWarningsOnMap(){
@@ -955,7 +1051,7 @@ function drawWarningsOnMap(){
 function drawLsrsOnMap(){
   lsrLayer.clearLayers();
   if(!showLsrs) return;
-  currentReports.filter(r => r.inSelectedDay).forEach(r => {
+  currentReports.filter(r => r.inRange).forEach(r => {
     const color = LSR_TYPE_COLOR[r.type] || LSR_TYPE_DEFAULT_COLOR;
     const marker = L.circleMarker([r.lat, r.lon], {
       radius: 5, color: r.warned ? '#ffffff' : '#dc2626', weight: r.warned ? 1 : 2.5, fillColor: color, fillOpacity: 0.9
@@ -1149,44 +1245,17 @@ function switchSubtab(name){
 }
 
 // ══════════════════════════════════════════════════════════════
-//  ARCHIVE
+//  ARCHIVE — loads the whole range onto the main map/table/stats,
+//  rather than just showing a summary inside the modal.
 // ══════════════════════════════════════════════════════════════
 async function runArchive(){
   const startStr = document.getElementById('archiveStart').value;
   const endStr = document.getElementById('archiveEnd').value;
-  const resultsEl = document.getElementById('archiveResults');
-  if(!startStr || !endStr){ resultsEl.innerHTML = '<div class="hint">Pick both a start and end date.</div>'; return; }
-  resultsEl.innerHTML = '<div class="hint">Loading…</div>';
-  try{
-    const startUTC = localMidnightToUTC(startStr, settings.timezone);
-    const endUTC = localMidnightToUTC(addDaysToDateStr(endStr, 1), settings.timezone);
-    const params = new URLSearchParams();
-    params.set('wfo', settings.wfo);
-    ['TO','SV','FF','SQ'].forEach(p => params.append('phenomena', p));
-    params.set('begints', isoZ(startUTC));
-    params.set('endts', isoZ(endUTC));
-    params.set('hailsize', settings.hailsize);
-    params.set('wind', settings.wind);
-    params.set('lsrbuffer', settings.lsrbuffer);
-    const res = await fetch(COW_API + '?' + params.toString());
-    const data = await res.json();
-    const s = data.stats;
-    resultsEl.innerHTML = `
-      <div class="archive-stats-grid">
-        <div class="archive-stat"><div class="as-val">${s.events_total}</div><div class="as-label">Events</div></div>
-        <div class="archive-stat"><div class="as-val">${s.events_verified}</div><div class="as-label">Verified</div></div>
-        <div class="archive-stat"><div class="as-val">${(s['POD[1]']*100).toFixed(0)}%</div><div class="as-label">POD</div></div>
-        <div class="archive-stat"><div class="as-val">${(s['FAR[1]']*100).toFixed(0)}%</div><div class="as-label">FAR</div></div>
-        <div class="archive-stat"><div class="as-val">${s['CSI[1]'].toFixed(2)}</div><div class="as-label">CSI</div></div>
-        <div class="archive-stat"><div class="as-val">${s['avg_leadtime[min]'] === null ? '—' : Math.round(s['avg_leadtime[min]'])+'m'}</div><div class="as-label">Avg Lead</div></div>
-        <div class="archive-stat"><div class="as-val">${s.reports_total}</div><div class="as-label">Total LSRs</div></div>
-        <div class="archive-stat"><div class="as-val">${s.unwarned_reports}</div><div class="as-label">Unwarned LSRs</div></div>
-        <div class="archive-stat"><div class="as-val">${s['area_verify[%]'].toFixed(0)}%</div><div class="as-label">Area Verified</div></div>
-      </div>
-    `;
-  }catch(err){
-    resultsEl.innerHTML = '<div class="hint" style="color:#f87171;">Error: '+escapeHtml(err.message)+'</div>';
-  }
+  if(!startStr || !endStr){ alert('Pick both a start and end date.'); return; }
+  if(startStr > endStr){ alert('Start date must be on or before the end date.'); return; }
+  closeModal('archiveModal');
+  switchSubtab('map');
+  await loadRange(startStr, endStr);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1236,13 +1305,14 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
 });
 
 document.getElementById('archiveBtn').addEventListener('click', () => {
-  document.getElementById('archiveEnd').value = selectedDateStr;
-  document.getElementById('archiveStart').value = addDaysToDateStr(selectedDateStr, -6);
-  document.getElementById('archiveResults').innerHTML = '';
+  const anchor = selectedDateStr || lastSingleDate || todayInTZ(settings.timezone);
+  document.getElementById('archiveEnd').value = anchor;
+  document.getElementById('archiveStart').value = addDaysToDateStr(anchor, -6);
   openModal('archiveModal');
 });
 document.getElementById('runArchiveBtn').addEventListener('click', runArchive);
 document.getElementById('aboutBtn').addEventListener('click', () => openModal('aboutModal'));
+document.getElementById('exitRangeBtn').addEventListener('click', () => loadDay(lastSingleDate || todayInTZ(settings.timezone)));
 
 window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
 
