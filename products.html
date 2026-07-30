@@ -421,7 +421,7 @@ const HAZARD_COLORS = {
 // Opacity tuning — adjust these to make hazard shading more/less prominent.
 // ---------------------------------------------------------------------------
 const ZONE_FILL_OPACITY = 0.45;       // active zone shading on the map
-const ZONE_BASE_FILL_OPACITY = 0;     // inactive/no-product zones (no wash — just a thin border)
+const ZONE_BASE_FILL_OPACITY = 0.05;  // inactive/no-product zones
 const POLYGON_FILL_OPACITY = 0.12;    // warning polygons (tornado/SVR/FFW/FLW)
 const POLYGON_HOVER_FILL_OPACITY = 0.35; // warning polygons on mouseover (cap)
 
@@ -482,7 +482,15 @@ function initMap(filteredGeojson){
     zoomAnimation:false,
     fadeAnimation:false,
     markerZoomAnimation:false,
-    inertia:false
+    inertia:false,
+    // Default Leaflet only zooms to whole numbers, so fitBounds() picks
+    // the largest whole zoom that fits everything WITHOUT cropping —
+    // which almost always leaves a visible margin/rounds down to a
+    // coarser, more-zoomed-out level than the bounds actually need.
+    // That extra zoomed-out step is what was making labels and basemap
+    // detail look faint/washed out. Fractional zoom lets it fill exactly.
+    zoomSnap: 0,
+    zoomDelta: 0.25
   });
 
   // Switched from CartoDB Voyager to Esri World Topo Map tiles — this is
@@ -544,15 +552,14 @@ function initMap(filteredGeojson){
   geoLayer = L.geoJSON(filteredGeojson,{
     style:function(){
       return {
-        color:"#7d97ad",
-        weight:1,
-        opacity:0.55,
+        color:"#000000",
+        weight:2.5,
         fillColor:"#3a4f6c",
         fillOpacity:ZONE_BASE_FILL_OPACITY
       };
     },
     onEachFeature:function(feature,layer){
-      layer._baseWeight=1;
+      layer._baseWeight=2.5;
 
       layer.on("mouseover",function(){
         layer.setStyle({
@@ -712,8 +719,8 @@ function highlightZones(prods){
         { maxWidth: 280 }
       );
     } else {
-      layer._baseWeight = 1;
-      layer.setStyle({ color:'#7d97ad', weight:1, fillOpacity:ZONE_BASE_FILL_OPACITY, fillColor:'#3a4f6c', opacity:0.55 });
+      layer._baseWeight = 2.5;
+      layer.setStyle({ color:'#000000', weight:2.5, fillOpacity:ZONE_BASE_FILL_OPACITY, fillColor:'#3a4f6c', opacity:0.9 });
       layer.bindPopup('<b>'+p.NAME+'</b><br>Zone '+p.STATE_ZONE+'<hr style="border-color:#2a3f5c;margin:6px 0;">No active products');
     }
   });
