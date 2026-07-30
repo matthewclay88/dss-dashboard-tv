@@ -2880,12 +2880,22 @@ function kmhToMph_(kmh) {
   return kmh == null ? null : kmh * 0.621371;
 }
 
+const WASHINGTON_OBS_URL = "https://api.weather.gov/stations/KMWN/observations?limit=20";
+
+function cToF_(celsius) {
+  return celsius == null ? null : (celsius * 9 / 5) + 32;
+}
+
+function kmhToMph_(kmh) {
+  return kmh == null ? null : kmh * 0.621371;
+}
+
 async function fetchWashingtonObservation_() {
 
   try {
 
     const response = await fetchWithTimeout_(
-      WASHINGTON_API_URL,
+      WASHINGTON_OBS_URL,
       { cache: "no-store", headers: { Accept: "application/geo+json" } }
     );
 
@@ -2895,27 +2905,70 @@ async function fetchWashingtonObservation_() {
     }
 
     const data = await response.json();
-    const props = (data && data.properties) || {};
+    const features = (data && data.features) || [];
 
-    const tempC = props.temperature && props.temperature.value != null
-      ? Number(props.temperature.value) : null;
-
-    const windKmh = props.windSpeed && props.windSpeed.value != null
-      ? Number(props.windSpeed.value) : null;
-
-    const gustKmh = props.windGust && props.windGust.value != null
-      ? Number(props.windGust.value) : null;
-
-    const directionDeg = props.windDirection && props.windDirection.value != null
-      ? Number(props.windDirection.value) : null;
-
-    const chillC = props.windChill && props.windChill.value != null
-      ? Number(props.windChill.value) : null;
-
-    if (tempC == null && windKmh == null) {
-      console.warn("Washington: observation contained no usable temperature or wind.");
+    if (!features.length) {
+      console.warn("Washington: no observations returned.");
       return null;
     }
+
+    // Walk newest -> oldest, filling each field independently from
+    // whichever observation has it first - same pattern as
+    // extract_latest_nws_values() in tempprofile.py. A single
+    // record can easily have temperature but null wind (or vice
+    // versa), so scanning just /latest can silently drop a field
+    // that's actually available a cycle or two back.
+
+    let tempC = null, tempTimestamp = null;
+    let windKmh = null, directionDeg = null, windTimestamp = null;
+    let gustKmh = null, gustTimestamp = null;
+    let chillC = null;
+
+    for (const feature of features) {
+
+      const p = feature.properties || {};
+
+      if (tempC == null && p.temperature && p.temperature.value != null) {
+        tempC = Number(p.temperature.value);
+        tempTimestamp = p.timestamp;
+      }
+
+      if (
+        windKmh == null &&
+        p.windSpeed && p.windSpeed.value != null &&
+        p.windDirection && p.windDirection.value != null
+      ) {
+        windKmh = Number(p.windSpeed.value);
+        directionDeg = Number(p.windDirection.value);
+        windTimestamp = p.timestamp;
+      }
+
+      if (gustKmh == null && p.windGust && p.windGust.value != null) {
+        gustKmh = Number(p.windGust.value);
+        gustTimestamp = p.timestamp;
+      }
+
+      if (chillC == null && p.windChill && p.windChill.value != null) {
+        chillC = Number(p.windChill.value);
+      }
+
+      if (tempC != null && windKmh != null && gustKmh != null) {
+        break;
+      }
+    }
+
+    if (tempC == null && windKmh == null) {
+      console.warn("Washington: no usable temperature or wind in recent observations.");
+      return null;
+    }
+
+    const timestamps = [tempTimestamp, windTimestamp, gustTimestamp]
+      .filter(Boolean)
+      .map((t) => new Date(t).getTime());
+
+    const latestTimestamp = timestamps.length
+      ? new Date(Math.max(...timestamps)).toISOString()
+      : null;
 
     return {
       tempF: cToF_(tempC),
@@ -2923,7 +2976,7 @@ async function fetchWashingtonObservation_() {
       gustMph: kmhToMph_(gustKmh),
       directionDeg,
       windChillF: cToF_(chillC),
-      timestamp: props.timestamp || null
+      timestamp: latestTimestamp
     };
 
   } catch (error) {
