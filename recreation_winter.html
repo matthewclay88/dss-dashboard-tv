@@ -2870,64 +2870,14 @@ async function refreshWhitefaceObs() {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Mount Washington - NOT wired to a live source yet. The Mount
-// Washington Observatory publishes current conditions, but no API
-// endpoint/key was provided alongside the other three stations'
-// credentials, so this deliberately mirrors the null-observation
-// path the other refresh*Obs functions already fall back to (card
-// renders with dashes + stale styling) rather than guessing at a URL.
-// Point fetchWashingtonObservation_ at the real endpoint (expected
-// shape: { tempF, sustainedMph, gustMph, directionDeg, windChillF,
-// timestamp }) to bring this card live - everything downstream
-// (setWindDisplay_, applyWindColor_, applyFieldStaleness_) already
-// matches the pattern used by Whiteface/Burke/Bolton above.
-// ---------------------------------------------------------------------------
+const WASHINGTON_API_URL = "https://api.weather.gov/stations/KMWN/observations/latest";
 
-const WASHINGTON_API_URL =
-  "https://api.allorigins.win/raw?url=" +
-  encodeURIComponent("https://mountwashington.org/uploads/json/weather.JSON");
-
-function parseWashingtonImperialValue_(str) {
-  if (!str) return null;
-  const match = String(str).match(/-?\d+(\.\d+)?/);
-  return match ? Number(match[0]) : null;
+function cToF_(celsius) {
+  return celsius == null ? null : (celsius * 9 / 5) + 32;
 }
 
-function parseWashingtonDateTime_(str) {
-  if (!str) return null;
-
-  const match = String(str).match(
-    /(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/
-  );
-
-  if (!match) return null;
-
-  // LastUpdated has no timezone marker, but cross-checking it against
-  // the feed's own embedded METAR timestamp shows it's Eastern local
-  // time, not UTC - so it's built via a formatter targeting
-  // America/New_York rather than treated as a literal UTC string.
-  const [, year, month, day, hour, minute, second] = match;
-
-  const asUTCGuess = new Date(Date.UTC(
-    Number(year), Number(month) - 1, Number(day),
-    Number(hour), Number(minute), Number(second)
-  ));
-
-  const easternOffsetMinutes = -tzOffsetMinutes_(asUTCGuess, "America/New_York");
-
-  return new Date(
-    asUTCGuess.getTime() - easternOffsetMinutes * 60000
-  ).toISOString();
-}
-
-function tzOffsetMinutes_(date, timeZone) {
-  const parts = tzParts_(date, timeZone);
-  const asIfUTC = Date.UTC(
-    Number(parts.year), Number(parts.month) - 1, Number(parts.day),
-    Number(parts.hour), Number(parts.minute), Number(parts.second)
-  );
-  return Math.round((asIfUTC - date.getTime()) / 60000);
+function kmhToMph_(kmh) {
+  return kmh == null ? null : kmh * 0.621371;
 }
 
 async function fetchWashingtonObservation_() {
@@ -2936,7 +2886,7 @@ async function fetchWashingtonObservation_() {
 
     const response = await fetchWithTimeout_(
       WASHINGTON_API_URL,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { Accept: "application/geo+json" } }
     );
 
     if (!response.ok) {
@@ -2945,33 +2895,35 @@ async function fetchWashingtonObservation_() {
     }
 
     const data = await response.json();
-    const conditions = data && data.summitConditions;
+    const props = (data && data.properties) || {};
 
-    if (!conditions || !conditions.Imperial) {
-      console.warn("Washington: unexpected response shape.");
-      return null;
-    }
+    const tempC = props.temperature && props.temperature.value != null
+      ? Number(props.temperature.value) : null;
 
-    const imperial = conditions.Imperial;
+    const windKmh = props.windSpeed && props.windSpeed.value != null
+      ? Number(props.windSpeed.value) : null;
 
-    const tempF = parseWashingtonImperialValue_(imperial.Temperature);
-    const sustainedMph = parseWashingtonImperialValue_(imperial.Wind);
-    const gustMph = parseWashingtonImperialValue_(imperial.Gust);
-    const windChillF = parseWashingtonImperialValue_(imperial.WindChill);
-    const directionDeg = parseWashingtonImperialValue_(conditions.Direction);
+    const gustKmh = props.windGust && props.windGust.value != null
+      ? Number(props.windGust.value) : null;
 
-    if (tempF == null && sustainedMph == null) {
-      console.warn("Washington: no usable temperature or wind in response.");
+    const directionDeg = props.windDirection && props.windDirection.value != null
+      ? Number(props.windDirection.value) : null;
+
+    const chillC = props.windChill && props.windChill.value != null
+      ? Number(props.windChill.value) : null;
+
+    if (tempC == null && windKmh == null) {
+      console.warn("Washington: observation contained no usable temperature or wind.");
       return null;
     }
 
     return {
-      tempF,
-      sustainedMph,
-      gustMph,
+      tempF: cToF_(tempC),
+      sustainedMph: kmhToMph_(windKmh),
+      gustMph: kmhToMph_(gustKmh),
       directionDeg,
-      windChillF,
-      timestamp: parseWashingtonDateTime_(conditions.LastUpdated)
+      windChillF: cToF_(chillC),
+      timestamp: props.timestamp || null
     };
 
   } catch (error) {
