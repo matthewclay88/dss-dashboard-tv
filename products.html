@@ -3,7 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <title>BTV CWA Active Watches, Warnings & Advisories</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  /* Inline fallback in case leaflet.css fails to load on restrictive
+     signage networks — without these, tile <img>s fetch successfully
+     but never get sized/positioned, so the map paints as blank/white. */
+  .leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,
+  .leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,
+  .leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0;}
+  .leaflet-container{overflow:hidden;}
+  .leaflet-tile{filter:inherit;}
+  .leaflet-zoom-box{width:0;height:0;box-sizing:border-box;z-index:800;}
+  .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important;}
+  .leaflet-tile-pane{z-index:200;}
+  .leaflet-objects-pane{z-index:300;}
+  .leaflet-overlay-pane{z-index:400;}
+  .leaflet-shadow-pane{z-index:500;}
+  .leaflet-marker-pane{z-index:600;}
+  .leaflet-tooltip-pane{z-index:650;}
+  .leaflet-popup-pane{z-index:700;}
+  .leaflet-map-pane canvas{z-index:100;}
+  .leaflet-map-pane svg{z-index:200;}
+</style>
 <style>
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
@@ -126,7 +147,7 @@
   }
   .action-btn:hover { border-color: #3a6ea8; color: #fff; background: #16324f; }
 
-  #map { height: 100%; width: 100%; background: #cfd5dc; }
+  #map { height: 100%; width: 100%; background: #c9d2c4; }
   .map-status {
     position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
     color: #93a3b8; font-size: 13px; pointer-events: none; z-index: 500;
@@ -329,7 +350,7 @@
   <div class="footer"> Created by Matthew Clay | All times are Eastern Time | Alerts: NWS api.weather.gov | Colors: weather.gov/help-map | Auto-refresh every 2 minutes</div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ---------------------------------------------------------------------------
 // Zone geometry is fetched at runtime from the community-maintained
@@ -427,6 +448,12 @@ let polygonLayer = null;
 let zoneProducts = [];
 let polygonProducts = [];
 
+// Disables Leaflet's use of CSS 3D transforms for panning/zooming.
+// Confirmed helpful on the Samsung Tizen TV browser elsewhere in this
+// project — older/embedded WebKit engines can measure 3D-transformed
+// layers correctly but never actually composite/paint them.
+L.Browser.any3d = false;
+
 // Map control toggles — user-facing filters for what gets drawn on the map.
 // The underlying alert data (stats, table) is always complete regardless of
 // these; they only affect map rendering.
@@ -458,18 +485,49 @@ function initMap(filteredGeojson){
     inertia:false
   });
 
-  // Switched from ArcGIS World Imagery (heavy photographic satellite tiles)
-  // to CartoDB's Voyager basemap: much smaller tile payloads and far less
-  // decode work per tile than satellite imagery (good for constrained TV
-  // hardware), while staying lighter/more legible than the dark variant.
+  // Switched from CartoDB Voyager to Esri World Topo Map tiles — this is
+  // the exact basemap source confirmed working on this TV's browser in
+  // the companion DSS dashboard, so matching it here should resolve the
+  // same tile-loading trouble on this dashboard.
+  var _basemapTileLoadCount = 0;
+  var _basemapTileErrorCount = 0;
+
   const tileLayer = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
     {
-      subdomains: 'abcd',
-      maxZoom: 19,
-      crossOrigin: true
+      attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors',
+      maxZoom: 19
     }
   ).addTo(map);
+
+  tileLayer.on('tileload', function(){ _basemapTileLoadCount++; });
+  tileLayer.on('tileerror', function(){ _basemapTileErrorCount++; });
+
+  // Self-diagnosing banner: if this ever runs unattended and the map
+  // shows up blank, there's normally no way to find out why without
+  // physically being at the TV with debugging gear. Check a few seconds
+  // after load — if zero tiles ever loaded, print the reason directly
+  // on screen so whoever can SEE the TV can read off what's wrong.
+  setTimeout(function() {
+    if (_basemapTileLoadCount > 0) return;
+    var mapEl = document.getElementById('map');
+    if (!mapEl) return;
+    var reason = _basemapTileErrorCount > 0
+      ? 'Map tiles failed to load (' + _basemapTileErrorCount + ' error' + (_basemapTileErrorCount !== 1 ? 's' : '') + '). ' +
+        'This usually means this device/network is blocking access to server.arcgisonline.com — ' +
+        'check any content filtering, DNS blocking, or firewall rules on this TV or its network.'
+      : 'No map tiles have loaded and no errors were reported either — this points to the tile ' +
+        'requests never completing at all (e.g. no network access, or the map container had zero size ' +
+        'when it initialized).';
+    var banner = document.createElement('div');
+    banner.style.cssText =
+      'position:absolute; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; ' +
+      'text-align:center; padding:20px; background:rgba(10,14,24,.95); color:#fca5a5; font-size:14px; ' +
+      'font-weight:600; line-height:1.5;';
+    banner.textContent = '⚠ ' + reason;
+    mapEl.style.position = 'relative';
+    mapEl.appendChild(banner);
+  }, 6000);
 
   // Basic tile-load diagnostics/retry — helps on flaky TV network stacks
   // where a handful of tile requests occasionally just stall out.
@@ -539,6 +597,38 @@ function resetMapView(){
     map.setView([44.3,-72.9],8);
   }
 }
+
+// Bypasses flex-computed sizing entirely by pinning #map to explicit
+// pixel dimensions read from its wrapper, instead of trusting height:100%
+// inside a flex/overflow:hidden chain. Confirmed necessary elsewhere in
+// this project: on the Samsung Tizen TV browser (and other older/embedded
+// WebKit engines), a deeply nested flex + overflow:hidden + absolutely
+// positioned chain can measure correctly but never actually composite —
+// the map area just stays blank. Explicit pixels sidestep that entirely.
+function forceMapPixelSize(){
+  var wrap = document.querySelector('.map-wrap');
+  var mapDiv = document.getElementById('map');
+  if(!wrap || !mapDiv || !map) return;
+
+  var rect = wrap.getBoundingClientRect();
+  var targetW = Math.round(rect.width);
+  var targetH = Math.round(rect.height);
+  if(targetW <= 0 || targetH <= 0) return;
+
+  mapDiv.style.flex = 'none';
+  mapDiv.style.width = targetW + 'px';
+  mapDiv.style.height = targetH + 'px';
+
+  map.invalidateSize(false);
+  resetMapView();
+}
+
+window.addEventListener('load', function(){
+  setTimeout(forceMapPixelSize, 800);
+  setTimeout(forceMapPixelSize, 2000);
+  setTimeout(forceMapPixelSize, 4000);
+});
+window.addEventListener('resize', forceMapPixelSize);
 
 async function loadZones(){
   const statusEl = document.getElementById('map-status');
