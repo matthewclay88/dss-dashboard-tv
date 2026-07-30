@@ -91,7 +91,7 @@
 
   /* ── MAIN 3-COLUMN LAYOUT ── */
   .main { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
-  .col-left { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .col-left { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
   .col-center { flex: 1.6; min-width: 0; display: flex; flex-direction: column; gap: 0; min-height: 0; }
   .col-right { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; gap: 10px; }
 
@@ -105,16 +105,19 @@
   .queue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; flex-shrink: 0; }
   .queue-card {
     border-radius: 9px; padding: 10px 8px; text-align: center; border: 1px solid;
+    cursor: pointer; transition: transform .12s ease, box-shadow .12s ease;
   }
+  .queue-card:hover { transform: translateY(-1px); }
+  .queue-card.active { box-shadow: 0 0 0 2px currentColor inset; }
   .queue-card .qc-count { font-size: 26px; font-weight: 800; line-height: 1.1; }
   .queue-card .qc-label { font-size: 10px; font-weight: 700; margin-top: 2px; opacity: 0.9; }
-  .queue-card.tor { background: #2a0f0f; border-color: #7f1d1d; }
+  .queue-card.tor { background: #2a0f0f; border-color: #7f1d1d; color: #f87171; }
   .queue-card.tor .qc-count, .queue-card.tor .qc-label { color: #f87171; }
-  .queue-card.svr { background: #2a2405; border-color: #a16207; }
+  .queue-card.svr { background: #2a2405; border-color: #a16207; color: #facc15; }
   .queue-card.svr .qc-count, .queue-card.svr .qc-label { color: #facc15; }
-  .queue-card.ffw { background: #05240f; border-color: #166534; }
+  .queue-card.ffw { background: #05240f; border-color: #166534; color: #4ade80; }
   .queue-card.ffw .qc-count, .queue-card.ffw .qc-label { color: #4ade80; }
-  .queue-card.sqw { background: #190f2e; border-color: #6d28d9; }
+  .queue-card.sqw { background: #190f2e; border-color: #6d28d9; color: #c4b5fd; }
   .queue-card.sqw .qc-count, .queue-card.sqw .qc-label { color: #c4b5fd; }
   .queue-review { padding: 0 12px 12px; font-size: 11px; color: #7a8ba3; display: flex; align-items: center; gap: 6px; }
 
@@ -530,6 +533,7 @@ let viewMode = 'day';         // 'day' or 'range'
 let rangeLabel = '';
 let lastSingleDate = null;    // last single day viewed, so exiting a range returns somewhere sensible
 let lastZoneFitWfo = null;    // tracks which WFO the map was last auto-fit to
+let phenomenaFilter = null;   // 'TO'|'SV'|'FF'|'SQ'|null — set by clicking a queue card
 let map, zoneLayer, warningLayer, lsrLayer;
 let productTextCache = {};
 
@@ -845,16 +849,35 @@ function renderQueue(){
   });
   grid.innerHTML = Object.keys(PHEN_META).map(k => {
     const meta = PHEN_META[k];
-    return `<div class="queue-card ${meta.queueClass}">
+    const active = phenomenaFilter === k;
+    return `<div class="queue-card ${meta.queueClass}${active ? ' active' : ''}" data-phen="${k}" title="Click to ${active ? 'clear filter' : 'filter for ' + meta.name + ' only'}">
       <div class="qc-count">${counts[k]}</div>
       <div class="qc-label">${meta.name.replace(' Warning','')}${counts[k]===1?'':'s'}</div>
     </div>`;
   }).join('');
+  grid.querySelectorAll('.queue-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const k = card.dataset.phen;
+      phenomenaFilter = (phenomenaFilter === k) ? null : k;
+      renderQueue();
+      renderWarnTable();
+      renderSummary();
+      drawWarningsOnMap();
+    });
+  });
   const reviewEl = document.getElementById('queueReview');
   if(needsCount > 0){
     reviewEl.innerHTML = `&#9200; Estimated review time: ~${needsCount*2} minutes`;
   } else {
     reviewEl.innerHTML = `&#9989; Nothing pending review`;
+  }
+  if(phenomenaFilter){
+    reviewEl.innerHTML += ` &nbsp;·&nbsp; <span style="color:#60a5fa;cursor:pointer;" id="clearPhenFilterLink">Showing ${PHEN_META[phenomenaFilter].code} only — clear filter</span>`;
+    const clearLink = document.getElementById('clearPhenFilterLink');
+    if(clearLink) clearLink.addEventListener('click', () => {
+      phenomenaFilter = null;
+      renderQueue(); renderWarnTable(); renderSummary(); drawWarningsOnMap();
+    });
   }
 }
 
@@ -872,6 +895,7 @@ function renderWarnTable(){
   const onlyUnverified = document.getElementById('filterOnlyUnverified').checked;
   let rows = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue));
   if(onlyUnverified) rows = rows.filter(e => e.status !== 'verified');
+  if(phenomenaFilter) rows = rows.filter(e => e.phenomena === phenomenaFilter);
 
   document.getElementById('warnEmpty').style.display = rows.length === 0 ? 'block' : 'none';
 
@@ -896,9 +920,10 @@ function renderWarnTable(){
 //  RENDER: SUMMARY DONUT
 // ══════════════════════════════════════════════════════════════
 function renderSummary(){
+  const scoped = phenomenaFilter ? currentEvents.filter(e => e.phenomena === phenomenaFilter) : currentEvents;
   const counts = { verified:0, pending:0, needs_verification:0 };
-  currentEvents.forEach(e => counts[e.status]++);
-  const total = currentEvents.length;
+  scoped.forEach(e => counts[e.status]++);
+  const total = scoped.length;
   document.getElementById('donutTotal').textContent = total;
 
   const svg = document.getElementById('donutSvg');
@@ -1028,7 +1053,8 @@ async function drawZoneLayer(){
 function drawWarningsOnMap(){
   warningLayer.clearLayers();
   const bounds = [];
-  currentEvents.forEach(e => {
+  const scoped = phenomenaFilter ? currentEvents.filter(e => e.phenomena === phenomenaFilter) : currentEvents;
+  scoped.forEach(e => {
     if(!e.geometry) return;
     const meta = PHEN_META[e.phenomena] || { code: e.phenomena, color: '#94a3b8' };
     const color = meta.color;
