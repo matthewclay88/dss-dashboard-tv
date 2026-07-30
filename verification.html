@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warning Verification — BTV</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 13px;
+    color: #e2e8f0;
+    background: #0a0e14;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: #0d1420;
+    border-bottom: 1px solid #1e2a3a;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 16px;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #101d30; border: 2px solid #2563eb;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 800; color: #60a5fa; text-align: center;
+    flex-shrink: 0;
+  }
+  .header-titles { line-height: 1.25; min-width: 0; }
+  .header-titles h1 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.02em; white-space: nowrap; }
+  .header-titles .sub { font-size: 11px; color: #7a8ba3; white-space: nowrap; }
+
+  .header-center { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .wfo-badge {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd;
+    font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 7px;
+    letter-spacing: 0.04em;
+  }
+  .date-nav { display: flex; align-items: center; gap: 4px; background: #101d30; border: 1px solid #26405c; border-radius: 8px; padding: 4px; }
+  .date-nav button {
+    background: none; border: none; color: #93a3b8; width: 26px; height: 26px; border-radius: 6px;
+    cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .date-nav button:hover { background: #16233a; color: #fff; }
+  .date-nav input[type="date"] {
+    background: none; border: none; color: #e2e8f0; font-size: 12px; font-weight: 700;
+    font-family: inherit; padding: 4px 6px; cursor: pointer;
+  }
+  .date-nav .today-btn {
+    font-size: 10px; font-weight: 700; color: #60a5fa; padding: 4px 8px; border-radius: 6px;
+    cursor: pointer; white-space: nowrap;
+  }
+  .date-nav .today-btn:hover { background: #16233a; }
+
+  .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    background: #101d30; border: 1px solid #26405c; color: #93a3b8;
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    transition: all .15s ease; font-family: inherit;
+  }
+  .icon-btn:hover { color: #fff; border-color: #3b82f6; background: #16233a; }
+  .icon-btn.spinning svg { animation: spin 0.8s linear; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* ── STATUS BANNER (loading / error) ── */
+  .status-banner {
+    padding: 6px 20px; font-size: 11px; font-weight: 600; text-align: center;
+    background: #101d30; color: #93a3b8; border-bottom: 1px solid #1e2a3a; flex-shrink: 0;
+  }
+  .status-banner.error { background: #2a0f0f; color: #fca5a5; }
+  .status-banner.hidden { display: none; }
+
+  /* ── MAIN 3-COLUMN LAYOUT ── */
+  .main { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
+  .col-left { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .col-center { flex: 1.6; min-width: 0; display: flex; flex-direction: column; gap: 0; min-height: 0; }
+  .col-right { width: 360px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; }
+
+  .panel { background: #0f1620; border: 1px solid #1e2a3a; border-radius: 10px; overflow: hidden; }
+  .panel-title {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #93a3b8; padding: 10px 14px; border-bottom: 1px solid #1e2a3a; flex-shrink: 0;
+  }
+
+  /* Queue cards */
+  .queue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; flex-shrink: 0; }
+  .queue-card {
+    border-radius: 9px; padding: 10px 8px; text-align: center; border: 1px solid;
+  }
+  .queue-card .qc-count { font-size: 26px; font-weight: 800; line-height: 1.1; }
+  .queue-card .qc-label { font-size: 10px; font-weight: 700; margin-top: 2px; opacity: 0.9; }
+  .queue-card.tor { background: #2a0f0f; border-color: #7f1d1d; }
+  .queue-card.tor .qc-count, .queue-card.tor .qc-label { color: #f87171; }
+  .queue-card.svr { background: #2a1a05; border-color: #92400e; }
+  .queue-card.svr .qc-count, .queue-card.svr .qc-label { color: #fbbf24; }
+  .queue-card.ffw { background: #05240f; border-color: #166534; }
+  .queue-card.ffw .qc-count, .queue-card.ffw .qc-label { color: #4ade80; }
+  .queue-card.sqw { background: #190f2e; border-color: #6d28d9; }
+  .queue-card.sqw .qc-count, .queue-card.sqw .qc-label { color: #c4b5fd; }
+  .queue-review { padding: 0 12px 12px; font-size: 11px; color: #7a8ba3; display: flex; align-items: center; gap: 6px; }
+
+  /* Warnings table */
+  .warn-table-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .warn-filters { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid #1e2a3a; font-size: 11px; color: #93a3b8; flex-shrink: 0; }
+  .warn-filters label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .warn-scroll { flex: 1; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  .warn-scroll thead th {
+    position: sticky; top: 0; background: #131c2b; text-align: left; font-size: 9.5px; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase; color: #7a8ba3; padding: 7px 8px; border-bottom: 1px solid #1e2a3a;
+  }
+  .warn-scroll tbody td { padding: 8px; font-size: 11.5px; border-bottom: 1px solid #16202e; white-space: nowrap; }
+  .warn-scroll tbody tr { cursor: pointer; border-left: 3px solid transparent; }
+  .warn-scroll tbody tr:hover { background: #131c2b; }
+  .warn-scroll tbody tr.selected { background: #16223a; border-left-color: #3b82f6; }
+  .etn-cell { font-weight: 700; color: #cbd5e1; }
+  .prod-badge {
+    display: inline-block; font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px; letter-spacing: 0.03em;
+  }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .warn-empty { padding: 30px 14px; text-align: center; color: #7a8ba3; font-size: 12px; }
+
+  /* Summary donut */
+  .summary-body { display: flex; align-items: center; gap: 14px; padding: 14px; }
+  .donut-wrap { flex-shrink: 0; position: relative; width: 108px; height: 108px; }
+  .donut-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .donut-center .dc-num { font-size: 20px; font-weight: 800; color: #fff; line-height: 1; }
+  .donut-center .dc-label { font-size: 8.5px; color: #7a8ba3; font-weight: 700; margin-top: 2px; }
+  .summary-legend { display: flex; flex-direction: column; gap: 7px; font-size: 11px; }
+  .summary-legend .leg-row { display: flex; align-items: center; gap: 7px; }
+  .summary-legend .leg-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+  .summary-legend .leg-label { color: #cbd5e1; flex: 1; }
+  .summary-legend .leg-val { color: #93a3b8; font-weight: 700; }
+
+  /* Center: map / reports sub-tabs */
+  .subtabs {
+    display: flex; gap: 4px; padding: 8px 10px; background: #0f1620; border: 1px solid #1e2a3a; border-bottom: none;
+    border-radius: 10px 10px 0 0; flex-shrink: 0;
+  }
+  .subtab-btn {
+    background: none; border: none; color: #7a8ba3; font-size: 11.5px; font-weight: 700; padding: 7px 14px;
+    border-radius: 7px; cursor: pointer; font-family: inherit; letter-spacing: 0.02em;
+  }
+  .subtab-btn:hover { color: #cbd5e1; background: #16233a; }
+  .subtab-btn.active { color: #fff; background: #1d4ed8; }
+  .subtabs .spacer { flex: 1; }
+  .lsr-toggle { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #93a3b8; padding: 0 6px; }
+
+  .center-body {
+    flex: 1; min-height: 0; background: #0f1620; border: 1px solid #1e2a3a; border-top: none;
+    border-radius: 0 0 10px 10px; overflow: hidden; display: flex; flex-direction: column; position: relative;
+  }
+  #map { flex: 1; width: 100%; min-height: 0; background: #182634; }
+  .map-legend-bar {
+    flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 8px 14px; border-top: 1px solid #1e2a3a; background: #101a28; font-size: 11px;
+  }
+  .map-legend-bar .lg-item { display: flex; align-items: center; gap: 5px; color: #93a3b8; font-weight: 600; }
+  .map-legend-bar .lg-dot { width: 9px; height: 9px; border-radius: 3px; }
+
+  .reports-pane { flex: 1; min-height: 0; overflow-y: auto; }
+  .reports-pane table { width: 100%; }
+  .reports-pane thead th {
+    position: sticky; top: 0; background: #131c2b; text-align: left; font-size: 10px; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase; color: #7a8ba3; padding: 8px 10px; border-bottom: 1px solid #1e2a3a;
+  }
+  .reports-pane tbody td { padding: 9px 10px; font-size: 12px; border-bottom: 1px solid #16202e; }
+  .reports-pane tbody tr:hover { background: #131c2b; cursor: pointer; }
+  .warned-chip { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+  .warned-chip.yes { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+  .warned-chip.no { background: #2a0f0f; color: #f87171; border: 1px solid #7f1d1d; }
+
+  /* Right panel: details */
+  .details-empty {
+    flex: 1; display: flex; align-items: center; justify-content: center; text-align: center;
+    color: #5a6b82; font-size: 12.5px; padding: 30px; line-height: 1.6;
+  }
+  .details-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+  .details-header { padding: 12px 14px; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .details-header .etn-badge {
+    background: #1e293b; color: #cbd5e1; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 6px;
+  }
+  .details-header .dh-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .details-section { padding: 12px 14px; border-bottom: 1px solid #1e2a3a; }
+  .details-section:last-child { border-bottom: none; }
+  .details-section .ds-title { font-size: 10px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: #7a8ba3; margin-bottom: 8px; }
+  .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 11.5px; }
+  .kv-grid .kv-k { color: #7a8ba3; font-weight: 600; font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em; }
+  .kv-grid .kv-v { color: #e2e8f0; font-weight: 600; margin-top: 1px; }
+  .vtec-line { font-family: "SFMono-Regular", Consolas, monospace; font-size: 10.5px; color: #93c5fd; word-break: break-all; margin-top: 3px; }
+  .warn-text-box {
+    margin-top: 8px; background: #0a121d; border: 1px solid #1e2a3a; border-radius: 7px; padding: 10px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 10.5px; color: #b9c4d4; line-height: 1.5;
+    max-height: 160px; overflow-y: auto; white-space: pre-wrap;
+  }
+  .view-full-link { display: inline-block; margin-top: 6px; font-size: 11px; color: #60a5fa; text-decoration: none; font-weight: 600; }
+  .view-full-link:hover { text-decoration: underline; }
+
+  .lsr-mini-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .lsr-mini-table th { text-align: left; color: #7a8ba3; font-weight: 700; font-size: 9.5px; text-transform: uppercase; padding: 5px 6px; border-bottom: 1px solid #1e2a3a; }
+  .lsr-mini-table td { padding: 6px 6px; border-bottom: 1px solid #16202e; }
+  .lsr-mini-table tr:hover td { background: #131c2b; cursor: pointer; }
+
+  .confidence-row { display: flex; align-items: center; gap: 14px; }
+  .conf-ring { width: 74px; height: 74px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .conf-ring::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: #0f1620; }
+  .conf-ring .conf-val { position: relative; z-index: 1; font-size: 15px; font-weight: 800; color: #fff; }
+  .match-list { display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; }
+  .match-list .mi { display: flex; align-items: center; gap: 7px; }
+  .match-list .mi.yes { color: #cbd5e1; }
+  .match-list .mi.no { color: #7a8ba3; }
+  .match-list .mi .mi-icon { flex-shrink: 0; font-weight: 800; }
+  .match-list .mi.yes .mi-icon { color: #4ade80; }
+  .match-list .mi.no .mi-icon { color: #64748b; }
+  .conf-note { font-size: 9.5px; color: #5a6b82; margin-top: 8px; line-height: 1.4; }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 9999;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #101a28; border: 1px solid #26405c; border-radius: 12px; width: 520px; max-width: 92vw;
+    max-height: 86vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .modal-box.wide { width: 640px; }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 18px;
+    border-bottom: 1px solid #1e2a3a; flex-shrink: 0;
+  }
+  .modal-header h2 { font-size: 14px; font-weight: 800; color: #fff; }
+  .modal-close { background: none; border: none; color: #7a8ba3; font-size: 18px; cursor: pointer; padding: 0 4px; }
+  .modal-close:hover { color: #fff; }
+  .modal-body { padding: 16px 18px; overflow-y: auto; }
+  .modal-footer { padding: 12px 18px; border-top: 1px solid #1e2a3a; display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+
+  .field-row { margin-bottom: 12px; }
+  .field-row label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #7a8ba3; margin-bottom: 5px; }
+  .field-row input, .field-row select {
+    width: 100%; background: #0d1622; border: 1px solid #26405c; color: #e2e8f0; padding: 8px 10px;
+    border-radius: 7px; font-size: 12.5px; font-family: inherit;
+  }
+  .field-row .hint { font-size: 10px; color: #5a6b82; margin-top: 4px; line-height: 1.4; }
+  .field-row-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn {
+    padding: 8px 16px; border-radius: 7px; border: none; font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: filter .15s ease;
+  }
+  .btn:hover { filter: brightness(1.15); }
+  .btn.primary { background: #2563eb; color: #fff; }
+  .btn.secondary { background: #1e293b; color: #cbd5e1; }
+
+  .archive-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .archive-stat { background: #0d1622; border: 1px solid #1e2a3a; border-radius: 8px; padding: 10px; text-align: center; }
+  .archive-stat .as-val { font-size: 19px; font-weight: 800; color: #fff; }
+  .archive-stat .as-label { font-size: 9.5px; color: #7a8ba3; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 3px; }
+
+  .about-body p { margin-bottom: 10px; line-height: 1.55; color: #cbd5e1; font-size: 12.5px; }
+  .about-body a { color: #60a5fa; }
+  .about-body code { background: #0d1622; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+
+  /* misc */
+  .leaflet-popup-content-wrapper { background: #101a28 !important; color: #e2e8f0 !important; border: 1px solid #26405c !important; }
+  .leaflet-popup-tip { background: #101a28 !important; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a3b52; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">NWS</div>
+    <div class="header-titles">
+      <h1 id="pageTitle">BTV WARNING VERIFICATION</h1>
+      <div class="sub">Verification against IEM Cow / LSR data — unofficial</div>
+    </div>
+  </div>
+  <div class="header-center">
+    <span class="wfo-badge" id="wfoBadge">BTV</span>
+    <div class="date-nav">
+      <button id="prevDayBtn" title="Previous day">&#9664;</button>
+      <input type="date" id="datePicker">
+      <button id="nextDayBtn" title="Next day">&#9654;</button>
+      <span class="today-btn" id="todayBtn">TODAY</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" id="archiveBtn" title="Archive / date range stats">&#128197;</button>
+    <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;</button>
+    <button class="icon-btn" id="aboutBtn" title="About">?</button>
+    <button class="icon-btn" id="refreshBtn" title="Refresh"><span id="refreshIcon">&#8635;</span></button>
+  </div>
+</div>
+
+<div class="status-banner hidden" id="statusBanner">Loading…</div>
+
+<div class="main">
+
+  <!-- LEFT COLUMN -->
+  <div class="col-left">
+    <div class="panel">
+      <div class="panel-title">Verification Queue</div>
+      <div class="queue-grid" id="queueGrid"></div>
+      <div class="queue-review" id="queueReview"></div>
+    </div>
+
+    <div class="panel warn-table-wrap">
+      <div class="warn-filters">
+        <label><input type="checkbox" id="filterOnlyUnverified"> Only unverified</label>
+      </div>
+      <div class="warn-scroll">
+        <table>
+          <thead><tr>
+            <th>ETN</th><th>Product</th><th>County/Zone</th><th>Expires (Local)</th><th>Status</th>
+          </tr></thead>
+          <tbody id="warnTableBody"></tbody>
+        </table>
+        <div class="warn-empty" id="warnEmpty" style="display:none;">No Tornado, Severe, Flash Flood, or Snow Squall warnings for this day.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Verification Summary</div>
+      <div class="summary-body">
+        <div class="donut-wrap">
+          <svg viewBox="0 0 100 100" width="108" height="108" id="donutSvg"></svg>
+          <div class="donut-center"><div class="dc-num" id="donutTotal">0</div><div class="dc-label">TOTAL</div></div>
+        </div>
+        <div class="summary-legend" id="summaryLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER COLUMN -->
+  <div class="col-center">
+    <div class="subtabs">
+      <button class="subtab-btn active" data-subtab="map">MAP</button>
+      <button class="subtab-btn" data-subtab="reports">REPORTS</button>
+      <div class="spacer"></div>
+      <label class="lsr-toggle"><input type="checkbox" id="showLsrToggle" checked> Show LSRs on map</label>
+    </div>
+    <div class="center-body">
+      <div id="mapView" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+        <div id="map"></div>
+        <div class="map-legend-bar" id="mapLegendBar"></div>
+      </div>
+      <div id="reportsView" style="display:none; flex:1; min-height:0; flex-direction:column;">
+        <div class="reports-pane">
+          <table>
+            <thead><tr>
+              <th>Time (Local)</th><th>Type</th><th>Magnitude</th><th>Location</th><th>Warned?</th><th>Assoc. ETN</th>
+            </tr></thead>
+            <tbody id="reportsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col-right panel">
+    <div class="panel-title">Warning Details</div>
+    <div class="details-empty" id="detailsEmpty">Select a warning from the table or map to view verification details.</div>
+    <div class="details-scroll" id="detailsScroll" style="display:none;"></div>
+  </div>
+
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Settings</h2><button class="modal-close" data-close="settingsModal">&times;</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <label>WFO (3-letter office ID)</label>
+        <input type="text" id="setWfo" maxlength="3" style="text-transform:uppercase;">
+        <div class="hint">e.g. BTV (Burlington), ALY (Albany), GYX (Gray/Portland). Determines which office's warnings are pulled from IEM.</div>
+      </div>
+      <div class="field-row">
+        <label>Calendar-day timezone (IANA name)</label>
+        <input type="text" id="setTimezone">
+        <div class="hint">Controls where the day boundary falls, instead of 00Z. e.g. America/New_York</div>
+      </div>
+      <div class="field-row-pair">
+        <div class="field-row">
+          <label>Hail size threshold (in)</label>
+          <input type="number" id="setHail" step="0.25" min="0">
+        </div>
+        <div class="field-row">
+          <label>Wind threshold (mph)</label>
+          <input type="number" id="setWind" step="1" min="0">
+        </div>
+      </div>
+      <div class="field-row">
+        <label>LSR search buffer (km)</label>
+        <input type="number" id="setBuffer" step="1" min="1">
+        <div class="hint">How far from the warning polygon IEM will look for a verifying Local Storm Report.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" data-close="settingsModal">Cancel</button>
+      <button class="btn primary" id="saveSettingsBtn">Save &amp; Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- ARCHIVE MODAL -->
+<div class="modal-overlay" id="archiveModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Archive — Date Range Stats</h2><button class="modal-close" data-close="archiveModal">&times;</button></div>
+    <div class="modal-body">
+      <div class="field-row-pair">
+        <div class="field-row"><label>Start date</label><input type="date" id="archiveStart"></div>
+        <div class="field-row"><label>End date</label><input type="date" id="archiveEnd"></div>
+      </div>
+      <div class="hint" style="margin-bottom:10px;">Range is inclusive, using the same calendar-day timezone as the main view. Large ranges may take a few seconds.</div>
+      <button class="btn primary" id="runArchiveBtn">Run</button>
+      <div id="archiveResults"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal-box wide">
+    <div class="modal-header"><h2>About This Tool</h2><button class="modal-close" data-close="aboutModal">&times;</button></div>
+    <div class="modal-body about-body">
+      <p><strong>What this is:</strong> a warning verification browser for Tornado (TOR), Severe Thunderstorm (SVR), Flash Flood (FFW), and Snow Squall (SQW) warnings, built on top of the Iowa Environmental Mesonet's <a href="https://mesonet.agron.iastate.edu/cow/" target="_blank">IEM Cow</a> service. IEM Cow automatically checks each storm-based warning polygon against Local Storm Reports (LSRs) to determine whether it verified.</p>
+      <p><strong>Verification status</strong> shown here is computed as: <strong>Verified</strong> if IEM found a matching LSR of the right type, within the time window, inside the buffered warning polygon. <strong>Needs Verification</strong> if the warning has fully expired with no matching LSR found. <strong>Pending</strong> if the warning is still active (verification isn't final until it expires or a report comes in).</p>
+      <p><strong>Calendar day:</strong> dates here are bounded by local midnight in the configured timezone (Settings), not 00Z UTC — so an overnight event isn't split across two different "days" the way a strict UTC day would.</p>
+      <p><strong>Confidence score:</strong> the percentage shown per-warning is a simple, unofficial heuristic (based on lead time and number of matching reports) meant to give a quick visual sense of how solid the verification is — it is <em>not</em> an NWS or IEM statistic.</p>
+      <p><strong>Data is unofficial.</strong> Per IEM's own disclaimer, this data is intended for educational/situational-awareness use, not as an official verification record.</p>
+      <p>Basemap: CartoDB Voyager. Zone boundaries: community-maintained NWS forecast zone GeoJSON. Map library: Leaflet.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════════════════
+const PHEN_META = {
+  TO: { code: 'TOR', name: 'Tornado Warning',            queueClass: 'tor', color: '#ef4444' },
+  SV: { code: 'SVR', name: 'Severe Thunderstorm Warning', queueClass: 'svr', color: '#f59e0b' },
+  FF: { code: 'FFW', name: 'Flash Flood Warning',         queueClass: 'ffw', color: '#22c55e' },
+  SQ: { code: 'SQW', name: 'Snow Squall Warning',         queueClass: 'sqw', color: '#a855f7' }
+};
+const STATUS_META = {
+  verified:           { label: 'Verified',            color: '#4ade80' },
+  pending:            { label: 'Pending',             color: '#f0c419' },
+  needs_verification: { label: 'Needs Verification',  color: '#ef4444' }
+};
+const ZONE_GEOJSON_URL = 'https://raw.githubusercontent.com/matthewclay88/severe-climatology/main/allzones.geojson';
+const COW_API = 'https://mesonet.agron.iastate.edu/api/1/cow.json';
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 58, lsrbuffer: 15 };
+let selectedDateStr = null;   // 'YYYY-MM-DD' in settings.timezone
+let currentEvents = [];       // parsed + status-enriched event objects
+let currentReports = [];      // parsed report objects
+let selectedEventId = null;
+let showLsrs = true;
+let zoneGeoJsonCache = null;
+let map, zoneLayer, warningLayer, lsrLayer;
+let productTextCache = {};
+
+// ══════════════════════════════════════════════════════════════
+//  DATE / TIMEZONE HELPERS
+// ══════════════════════════════════════════════════════════════
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function todayInTZ(tz){
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(new Date());
+  const o = {}; parts.forEach(p=>{ if(p.type!=='literal') o[p.type]=p.value; });
+  return `${o.year}-${o.month}-${o.day}`;
+}
+
+// Pure calendar-day arithmetic (no timezone involved) — treats the
+// Y-M-D string as a date-only value.
+function addDaysToDateStr(dateStr, n){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth()+1)}-${pad2(dt.getUTCDate())}`;
+}
+
+// Finds the UTC instant that reads as local midnight (00:00:00) of the
+// given Y-M-D date in the given IANA timezone. Iterates twice to settle
+// on DST-transition edge cases.
+function localMidnightToUTC(dateStr, tz){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const targetUTCms = Date.UTC(y, m-1, d, 0, 0, 0);
+  let guess = new Date(targetUTCms);
+  const dtf = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  for(let i=0;i<3;i++){
+    const parts = dtf.formatToParts(guess).reduce((acc,p)=>{ if(p.type!=='literal') acc[p.type]=parseInt(p.value,10); return acc; }, {});
+    const asIfUTC = Date.UTC(parts.year, parts.month-1, parts.day, parts.hour, parts.minute, parts.second);
+    const diff = targetUTCms - asIfUTC;
+    if(diff === 0) break;
+    guess = new Date(guess.getTime() + diff);
+  }
+  return guess;
+}
+
+function isoZ(d){ return d.toISOString().replace(/\.\d+Z$/, 'Z'); }
+
+function fmtLocal(isoStr, tz){
+  if(!isoStr) return '—';
+  const d = new Date(isoStr);
+  return d.toLocaleString('en-US', { timeZone: tz, month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) ;
+}
+function fmtLocalFull(isoStr, tz){
+  if(!isoStr) return '—';
+  const d = new Date(isoStr);
+  return d.toLocaleString('en-US', { timeZone: tz, month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit' }) + ' ' +
+    new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName:'short' }).formatToParts(d).find(p=>p.type==='timeZoneName').value;
+}
+
+function haversineMiles(lat1, lon1, lat2, lon2){
+  const R = 3958.8;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function escapeHtml(str){
+  if(str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STATUS COMPUTATION
+// ══════════════════════════════════════════════════════════════
+function computeStatus(props){
+  if(props.verify) return 'verified';
+  const expireMs = new Date(props.expire).getTime();
+  if(Date.now() < expireMs) return 'pending';
+  return 'needs_verification';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FETCHING
+// ══════════════════════════════════════════════════════════════
+function setStatus(msg, isError){
+  const el = document.getElementById('statusBanner');
+  if(!msg){ el.classList.add('hidden'); return; }
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  el.classList.toggle('error', !!isError);
+}
+
+async function fetchCowData(dateStr){
+  const startUTC = localMidnightToUTC(dateStr, settings.timezone);
+  const endUTC = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
+
+  const params = new URLSearchParams();
+  params.set('wfo', settings.wfo);
+  ['TO','SV','FF','SQ'].forEach(p => params.append('phenomena', p));
+  params.set('begints', isoZ(startUTC));
+  params.set('endts', isoZ(endUTC));
+  params.set('hailsize', settings.hailsize);
+  params.set('wind', settings.wind);
+  params.set('lsrbuffer', settings.lsrbuffer);
+
+  const res = await fetch(COW_API + '?' + params.toString());
+  if(!res.ok) throw new Error('IEM Cow API returned HTTP ' + res.status);
+  return res.json();
+}
+
+async function loadDay(dateStr){
+  selectedDateStr = dateStr;
+  selectedEventId = null;
+  document.getElementById('datePicker').value = dateStr;
+  setStatus('Loading warnings for ' + dateStr + ' from IEM Cow…', false);
+  try{
+    const data = await fetchCowData(dateStr);
+    currentEvents = (data.events.features || []).map(f => {
+      const p = f.properties;
+      return {
+        id: f.id,
+        geometry: f.geometry,
+        etn: p.eventid,
+        phenomena: p.phenomena,
+        significance: p.significance,
+        wfo: p.wfo,
+        issue: p.issue,
+        expire: p.expire,
+        counties: p.ar_ugcname || [],
+        fcster: p.fcster,
+        verify: p.verify,
+        lead0: p.lead0,
+        windtag: p.windtag,
+        hailtag: p.hailtag,
+        stormreports: (p.stormreports || '').split(',').filter(Boolean),
+        stormreports_all: (p.stormreports_all || '').split(',').filter(Boolean),
+        product_id: p.product_id,
+        product_href: p.product_href,
+        product_text_url: p.product_text,
+        link: p.link,
+        year: p.year,
+        status: computeStatus(p)
+      };
+    });
+    currentReports = (data.stormreports.features || []).map(f => {
+      const p = f.properties;
+      return {
+        id: f.id,
+        lat: f.geometry.coordinates[1],
+        lon: f.geometry.coordinates[0],
+        city: p.city, county: p.county, state: p.state,
+        valid: p.valid, lsrtype: p.lsrtype, magnitude: p.magnitude,
+        remark: p.remark, source: p.source, leadtime: p.leadtime,
+        warned: p.warned, events: p.events, typetext: p.typetext
+      };
+    });
+    setStatus(null);
+  } catch(err){
+    console.error(err);
+    currentEvents = [];
+    currentReports = [];
+    setStatus('Could not load data from IEM: ' + err.message, true);
+  }
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: QUEUE CARDS
+// ══════════════════════════════════════════════════════════════
+function renderQueue(){
+  const grid = document.getElementById('queueGrid');
+  const counts = { TO:0, SV:0, FF:0, SQ:0 };
+  let needsCount = 0;
+  currentEvents.forEach(e => {
+    if(counts[e.phenomena] !== undefined) counts[e.phenomena]++;
+    if(e.status === 'needs_verification') needsCount++;
+  });
+  grid.innerHTML = Object.keys(PHEN_META).map(k => {
+    const meta = PHEN_META[k];
+    return `<div class="queue-card ${meta.queueClass}">
+      <div class="qc-count">${counts[k]}</div>
+      <div class="qc-label">${meta.name.replace(' Warning','')}${counts[k]===1?'':'s'}</div>
+    </div>`;
+  }).join('');
+  const reviewEl = document.getElementById('queueReview');
+  if(needsCount > 0){
+    reviewEl.innerHTML = `&#9200; Estimated review time: ~${needsCount*2} minutes`;
+  } else {
+    reviewEl.innerHTML = `&#9989; Nothing pending review`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: WARNINGS TABLE
+// ══════════════════════════════════════════════════════════════
+function countyLabel(counties){
+  if(!counties || counties.length === 0) return '—';
+  if(counties.length === 1) return counties[0];
+  return counties[0] + ' +' + (counties.length-1);
+}
+
+function renderWarnTable(){
+  const tbody = document.getElementById('warnTableBody');
+  const onlyUnverified = document.getElementById('filterOnlyUnverified').checked;
+  let rows = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue));
+  if(onlyUnverified) rows = rows.filter(e => e.status !== 'verified');
+
+  document.getElementById('warnEmpty').style.display = rows.length === 0 ? 'block' : 'none';
+
+  tbody.innerHTML = rows.map(e => {
+    const meta = PHEN_META[e.phenomena] || { code: e.phenomena, name: e.phenomena, color:'#94a3b8' };
+    const st = STATUS_META[e.status];
+    return `<tr data-id="${escapeHtml(e.id)}" class="${e.id === selectedEventId ? 'selected' : ''}">
+      <td class="etn-cell">${e.etn}</td>
+      <td><span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span></td>
+      <td>${escapeHtml(countyLabel(e.counties))}</td>
+      <td>${fmtLocal(e.expire, settings.timezone)}</td>
+      <td><span class="status-pill" style="color:${st.color};"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span></td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', () => selectEvent(tr.dataset.id));
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: SUMMARY DONUT
+// ══════════════════════════════════════════════════════════════
+function renderSummary(){
+  const counts = { verified:0, pending:0, needs_verification:0 };
+  currentEvents.forEach(e => counts[e.status]++);
+  const total = currentEvents.length;
+  document.getElementById('donutTotal').textContent = total;
+
+  const svg = document.getElementById('donutSvg');
+  const order = ['verified','needs_verification','pending'];
+  let cumulative = 0;
+  const R = 40, CX = 50, CY = 50, STROKE = 14;
+  const circumference = 2 * Math.PI * R;
+
+  let arcs = '';
+  if(total === 0){
+    arcs = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#1e2a3a" stroke-width="${STROKE}"/>`;
+  } else {
+    order.forEach(key => {
+      const val = counts[key];
+      if(val === 0) return;
+      const frac = val / total;
+      const dash = frac * circumference;
+      const gap = circumference - dash;
+      const rotation = (cumulative / total) * 360 - 90;
+      arcs += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${STATUS_META[key].color}" stroke-width="${STROKE}"
+        stroke-dasharray="${dash} ${gap}" transform="rotate(${rotation} ${CX} ${CY})"/>`;
+      cumulative += val;
+    });
+  }
+  svg.innerHTML = arcs;
+
+  const legend = document.getElementById('summaryLegend');
+  legend.innerHTML = order.map(key => {
+    const pct = total ? Math.round((counts[key]/total)*100) : 0;
+    return `<div class="leg-row">
+      <span class="leg-dot" style="background:${STATUS_META[key].color};"></span>
+      <span class="leg-label">${STATUS_META[key].label}</span>
+      <span class="leg-val">${counts[key]} (${pct}%)</span>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: REPORTS TABLE
+// ══════════════════════════════════════════════════════════════
+function renderReportsTable(){
+  const tbody = document.getElementById('reportsTableBody');
+  const rows = currentReports.slice().sort((a,b) => new Date(a.valid) - new Date(b.valid));
+  tbody.innerHTML = rows.map(r => {
+    const loc = [r.city, r.county ? r.county+' Co, ' : '', r.state].filter(Boolean).join(', ').replace(', ,', ',');
+    const assoc = (r.events || '').split(',').filter(Boolean);
+    return `<tr data-report-id="${r.id}">
+      <td>${fmtLocal(r.valid, settings.timezone)}</td>
+      <td>${escapeHtml(r.typetext || r.lsrtype)}</td>
+      <td>${r.magnitude !== null && r.magnitude !== undefined ? r.magnitude : '—'}</td>
+      <td>${escapeHtml(loc || '—')}</td>
+      <td><span class="warned-chip ${r.warned ? 'yes':'no'}">${r.warned ? 'Warned':'Unwarned'}</span></td>
+      <td>${assoc.map(a=>{
+        const ev = currentEvents.find(e=>e.id===a);
+        return ev ? `<span class="etn-cell" data-jump-etn="${escapeHtml(a)}" style="cursor:pointer;color:#60a5fa;">#${ev.etn}</span>` : '';
+      }).join(' ') || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('[data-jump-etn]').forEach(el => {
+    el.addEventListener('click', (ev) => { ev.stopPropagation(); switchSubtab('map'); selectEvent(el.dataset.jumpEtn); });
+  });
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const r = currentReports.find(x => String(x.id) === tr.dataset.reportId);
+      if(r && map) { map.setView([r.lat, r.lon], 11); }
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════════════════════════
+function initMap(){
+  map = L.map('map', { zoomControl: true, attributionControl: false, preferCanvas: true, zoomSnap: 0, zoomDelta: 0.25 });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+  zoneLayer = L.layerGroup().addTo(map);
+  warningLayer = L.layerGroup().addTo(map);
+  lsrLayer = L.layerGroup().addTo(map);
+  map.setView([44.3,-72.9], 7);
+
+  fetch(ZONE_GEOJSON_URL).then(r=>r.json()).then(data => {
+    zoneGeoJsonCache = data;
+    drawZoneLayer();
+  }).catch(err => console.warn('zone geojson load failed', err));
+}
+
+function drawZoneLayer(){
+  if(!zoneGeoJsonCache) return;
+  zoneLayer.clearLayers();
+  const features = zoneGeoJsonCache.features.filter(f => f.properties && f.properties.CWA === settings.wfo);
+  L.geoJSON({ type:'FeatureCollection', features }, {
+    style: { color:'#3a4f6c', weight:1, opacity:0.5, fillOpacity:0 }
+  }).addTo(zoneLayer);
+}
+
+function drawWarningsOnMap(){
+  warningLayer.clearLayers();
+  const bounds = [];
+  currentEvents.forEach(e => {
+    if(!e.geometry) return;
+    const color = STATUS_META[e.status].color;
+    const gj = L.geoJSON(e.geometry, {
+      style: { color: color, weight: e.id === selectedEventId ? 3.5 : 2, fillColor: color, fillOpacity: e.id === selectedEventId ? 0.4 : 0.22 }
+    });
+    gj.on('click', () => selectEvent(e.id));
+    gj.bindTooltip(`${(PHEN_META[e.phenomena]||{}).code || e.phenomena} #${e.etn} — ${STATUS_META[e.status].label}`, { sticky: true });
+    gj.addTo(warningLayer);
+    try{ bounds.push(gj.getBounds()); }catch(err){}
+    e._mapLayer = gj;
+  });
+  if(bounds.length){
+    let combined = bounds[0];
+    bounds.slice(1).forEach(b => combined.extend(b));
+    map.fitBounds(combined, { padding: [30,30], maxZoom: 10 });
+  }
+}
+
+function drawLsrsOnMap(){
+  lsrLayer.clearLayers();
+  if(!showLsrs) return;
+  currentReports.forEach(r => {
+    const color = r.warned ? '#4ade80' : '#f87171';
+    const marker = L.circleMarker([r.lat, r.lon], {
+      radius: 5, color: '#fff', weight: 1, fillColor: color, fillOpacity: 0.9
+    });
+    const assoc = (r.events || '').split(',').filter(Boolean);
+    let assocHtml = assoc.map(a => {
+      const ev = currentEvents.find(e => e.id === a);
+      return ev ? `<div style="margin-top:4px;"><a href="#" data-jump="${escapeHtml(a)}" style="color:#60a5fa;">View ${(PHEN_META[ev.phenomena]||{}).code||ev.phenomena} #${ev.etn} details →</a></div>` : '';
+    }).join('');
+    marker.bindPopup(
+      `<div style="min-width:180px;"><b>${escapeHtml(r.typetext||r.lsrtype)}</b>${r.magnitude!==null&&r.magnitude!==undefined?' — '+r.magnitude:''}<br>` +
+      `${escapeHtml(r.city||'')}${r.county?', '+escapeHtml(r.county)+' Co':''} ${escapeHtml(r.state||'')}<br>` +
+      `<span style="color:#93a3b8;">${fmtLocal(r.valid, settings.timezone)}</span><br>` +
+      `${r.remark ? '<span style="color:#93a3b8;font-size:11px;">'+escapeHtml(r.remark)+'</span><br>' : ''}` +
+      `${assocHtml || '<span style="color:#f87171;">Not associated with any warning</span>'}</div>`
+    );
+    marker.on('popupopen', (ev) => {
+      const el = ev.popup._contentNode.querySelector('[data-jump]');
+      if(el) el.addEventListener('click', (clickEv) => { clickEv.preventDefault(); selectEvent(el.dataset.jump); });
+    });
+    marker.addTo(lsrLayer);
+  });
+}
+
+function renderMapLegend(){
+  const bar = document.getElementById('mapLegendBar');
+  let html = Object.keys(STATUS_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${STATUS_META[k].color};"></span>${STATUS_META[k].label}</span>`).join('');
+  if(showLsrs){
+    html += `<span class="lg-item"><span class="lg-dot" style="background:#4ade80;border-radius:50%;"></span>Warned LSR</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:#f87171;border-radius:50%;"></span>Unwarned LSR</span>`;
+  }
+  bar.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SELECT EVENT + RENDER DETAILS
+// ══════════════════════════════════════════════════════════════
+function selectEvent(id){
+  selectedEventId = id;
+  renderWarnTable();
+  drawWarningsOnMap();
+  drawLsrsOnMap();
+  const e = currentEvents.find(x => x.id === id);
+  if(!e) return;
+  if(e._mapLayer){
+    try{ map.fitBounds(e._mapLayer.getBounds(), { padding: [50,50], maxZoom: 10 }); }catch(err){}
+  }
+  renderDetails(e);
+}
+
+async function getProductText(e){
+  if(productTextCache[e.product_id]) return productTextCache[e.product_id];
+  try{
+    const res = await fetch(e.product_text_url);
+    const text = await res.text();
+    productTextCache[e.product_id] = text;
+    return text;
+  }catch(err){
+    return null;
+  }
+}
+
+function extractVtecLine(text){
+  if(!text) return null;
+  const m = text.match(/\/[OT]\.[A-Z]{3}\.[A-Z]{4}\.[A-Z]{2}\.[A-Z]\.\d{4}\.\d{6}T\d{4}Z-\d{6}T\d{4}Z\//);
+  return m ? m[0] : null;
+}
+
+function extractWarningBody(text){
+  if(!text) return null;
+  // Strip the WMO/AFOS header lines and leading UGC/VTEC lines, keep the
+  // human-readable bulletin body.
+  const lines = text.split('\n');
+  let startIdx = 0;
+  for(let i=0;i<lines.length;i++){
+    if(/^(BULLETIN|URGENT|Severe|Flash|Tornado|Snow Squall)/i.test(lines[i].trim())){ startIdx = i; break; }
+  }
+  return lines.slice(startIdx).join('\n').trim();
+}
+
+function computeConfidence(e, topReport){
+  if(e.status === 'pending') return null;
+  if(!e.verify) return 8;
+  let score = 55;
+  if(e.lead0 !== null && e.lead0 !== undefined) score += Math.min(20, e.lead0 / 2);
+  score += Math.min(15, e.stormreports.length * 6);
+  if(topReport && topReport.leadtime !== null && topReport.leadtime !== undefined && topReport.leadtime >= 0) score += 8;
+  return Math.max(5, Math.min(99, Math.round(score)));
+}
+
+async function renderDetails(e){
+  document.getElementById('detailsEmpty').style.display = 'none';
+  const scroll = document.getElementById('detailsScroll');
+  scroll.style.display = 'block';
+
+  const meta = PHEN_META[e.phenomena] || { code: e.phenomena, name: e.phenomena, color:'#94a3b8' };
+  const st = STATUS_META[e.status];
+  const matchedReports = e.stormreports.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
+  const allNearbyReports = e.stormreports_all.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
+  const topReport = matchedReports[0] || null;
+
+  const centerLat = e.geometry && e.geometry.coordinates ? null : null;
+
+  scroll.innerHTML = `
+    <div class="details-header">
+      <span class="etn-badge">ETN ${e.etn}</span>
+      <span class="dh-title">${meta.name}</span>
+      <span class="status-pill" style="color:${st.color};margin-left:auto;"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span>
+    </div>
+    <div class="details-section">
+      <div class="kv-grid">
+        <div><div class="kv-k">Issued</div><div class="kv-v">${fmtLocalFull(e.issue, settings.timezone)}</div></div>
+        <div><div class="kv-k">Expires</div><div class="kv-v">${fmtLocalFull(e.expire, settings.timezone)}</div></div>
+        <div><div class="kv-k">County/Zone</div><div class="kv-v">${escapeHtml((e.counties||[]).join(', ') || '—')}</div></div>
+        <div><div class="kv-k">Forecaster</div><div class="kv-v">${escapeHtml(e.fcster || '—')}</div></div>
+      </div>
+      <div class="kv-k" style="margin-top:10px;">VTEC</div>
+      <div class="vtec-line" id="vtecLine-${e.id}">Loading…</div>
+      <div class="kv-k" style="margin-top:10px;">Warning Text</div>
+      <div class="warn-text-box" id="warnText-${e.id}">Loading full text…</div>
+      <a class="view-full-link" href="${e.product_href}" target="_blank">View Full Text on IEM →</a>
+      &nbsp;·&nbsp;
+      <a class="view-full-link" href="${e.link}" target="_blank">Open in VTEC Browser →</a>
+    </div>
+    <div class="details-section">
+      <div class="ds-title">Associated Reports — Matched (${matchedReports.length}) / Nearby (${allNearbyReports.length})</div>
+      ${matchedReports.length === 0 ? '<div style="color:#7a8ba3;font-size:11.5px;">No verifying LSR found.</div>' : `
+      <table class="lsr-mini-table">
+        <thead><tr><th>Time</th><th>Type</th><th>Mag.</th><th>Location</th><th>Dist.</th></tr></thead>
+        <tbody>
+          ${matchedReports.map(r => {
+            const dist = (e.lead0 !== null && r) ? '' : '';
+            return `<tr data-report-id="${r.id}">
+              <td>${fmtLocal(r.valid, settings.timezone)}</td>
+              <td>${escapeHtml(r.typetext || r.lsrtype)}</td>
+              <td>${r.magnitude !== null && r.magnitude !== undefined ? r.magnitude : '—'}</td>
+              <td>${escapeHtml(r.city || '—')}</td>
+              <td>${e.geometry ? distToEventMi(e, r).toFixed(1)+' mi' : '—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`}
+    </div>
+    <div class="details-section">
+      <div class="ds-title">Verification</div>
+      <div class="confidence-row">
+        <div class="conf-ring" id="confRing-${e.id}"><div class="conf-val" id="confVal-${e.id}">–</div></div>
+        <div class="match-list">
+          <div class="mi ${e.verify ? 'yes':'no'}"><span class="mi-icon">${e.verify?'✓':'—'}</span>Report inside warning polygon</div>
+          <div class="mi ${e.verify ? 'yes':'no'}"><span class="mi-icon">${e.verify?'✓':'—'}</span>Report time within warning window</div>
+          <div class="mi ${e.status==='pending' ? 'no':'yes'}"><span class="mi-icon">${e.status==='pending'?'…':'✓'}</span>${e.status==='pending' ? 'Warning still active' : 'Warning window closed'}</div>
+          ${e.phenomena === 'SV' && topReport ? `<div class="mi ${criteriaMetForSV(e, topReport) ? 'yes':'no'}"><span class="mi-icon">${criteriaMetForSV(e, topReport)?'✓':'✕'}</span>Severe criteria met (wind ${settings.wind}+ mph / hail ${settings.hailsize}+ in)</div>` : ''}
+          ${topReport && topReport.leadtime !== null && topReport.leadtime !== undefined ? `<div class="mi yes"><span class="mi-icon">✓</span>Lead time: ${topReport.leadtime} min</div>` : ''}
+        </div>
+      </div>
+      <div class="conf-note">Confidence is an unofficial heuristic based on lead time and matching-report count — not an NWS/IEM statistic. See About for methodology.</div>
+    </div>
+  `;
+
+  // Confidence ring
+  const conf = computeConfidence(e, topReport);
+  const ringEl = document.getElementById('confRing-'+e.id);
+  const valEl = document.getElementById('confVal-'+e.id);
+  if(ringEl && valEl){
+    if(conf === null){
+      valEl.textContent = 'N/A';
+      ringEl.style.background = `conic-gradient(#374151 0% 100%)`;
+    } else {
+      valEl.textContent = conf + '%';
+      const color = conf >= 70 ? '#4ade80' : conf >= 35 ? '#f0c419' : '#ef4444';
+      ringEl.style.background = `conic-gradient(${color} 0% ${conf}%, #1e2a3a ${conf}% 100%)`;
+    }
+  }
+
+  // Async: VTEC + warning text
+  const text = await getProductText(e);
+  const vtecEl = document.getElementById('vtecLine-'+e.id);
+  const textEl = document.getElementById('warnText-'+e.id);
+  if(vtecEl) vtecEl.textContent = extractVtecLine(text) || '(unavailable)';
+  if(textEl) textEl.textContent = extractWarningBody(text) || '(could not load warning text)';
+
+  scroll.querySelectorAll('[data-report-id]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const r = currentReports.find(x => String(x.id) === tr.dataset.reportId);
+      if(r && map){ switchSubtab('map'); map.setView([r.lat, r.lon], 12); }
+    });
+  });
+}
+
+function distToEventMi(e, r){
+  // Use polygon centroid via Leaflet bounds if available.
+  try{
+    const b = L.geoJSON(e.geometry).getBounds().getCenter();
+    return haversineMiles(b.lat, b.lng, r.lat, r.lon);
+  }catch(err){ return 0; }
+}
+
+function criteriaMetForSV(e, report){
+  if(report.lsrtype === 'H') return e.hailtag ? report.magnitude >= e.hailtag : report.magnitude >= settings.hailsize;
+  if(report.lsrtype === 'G' || report.lsrtype === 'D') return e.windtag ? (report.magnitude||0) >= e.windtag : (report.magnitude||0) >= settings.wind;
+  return true;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER ALL
+// ══════════════════════════════════════════════════════════════
+function renderAll(){
+  renderQueue();
+  renderWarnTable();
+  renderSummary();
+  renderReportsTable();
+  drawZoneLayer();
+  drawWarningsOnMap();
+  drawLsrsOnMap();
+  renderMapLegend();
+  if(selectedEventId){
+    const e = currentEvents.find(x=>x.id===selectedEventId);
+    if(e) renderDetails(e);
+    else { document.getElementById('detailsEmpty').style.display='flex'; document.getElementById('detailsScroll').style.display='none'; }
+  } else {
+    document.getElementById('detailsEmpty').style.display='flex';
+    document.getElementById('detailsScroll').style.display='none';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SUBTABS
+// ══════════════════════════════════════════════════════════════
+function switchSubtab(name){
+  document.querySelectorAll('.subtab-btn').forEach(b => b.classList.toggle('active', b.dataset.subtab === name));
+  document.getElementById('mapView').style.display = name === 'map' ? 'flex' : 'none';
+  document.getElementById('reportsView').style.display = name === 'reports' ? 'flex' : 'none';
+  if(name === 'map' && map) setTimeout(()=>map.invalidateSize(), 50);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ARCHIVE
+// ══════════════════════════════════════════════════════════════
+async function runArchive(){
+  const startStr = document.getElementById('archiveStart').value;
+  const endStr = document.getElementById('archiveEnd').value;
+  const resultsEl = document.getElementById('archiveResults');
+  if(!startStr || !endStr){ resultsEl.innerHTML = '<div class="hint">Pick both a start and end date.</div>'; return; }
+  resultsEl.innerHTML = '<div class="hint">Loading…</div>';
+  try{
+    const startUTC = localMidnightToUTC(startStr, settings.timezone);
+    const endUTC = localMidnightToUTC(addDaysToDateStr(endStr, 1), settings.timezone);
+    const params = new URLSearchParams();
+    params.set('wfo', settings.wfo);
+    ['TO','SV','FF','SQ'].forEach(p => params.append('phenomena', p));
+    params.set('begints', isoZ(startUTC));
+    params.set('endts', isoZ(endUTC));
+    params.set('hailsize', settings.hailsize);
+    params.set('wind', settings.wind);
+    params.set('lsrbuffer', settings.lsrbuffer);
+    const res = await fetch(COW_API + '?' + params.toString());
+    const data = await res.json();
+    const s = data.stats;
+    resultsEl.innerHTML = `
+      <div class="archive-stats-grid">
+        <div class="archive-stat"><div class="as-val">${s.events_total}</div><div class="as-label">Events</div></div>
+        <div class="archive-stat"><div class="as-val">${s.events_verified}</div><div class="as-label">Verified</div></div>
+        <div class="archive-stat"><div class="as-val">${(s['POD[1]']*100).toFixed(0)}%</div><div class="as-label">POD</div></div>
+        <div class="archive-stat"><div class="as-val">${(s['FAR[1]']*100).toFixed(0)}%</div><div class="as-label">FAR</div></div>
+        <div class="archive-stat"><div class="as-val">${s['CSI[1]'].toFixed(2)}</div><div class="as-label">CSI</div></div>
+        <div class="archive-stat"><div class="as-val">${s['avg_leadtime[min]'] === null ? '—' : Math.round(s['avg_leadtime[min]'])+'m'}</div><div class="as-label">Avg Lead</div></div>
+        <div class="archive-stat"><div class="as-val">${s.reports_total}</div><div class="as-label">Total LSRs</div></div>
+        <div class="archive-stat"><div class="as-val">${s.unwarned_reports}</div><div class="as-label">Unwarned LSRs</div></div>
+        <div class="archive-stat"><div class="as-val">${s['area_verify[%]'].toFixed(0)}%</div><div class="as-label">Area Verified</div></div>
+      </div>
+    `;
+  }catch(err){
+    resultsEl.innerHTML = '<div class="hint" style="color:#f87171;">Error: '+escapeHtml(err.message)+'</div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EVENT WIRING
+// ══════════════════════════════════════════════════════════════
+document.getElementById('prevDayBtn').addEventListener('click', () => loadDay(addDaysToDateStr(selectedDateStr, -1)));
+document.getElementById('nextDayBtn').addEventListener('click', () => loadDay(addDaysToDateStr(selectedDateStr, 1)));
+document.getElementById('todayBtn').addEventListener('click', () => loadDay(todayInTZ(settings.timezone)));
+document.getElementById('datePicker').addEventListener('change', (e) => loadDay(e.target.value));
+document.getElementById('filterOnlyUnverified').addEventListener('change', renderWarnTable);
+document.getElementById('showLsrToggle').addEventListener('change', (e) => { showLsrs = e.target.checked; drawLsrsOnMap(); renderMapLegend(); });
+
+document.querySelectorAll('.subtab-btn').forEach(btn => btn.addEventListener('click', () => switchSubtab(btn.dataset.subtab)));
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  document.getElementById('refreshIcon').parentElement.classList.add('spinning');
+  loadDay(selectedDateStr).finally(() => {
+    setTimeout(()=>document.getElementById('refreshBtn').classList.remove('spinning'), 500);
+  });
+});
+
+// Modals
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) closeModal(ov.id); }));
+
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  document.getElementById('setWfo').value = settings.wfo;
+  document.getElementById('setTimezone').value = settings.timezone;
+  document.getElementById('setHail').value = settings.hailsize;
+  document.getElementById('setWind').value = settings.wind;
+  document.getElementById('setBuffer').value = settings.lsrbuffer;
+  openModal('settingsModal');
+});
+document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+  const newWfo = (document.getElementById('setWfo').value || 'BTV').trim().toUpperCase().slice(0,3);
+  settings.wfo = newWfo;
+  settings.timezone = document.getElementById('setTimezone').value.trim() || 'America/New_York';
+  settings.hailsize = parseFloat(document.getElementById('setHail').value) || 1.0;
+  settings.wind = parseFloat(document.getElementById('setWind').value) || 58;
+  settings.lsrbuffer = parseFloat(document.getElementById('setBuffer').value) || 15;
+  document.getElementById('wfoBadge').textContent = settings.wfo;
+  document.getElementById('pageTitle').textContent = settings.wfo + ' WARNING VERIFICATION';
+  closeModal('settingsModal');
+  loadDay(selectedDateStr || todayInTZ(settings.timezone));
+});
+
+document.getElementById('archiveBtn').addEventListener('click', () => {
+  document.getElementById('archiveEnd').value = selectedDateStr;
+  document.getElementById('archiveStart').value = addDaysToDateStr(selectedDateStr, -6);
+  document.getElementById('archiveResults').innerHTML = '';
+  openModal('archiveModal');
+});
+document.getElementById('runArchiveBtn').addEventListener('click', runArchive);
+document.getElementById('aboutBtn').addEventListener('click', () => openModal('aboutModal'));
+
+window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+(function start(){
+  document.getElementById('wfoBadge').textContent = settings.wfo;
+  initMap();
+  loadDay(todayInTZ(settings.timezone));
+})();
+</script>
+</body>
+</html>
