@@ -2884,7 +2884,9 @@ async function refreshWhitefaceObs() {
 // matches the pattern used by Whiteface/Burke/Bolton above.
 // ---------------------------------------------------------------------------
 
-const WASHINGTON_API_URL = "https://mountwashington.org/uploads/json/weather.JSON";
+const WASHINGTON_API_URL =
+  "https://api.allorigins.win/raw?url=" +
+  encodeURIComponent("https://mountwashington.org/uploads/json/weather.JSON");
 
 function parseWashingtonImperialValue_(str) {
   if (!str) return null;
