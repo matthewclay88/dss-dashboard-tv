@@ -2,261 +2,484 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>BTV CWA Active Watches, Warnings & Advisories</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warning Verification — BTV</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
-<style>
-  /* Inline fallback in case leaflet.css fails to load on restrictive
-     signage networks — without these, tile <img>s fetch successfully
-     but never get sized/positioned, so the map paints as blank/white. */
-  .leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,
-  .leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,
-  .leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0;}
-  .leaflet-container{overflow:hidden;}
-  .leaflet-tile{filter:none !important;}
-  .leaflet-zoom-box{width:0;height:0;box-sizing:border-box;z-index:800;}
-  .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important;}
-  .leaflet-tile-pane{z-index:200;}
-  .leaflet-objects-pane{z-index:300;}
-  .leaflet-overlay-pane{z-index:400;}
-  .leaflet-shadow-pane{z-index:500;}
-  .leaflet-marker-pane{z-index:600;}
-  .leaflet-tooltip-pane{z-index:650;}
-  .leaflet-popup-pane{z-index:700;}
-  .leaflet-map-pane canvas{z-index:100;}
-  .leaflet-map-pane svg{z-index:200;}
-</style>
 <style>
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 16px;
-    color: #e8edf4;
+    font-size: 13px;
+    color: #e2e8f0;
     background:
-      radial-gradient(ellipse 120% 70% at 12% -10%, rgba(58,110,168,0.28), transparent 60%),
-      radial-gradient(ellipse 100% 60% at 92% 0%, rgba(111,168,220,0.16), transparent 55%),
-      radial-gradient(ellipse 140% 80% at 50% 115%, rgba(20,35,60,0.65), transparent 60%),
-      linear-gradient(180deg, #0c1726 0%, #0a1420 100%);
+      radial-gradient(ellipse 1200px 700px at 5% -10%, rgba(37,99,235,0.28), transparent 60%),
+      radial-gradient(ellipse 1000px 650px at 100% 0%, rgba(168,85,247,0.22), transparent 58%),
+      radial-gradient(ellipse 900px 600px at 15% 100%, rgba(34,197,94,0.10), transparent 60%),
+      radial-gradient(ellipse 1100px 750px at 85% 100%, rgba(220,38,38,0.10), transparent 60%),
+      linear-gradient(160deg, #111a30 0%, #0a0e1a 45%, #05070c 100%);
+    background-attachment: fixed;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
+
+  /* ── HEADER ── */
   .header {
-    background: #0a1320;
-    border-bottom: 1px solid #1c2c41;
-    padding: 16px 28px;
+    background: #0d1420;
+    border-bottom: 1px solid #1e2a3a;
+    padding: 10px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
+    gap: 16px;
   }
-  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
   .logo {
-    width: 48px; height: 48px; border-radius: 50%;
-    background: #0d1f33; border: 2px solid #3a6ea8;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #101d30; border: 2px solid #2563eb;
     display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700; color: #6fa8dc; text-align: center;
-  }
-  .header h1 { font-size: 24px; font-weight: 700; margin: 0; color: #fff; }
-  .header-right { text-align: right; display: flex; align-items: center; gap: 14px; }
-  .header-right .label { font-size: 13px; color: #93a3b8; }
-  .header-right .time { font-size: 17px; font-weight: 600; color: #fff; }
-  .refresh-btn {
-    background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
-    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; font-size: 16px;
-    transition: transform .4s ease;
-  }
-  .refresh-btn:hover { color: #fff; border-color: #3a6ea8; }
-  .refresh-btn.spinning { transform: rotate(360deg); }
-
-  .container {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 14px 24px 18px;
-    max-width: 2400px;
-    width: 100%;
-    margin: 0 auto;
-    gap: 10px;
-  }
-
-  /* Stat cards row (stays at the top, full width) */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    font-size: 8px; font-weight: 800; color: #60a5fa; text-align: center;
     flex-shrink: 0;
   }
+  .header-titles { line-height: 1.25; min-width: 0; }
+  .header-titles h1 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.02em; white-space: nowrap; }
+  .header-titles .sub { font-size: 11px; color: #7a8ba3; white-space: nowrap; }
 
-  /* Map (left half) + table (right half) */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 10px;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
+  .header-center { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .wfo-badge {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd;
+    font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 7px;
+    letter-spacing: 0.04em;
+  }
+  .wfo-select {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd;
+    font-size: 11px; font-weight: 700; padding: 6px 26px 6px 10px; border-radius: 7px;
+    letter-spacing: 0.04em; font-family: inherit; cursor: pointer; max-width: 260px;
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0 L5 6 L10 0 Z' fill='%2393c5fd'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .wfo-select:hover { border-color: #3b82f6; background-color: #16233a; }
+  .wfo-select:focus { outline: none; border-color: #3b82f6; }
+  .wfo-select option { background: #101d30; color: #e2e8f0; font-weight: 600; }
+  .date-nav { display: flex; align-items: center; gap: 4px; background: #101d30; border: 1px solid #26405c; border-radius: 8px; padding: 4px; }
+  .date-nav button {
+    background: none; border: none; color: #93a3b8; width: 26px; height: 26px; border-radius: 6px;
+    cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .date-nav button:hover { background: #16233a; color: #fff; }
+  .date-nav input[type="date"] {
+    background: none; border: none; color: #e2e8f0; font-size: 12px; font-weight: 700;
+    font-family: inherit; padding: 4px 6px; cursor: pointer;
+  }
+  .date-nav .today-btn {
+    font-size: 10px; font-weight: 700; color: #60a5fa; padding: 4px 8px; border-radius: 6px;
+    cursor: pointer; white-space: nowrap;
+  }
+  .date-nav .today-btn:hover { background: #16233a; }
+
+  .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    background: #101d30; border: 1px solid #26405c; color: #93a3b8;
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    transition: all .15s ease; font-family: inherit;
+  }
+  .icon-btn:hover { color: #fff; border-color: #3b82f6; background: #16233a; }
+  .icon-btn.spinning svg { animation: spin 0.8s linear; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* ── STATUS BANNER (loading / error) ── */
+  .status-banner {
+    padding: 6px 20px; font-size: 11px; font-weight: 600; text-align: center;
+    background: #101d30; color: #93a3b8; border-bottom: 1px solid #1e2a3a; flex-shrink: 0;
+  }
+  .status-banner.error { background: #2a0f0f; color: #fca5a5; }
+  .status-banner.hidden { display: none; }
+
+  .range-banner {
+    padding: 7px 20px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center;
+    justify-content: center; gap: 14px;
+    background: #1e2205; color: #facc15; border-bottom: 1px solid #a16207; flex-shrink: 0;
   }
 
-  .panel {
-    background: #0f1d30;
-    border: 1px solid #1c2c41;
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
+  .footer {
+    flex-shrink: 0; text-align: center; padding: 6px 0; font-size: 11px; color: #4a5b72;
+    letter-spacing: 0.03em;
   }
+
+  /* ── MAIN 3-COLUMN LAYOUT ── */
+  .main { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
+  .col-left { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .col-center { flex: 1.6; min-width: 0; display: flex; flex-direction: column; gap: 0; min-height: 0; }
+  .col-right { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; gap: 10px; }
+
+  .panel { background: #0f1620; border: 1px solid #1e2a3a; border-radius: 10px; overflow: hidden; }
   .panel-title {
-    font-size: 15px; font-weight: 600; color: #cdd8e6;
-    padding: 9px 16px; border-bottom: 1px solid #1c2c41;
-    flex-shrink: 0;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #93a3b8; padding: 10px 14px; border-bottom: 1px solid #1e2a3a; flex-shrink: 0;
   }
 
-  .map-toggles {
-    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-    padding: 10px 16px; border-bottom: 1px solid #1c2c41;
-    background: #0b1726;
-    flex-shrink: 0;
+  /* Queue cards */
+  .queue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; flex-shrink: 0; }
+  .queue-card {
+    border-radius: 9px; padding: 10px 8px; text-align: center; border: 1px solid;
+    cursor: pointer; transition: transform .12s ease, box-shadow .12s ease;
   }
-  .toggle-btn {
-    background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
-    font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: 6px;
-    cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
-    transition: background .15s ease, border-color .15s ease, color .15s ease;
-    font-family: inherit;
-  }
-  .toggle-btn:hover { border-color: #3a6ea8; color: #cdd8e6; }
-  .toggle-btn .toggle-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: #4a5a70;
-    transition: background .15s ease;
-  }
-  .toggle-btn.active { background: #16324f; border-color: #3a6ea8; color: #fff; }
-  .toggle-btn.active .toggle-dot { background: #5fd07a; }
+  .queue-card:hover { transform: translateY(-1px); }
+  .queue-card.active { box-shadow: 0 0 0 2px currentColor inset; }
+  .queue-card .qc-count { font-size: 26px; font-weight: 800; line-height: 1.1; }
+  .queue-card .qc-label { font-size: 10px; font-weight: 700; margin-top: 2px; opacity: 0.9; }
+  .queue-card.tor { background: #2a0f0f; border-color: #7f1d1d; color: #f87171; }
+  .queue-card.tor .qc-count, .queue-card.tor .qc-label { color: #f87171; }
+  .queue-card.svr { background: #2a2405; border-color: #a16207; color: #facc15; }
+  .queue-card.svr .qc-count, .queue-card.svr .qc-label { color: #facc15; }
+  .queue-card.ffw { background: #05240f; border-color: #166534; color: #4ade80; }
+  .queue-card.ffw .qc-count, .queue-card.ffw .qc-label { color: #4ade80; }
+  .queue-card.sqw { background: #190f2e; border-color: #6d28d9; color: #c4b5fd; }
+  .queue-card.sqw .qc-count, .queue-card.sqw .qc-label { color: #c4b5fd; }
+  .queue-review { padding: 0 12px 12px; font-size: 11px; color: #7a8ba3; display: flex; align-items: center; gap: 6px; }
 
-  .action-btn {
-    background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
-    font-size: 14px; font-weight: 600; padding: 7px 12px; border-radius: 6px;
-    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
-    transition: background .15s ease, border-color .15s ease, color .15s ease;
-    font-family: inherit;
-  }
-  .action-btn:hover { border-color: #3a6ea8; color: #fff; background: #16324f; }
-
-  #map { height: 100%; width: 100%; background: #55606b; }
-  .map-status {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    color: #93a3b8; font-size: 13px; pointer-events: none; z-index: 500;
-  }
-  .map-wrap { position: relative; flex: 1; min-height: 0; }
-  .map-legend {
-    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
-    padding: 8px 16px; border-top: 1px solid #1c2c41;
-    background: #0b1726; font-size: 14px; color: #cdd8e6;
-    flex-shrink: 0;
-    max-height: 110px;
-    overflow-y: auto;
-  }
-  .map-legend .swatch { display: inline-flex; align-items: center; gap: 6px; }
-  .map-legend .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
-  .map-legend .note { color: #6b7c93; font-size: 12px; }
-  .legend-toggle {
-    cursor: pointer; padding: 4px 8px; border-radius: 6px; user-select: none;
-    border: 1px solid transparent;
-    transition: opacity .15s ease, background .15s ease, border-color .15s ease;
-  }
-  .legend-toggle:hover { background: #16233a; border-color: #2a3f5c; }
-  .legend-toggle .count { color: #6b7c93; font-weight: 600; margin-left: 2px; }
-  .legend-toggle.off { opacity: 0.35; }
-  .legend-toggle.off .dot { filter: grayscale(60%); }
-
-  .stat-card {
-    background: #0f1d30; border: 1px solid #1c2c41; border-radius: 10px;
-    padding: 10px 10px; text-align: center;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 108px;
-  }
-  .stat-card .stat-label { font-size: 17px; color: #cdd8e6; font-weight: 700; margin-bottom: 6px; }
-  .stat-card .stat-value { font-size: 40px; font-weight: 800; line-height: 1; margin-bottom: 8px; }
-  .stat-card .stat-sub { font-size: 14px; font-weight: 500; color: #a9b7c9; line-height: 1.4; }
-  .v-total { color: #fff; }
-  .v-warnings { color: #e6534b; }
-  .v-watches { color: #f0c419; }
-  .v-advisories { color: #5fd07a; }
-
-  .active-products-panel {
-    background: #0f1d30; border: 1px solid #1c2c41; border-radius: 10px; overflow: hidden;
-    display: flex; flex-direction: column; height: 100%; min-height: 0;
-  }
-  .active-products-title { font-size: 19px; font-weight: 700; color: #fff; padding: 14px 20px; border-bottom: 1px solid #1c2c41; flex-shrink: 0; }
-
-  .table-scroll { flex: 1; min-height: 0; overflow-y: auto; }
-
+  /* Warnings table */
+  .warn-table-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .warn-filters { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid #1e2a3a; font-size: 11px; color: #93a3b8; flex-shrink: 0; }
+  .warn-filters label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .warn-scroll { flex: 1; overflow-y: auto; }
   table { width: 100%; border-collapse: collapse; }
-  thead th {
-    text-align: left; font-size: 14px; font-weight: 600; color: #93a3b8;
-    padding: 12px 10px; border-bottom: 1px solid #1c2c41; background: #0b1726;
-    white-space: nowrap;
-    position: sticky; top: 0; z-index: 2;
+  .warn-scroll thead th {
+    position: sticky; top: 0; background: #131c2b; text-align: left; font-size: 9.5px; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase; color: #7a8ba3; padding: 7px 8px; border-bottom: 1px solid #1e2a3a;
   }
-  thead th:first-child { padding-left: 16px; }
-  thead th:last-child { padding-right: 16px; }
-  tbody td { padding: 13px 10px; font-size: 15px; border-bottom: 1px solid #16223588; white-space: nowrap; }
-  tbody td:first-child { padding-left: 16px; }
-  tbody td:last-child { padding-right: 16px; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr:nth-child(even) { background: #0b1726; }
-  tbody tr:hover { background: #17263d; }
-  tbody tr.product-row { cursor: pointer; }
-  .expand-caret {
-    display: inline-block; width: 12px; margin-right: 8px;
-    color: #6b7c93; transition: transform .15s ease; font-size: 13px;
+  .warn-scroll tbody td { padding: 8px; font-size: 11.5px; border-bottom: 1px solid #16202e; white-space: nowrap; }
+  .warn-scroll tbody tr { cursor: pointer; border-left: 3px solid transparent; }
+  .warn-scroll tbody tr:hover { background: #131c2b; }
+  .warn-scroll tbody tr.selected { background: #16223a; border-left-color: #3b82f6; }
+  .etn-cell { font-weight: 700; color: #cbd5e1; }
+  .prod-badge {
+    display: inline-block; font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px; letter-spacing: 0.03em;
   }
-  .expand-caret.open { transform: rotate(90deg); }
-  tr.detail-row { display: none; }
-  tr.detail-row.open { display: table-row; }
-  tr.detail-row td {
-    background: #0b1726; padding: 6px 16px 16px 40px;
-    font-size: 14px; color: #a9b7c9; white-space: normal; line-height: 1.5;
-    border-bottom: 1px solid #16223588;
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .warn-empty { padding: 30px 14px; text-align: center; color: #7a8ba3; font-size: 12px; }
+
+  /* Summary donut */
+  .summary-body { display: flex; align-items: center; gap: 14px; padding: 14px; }
+  .donut-wrap { flex-shrink: 0; position: relative; width: 108px; height: 108px; }
+  .donut-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .donut-center .dc-num { font-size: 20px; font-weight: 800; color: #fff; line-height: 1; }
+  .donut-center .dc-label { font-size: 8.5px; color: #7a8ba3; font-weight: 700; margin-top: 2px; }
+  .summary-legend { display: flex; flex-direction: column; gap: 7px; font-size: 11px; }
+  .summary-legend .leg-row { display: flex; align-items: center; gap: 7px; }
+  .summary-legend .leg-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+  .summary-legend .leg-label { color: #cbd5e1; flex: 1; }
+  .summary-legend .leg-val { color: #93a3b8; font-weight: 700; }
+
+  /* Center: map / reports sub-tabs */
+  .subtabs {
+    display: flex; gap: 4px; padding: 8px 10px; background: #0f1620; border: 1px solid #1e2a3a; border-bottom: none;
+    border-radius: 10px 10px 0 0; flex-shrink: 0;
   }
-  tr.detail-row .detail-label { color: #6b7c93; font-weight: 600; margin-right: 6px; }
-  .tag-badge {
-    display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.4px;
-    padding: 3px 7px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
-    white-space: nowrap;
+  .subtab-btn {
+    background: none; border: none; color: #7a8ba3; font-size: 11.5px; font-weight: 700; padding: 7px 14px;
+    border-radius: 7px; cursor: pointer; font-family: inherit; letter-spacing: 0.02em;
   }
-  tr.detail-row .detail-line { display: block; margin-top: 4px; }
-  tr.detail-row .detail-line:first-child { margin-top: 0; }
-  .product-name { font-weight: 700; }
-  .product-etn { font-weight: 600; color: #93a3b8; margin-left: 6px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; }
-  .mono { font-family: "SFMono-Regular", Consolas, monospace; color: #cdd8e6; }
-  .countdown { font-weight: 700; font-family: "SFMono-Regular", Consolas, monospace; font-size: 14px; }
-  .c-red { color: #ef5b53; }
-  .c-amber { color: #f0c419; }
-  .c-green { color: #5fd07a; }
-  .c-gray { color: #93a3b8; }
+  .subtab-btn:hover { color: #cbd5e1; background: #16233a; }
+  .subtab-btn.active { color: #fff; background: #1d4ed8; }
+  .subtabs .spacer { flex: 1; }
+  .lsr-toggle { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #93a3b8; padding: 0 6px; }
 
-  .empty-state { padding: 50px 20px; text-align: center; color: #93a3b8; font-size: 17px; }
+  .center-body {
+    flex: 1; min-height: 0; background: #0f1620; border: 1px solid #1e2a3a; border-top: none;
+    border-radius: 0 0 10px 10px; overflow: hidden; display: flex; flex-direction: column; position: relative;
+  }
+  #map { flex: 1; width: 100%; min-height: 0; background: #182634; }
+  .map-legend-bar {
+    flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 8px 14px; border-top: 1px solid #1e2a3a; background: #101a28; font-size: 11px;
+  }
+  .map-legend-bar .lg-item { display: flex; align-items: center; gap: 5px; color: #93a3b8; font-weight: 600; }
+  .map-legend-bar .lg-dot { width: 9px; height: 9px; border-radius: 3px; }
 
-  .footer { text-align: center; color: #5a6a80; font-size: 14px; padding: 6px 0 2px; flex-shrink: 0; }
+  .reports-pane { flex: 1; min-height: 0; overflow-y: auto; }
+  .reports-pane table { width: 100%; }
+  .reports-pane thead th {
+    position: sticky; top: 0; background: #131c2b; text-align: left; font-size: 10px; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase; color: #7a8ba3; padding: 8px 10px; border-bottom: 1px solid #1e2a3a;
+  }
+  .reports-pane tbody td { padding: 9px 10px; font-size: 12px; border-bottom: 1px solid #16202e; }
+  .reports-pane tbody tr:hover { background: #131c2b; cursor: pointer; }
+  .warned-chip { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+  .warned-chip.yes { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+  .warned-chip.no { background: #2a0f0f; color: #f87171; border: 1px solid #7f1d1d; }
 
-  .leaflet-popup-content-wrapper { background: #0f1d30; color: #e8edf4; }
-  .leaflet-popup-tip { background: #0f1d30; }
+  /* Right panel: details */
+  .details-empty {
+    flex: 1; display: flex; align-items: center; justify-content: center; text-align: center;
+    color: #5a6b82; font-size: 12.5px; padding: 30px; line-height: 1.6;
+  }
+  .details-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+  .details-header { padding: 12px 14px; border-bottom: 1px solid #1e2a3a; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .details-header .etn-badge {
+    background: #1e293b; color: #cbd5e1; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 6px;
+  }
+  .details-header .dh-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .details-section { padding: 12px 14px; border-bottom: 1px solid #1e2a3a; }
+  .details-section:last-child { border-bottom: none; }
+  .details-section .ds-title { font-size: 10px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: #7a8ba3; margin-bottom: 8px; }
+  .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 11.5px; }
+  .kv-grid .kv-k { color: #7a8ba3; font-weight: 600; font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em; }
+  .kv-grid .kv-v { color: #e2e8f0; font-weight: 600; margin-top: 1px; }
+  .vtec-line { font-family: "SFMono-Regular", Consolas, monospace; font-size: 10.5px; color: #93c5fd; word-break: break-all; margin-top: 3px; }
+  .warn-text-box {
+    margin-top: 8px; background: #0a121d; border: 1px solid #1e2a3a; border-radius: 7px; padding: 10px;
+    font-family: "SFMono-Regular", Consolas, monospace; font-size: 10.5px; color: #b9c4d4; line-height: 1.5;
+    max-height: 160px; overflow-y: auto; white-space: pre-wrap;
+  }
+  .view-full-link { display: inline-block; margin-top: 6px; font-size: 11px; color: #60a5fa; text-decoration: none; font-weight: 600; }
+  .view-full-link:hover { text-decoration: underline; }
 
-  @media (max-width: 1200px) {
-    html, body { height: auto; }
-    body { overflow: auto; }
-    .container { overflow: visible; height: auto; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .main-grid { grid-template-columns: 1fr; overflow: visible; height: auto; }
-    .panel, .active-products-panel { height: auto; }
-    #map, .map-wrap { height: 320px; flex: none; }
-    .table-scroll { max-height: 420px; flex: none; }
+  .lsr-mini-table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .lsr-mini-table th { text-align: left; color: #7a8ba3; font-weight: 700; font-size: 9.5px; text-transform: uppercase; padding: 5px 6px; border-bottom: 1px solid #1e2a3a; }
+  .lsr-mini-table td { padding: 6px 6px; border-bottom: 1px solid #16202e; }
+  .lsr-mini-table tr:hover td { background: #131c2b; cursor: pointer; }
+
+  .confidence-row { display: flex; align-items: center; gap: 14px; }
+  .conf-ring { width: 74px; height: 74px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .conf-ring::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: #0f1620; }
+  .conf-ring .conf-val { position: relative; z-index: 1; font-size: 15px; font-weight: 800; color: #fff; }
+  .match-list { display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; }
+  .match-list .mi { display: flex; align-items: center; gap: 7px; }
+  .match-list .mi.yes { color: #cbd5e1; }
+  .match-list .mi.no { color: #7a8ba3; }
+  .match-list .mi .mi-icon { flex-shrink: 0; font-weight: 800; }
+  .match-list .mi.yes .mi-icon { color: #4ade80; }
+  .match-list .mi.no .mi-icon { color: #64748b; }
+  .conf-note { font-size: 9.5px; color: #5a6b82; margin-top: 8px; line-height: 1.4; }
+
+  /* ── MODALS ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 9999;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #101a28; border: 1px solid #26405c; border-radius: 12px; width: 520px; max-width: 92vw;
+    max-height: 86vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .modal-box.wide { width: 640px; }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 18px;
+    border-bottom: 1px solid #1e2a3a; flex-shrink: 0;
+  }
+  .modal-header h2 { font-size: 14px; font-weight: 800; color: #fff; }
+  .modal-close { background: none; border: none; color: #7a8ba3; font-size: 18px; cursor: pointer; padding: 0 4px; }
+  .modal-close:hover { color: #fff; }
+  .modal-body { padding: 16px 18px; overflow-y: auto; }
+  .modal-footer { padding: 12px 18px; border-top: 1px solid #1e2a3a; display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+
+  .field-row { margin-bottom: 12px; }
+  .field-row label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #7a8ba3; margin-bottom: 5px; }
+  .field-row input, .field-row select {
+    width: 100%; background: #0d1622; border: 1px solid #26405c; color: #e2e8f0; padding: 8px 10px;
+    border-radius: 7px; font-size: 12.5px; font-family: inherit;
+  }
+  .field-row input:disabled, .field-row select:disabled { opacity: 0.6; cursor: not-allowed; }
+  .field-row .hint { font-size: 10px; color: #5a6b82; margin-top: 4px; line-height: 1.4; }
+  .field-row-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn {
+    padding: 8px 16px; border-radius: 7px; border: none; font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: filter .15s ease;
+  }
+  .btn:hover { filter: brightness(1.15); }
+  .btn.primary { background: #2563eb; color: #fff; }
+  .btn.secondary { background: #1e293b; color: #cbd5e1; }
+
+  .archive-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+  .archive-stat { background: #0d1622; border: 1px solid #1e2a3a; border-radius: 8px; padding: 10px; text-align: center; }
+  .archive-stat .as-val { font-size: 19px; font-weight: 800; color: #fff; }
+  .archive-stat .as-label { font-size: 9.5px; color: #7a8ba3; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 3px; }
+
+  .daystat-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding: 6px 0; border-bottom: 1px solid #16202e;
+  }
+  .daystat-row:last-child { border-bottom: none; }
+  .daystat-row .ds-name { font-size: 11px; color: #cbd5e1; font-weight: 700; }
+  .daystat-row .ds-formula { font-size: 9.5px; color: #5a6b82; font-family: "SFMono-Regular", Consolas, monospace; display: block; margin-top: 1px; }
+  .daystat-row .ds-val { font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0; }
+
+  .about-body p { margin-bottom: 10px; line-height: 1.55; color: #cbd5e1; font-size: 12.5px; }
+  .about-body a { color: #60a5fa; }
+  .about-body code { background: #0d1622; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+
+  /* misc */
+  .leaflet-popup-content-wrapper { background: #101a28 !important; color: #e2e8f0 !important; border: 1px solid #26405c !important; }
+  .leaflet-popup-tip { background: #101a28 !important; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a3b52; border-radius: 4px; }
+
+  /* ── WFO SEARCHABLE COMBOBOX ── */
+  .wfo-combo { position: relative; }
+  .wfo-search-input {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd;
+    font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 7px;
+    letter-spacing: 0.04em; font-family: inherit; width: 190px;
+  }
+  .wfo-search-input:focus { outline: none; border-color: #3b82f6; background: #16233a; }
+  .wfo-dropdown {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0; width: 280px;
+    max-height: 320px; overflow-y: auto; background: #101a28; border: 1px solid #26405c;
+    border-radius: 9px; z-index: 5000; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  .wfo-dropdown.open { display: block; }
+  .wfo-dd-label {
+    font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+    color: #5a6b82; padding: 7px 10px 3px;
+  }
+  .wfo-opt { display: flex; align-items: baseline; gap: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
+  .wfo-opt:hover, .wfo-opt.highlighted { background: #16233a; }
+  .wfo-opt-code { font-weight: 800; color: #93c5fd; flex-shrink: 0; width: 32px; }
+  .wfo-opt-name { color: #cbd5e1; }
+  .wfo-opt-empty { padding: 10px; font-size: 11.5px; color: #7a8ba3; }
+
+  /* ── MINI BUTTON (Next Unverified) ── */
+  .mini-btn {
+    background: none; border: none; color: #60a5fa; font-size: 11px; font-weight: 700;
+    cursor: pointer; padding: 0; font-family: inherit; text-decoration: none;
+  }
+  .mini-btn:hover { text-decoration: underline; }
+
+  /* ── TIMELINE BAR (warning duration + LSR marks) ── */
+  .timeline-bar { position: relative; height: 20px; margin: 6px 0 2px; }
+  .tl-track { position: absolute; top: 9px; left: 0; right: 0; height: 3px; background: #1e2a3a; border-radius: 2px; }
+  .tl-mark {
+    position: absolute; top: 4px; width: 11px; height: 11px; border-radius: 50%;
+    border: 2px solid #0f1620; transform: translateX(-50%); cursor: default;
+  }
+  .timeline-labels { display: flex; justify-content: space-between; font-size: 9.5px; color: #7a8ba3; }
+
+  /* ── PDS / EMERGENCY BADGES ── */
+  .pds-badge, .emg-badge {
+    display: inline-block; font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
+    margin-left: 5px; letter-spacing: .03em; vertical-align: middle; white-space: nowrap;
+  }
+  .pds-badge { background: #3b0764; color: #e9d5ff; border: 1px solid #6d28d9; }
+  .emg-badge { background: #450a0a; color: #fecaca; border: 1px solid #b91c1c; }
+
+  /* ── COMPARE OFFICES ── */
+  .compare-chip-btn {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd; font-size: 10.5px; font-weight: 800;
+    padding: 6px 9px; border-radius: 7px; cursor: pointer; font-family: inherit;
+  }
+  .compare-chip-btn:hover { border-color: #3b82f6; background: #16233a; }
+  .compare-chip-btn.active { border-color: #a855f7; color: #d8b4fe; background: #190f2e; }
+  .compare-list { display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow-y: auto; margin-top: 10px; border: 1px solid #1e2a3a; border-radius: 8px; }
+  .compare-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; cursor: pointer; }
+  .compare-item:hover { background: #16233a; }
+  .compare-item input { pointer-events: none; }
+  .compare-item .co-code { font-weight: 800; color: #93c5fd; width: 32px; flex-shrink: 0; }
+  .compare-item .co-name { color: #cbd5e1; }
+  .wfo-tag {
+    display: inline-block; font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
+    margin-right: 5px; letter-spacing: .03em; background: #1e293b; color: #93c5fd; border: 1px solid #334155;
+  }
+
+
+  /* ── TRENDS MODAL ── */
+  .trend-range-btn.active { background: #2563eb !important; color: #fff !important; }
+
+  /* ── RADAR CONTROLS ── */
+
+  /* ── ACCESSIBILITY ── */
+  .icon-btn:focus-visible, .mini-btn:focus-visible, .subtab-btn:focus-visible,
+  .wfo-search-input:focus-visible, .btn:focus-visible, .queue-card:focus-visible,
+  .wfo-opt:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid #60a5fa; outline-offset: 2px;
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ── LIVE MODE ── */
+  .live-badge {
+    display: none; align-items: center; gap: 5px; font-size: 10px; font-weight: 800;
+    color: #f87171; letter-spacing: 0.05em; padding: 4px 9px; border-radius: 999px;
+    background: #2a0f0f; border: 1px solid #7f1d1d;
+  }
+  .live-badge.on { display: inline-flex; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: livePulse 1.6s ease-in-out infinite; }
+  @keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .toast-stack {
+    position: fixed; top: 64px; right: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px;
+    max-width: 320px;
+  }
+  .toast {
+    background: #101a28; border: 1px solid #26405c; border-left: 3px solid #3b82f6; border-radius: 8px;
+    padding: 10px 12px; font-size: 12px; color: #e2e8f0; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    animation: toastIn .2s ease-out;
+  }
+  @keyframes toastIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
+
+  /* ── HEATMAP (Trends modal, 1-year view) ── */
+  .heatmap-wrap { overflow-x: auto; padding-bottom: 6px; }
+  .heatmap-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; }
+  .heatmap-cell {
+    width: 12px; height: 12px; border-radius: 2.5px; background: #1a2536; cursor: pointer;
+  }
+  .heatmap-cell:hover { outline: 1.5px solid #93c5fd; }
+  .heatmap-cell.empty { background: transparent; cursor: default; }
+  .heatmap-legend { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #7a8ba3; margin-top: 8px; }
+  .heatmap-legend .heatmap-cell { cursor: default; }
+  .heatmap-legend .heatmap-cell:hover { outline: none; }
+
+  /* ── COUNTY/ZONE BREAKDOWN ── */
+  .counties-pane { flex: 1; min-height: 0; overflow-y: auto; }
+  .counties-pane table { width: 100%; }
+  .counties-pane thead th {
+    position: sticky; top: 0; background: #131c2b; text-align: left; font-size: 10px; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase; color: #7a8ba3; padding: 8px 10px; border-bottom: 1px solid #1e2a3a;
+  }
+  .counties-pane tbody td { padding: 9px 10px; font-size: 12px; border-bottom: 1px solid #16202e; }
+  .counties-pane .cty-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .counties-pane .cty-bar-track { flex: 1; height: 6px; background: #1e2a3a; border-radius: 3px; overflow: hidden; }
+  .counties-pane .cty-bar-fill { height: 100%; background: #3b82f6; border-radius: 3px; }
+
+  /* ── RESPONSIVE / MOBILE ── */
+  @media (max-width: 900px) {
+    html, body { height: auto; overflow: auto; }
+    .header { flex-wrap: wrap; row-gap: 8px; }
+    .header-center { order: 3; width: 100%; flex-wrap: wrap; }
+    .wfo-search-input { width: 140px; }
+    .header-right { flex-wrap: wrap; }
+    .main { flex-direction: column; overflow: visible; height: auto; padding: 8px; }
+    .col-left, .col-center, .col-right { width: 100%; }
+    .center-body { min-height: 380px; }
+    #map { min-height: 320px; }
+    .queue-grid { grid-template-columns: 1fr 1fr; }
+    .warn-table-wrap { max-height: 340px; }
+    .warn-scroll { max-height: 300px; }
+    .modal-box, .modal-box.wide { width: 94vw; }
+    .kv-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── PRINT ── */
+  @media print {
+    * { color: #111 !important; background: transparent !important; border-color: #ccc !important; box-shadow: none !important; }
+    body { background: #fff !important; overflow: visible !important; height: auto !important; }
+    .header-right, .icon-btn, .subtabs, .range-banner .btn, .status-banner, .wfo-dropdown,
+    .warn-filters, .queue-review, .details-empty { display: none !important; }
+    .main { overflow: visible !important; height: auto !important; display: block !important; padding: 0; }
+    .col-left, .col-center, .col-right { width: 100% !important; display: block !important; margin-bottom: 12px; }
+    #map { height: 380px !important; }
+    .panel, .center-body { border: 1px solid #ccc !important; break-inside: avoid; margin-bottom: 10px; }
+    .warn-scroll, .details-scroll { overflow: visible !important; max-height: none !important; }
   }
 </style>
 </head>
@@ -265,1086 +488,2270 @@
 <div class="header">
   <div class="header-left">
     <div class="logo">NWS</div>
-    <h1>BTV CWA Active Watches, Warnings &amp; Advisories</h1>
+    <div class="header-titles">
+      <h1 id="pageTitle">BTV WARNING VERIFICATION</h1>
+      <div class="sub">Verification against IEM Cow / LSR data — unofficial</div>
+    </div>
+  </div>
+  <div class="header-center">
+    <div class="wfo-combo" id="wfoCombo">
+      <input type="text" id="wfoSearchInput" class="wfo-search-input" placeholder="Search office…" autocomplete="off" title="Search NWS office">
+      <div class="wfo-dropdown" id="wfoDropdown"></div>
+    </div>
+    <button class="compare-chip-btn" id="compareBtn" title="Overlay additional NWS offices on this map">+ Compare</button>
+    <span class="live-badge" id="liveBadge" title="Auto-refreshing for today"><span class="live-dot"></span>LIVE</span>
+    <div class="date-nav">
+      <button id="prevDayBtn" title="Previous day">&#9664;</button>
+      <input type="date" id="datePicker">
+      <button id="nextDayBtn" title="Next day">&#9654;</button>
+      <span class="today-btn" id="todayBtn">TODAY</span>
+    </div>
   </div>
   <div class="header-right">
-    <div>
-      <div class="label">Last Updated:</div>
-      <div class="time" id="last-updated">--</div>
-    </div>
-    <button class="refresh-btn" id="refresh-btn" aria-label="Refresh"><i style="font-style:normal">&#8635;</i></button>
+    <button class="icon-btn" id="trendsBtn" title="Verification trends over time">&#128200;</button>
+    <button class="icon-btn" id="exportCsvBtn" title="Export CSV">&#128190;</button>
+    <button class="icon-btn" id="exportPngBtn" title="Export PNG snapshot (basemap imagery excluded — see About)">&#128247;</button>
+    <button class="icon-btn" id="printBtn" title="Print report">&#128424;</button>
+    <button class="icon-btn" id="archiveBtn" title="Archive / date range stats">&#128197;</button>
+    <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;</button>
+    <button class="icon-btn" id="aboutBtn" title="About">?</button>
+    <button class="icon-btn" id="refreshBtn" title="Refresh"><span id="refreshIcon">&#8635;</span></button>
   </div>
 </div>
 
-<div class="container">
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+<div class="status-banner hidden" id="statusBanner">Loading…</div>
+<div class="range-banner" id="rangeBanner" style="display:none;">
+  <span id="rangeBannerText">Viewing range</span>
+  <button class="btn secondary" id="exitRangeBtn" style="padding:4px 12px;font-size:11px;">Back to single day</button>
+</div>
 
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-label">Total Active Products</div>
-      <div class="stat-value v-total" id="stat-total">0</div>
-      <div class="stat-sub" id="stat-total-sub">0 Warnings &middot; 0 Watch &middot; 0 Advisory</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Warnings</div>
-      <div class="stat-value v-warnings" id="stat-warnings">0</div>
-      <div class="stat-sub" id="stat-warnings-sub">&nbsp;</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Watches</div>
-      <div class="stat-value v-watches" id="stat-watches">0</div>
-      <div class="stat-sub" id="stat-watches-sub">&nbsp;</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Advisories</div>
-      <div class="stat-value v-advisories" id="stat-advisories">0</div>
-      <div class="stat-sub" id="stat-advisories-sub">&nbsp;</div>
-    </div>
-  </div>
+<div class="main">
 
-  <div class="main-grid">
+  <!-- LEFT COLUMN -->
+  <div class="col-left">
+    <div class="panel">
+      <div class="panel-title">Verification Queue</div>
+      <div class="queue-grid" id="queueGrid"></div>
+      <div class="queue-review" id="queueReview"></div>
+    </div>
+
+    <div class="panel warn-table-wrap">
+      <div class="warn-filters">
+        <label><input type="checkbox" id="filterOnlyUnverified"> Only unverified</label>
+      </div>
+      <div class="warn-scroll">
+        <table>
+          <thead><tr>
+            <th>ETN</th><th>Product</th><th>County/Zone</th><th>Expires (Local)</th><th>Status</th>
+          </tr></thead>
+          <tbody id="warnTableBody"></tbody>
+        </table>
+        <div class="warn-empty" id="warnEmpty" style="display:none;">No Tornado, Severe, Flash Flood, or Snow Squall warnings for this day.</div>
+      </div>
+    </div>
 
     <div class="panel">
-      <div class="panel-title">BTV CWA Map -- Click the Legend below to turn off and on warning types</div>
-      <div class="map-toggles">
-        <button class="toggle-btn active" id="toggle-zone" type="button">
-          <span class="toggle-dot"></span>Zone Based WWA
-        </button>
-        <button class="toggle-btn active" id="toggle-polygon" type="button">
-          <span class="toggle-dot"></span>Polygon Based Warnings
-        </button>
-        <button class="action-btn" id="reset-zoom-btn" type="button">
-          <span>&#8635;</span>Reset Zoom
-        </button>
-      </div>
-      <div class="map-wrap">
-        <div id="map"></div>
-        <div class="map-status" id="map-status">Loading zone boundaries…</div>
-      </div>
-      <div class="map-legend" id="map-legend">
-        <span class="note">Loading…</span>
+      <div class="panel-title">Verification Summary</div>
+      <div class="summary-body">
+        <div class="donut-wrap">
+          <svg viewBox="0 0 100 100" width="108" height="108" id="donutSvg"></svg>
+          <div class="donut-center"><div class="dc-num" id="donutTotal">0</div><div class="dc-label">TOTAL</div></div>
+        </div>
+        <div class="summary-legend" id="summaryLegend"></div>
       </div>
     </div>
-
-    <div class="active-products-panel">
-      <div class="active-products-title">Active Products</div>
-      <div class="table-scroll" id="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Start Time (EDT)</th>
-              <th>End Time (EDT)</th>
-              <th>Update By (EDT)</th>
-              <th>Time Until Update</th>
-              <th>Expires In</th>
-            </tr>
-          </thead>
-          <tbody id="table-body"></tbody>
-        </table>
-        <div class="empty-state" id="empty-state" style="display:none;">No active watches, warnings, or advisories for the BTV CWA.</div>
-      </div>
-    </div>
-
   </div>
 
-  <div class="footer"> Created by Matthew Clay | All times are Eastern Time | Alerts: NWS api.weather.gov | Colors: weather.gov/help-map | Auto-refresh every 2 minutes</div>
+  <!-- CENTER COLUMN -->
+  <div class="col-center">
+    <div class="subtabs">
+      <button class="subtab-btn active" data-subtab="map">MAP</button>
+      <button class="subtab-btn" data-subtab="reports">REPORTS</button>
+      <button class="subtab-btn" data-subtab="counties">COUNTIES</button>
+      <div class="spacer"></div>
+      <label class="lsr-toggle"><input type="checkbox" id="showLsrToggle" checked> Show LSRs on map</label>
+      <label class="lsr-toggle"><input type="checkbox" id="showRadarToggle"> Radar</label>
+      <input type="range" id="radarTimeSlider" class="radar-slider" style="display:none;" min="0" max="1439" step="5" value="720" title="Radar time (local)">
+      <span id="radarTimeLabel" style="display:none;font-size:10px;color:#93a3b8;"></span>
+    </div>
+    <div class="center-body">
+      <div id="mapView" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+        <div id="map"></div>
+        <div class="map-legend-bar" id="mapLegendBar"></div>
+      </div>
+      <div id="reportsView" style="display:none; flex:1; min-height:0; flex-direction:column;">
+        <div class="reports-pane">
+          <table>
+            <thead><tr>
+              <th>Time (Local)</th><th>Type</th><th>Magnitude</th><th>Location</th><th>Warned?</th><th>Assoc. ETN</th>
+            </tr></thead>
+            <tbody id="reportsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="countiesView" style="display:none; flex:1; min-height:0; flex-direction:column;">
+        <div class="counties-pane">
+          <table>
+            <thead><tr>
+              <th>County / Zone</th><th>Warnings</th><th>Verified</th><th>FAR</th>
+            </tr></thead>
+            <tbody id="countiesTableBody"></tbody>
+          </table>
+          <div class="warn-empty" id="countiesEmpty" style="display:none;">No warnings for this view yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col-right">
+    <div class="panel" id="dayStatsPanel">
+      <div class="panel-title" id="dayStatsTitle">Day Verification Stats</div>
+      <div id="dayStatsBody" style="padding:12px 14px;"></div>
+    </div>
+    <div class="panel" style="flex:1; min-height:0; display:flex; flex-direction:column;">
+      <div class="panel-title">Warning Details</div>
+      <div class="details-empty" id="detailsEmpty">Select a warning from the table or map to view verification details.</div>
+      <div class="details-scroll" id="detailsScroll" style="display:none;"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">Created by Matthew Clay — NWS Burlington</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Settings</h2><button class="modal-close" data-close="settingsModal">&times;</button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <label>WFO (NWS office)</label>
+        <input type="text" id="setWfo" disabled>
+        <div class="hint">Switch offices from the dropdown in the header, next to the date navigator — it works for any WFO nationwide, not just BTV.</div>
+      </div>
+      <div class="field-row">
+        <label>Calendar-day timezone (IANA name)</label>
+        <input type="text" id="setTimezone">
+        <div class="hint">Controls where the day boundary falls, instead of 00Z. e.g. America/New_York</div>
+      </div>
+      <div class="field-row-pair">
+        <div class="field-row">
+          <label>Hail size threshold (in)</label>
+          <input type="number" id="setHail" step="0.25" min="0">
+        </div>
+        <div class="field-row">
+          <label>Wind threshold (mph)</label>
+          <input type="number" id="setWind" step="1" min="0">
+        </div>
+      </div>
+      <div class="field-row">
+        <label>LSR search buffer (km)</label>
+        <input type="number" id="setBuffer" step="1" min="1">
+        <div class="hint">How far from the warning polygon IEM will look for a verifying Local Storm Report.</div>
+      </div>
+      <div class="field-row">
+        <label style="display:flex;align-items:center;gap:7px;text-transform:none;font-size:12px;color:#cbd5e1;">
+          <input type="checkbox" id="setColorblind" style="width:auto;">
+          Colorblind-safe status colors
+        </label>
+        <div class="hint">Swaps the Verified / Pending / Needs Verification colors for a blue/orange/vermilion palette instead of green/yellow/red.</div>
+      </div>
+      <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
+        <label>Preferences on another device</label>
+        <div style="display:flex;gap:8px;">
+          <button class="btn secondary" id="exportSettingsBtn" type="button">Export Settings…</button>
+          <button class="btn secondary" id="importSettingsBtn" type="button">Import Settings…</button>
+          <input type="file" id="importSettingsFile" accept="application/json" style="display:none;">
+        </div>
+        <div class="hint">These settings, the colorblind toggle, and recent-office list live in this browser only — export a JSON file here to carry them to another machine.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" data-close="settingsModal">Cancel</button>
+      <button class="btn primary" id="saveSettingsBtn">Save &amp; Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- ARCHIVE MODAL -->
+<div class="modal-overlay" id="archiveModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Archive — View a Date Range</h2><button class="modal-close" data-close="archiveModal">&times;</button></div>
+    <div class="modal-body">
+      <div class="field-row-pair">
+        <div class="field-row"><label>Start date</label><input type="date" id="archiveStart"></div>
+        <div class="field-row"><label>End date</label><input type="date" id="archiveEnd"></div>
+      </div>
+      <div class="hint">Range is inclusive, using the same calendar-day timezone as the main view. This loads every matching warning and LSR for the whole range onto the map, table, and stats — large ranges may take a few seconds.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" data-close="archiveModal">Cancel</button>
+      <button class="btn primary" id="runArchiveBtn">Load Range</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE OFFICES MODAL -->
+<div class="modal-overlay" id="compareModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Compare Offices</h2><button class="modal-close" data-close="compareModal">&times;</button></div>
+    <div class="modal-body">
+      <div class="hint">Overlay up to 3 additional offices' warnings on the same map, table, and stats as <strong id="comparePrimaryLabel">BTV</strong>. Useful for multi-state outbreaks that cross WFO boundaries.</div>
+      <input type="text" id="compareSearchInput" class="wfo-search-input" style="width:100%;margin-top:10px;" placeholder="Search office to add…" autocomplete="off">
+      <div class="compare-list" id="compareList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" id="compareClearBtn">Clear All</button>
+      <button class="btn primary" id="compareApplyBtn">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRENDS MODAL -->
+<div class="modal-overlay" id="trendsModal">
+  <div class="modal-box wide">
+    <div class="modal-header"><h2>Verification Trends — <span id="trendsWfoLabel">BTV</span></h2><button class="modal-close" data-close="trendsModal">&times;</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn secondary trend-range-btn active" data-days="30">Last 30 Days</button>
+        <button class="btn secondary trend-range-btn" data-days="90">Last 90 Days</button>
+        <button class="btn secondary trend-range-btn" data-days="365">1 Year (Heatmap)</button>
+      </div>
+      <div id="trendsStatus" style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Loading…</div>
+      <svg viewBox="0 0 640 220" id="trendsSvg" style="width:100%;height:220px;"></svg>
+      <div id="trendsLineLegend" style="display:flex;gap:14px;margin-top:10px;font-size:11px;">
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#4ade80;margin-right:5px;"></span>POD</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#ef4444;margin-right:5px;"></span>FAR</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#60a5fa;margin-right:5px;"></span>CSI</span>
+      </div>
+      <div class="heatmap-wrap" id="heatmapWrap" style="display:none;">
+        <div class="heatmap-grid" id="heatmapGrid"></div>
+        <div class="heatmap-legend">
+          <span>Lower CSI</span>
+          <div class="heatmap-cell" style="background:#1a2536;"></div>
+          <div class="heatmap-cell" style="background:#0e3a2f;"></div>
+          <div class="heatmap-cell" style="background:#0f6b4f;"></div>
+          <div class="heatmap-cell" style="background:#16a866;"></div>
+          <div class="heatmap-cell" style="background:#4ade80;"></div>
+          <span>Higher CSI</span>
+          <span style="margin-left:10px;color:#5a6b82;">Click a day to open it</span>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:10px;">Computed client-side from IEM Cow data for the selected office, using the same calendar-day boundaries as the main view. Days with no decided warnings are skipped over (gap in the lines / gray cell).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal-box wide">
+    <div class="modal-header"><h2>About This Tool</h2><button class="modal-close" data-close="aboutModal">&times;</button></div>
+    <div class="modal-body about-body">
+      <p><strong>What this is:</strong> a warning verification browser for Tornado (TOR), Severe Thunderstorm (SVR), Flash Flood (FFW), and Snow Squall (SQW) warnings, built on top of the Iowa Environmental Mesonet's <a href="https://mesonet.agron.iastate.edu/cow/" target="_blank">IEM Cow</a> service. IEM Cow automatically checks each storm-based warning polygon against Local Storm Reports (LSRs) to determine whether it verified.</p>
+      <p><strong>Verification status</strong> shown here is computed as: <strong>Verified</strong> if IEM found a matching LSR of the right type, within the time window, inside the buffered warning polygon. <strong>Needs Verification</strong> if the warning has fully expired with no matching LSR found. <strong>Pending</strong> if the warning is still active (verification isn't final until it expires or a report comes in).</p>
+      <p><strong>Calendar day:</strong> dates here are bounded by local midnight in the configured timezone (Settings), not 00Z UTC — so an overnight event isn't split across two different "days" the way a strict UTC day would.</p>
+      <p><strong>Confidence score:</strong> the percentage shown per-warning is a simple, unofficial heuristic (based on lead time and number of matching reports) meant to give a quick visual sense of how solid the verification is — it is <em>not</em> an NWS or IEM statistic.</p>
+      <p><strong>Data is unofficial.</strong> Per IEM's own disclaimer, this data is intended for educational/situational-awareness use, not as an official verification record.</p>
+      <p><strong>Switching offices:</strong> the office dropdown in the header lists every NWS Weather Forecast Office nationwide (sourced live from IEM's own WFO network table) — pick one and the app re-queries live NWS zone boundaries for that office and re-centers the map.</p>
+      <p><strong>Date ranges:</strong> the Archive picker loads every matching warning and LSR for the whole range directly onto the map, table, and stats (using the same boundary-safe padding logic as single-day view), rather than just showing a summary.</p>
+      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Office list: IEM WFO network table. Radar: IEM's time-enabled NEXRAD composite reflectivity WMS, snapped to the nearest 5-minute composite (archive available back to Feb 16, 2011). Map library: Leaflet.</p>
+      <p><strong>PDS / Emergency badges:</strong> shown when a Tornado or Flash Flood warning's product text contains "PARTICULARLY DANGEROUS SITUATION" or "TORNADO/FLASH FLOOD EMERGENCY" wording. This is a plain-text scan, not a structured IEM field, so it's skipped for very large date ranges to avoid hammering IEM with requests — it still works normally for a single day or a short range.</p>
+      <p><strong>Keyboard shortcuts:</strong> <code>←</code> / <code>→</code> previous/next day, <code>j</code> / <code>k</code> step through the warnings table, <code>n</code> jump to the next unverified warning, <code>Esc</code> close dialogs.</p>
+      <p><strong>Sharing a view:</strong> the URL updates automatically with the current office and date (or range), so copying the address bar link takes someone straight to the same view.</p>
+      <p><strong>PNG export:</strong> captures the queue, table, summary, stats, and warning-details panels, plus the warning polygons/zone lines/LSR markers on the map — but not the basemap street imagery itself, since CartoDB's tile server doesn't allow that imagery to be read back into an exported image. Use "Print" instead for a version with full basemap tiles included.</p>
+      <p><strong>Year heatmap:</strong> the Trends modal's "1 Year" option shows a GitHub-style calendar grid colored by that day's CSI — click any cell to jump straight into that day.</p>
+      <p><strong>Counties tab:</strong> a ranked breakdown of which counties/zones see the most warnings and their false-alarm rate for the current day or range.</p>
+      <p><strong>Live mode:</strong> while viewing today, the app quietly re-polls IEM every few minutes and toasts new warnings as they're issued — a red "LIVE" badge next to the date shows it's active. It turns off automatically for any other day or a date range.</p>
+      <p><strong>Accessibility:</strong> modals trap focus and return it on close, icon-only controls carry aria-labels, and Settings has a colorblind-safe palette toggle for the status colors. The summary donut, warning timeline, and year heatmap all carry text equivalents for screen readers, and the heatmap is keyboard-operable. The layout also reflows to a single column below ~900px wide for phones and tablets.</p>
+      <p><strong>Compare Offices:</strong> overlay up to 3 additional WFOs on the same map/table/stats as the primary office — useful for outbreaks that cross office boundaries. Warnings show a small office tag when active. Large loads (a wide date range, several offices, or the 1-year heatmap) are split into chunks with progress shown in the status bar, rather than one silent request.</p>
+      <p><strong>Related warnings:</strong> the details panel lists other warnings sharing a county and issued within 30 minutes of the selected one. This is a timing/geography heuristic only — IEM Cow doesn't expose an authoritative "this warning replaced that one" link — so treat it as a lead, not a confirmed sequence.</p>
+      <p><strong>Settings portability:</strong> Settings has Export/Import buttons for carrying your thresholds, timezone, colorblind preference, and recent-office list to another browser or machine — everything here is stored locally in this browser, there's no server-side account.</p>
+      <p><strong>Forecaster coverage:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-// ---------------------------------------------------------------------------
-// Zone geometry is fetched at runtime from the community-maintained
-// "allzones.geojson" file. That file covers every NWS forecast zone
-// nationwide, so we filter it down to the zones BTV (Burlington) actually
-// services, which historically includes a few border Albany (ALY) zones too
-// (Bennington, Western Windham, Eastern Windham).
-// ---------------------------------------------------------------------------
-const GEOJSON_URL =
-  "https://raw.githubusercontent.com/matthewclay88/severe-climatology/main/allzones.geojson";
-const TARGET_CWAS = ['BTV'];
-const EXTRA_ZONES = ['VT013', 'VT014', 'VT015']; // Bennington, W. Windham, E. Windham (ALY, borders BTV)
-
-const PRODUCT_NAMES = {
-  'SV.W':'Severe Thunderstorm Warning','SV.A':'Severe Thunderstorm Watch',
-  'TO.W':'Tornado Warning','TO.A':'Tornado Watch',
-  'FF.W':'Flash Flood Warning','FF.A':'Flash Flood Watch','FF.S':'Flash Flood Statement',
-  'FA.W':'Flood Warning','FA.A':'Flood Watch','FA.Y':'Flood Advisory',
-  'MA.W':'Special Marine Warning',
-  'WI.Y':'Wind Advisory','HW.W':'High Wind Warning','HW.A':'High Wind Watch',
-  'WS.W':'Winter Storm Warning','WS.A':'Winter Storm Watch',
-  'WW.Y':'Winter Weather Advisory','BZ.W':'Blizzard Warning',
-  'IS.W':'Ice Storm Warning','FZ.W':'Freeze Warning','FZ.A':'Freeze Watch',
-  'FR.Y':'Frost Advisory','HT.Y':'Heat Advisory','XH.W':'Extreme Heat Warning','XH.A':'Extreme Heat Watch',
-  'DS.W':'Dust Storm Warning','DU.Y':'Blowing Dust Advisory',
-  'FG.Y':'Dense Fog Advisory','SM.Y':'Dense Smoke Advisory',
-  'RP.S':'Rip Current Statement','SU.Y':'High Surf Advisory','SU.W':'High Surf Warning',
-  'CF.Y':'Coastal Flood Advisory','CF.W':'Coastal Flood Warning','CF.A':'Coastal Flood Watch',
-  'LS.Y':'Lakeshore Flood Advisory','LS.W':'Lakeshore Flood Warning',
-  'RF.W':'Red Flag Warning','FW.A':'Fire Weather Watch',
-  'SQ.W':'Snow Squall Warning','AF.Y':'Ashfall Advisory',
-  'EW.W':'Extreme Wind Warning','TS.W':'Tsunami Warning','TS.A':'Tsunami Watch','TS.Y':'Tsunami Advisory',
-  'AS.O':'Air Stagnation Outlook','SW.Y':'Small Craft Advisory'
+// ══════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════════════════
+const PHEN_META = {
+  TO: { code: 'TOR', name: 'Tornado Warning',            queueClass: 'tor', color: '#ef4444' },
+  SV: { code: 'SVR', name: 'Severe Thunderstorm Warning', queueClass: 'svr', color: '#facc15' },
+  FF: { code: 'FFW', name: 'Flash Flood Warning',         queueClass: 'ffw', color: '#22c55e' },
+  SQ: { code: 'SQW', name: 'Snow Squall Warning',         queueClass: 'sqw', color: '#a855f7' }
 };
-const PRODUCT_CODES = {
-  'SV.W':'SVR','SV.A':'SVA','TO.W':'TOR','TO.A':'TOA','FF.W':'FFW','FF.A':'FFA','FF.S':'FFS',
-  'FA.W':'FLW','FA.A':'FLA','FA.Y':'FLS','MA.W':'SMW','WI.Y':'WIND','HW.W':'HWW','HW.A':'HWA',
-  'WS.W':'WSW','WS.A':'WSA','WW.Y':'WSW','BZ.W':'BZW','IS.W':'ISW','FZ.W':'FZW','FZ.A':'FZA',
-  'FR.Y':'FRY','HT.Y':'HTY','XH.W':'XHW','XH.A':'XHA','FG.Y':'FGY','SM.Y':'SMY',
-  'CF.Y':'CFY','CF.W':'CFW','LS.Y':'LSY','LS.W':'LSW','RF.W':'RFW','FW.A':'FWA',
-  'SQ.W':'SQW'
+// LSR marker colors, keyed by IEM's single-character LSR type code:
+// G/D = wind (gust/damage), H = hail, F = flash flood, q = snow squall,
+// T = tornado. Confirmed these exact codes via live API samples.
+const LSR_TYPE_COLOR = {
+  G: '#3b82f6', D: '#3b82f6',   // wind — blue
+  H: '#22c55e',                  // hail — green
+  F: '#065f46',                  // flooding — dark green
+  q: '#3b82f6',                  // snow squall — blue
+  T: '#b91c1c'                   // tornado — deep crimson (distinct from the
+                                  // TOR warning polygon's #ef4444, so a
+                                  // tornado LSR sitting inside its own
+                                  // warning polygon doesn't visually vanish)
 };
-
-// ---------------------------------------------------------------------------
-// Official NWS hazard colors, keyed by "PHEN.SIG" (matches PRODUCT_NAMES).
-// Source: https://www.weather.gov/help-map (verified update: Mar 10, 2025)
-// Single source of truth for: table text color, map zone shading, warning
-// polygon fill/stroke, and popup swatch colors.
-// ---------------------------------------------------------------------------
-const HAZARD_COLORS = {
-  'TO.W':'#FF0000','TO.A':'#FFFF00',
-  'SV.W':'#FFA500','SV.A':'#DB7093',
-  'FF.W':'#8B0000','FF.A':'#2E8B57','FF.S':'#8B0000',
-  'FA.W':'#00FF00','FA.A':'#2E8B57','FA.Y':'#00FF7F',
-  'MA.W':'#FFA500','SW.Y':'#D8BFD8',
-  'WI.Y':'#D2B48C','HW.W':'#DAA520','HW.A':'#B8860B','EW.W':'#FF8C00',
-  'WS.W':'#FF69B4','WS.A':'#4682B4','WW.Y':'#7B68EE','BZ.W':'#FF4500','IS.W':'#8B008B','SQ.W':'#C71585',
-  'FZ.W':'#483D8B','FZ.A':'#00FFFF','FR.Y':'#6495ED','HT.Y':'#FF7F50','XH.W':'#C71585','XH.A':'#800000',
-  'DS.W':'#FFE4C4','DU.Y':'#BDB76B','FG.Y':'#708090','SM.Y':'#F0E68C',
-  'RP.S':'#40E0D0','SU.Y':'#BA55D3','SU.W':'#228B22',
-  'CF.Y':'#7CFC00','CF.W':'#228B22','CF.A':'#66CDAA','LS.Y':'#7CFC00','LS.W':'#228B22',
-  'RF.W':'#FF1493','FW.A':'#FFDEAD',
-  'AF.Y':'#696969','TS.W':'#FD6347','TS.A':'#FF00FF','TS.Y':'#D2691E',
-  'AS.O':'#808080'
+const LSR_TYPE_DEFAULT_COLOR = '#94a3b8';
+const STATUS_META = {
+  verified:           { label: 'Verified',            color: '#4ade80' },
+  pending:            { label: 'Pending',             color: '#f0c419' },
+  needs_verification: { label: 'Needs Verification',  color: '#ef4444' }
 };
+// Default colors above are green/yellow/red. This is an Okabe-Ito-style
+// colorblind-safe alternative (blue/orange/vermilion) that stays
+// distinguishable under the common forms of color vision deficiency.
+// STATUS_META's own binding is const, but its property objects are
+// still mutable, so toggling the palette is just overwriting .color
+// in place rather than swapping which object every render function
+// references.
+const STATUS_COLORS_DEFAULT = { verified: '#4ade80', pending: '#f0c419', needs_verification: '#ef4444' };
+const STATUS_COLORS_COLORBLIND = { verified: '#0072B2', pending: '#E69F00', needs_verification: '#D55E00' };
+function applyColorblindPalette(on){
+  const src = on ? STATUS_COLORS_COLORBLIND : STATUS_COLORS_DEFAULT;
+  Object.keys(STATUS_META).forEach(k => { STATUS_META[k].color = src[k]; });
+}
+// Live, official NWS zone boundaries — queryable by CWA on demand, so
+// this works for ANY office, not just a pre-baked static extract.
+// (Confirmed nationwide coverage: BTV, OUN, LOX, MFL all return real
+// zone sets from this service.)
+const ZONE_QUERY_URL = 'https://mapservices.weather.noaa.gov/static/rest/services/nws_reference_maps/nws_reference_map/MapServer/8/query';
+const COW_API = 'https://mesonet.agron.iastate.edu/api/1/cow.json';
+// Every NWS Weather Forecast Office nationwide, keyed by 3-letter ID.
+// Sourced from IEM's own WFO network table (the same data source IEM
+// Cow itself recognizes for the wfo= parameter), so this list stays a
+// direct match for what the app can actually query — rather than a
+// separately-maintained static list that could drift out of sync.
+const WFO_LIST = [
+  { id:'ABQ', name:'Albuquerque, NM' }, { id:'ABR', name:'Aberdeen, SD' },
+  { id:'AFC', name:'Anchorage, AK' }, { id:'AFG', name:'Fairbanks, AK' },
+  { id:'AJK', name:'Juneau, AK' }, { id:'AKQ', name:'Wakefield, VA' },
+  { id:'ALY', name:'Albany, NY' }, { id:'AMA', name:'Amarillo, TX' },
+  { id:'APX', name:'Gaylord, MI' }, { id:'ARX', name:'La Crosse, WI' },
+  { id:'BGM', name:'Binghamton, NY' }, { id:'BIS', name:'Bismarck, ND' },
+  { id:'BMX', name:'Birmingham, AL' }, { id:'BOI', name:'Boise, ID' },
+  { id:'BOU', name:'Denver, CO' }, { id:'BOX', name:'Boston / Norton, MA' },
+  { id:'BRO', name:'Brownsville, TX' }, { id:'BTV', name:'Burlington, VT' },
+  { id:'BUF', name:'Buffalo, NY' }, { id:'BYZ', name:'Billings, MT' },
+  { id:'CAE', name:'Columbia, SC' }, { id:'CAR', name:'Caribou, ME' },
+  { id:'CHS', name:'Charleston, SC' }, { id:'CLE', name:'Cleveland, OH' },
+  { id:'CRP', name:'Corpus Christi, TX' }, { id:'CTP', name:'State College, PA' },
+  { id:'CYS', name:'Cheyenne, WY' }, { id:'DDC', name:'Dodge City, KS' },
+  { id:'DLH', name:'Duluth, MN' }, { id:'DMX', name:'Des Moines, IA' },
+  { id:'DTX', name:'Detroit, MI' }, { id:'DVN', name:'Quad Cities, IA/IL' },
+  { id:'EAX', name:'Kansas City/Pleasant Hill, MO' }, { id:'EKA', name:'Eureka, CA' },
+  { id:'EPZ', name:'El Paso, TX' }, { id:'EWX', name:'Austin/San Antonio, TX' },
+  { id:'FFC', name:'Peachtree City, GA' }, { id:'FGF', name:'Grand Forks, ND' },
+  { id:'FGZ', name:'Flagstaff, AZ' }, { id:'FSD', name:'Sioux Falls, SD' },
+  { id:'FWD', name:'Dallas/Fort Worth, TX' }, { id:'GGW', name:'Glasgow, MT' },
+  { id:'GID', name:'Hastings, NE' }, { id:'GJT', name:'Grand Junction, CO' },
+  { id:'GLD', name:'Goodland, KS' }, { id:'GRB', name:'Green Bay, WI' },
+  { id:'GRR', name:'Grand Rapids, MI' }, { id:'GSP', name:'Greenville/Spartanburg, SC' },
+  { id:'GUM', name:'Guam' }, { id:'GYX', name:'Gray, ME' },
+  { id:'HFO', name:'Honolulu, HI' }, { id:'HGX', name:'Houston/Galveston, TX' },
+  { id:'HNX', name:'San Joaquin Valley/Hanford, CA' }, { id:'HUN', name:'Huntsville, AL' },
+  { id:'ICT', name:'Wichita, KS' }, { id:'ILM', name:'Wilmington, NC' },
+  { id:'ILN', name:'Wilmington, OH' }, { id:'ILX', name:'Lincoln, IL' },
+  { id:'IND', name:'Indianapolis, IN' }, { id:'IWX', name:'Northern Indiana, IN' },
+  { id:'JAN', name:'Jackson, MS' }, { id:'JAX', name:'Jacksonville, FL' },
+  { id:'JKL', name:'Jackson, KY' }, { id:'KEY', name:'Key West, FL' },
+  { id:'LBF', name:'North Platte, NE' }, { id:'LCH', name:'Lake Charles, LA' },
+  { id:'LIX', name:'New Orleans, LA' }, { id:'LKN', name:'Elko, NV' },
+  { id:'LMK', name:'Louisville, KY' }, { id:'LOT', name:'Chicago, IL' },
+  { id:'LOX', name:'Los Angeles/Oxnard, CA' }, { id:'LSX', name:'St Louis, MO' },
+  { id:'LUB', name:'Lubbock, TX' }, { id:'LWX', name:'Baltimore/Washington, VA' },
+  { id:'LZK', name:'Little Rock, AR' }, { id:'MAF', name:'Midland/Odessa, TX' },
+  { id:'MEG', name:'Memphis, TN' }, { id:'MFL', name:'Miami, FL' },
+  { id:'MFR', name:'Medford, OR' }, { id:'MHX', name:'Newport/Morehead City, NC' },
+  { id:'MKX', name:'Milwaukee/Sullivan, WI' }, { id:'MLB', name:'Melbourne, FL' },
+  { id:'MOB', name:'Mobile, AL' }, { id:'MPX', name:'Twin Cities/Chanhassen, MN' },
+  { id:'MQT', name:'Marquette, MI' }, { id:'MRX', name:'Morristown, TN' },
+  { id:'MSO', name:'Missoula, MT' }, { id:'MTR', name:'San Francisco, CA' },
+  { id:'OAX', name:'Omaha/Valley, NE' }, { id:'OHX', name:'Nashville, TN' },
+  { id:'OKX', name:'New York, NY' }, { id:'OTX', name:'Spokane, WA' },
+  { id:'OUN', name:'Norman, OK' }, { id:'PAH', name:'Paducah, KY' },
+  { id:'PBZ', name:'Pittsburgh, PA' }, { id:'PDT', name:'Pendleton, OR' },
+  { id:'PHI', name:'Mount Holly, NJ' }, { id:'PIH', name:'Pocatello/Idaho Falls, ID' },
+  { id:'PQR', name:'Portland, OR' }, { id:'PSR', name:'Phoenix, AZ' },
+  { id:'PUB', name:'Pueblo, CO' }, { id:'RAH', name:'Raleigh, NC' },
+  { id:'REV', name:'Reno, NV' }, { id:'RIW', name:'Riverton, WY' },
+  { id:'RLX', name:'Charleston, WV' }, { id:'RNK', name:'Blacksburg, VA' },
+  { id:'SEW', name:'Seattle, WA' }, { id:'SGF', name:'Springfield, MO' },
+  { id:'SGX', name:'San Diego, CA' }, { id:'SHV', name:'Shreveport, LA' },
+  { id:'SJT', name:'San Angelo, TX' }, { id:'SJU', name:'San Juan, PR' },
+  { id:'SLC', name:'Salt Lake City, UT' }, { id:'STO', name:'Sacramento, CA' },
+  { id:'TAE', name:'Tallahassee, FL' }, { id:'TBW', name:'Tampa Bay Area/Ruskin, FL' },
+  { id:'TFX', name:'Great Falls, MT' }, { id:'TOP', name:'Topeka, KS' },
+  { id:'TSA', name:'Tulsa, OK' }, { id:'TWC', name:'Tucson, AZ' },
+  { id:'UNR', name:'Rapid City, SD' }, { id:'VEF', name:'Las Vegas, NV' }
+];
+// Plain-text scan for PDS / Emergency wording — IEM Cow doesn't expose
+// these as structured fields, so they're detected from the product
+// text itself (already fetched lazily for the details panel; here we
+// fetch it proactively, capped, to power the table/map badges too).
+const PDS_REGEX = /PARTICULARLY\s+DANGEROUS\s+SITUATION/i;
+const TOR_EMERGENCY_REGEX = /TORNADO\s+EMERGENCY/i;
+const FF_EMERGENCY_REGEX = /FLASH\s+FLOOD\s+EMERGENCY/i;
+const PDS_SCAN_MAX_EVENTS = 75;
+const PDS_SCAN_CONCURRENCY = 6;
 
-// ---------------------------------------------------------------------------
-// Opacity tuning — adjust these to make hazard shading more/less prominent.
-// ---------------------------------------------------------------------------
-const ZONE_FILL_OPACITY = 0.45;       // active zone shading on the map
-const ZONE_BASE_FILL_OPACITY = 0.05;  // inactive/no-product zones
-const POLYGON_FILL_OPACITY = 0.12;    // warning polygons (tornado/SVR/FFW/FLW)
-const POLYGON_HOVER_FILL_OPACITY = 0.35; // warning polygons on mouseover (cap)
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 58, lsrbuffer: 15, colorblindMode: false };
+let selectedDateStr = null;   // 'YYYY-MM-DD' in settings.timezone
+let currentEvents = [];       // parsed + status-enriched event objects
+let currentReports = [];      // parsed report objects
+let dayStats = null;          // client-computed FAR/POD/CSI/lead-time stats for the selected window
+let selectedEventId = null;
+let showLsrs = true;
+let zoneCacheByWfo = {};    // fetched zone features, cached per WFO so switching dates doesn't re-fetch
+let viewMode = 'day';         // 'day' or 'range'
+let rangeLabel = '';
+let lastSingleDate = null;    // last single day viewed, so exiting a range returns somewhere sensible
+let lastZoneFitWfo = null;    // tracks which WFO the map was last auto-fit to
+let phenomenaFilter = null;   // 'TO'|'SV'|'FF'|'SQ'|null — set by clicking a queue card
+let map, zoneLayer, warningLayer, lsrLayer, radarLayer;
+let productTextCache = {};
+let wfoDropdownOpen = false;
+let wfoHighlightIdx = -1;
+let wfoFilteredList = [];
+let showRadar = false;
+let currentRangeStart = null;   // set while viewMode === 'range', for URL state
+let currentRangeEnd = null;
+let compareWfos = [];   // additional WFO codes overlaid alongside settings.wfo
+let liveModeInterval = null;
+const LIVE_POLL_MS = 3 * 60 * 1000;
 
-const POLYGON_STYLE = {
-  TO: { color: HAZARD_COLORS['TO.W'], weight: 4, fillColor: HAZARD_COLORS['TO.W'], fillOpacity: POLYGON_FILL_OPACITY },
-  SV: { color: HAZARD_COLORS['SV.W'], weight: 3, fillColor: HAZARD_COLORS['SV.W'], fillOpacity: POLYGON_FILL_OPACITY },
-  FF: { color: HAZARD_COLORS['FF.W'], weight: 3, fillColor: HAZARD_COLORS['FF.W'], fillOpacity: POLYGON_FILL_OPACITY },
-  FA: { color: HAZARD_COLORS['FA.W'], weight: 3, fillColor: HAZARD_COLORS['FA.W'], fillOpacity: POLYGON_FILL_OPACITY }
-};
+// ══════════════════════════════════════════════════════════════
+//  DATE / TIMEZONE HELPERS
+// ══════════════════════════════════════════════════════════════
+function pad2(n){ return String(n).padStart(2,'0'); }
 
-// County-based products (e.g. SPC severe thunderstorm / tornado WATCHES) use
-// FIPS county UGC codes ("VTC007"), not forecast-zone codes ("VTZ007"). The
-// two numbering schemes are unrelated, so county-form alerts need a manual
-// crosswalk to the forecast zones. Covers every VT/NY county overlapping BTV.
-const COUNTY_TO_ZONES = {
-  'VT001': ['009','018'], 'VT005': ['007'], 'VT007': ['017','005'], 'VT009': ['004'],
-  'VT011': ['016','002'], 'VT013': ['001'], 'VT015': ['006'], 'VT017': ['010'],
-  'VT019': ['003'], 'VT021': ['011','019'], 'VT023': ['008'], 'VT027': ['020','021'],
-  'NY019': ['028','031'], 'NY031': ['034','035'], 'NY033': ['027','030'],
-  'NY089': ['026','029','087']
-};
+function todayInTZ(tz){
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(new Date());
+  const o = {}; parts.forEach(p=>{ if(p.type!=='literal') o[p.type]=p.value; });
+  return `${o.year}-${o.month}-${o.day}`;
+}
 
-let polygonLayer = null;
-let zoneProducts = [];
-let polygonProducts = [];
+// Pure calendar-day arithmetic (no timezone involved) — treats the
+// Y-M-D string as a date-only value.
+function addDaysToDateStr(dateStr, n){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth()+1)}-${pad2(dt.getUTCDate())}`;
+}
 
-// Disables Leaflet's use of CSS 3D transforms for panning/zooming.
-// Confirmed helpful on the Samsung Tizen TV browser elsewhere in this
-// project — older/embedded WebKit engines can measure 3D-transformed
-// layers correctly but never actually composite/paint them.
-L.Browser.any3d = false;
-
-// Map control toggles — user-facing filters for what gets drawn on the map.
-// The underlying alert data (stats, table) is always complete regardless of
-// these; they only affect map rendering.
-let showZoneWarnings = true;
-let showPolygonWarnings = true;
-
-// Per-hazard-type toggle, driven by clicking items in the map legend. A key
-// present in this set (e.g. "SV.W") is currently hidden from the map.
-let disabledHazards = new Set();
-
-function zoneKey(state, zoneNum){ return state + zoneNum; }
-
-let map, geoLayer;
-let BTV_ZONE_SET = new Set();
-let zonesReady = false;
-
-function initMap(filteredGeojson){
-
-  // preferCanvas + disabled animations are meaningfully lighter on
-  // low-power / embedded browsers (e.g. Samsung Tizen TV browser) than the
-  // SVG renderer + Leaflet's default zoom/fade/marker animations.
-  map = L.map('map', {
-    zoomControl:true,
-    attributionControl:false,
-    preferCanvas:false,
-    zoomAnimation:false,
-    fadeAnimation:false,
-    markerZoomAnimation:false,
-    inertia:false,
-    // Default Leaflet only zooms to whole numbers, so fitBounds() picks
-    // the largest whole zoom that fits everything WITHOUT cropping —
-    // which almost always leaves a visible margin/rounds down to a
-    // coarser, more-zoomed-out level than the bounds actually need.
-    // That extra zoomed-out step is what was making the basemap look
-    // faint/washed out (Esri's topo tiles render paler/simplified at
-    // more-zoomed-out levels — the hazard-zone SVG fills don't degrade
-    // with zoom the same way, which is why only the basemap looked faded).
-    // Fractional zoom lets fitBounds fill the container exactly instead
-    // of rounding down. THIS WAS ACCIDENTALLY REMOVED — restoring it.
-    zoomSnap: 0,
-    zoomDelta: 0.25
-  });
-
-  // Switched from CartoDB Voyager to Esri World Topo Map tiles — this is
-  // the exact basemap source confirmed working on this TV's browser in
-  // the companion DSS dashboard, so matching it here should resolve the
-  // same tile-loading trouble on this dashboard.
-  var _basemapTileLoadCount = 0;
-  var _basemapTileErrorCount = 0;
-
-  const tileLayer = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-    {
-      attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors',
-      maxZoom: 19
-    }
-  ).addTo(map);
-
-  tileLayer.on('tileload', function(){ _basemapTileLoadCount++; });
-  tileLayer.on('tileerror', function(){ _basemapTileErrorCount++; });
-
-  // Self-diagnosing banner: if this ever runs unattended and the map
-  // shows up blank, there's normally no way to find out why without
-  // physically being at the TV with debugging gear. Check a few seconds
-  // after load — if zero tiles ever loaded, print the reason directly
-  // on screen so whoever can SEE the TV can read off what's wrong.
-  setTimeout(function() {
-    if (_basemapTileLoadCount > 0) return;
-    var mapEl = document.getElementById('map');
-    if (!mapEl) return;
-    var reason = _basemapTileErrorCount > 0
-      ? 'Map tiles failed to load (' + _basemapTileErrorCount + ' error' + (_basemapTileErrorCount !== 1 ? 's' : '') + '). ' +
-        'This usually means this device/network is blocking access to server.arcgisonline.com — ' +
-        'check any content filtering, DNS blocking, or firewall rules on this TV or its network.'
-      : 'No map tiles have loaded and no errors were reported either — this points to the tile ' +
-        'requests never completing at all (e.g. no network access, or the map container had zero size ' +
-        'when it initialized).';
-    var banner = document.createElement('div');
-    banner.style.cssText =
-      'position:absolute; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center; ' +
-      'text-align:center; padding:20px; background:rgba(10,14,24,.95); color:#fca5a5; font-size:14px; ' +
-      'font-weight:600; line-height:1.5;';
-    banner.textContent = '⚠ ' + reason;
-    mapEl.style.position = 'relative';
-    mapEl.appendChild(banner);
-  }, 6000);
-
-  // Basic tile-load diagnostics/retry — helps on flaky TV network stacks
-  // where a handful of tile requests occasionally just stall out.
-  tileLayer.on('tileerror', function(err){
-    console.warn('tile load error, retrying once', err && err.coords);
-    if(err && err.tile && !err.tile._retried){
-      err.tile._retried = true;
-      setTimeout(function(){ err.tile.src = err.tile.src; }, 800);
-    }
-  });
-
-  polygonLayer = L.layerGroup().addTo(map);
-
-  geoLayer = L.geoJSON(filteredGeojson,{
-    style:function(){
-      return {
-        color:"#000000",
-        weight:2.5,
-        fillColor:"#3a4f6c",
-        fillOpacity:ZONE_BASE_FILL_OPACITY
-      };
-    },
-    onEachFeature:function(feature,layer){
-      layer._baseWeight=2.5;
-
-      layer.on("mouseover",function(){
-        layer.setStyle({
-          weight:layer._baseWeight+1
-        });
-      });
-
-      layer.on("mouseout",function(){
-        layer.setStyle({
-          weight:layer._baseWeight
-        });
-      });
-    }
-  }).addTo(map);
-
-  resetMapView();
-
-  // The map's container size can change after Leaflet has already measured
-  // it once (flex layout settling, TV browser reporting a stale viewport
-  // size on first paint, etc). Keep it honest.
-  window.addEventListener('resize', function(){
-    if(map) map.invalidateSize();
-  });
-  if(window.ResizeObserver){
-    const ro = new ResizeObserver(function(){
-      if(map) map.invalidateSize();
-    });
-    ro.observe(document.getElementById('map'));
+// Finds the UTC instant that reads as local midnight (00:00:00) of the
+// given Y-M-D date in the given IANA timezone. Iterates twice to settle
+// on DST-transition edge cases.
+function localMidnightToUTC(dateStr, tz){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const targetUTCms = Date.UTC(y, m-1, d, 0, 0, 0);
+  let guess = new Date(targetUTCms);
+  const dtf = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  for(let i=0;i<3;i++){
+    const parts = dtf.formatToParts(guess).reduce((acc,p)=>{ if(p.type!=='literal') acc[p.type]=parseInt(p.value,10); return acc; }, {});
+    const asIfUTC = Date.UTC(parts.year, parts.month-1, parts.day, parts.hour, parts.minute, parts.second);
+    const diff = targetUTCms - asIfUTC;
+    if(diff === 0) break;
+    guess = new Date(guess.getTime() + diff);
   }
-
+  return guess;
 }
 
-// Fits the map to the full BTV CWA zone set (the "default" view). Used both
-// on initial load and by the Reset Zoom button.
-function resetMapView(){
-  if(!map) return;
-  map.invalidateSize();
-  if(geoLayer && geoLayer.getLayers().length){
-    map.fitBounds(geoLayer.getBounds(),{
-      padding:[10,10]
-    });
-  }else{
-    map.setView([44.3,-72.9],8);
-  }
+function isoZ(d){ return d.toISOString().replace(/\.\d+Z$/, 'Z'); }
+
+function fmtLocal(isoStr, tz){
+  if(!isoStr) return '—';
+  const d = new Date(isoStr);
+  return d.toLocaleString('en-US', { timeZone: tz, month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) ;
+}
+function fmtLocalFull(isoStr, tz){
+  if(!isoStr) return '—';
+  const d = new Date(isoStr);
+  return d.toLocaleString('en-US', { timeZone: tz, month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit' }) + ' ' +
+    new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName:'short' }).formatToParts(d).find(p=>p.type==='timeZoneName').value;
 }
 
-// Bypasses flex-computed sizing entirely by pinning #map to explicit
-// pixel dimensions read from its wrapper, instead of trusting height:100%
-// inside a flex/overflow:hidden chain. Confirmed necessary elsewhere in
-// this project: on the Samsung Tizen TV browser (and other older/embedded
-// WebKit engines), a deeply nested flex + overflow:hidden + absolutely
-// positioned chain can measure correctly but never actually composite —
-// the map area just stays blank. Explicit pixels sidestep that entirely.
-function forceMapPixelSize(){
-  var wrap = document.querySelector('.map-wrap');
-  var mapDiv = document.getElementById('map');
-  if(!wrap || !mapDiv || !map) return;
-
-  var rect = wrap.getBoundingClientRect();
-  var targetW = Math.round(rect.width);
-  var targetH = Math.round(rect.height);
-  if(targetW <= 0 || targetH <= 0) return;
-
-  mapDiv.style.flex = 'none';
-  mapDiv.style.width = targetW + 'px';
-  mapDiv.style.height = targetH + 'px';
-
-  map.invalidateSize(false);
-  resetMapView();
+function haversineMiles(lat1, lon1, lat2, lon2){
+  const R = 3958.8;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-window.addEventListener('load', function(){
-  setTimeout(forceMapPixelSize, 800);
-  setTimeout(forceMapPixelSize, 2000);
-  setTimeout(forceMapPixelSize, 4000);
-});
-window.addEventListener('resize', forceMapPixelSize);
-
-async function loadZones(){
-  const statusEl = document.getElementById('map-status');
-  try{
-    const res = await fetch(GEOJSON_URL);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const features = (data.features || []).filter(function(f){
-      const p = f.properties || {};
-      if(TARGET_CWAS.includes(p.CWA)) return true;
-      if(EXTRA_ZONES.includes(p.STATE_ZONE)) return true;
-      return false;
-    });
-    const filtered = { type: 'FeatureCollection', features: features };
-    BTV_ZONE_SET = new Set(features.map(f => zoneKey(f.properties.STATE, f.properties.ZONE)));
-    initMap(filtered);
-    statusEl.style.display = 'none';
-    zonesReady = true;
-  } catch(e){
-    console.error('zone load error', e);
-    statusEl.textContent = 'Could not load zone boundaries (' + e.message + ')';
-    // Still init an empty map so the rest of the dashboard (table/stats) works.
-    initMap({ type:'FeatureCollection', features: [] });
-    zonesReady = true;
-  }
+function escapeHtml(str){
+  if(str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function activeZoneLayers(){ return geoLayer ? geoLayer.getLayers() : []; }
-
-// Priority ranking: Warning > Advisory > Watch (used to pick which product
-// "wins" a zone when several are active at once; actual color always comes
-// from HAZARD_COLORS for that specific product).
-const SIG_RANK = { W: 3, Y: 2, A: 1 };
-function rankOf(sig){ return SIG_RANK[sig] || 0; }
-
-// Removes any product whose PHEN.SIG key is currently toggled off in the
-// legend. Applied on top of the zone/polygon master toggles.
-function filterDisabled(prods){
-  return prods.filter(p => !disabledHazards.has(p.phen + '.' + p.sig));
+// ══════════════════════════════════════════════════════════════
+//  STATUS COMPUTATION
+// ══════════════════════════════════════════════════════════════
+function computeStatus(props){
+  if(props.verify) return 'verified';
+  const expireMs = new Date(props.expire).getTime();
+  if(Date.now() < expireMs) return 'pending';
+  return 'needs_verification';
 }
 
-function bestProductPerZone(prods){
-  const map = {};
-  prods.forEach(function(p){
-    p.zoneKeys.forEach(function(k){
-      const existingList = map[k] ? map[k].all : [];
-      const all = existingList.concat([p]);
-      const best = all.reduce((a,b) => rankOf(b.sig) > rankOf(a.sig) ? b : a, all[0]);
-      map[k] = { best: best, all: all };
+// Computed client-side from OUR calendar-day-corrected event/report set
+// (rather than trusting IEM's own 'stats' object, which reflects
+// whatever padded query window we actually sent it, not the true day).
+//   FAR = C / (Aw + C)              — false alarm ratio
+//   POD = Ae / (Ae + B)             — probability of detection
+//   CSI = (POD^-1 + (1-FAR)^-1 - 1)^-1
+// Ae/Aw = verified (hit) events, B = unwarned reports (misses),
+// C = events that fully expired without ever verifying (false alarms).
+// Only events with a *final* outcome (not still-pending) count toward
+// these — a still-active warning hasn't produced a verdict yet.
+function computeDayStats(){
+  const decided = currentEvents.filter(e => e.status !== 'pending');
+  const hits = decided.filter(e => e.status === 'verified').length;
+  const falseAlarms = decided.filter(e => e.status === 'needs_verification').length;
+  const misses = currentReports.filter(r => r.inRange && !r.warned).length;
+
+  const pod = (hits + misses) > 0 ? hits / (hits + misses) : null;
+  const far = (hits + falseAlarms) > 0 ? falseAlarms / (hits + falseAlarms) : null;
+  const csi = (pod !== null && far !== null && pod > 0 && (1-far) > 0)
+    ? 1 / ((1/pod) + (1/(1-far)) - 1)
+    : null;
+
+  const matchedReportsAll = [];
+  const lead0s = [];
+  currentEvents.forEach(e => {
+    if(e.lead0 !== null && e.lead0 !== undefined) lead0s.push(e.lead0);
+    e.stormreports.forEach(rid => {
+      const r = currentReports.find(x => String(x.id) === rid);
+      if(r && r.leadtime !== null && r.leadtime !== undefined) matchedReportsAll.push(r.leadtime);
     });
   });
-  return map;
-}
 
-// prods = the zone/county products to actually shade. Pass [] to reset every
-// zone back to its plain outline (used when the zone/county toggle is off) —
-// the outline itself always stays, only the hazard color fill is removed.
-function highlightZones(prods){
-  if(!geoLayer) return;
-  const zoneMap = bestProductPerZone(prods);
-  activeZoneLayers().forEach(function(layer){
-    const p = layer.feature.properties;
-    const key = zoneKey(p.STATE, p.ZONE);
-    const entry = zoneMap[key];
-    if(entry){
-      const color = entry.best.color || '#cdd8e6';
-      layer._baseWeight = 2;
-      layer.setStyle({ color: color, weight: 2, fillOpacity: ZONE_FILL_OPACITY, fillColor: color, opacity: 0.9 });
-      const list = entry.all
-        .slice()
-        .sort((a,b) => rankOf(b.sig) - rankOf(a.sig))
-        .map(a => '<div style="margin-bottom:6px;">'
-          + '<div style="color:'+(a.color||'#cdd8e6')+';font-weight:700;">'+a.name+'</div>'
-          + '<div style="font-size:11px;color:#93a3b8;">'+a.code+' &middot; expires '+fmtTime(a.expires)+'</div>'
-          + '</div>')
-        .join('');
-      layer.bindPopup(
-        '<div style="min-width:200px;"><b>'+p.NAME+'</b><br>Zone '+p.STATE_ZONE
-        + '<hr style="border-color:#2a3f5c;margin:6px 0;">' + list + '</div>',
-        { maxWidth: 280 }
-      );
-    } else {
-      layer._baseWeight = 2.5;
-      layer.setStyle({ color:'#000000', weight:2.5, fillOpacity:ZONE_BASE_FILL_OPACITY, fillColor:'#3a4f6c', opacity:0.9 });
-      layer.bindPopup('<b>'+p.NAME+'</b><br>Zone '+p.STATE_ZONE+'<hr style="border-color:#2a3f5c;margin:6px 0;">No active products');
-    }
-  });
-}
+  // Office-level aggregate only — a count of distinct forecaster codes
+  // active in this window, not a per-person breakdown. Individual
+  // scorecards read as surveillance and aren't something this tool
+  // does; if per-forecaster review is genuinely needed, that belongs
+  // in a controlled internal process, not a shareable-URL dashboard.
+  const distinctForecasters = new Set(currentEvents.map(e => e.fcster).filter(Boolean)).size;
 
-function drawWarningPolygons(products){
-
-  if(!polygonLayer) return;
-
-  polygonLayer.clearLayers();
-
-  products.forEach(function(p){
-
-    // Only polygon warning products
-    if(p.sig !== "W") return;
-
-    if(!["TO","SV","FF","FA"].includes(p.phen)) return;
-
-    if(!p.geometry) return;
-
-    const style = POLYGON_STYLE[p.phen];
-
-    if(!style) return;
-
-    const popupHtml =
-      '<div style="min-width:240px">' +
-        '<div style="font-weight:700;font-size:15px;color:' + style.color + ';margin-bottom:8px;">' +
-          p.name +
-        '</div>' +
-        '<table style="width:100%;font-size:12px">' +
-          '<tr><td><b>VTEC</b></td><td>' + p.code + '</td></tr>' +
-          '<tr><td><b>Issued</b></td><td>' + fmtTime(p.onset) + '</td></tr>' +
-          '<tr><td><b>Expires</b></td><td>' + fmtTime(p.expires) + '</td></tr>' +
-          '<tr><td><b>Update By</b></td><td>' + fmtTime(p.updateBy) + '</td></tr>' +
-        '</table>' +
-      '</div>';
-
-    const gj = L.geoJSON(p.geometry,{
-
-      style: style,
-
-      onEachFeature:function(feature,layer){
-
-        layer.on({
-
-          mouseover:function(){
-
-            layer.setStyle({
-              weight: style.weight + 2,
-              fillOpacity: Math.min(style.fillOpacity + 0.10, POLYGON_HOVER_FILL_OPACITY)
-            });
-
-            layer.bringToFront();
-
-          },
-
-          mouseout:function(){
-
-            layer.setStyle(style);
-
-          }
-
-        });
-
-      }
-
-    })
-
-    .bindPopup(popupHtml)
-
-    .addTo(polygonLayer);
-
-    // Keep a handle to this feature's Leaflet layer so the table can zoom
-    // to it (and open its popup) when a matching row is clicked.
-    p._mapLayer = gj;
-
-  });
-
-}
-
-// Re-applies the current map toggle state (zone/polygon master toggles PLUS
-// per-hazard legend toggles) to the already-computed product lists. Called
-// after every refresh AND whenever any toggle/legend item is clicked (no
-// need to refetch alerts just to show/hide something already fetched).
-function applyMapFilters(){
-  const zProds = filterDisabled(showZoneWarnings ? zoneProducts : []);
-  const pProds = filterDisabled(showPolygonWarnings ? polygonProducts : []);
-  highlightZones(zProds);
-  drawWarningPolygons(pProds);
-  // Legend always reflects the full active product set (not just what's
-  // currently shown) so hidden hazard types remain clickable to re-enable.
-  renderLegend(products);
-}
-
-function parseVtec(vtecStr){
-  if(!vtecStr) return null;
-  const parts = vtecStr.replace(/^\/|\/$/g,'').split('.');
-  if(parts.length < 7) return null;
-  return {
-    productClass: parts[0], action: parts[1], office: parts[2],
-    phenomenon: parts[3], significance: parts[4], etn: parts[5], times: parts[6]
+  dayStats = {
+    hits, falseAlarms, misses,
+    pod, far, csi,
+    avgLead1st: lead0s.length ? lead0s.reduce((a,b)=>a+b,0)/lead0s.length : null,
+    avgLeadAll: matchedReportsAll.length ? matchedReportsAll.reduce((a,b)=>a+b,0)/matchedReportsAll.length : null,
+    maxLead: matchedReportsAll.length ? Math.max(...matchedReportsAll) : null,
+    minLead: matchedReportsAll.length ? Math.min(...matchedReportsAll) : null,
+    distinctForecasters
   };
 }
 
-function fmtTime(d){
-  if(!d) return '—';
-  return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZone:'America/New_York' });
-}
-
-function fmtCountdown(ms){
-  if(ms <= 0) return '00:00';
-  const totalSec = Math.floor(ms/1000);
-  const days = Math.floor(totalSec/86400);
-  const hours = Math.floor((totalSec%86400)/3600);
-  const mins = Math.floor((totalSec%3600)/60);
-  const secs = totalSec%60;
-
-  if(days > 0){
-    return days+'d '+String(hours).padStart(2,'0')+'h '+String(mins).padStart(2,'0')+'m '+String(secs).padStart(2,'0')+'s';
-  }
-  if(hours > 0){
-    return hours+'h '+String(mins).padStart(2,'0')+'m '+String(secs).padStart(2,'0')+'s';
-  }
-  return String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
-}
-
-function countdownClass(ms){
-  if(ms <= 0) return 'c-gray';
-  if(ms < 15*60*1000) return 'c-red';
-  if(ms < 60*60*1000) return 'c-amber';
-  return 'c-green';
-}
-
-let products = [];
-
-async function fetchAlerts(){
-  const states = ['VT','NY'];
-  let all = [];
-  for(const st of states){
-    try{
-      const res = await fetch('https://api.weather.gov/alerts/active?area='+st, { headers: { 'Accept':'application/geo+json' } });
-      const data = await res.json();
-      if(data.features) all = all.concat(data.features);
-    } catch(e){ console.error('fetch error', st, e); }
-  }
-  return all;
-}
-
-function extractUgcZoneKeys(geocodeUGC){
-  const keys = [];
-  if(!geocodeUGC) return keys;
-  geocodeUGC.forEach(function(ugc){
-    if(ugc.length >= 6){
-      const state = ugc.substring(0,2);
-      const type = ugc.substring(2,3); // 'C' = county FIPS, 'Z' = forecast zone
-      const num = ugc.substring(3,6);
-      if(type === 'C'){
-        const crossed = COUNTY_TO_ZONES[state+num];
-        if(crossed) crossed.forEach(z => keys.push(state+z));
-      } else {
-        keys.push(state+num);
-      }
-    }
-  });
-  return keys;
-}
-
-function firstParam(p, key){
-  return (p.parameters && p.parameters[key] && p.parameters[key][0]) || null;
-}
-
-// Impact-Based Warning tag styling. "BASE" isn't a value NWS sends — it's
-// what we display when a taggable warning (TO.W/SV.W/FF.W) has no elevated
-// damage-threat parameter, i.e. a routine warning.
-const DAMAGE_THREAT_STYLE = {
-  'BASE':          { bg:'#1c2c41', color:'#93a3b8' },
-  'CONSIDERABLE':  { bg:'#4a3a12', color:'#f0c419' },
-  'DESTRUCTIVE':   { bg:'#4a1f1f', color:'#ef5b53' },
-  'CATASTROPHIC':  { bg:'#3a0d0d', color:'#ff4136' }
-};
-const DETECTION_STYLE = {
-  'OBSERVED':          { bg:'#3a0d0d', color:'#ff4136' },
-  'RADAR INDICATED':   { bg:'#1c2c41', color:'#93a3b8' }
-};
-
-function buildProducts(alerts){
-  const seen = new Set();
-  const out = [];
-
-  alerts.forEach(function(f){
-
-    const p = f.properties || {};
-
-    const ugcKeys = extractUgcZoneKeys(
-      p.geocode ? p.geocode.UGC : null
-    );
-
-    const matchedKeys = ugcKeys.filter(k => BTV_ZONE_SET.has(k));
-
-    if (matchedKeys.length === 0) return;
-
-    if(seen.has(p.id)) return;
-    seen.add(p.id);
-
-    const vtecRaw =
-      (p.parameters &&
-       p.parameters.VTEC &&
-       p.parameters.VTEC[0]) || null;
-
-    const vtec = parseVtec(vtecRaw);
-
-    const onset =
-      p.onset ? new Date(p.onset) :
-      (p.effective ? new Date(p.effective) :
-      new Date(p.sent));
-
-    // NWS CAP alerts carry two different end-time fields:
-    //   - p.expires: when this MESSAGE must be reissued/updated (short-fuse,
-    //     e.g. "5 AM tomorrow" for a multi-day Heat Warning)
-    //   - p.ends: when the HAZARD ITSELF actually ends (e.g. "July 3rd")
-    // messageExpires drives the "Time Until Update" heuristic below.
-    // expires (used for display + "Expires In") prefers the true hazard end.
-    const messageExpires = p.expires ? new Date(p.expires) : null;
-    const expires =
-      p.ends ? new Date(p.ends) :
-      (p.expires ? new Date(p.expires) : null);
-
-    const action = vtec
-      ? vtec.action
-      : (p.messageType === "Update" ? "CON" : "NEW");
-
-    const sig = vtec
-      ? vtec.significance
-      : (
-          p.event &&
-          p.event.toLowerCase().includes("watch")
-            ? "A"
-            : (
-                p.event &&
-                p.event.toLowerCase().includes("advisory")
-                  ? "Y"
-                  : "W"
-              )
-        );
-
-    const phen = vtec ? vtec.phenomenon : "";
-
-    if(
-      sig === "S" ||
-      (p.event &&
-       p.event.toLowerCase().includes("special weather statement"))
-    ){
-      return;
-    }
-
-    let updateBy;
-
-    const now = new Date();
-
-    if(["CAN","EXP"].includes(action)){
-
-      updateBy = now;
-
-    }else if(messageExpires){
-
-      // NWS already tells us exactly when this message needs to be
-      // reissued/updated via CAP's `expires` field — use it directly
-      // instead of guessing off the (now longer) display `expires`.
-      updateBy = messageExpires;
-
-    }else if(["NEW","CON","EXT","EXB","EXA"].includes(action)){
-
-      const span =
-        expires
-          ? (expires - onset)
-          : (2 * 60 * 60 * 1000);
-
-      const cap = Math.min(
-        span / 2,
-        2 * 60 * 60 * 1000
-      );
-
-      updateBy = new Date(onset.getTime() + cap);
-
-    }else{
-
-      updateBy = new Date(
-        onset.getTime() + 6 * 60 * 60 * 1000
-      );
-
-    }
-
-    if(expires && updateBy > expires){
-      updateBy = expires;
-    }
-
-    const key = (phen || "XX") + "." + (sig || "W");
-
-    const name =
-      PRODUCT_NAMES[key] ||
-      p.event ||
-      "Alert";
-
-    // Event Tracking Number — NWS's own per-product sequence number (e.g.
-    // the "010" in "FFW.010.BTV"). This is what distinguishes multiple
-    // concurrent products of the same type (SVR #1 vs SVR #2, etc).
-    const etn = vtec && vtec.etn ? String(parseInt(vtec.etn, 10)).padStart(3, '0') : null;
-
-    const code =
-      (PRODUCT_CODES[key] || (phen + sig))
-      + (etn ? etn : '')
-      + "."
-      + action
-      + "."
-      + (
-          vtec
-            ? vtec.office
-            : (p.senderName || "NWS").slice(0,4)
-        );
-
-    // Official NWS hazard color, keyed by PHEN.SIG. Falls back to a neutral
-    // gray-blue for any product type not in the official color table.
-    const color = HAZARD_COLORS[key] || "#cdd8e6";
-
-    // CSS class counterpart of `key`, for elements styled via classList
-    // instead of inline style (dots aren't valid in CSS class names).
-    const hazardClass = 'hazard-' + key.replace('.', '-');
-
-    // Impact-Based Warning tags — only meaningful for Tornado/Severe
-    // Thunderstorm/Flash Flood Warnings, straight from CAP `parameters`.
-    const isTaggable = sig === 'W' && ['TO','SV','FF'].includes(phen);
-    const rawThreat =
-      firstParam(p, 'tornadoDamageThreat') ||
-      firstParam(p, 'thunderstormDamageThreat') ||
-      firstParam(p, 'flashFloodDamageThreat');
-    const damageThreat = isTaggable ? (rawThreat ? rawThreat.toUpperCase() : 'BASE') : null;
-    const hailTag = firstParam(p, 'hailTag');           // e.g. "1.75" (inches)
-    const windTag = firstParam(p, 'windTag');            // e.g. "70" (mph)
-    const detection =
-      firstParam(p, 'tornadoDetection') ||
-      firstParam(p, 'flashFloodDetection');
-    const stormMotion = firstParam(p, 'eventMotionDescription');
-
-    out.push({
-
-      feature: f,
-      properties: p,
-      geometry: f.geometry,
-
-      id: p.id,
-      name,
-      etn,
-      code,
-      sig,
-      action,
-      phen,
-      color,
-      hazardClass,
-      areaDesc: p.areaDesc || '',
-      damageThreat,
-      hailTag,
-      windTag,
-      detection,
-      stormMotion,
-
-      onset,
-      expires,
-      updateBy,
-
-      zoneKeys: matchedKeys
-
-    });
-
-  });
-
-  out.sort((a,b)=>a.updateBy-b.updateBy);
-
-  return out;
-}
-
-// Legend now lists every hazard type currently present in `products`
-// (regardless of the zone/polygon master toggles) with a live count, and is
-// clickable: clicking a chip toggles that hazard type on/off on the map.
-function renderLegend(prods){
-  const legend = document.getElementById('map-legend');
-  if(!prods.length){
-    legend.innerHTML = '<span class="note">No active watches, warnings, or advisories currently active.</span>';
+function renderDayStats(){
+  const body = document.getElementById('dayStatsBody');
+  if(!dayStats || currentEvents.length === 0){
+    body.innerHTML = `<div style="color:#5a6b82;font-size:11.5px;">No decided warnings for this day yet.</div>`;
     return;
   }
-  const counts = new Map(); // key -> { name, color, sig, count }
-  prods.forEach(function(p){
-    const key = p.phen + '.' + p.sig;
-    if(!counts.has(key)){
-      counts.set(key, { key, name: p.name, color: p.color, sig: p.sig, count: 0 });
+  const fmtPct = v => v === null ? '—' : (v*100).toFixed(0) + '%';
+  const fmtNum = v => v === null ? '—' : v.toFixed(2);
+  const fmtMin = v => v === null ? '—' : v.toFixed(1) + ' min';
+  body.innerHTML = `
+    <div class="daystat-row"><div><div class="ds-name">FAR</div><span class="ds-formula">C / (Aw + C)</span></div><div class="ds-val">${fmtPct(dayStats.far)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">POD</div><span class="ds-formula">Ae / (Ae + B)</span></div><div class="ds-val">${fmtPct(dayStats.pod)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">CSI</div><span class="ds-formula">(POD⁻¹ + (1−FAR)⁻¹ − 1)⁻¹</span></div><div class="ds-val">${fmtNum(dayStats.csi)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Avg Lead Time, 1st Event</div></div><div class="ds-val">${fmtMin(dayStats.avgLead1st)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Avg Lead Time, All Events</div></div><div class="ds-val">${fmtMin(dayStats.avgLeadAll)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Max Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.maxLead)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Min Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.minLead)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Forecasters On Shift</div><span class="ds-formula">distinct codes, not individually broken out</span></div><div class="ds-val">${dayStats.distinctForecasters}</div></div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FETCHING
+// ══════════════════════════════════════════════════════════════
+function setStatus(msg, isError){
+  const el = document.getElementById('statusBanner');
+  if(!msg){ el.classList.add('hidden'); return; }
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  el.classList.toggle('error', !!isError);
+}
+
+// Warnings can start just before local midnight and still be active
+// (or verify) into the selected window. IEM's own query only includes an
+// event if it was ISSUED after begints — so a warning issued at 11:41pm
+// that's still active at 12:05am would be silently excluded entirely,
+// and any LSR it covers would incorrectly show as "unwarned". Padding
+// the query window and filtering back down to the true window afterward
+// fixes this (confirmed against a real BTV case on 2026-07-15).
+const BOUNDARY_PAD_HOURS = 6;
+// IEM's own server has no documented request-size cap, but a single
+// multi-month or multi-office query is slow and gives no feedback while
+// it's in flight. Splitting into ~31-day chunks lets us report progress
+// and keeps any one request modest — chunks fetch with limited
+// concurrency rather than all at once, out of courtesy to IEM's public
+// server (see the "review our practices" line on their site).
+const COW_CHUNK_MS = 31 * 24 * 3600 * 1000;
+const COW_CHUNK_CONCURRENCY = 3;
+
+async function fetchCowRaw(wfoCode, queryStart, queryEnd){
+  const params = new URLSearchParams();
+  params.set('wfo', wfoCode);
+  ['TO','SV','FF','SQ'].forEach(p => params.append('phenomena', p));
+  params.set('begints', isoZ(queryStart));
+  params.set('endts', isoZ(queryEnd));
+  params.set('hailsize', settings.hailsize);
+  params.set('wind', settings.wind);
+  params.set('lsrbuffer', settings.lsrbuffer);
+  const res = await fetch(COW_API + '?' + params.toString());
+  if(!res.ok) throw new Error('IEM Cow API returned HTTP ' + res.status + ' for ' + wfoCode);
+  return res.json();
+}
+
+function mapRawEventFeature(f){
+  const p = f.properties;
+  return {
+    id: f.id,
+    geometry: f.geometry,
+    etn: p.eventid,
+    phenomena: p.phenomena,
+    significance: p.significance,
+    wfo: p.wfo,
+    issue: p.issue,
+    expire: p.expire,
+    counties: p.ar_ugcname || [],
+    fcster: p.fcster,
+    verify: p.verify,
+    lead0: p.lead0,
+    windtag: p.windtag,
+    hailtag: p.hailtag,
+    stormreports: (p.stormreports || '').split(',').filter(Boolean),
+    stormreports_all: (p.stormreports_all || '').split(',').filter(Boolean),
+    product_id: p.product_id,
+    product_href: p.product_href,
+    product_text_url: p.product_text,
+    link: p.link,
+    year: p.year,
+    status: computeStatus(p)
+  };
+}
+
+function mapRawReportFeature(f, windowStartMs, windowEndMs){
+  const p = f.properties;
+  const validMs = new Date(p.valid).getTime();
+  return {
+    id: f.id,
+    lat: f.geometry.coordinates[1],
+    lon: f.geometry.coordinates[0],
+    city: p.city, county: p.county, state: p.state,
+    valid: p.valid, lsrtype: p.lsrtype, type: p.type, magnitude: p.magnitude,
+    remark: p.remark, source: p.source, leadtime: p.leadtime,
+    warned: p.warned, events: p.events, typetext: p.typetext,
+    inRange: validMs >= windowStartMs && validMs < windowEndMs
+  };
+}
+
+// Fetches a padded window from IEM, then filters back down to whatever
+// the true window (windowStart/windowEnd, both real Date objects)
+// actually is. Splits into date chunks and/or multiple WFOs as needed,
+// with limited concurrency and an optional progress callback —
+// options: { wfoCodes: [...], onProgress: (done, total) => {} }.
+async function fetchAndParseCow(windowStart, windowEnd, options){
+  options = options || {};
+  const wfoCodes = options.wfoCodes && options.wfoCodes.length ? options.wfoCodes : [settings.wfo];
+  const onProgress = options.onProgress || null;
+
+  const queryStart = new Date(windowStart.getTime() - BOUNDARY_PAD_HOURS*3600*1000);
+  const queryEnd = new Date(windowEnd.getTime() + BOUNDARY_PAD_HOURS*3600*1000);
+
+  const dateChunks = [];
+  let cursor = queryStart.getTime();
+  const queryEndMs = queryEnd.getTime();
+  if(queryEndMs - cursor <= COW_CHUNK_MS){
+    dateChunks.push([queryStart, queryEnd]);
+  } else {
+    while(cursor < queryEndMs){
+      const chunkEndMs = Math.min(cursor + COW_CHUNK_MS, queryEndMs);
+      dateChunks.push([new Date(cursor), new Date(chunkEndMs)]);
+      cursor = chunkEndMs;
     }
-    counts.get(key).count++;
+  }
+
+  const tasks = [];
+  wfoCodes.forEach(wfo => dateChunks.forEach(([cs, ce]) => tasks.push({ wfo, cs, ce })));
+
+  const seenEventIds = new Set(), seenReportIds = new Set();
+  const rawEventFeatures = [], rawReportFeatures = [];
+  let completed = 0;
+  let taskIdx = 0;
+  async function worker(){
+    while(taskIdx < tasks.length){
+      const t = tasks[taskIdx++];
+      const data = await fetchCowRaw(t.wfo, t.cs, t.ce);
+      (data.events.features || []).forEach(f => {
+        if(!seenEventIds.has(f.id)){ seenEventIds.add(f.id); rawEventFeatures.push(f); }
+      });
+      (data.stormreports.features || []).forEach(f => {
+        if(!seenReportIds.has(f.id)){ seenReportIds.add(f.id); rawReportFeatures.push(f); }
+      });
+      completed++;
+      if(onProgress) onProgress(completed, tasks.length);
+    }
+  }
+  const workerCount = Math.min(COW_CHUNK_CONCURRENCY, tasks.length);
+  await Promise.all(Array.from({ length: workerCount }, worker));
+
+  const windowStartMs = windowStart.getTime(), windowEndMs = windowEnd.getTime();
+  const allEvents = rawEventFeatures.map(mapRawEventFeature);
+  // Keep any warning whose active window overlaps the true window at
+  // all — not just ones issued strictly within it.
+  const events = allEvents.filter(e => {
+    const expMs = new Date(e.expire).getTime();
+    const issMs = new Date(e.issue).getTime();
+    return expMs > windowStartMs && issMs < windowEndMs;
   });
-  const items = [...counts.values()].sort(function(a,b){
-    return rankOf(b.sig) - rankOf(a.sig) || a.name.localeCompare(b.name);
+  // Keep the FULL padded report set for cross-referencing (an event
+  // shown may have verified via a report from just outside the true
+  // window), but flag which ones actually fall inside it, for anything
+  // that displays "reports in view" specifically.
+  const reports = rawReportFeatures.map(f => mapRawReportFeature(f, windowStartMs, windowEndMs));
+
+  return { events, reports };
+}
+
+async function loadDay(dateStr){
+  viewMode = 'day';
+  currentRangeStart = null;
+  currentRangeEnd = null;
+  selectedDateStr = dateStr;
+  lastSingleDate = dateStr;
+  selectedEventId = null;
+  document.getElementById('datePicker').value = dateStr;
+  setStatus('Loading warnings for ' + dateStr + ' from IEM Cow…', false);
+  try{
+    const dayStart = localMidnightToUTC(dateStr, settings.timezone);
+    const dayEnd = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
+    const wfoCodes = [settings.wfo, ...compareWfos];
+    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd, {
+      wfoCodes,
+      onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${dateStr} — request ${done} of ${total}…`, false); }
+    });
+    currentEvents = events;
+    currentReports = reports;
+    computeDayStats();
+    setStatus(null);
+  } catch(err){
+    console.error(err);
+    currentEvents = [];
+    currentReports = [];
+    dayStats = null;
+    setStatus('Could not load data from IEM: ' + err.message, true);
+  }
+  updateRangeBanner();
+  renderAll();
+  updateUrlState();
+  scanForPdsEmergency();
+  if(dateStr === todayInTZ(settings.timezone)) startLiveMode(); else stopLiveMode();
+}
+
+async function loadRange(startStr, endStr){
+  viewMode = 'range';
+  rangeLabel = startStr + '  →  ' + endStr;
+  currentRangeStart = startStr;
+  currentRangeEnd = endStr;
+  selectedEventId = null;
+  setStatus('Loading warnings for ' + rangeLabel + ' from IEM Cow…', false);
+  try{
+    const rangeStart = localMidnightToUTC(startStr, settings.timezone);
+    const rangeEnd = localMidnightToUTC(addDaysToDateStr(endStr, 1), settings.timezone);
+    const wfoCodes = [settings.wfo, ...compareWfos];
+    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd, {
+      wfoCodes,
+      onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${rangeLabel} — request ${done} of ${total}…`, false); }
+    });
+    currentEvents = events;
+    currentReports = reports;
+    computeDayStats();
+    setStatus(null);
+  } catch(err){
+    console.error(err);
+    currentEvents = [];
+    currentReports = [];
+    dayStats = null;
+    setStatus('Could not load range data from IEM: ' + err.message, true);
+  }
+  updateRangeBanner();
+  renderAll();
+  updateUrlState();
+  scanForPdsEmergency();
+  stopLiveMode();
+}
+
+function updateRangeBanner(){
+  const banner = document.getElementById('rangeBanner');
+  const statsTitle = document.getElementById('dayStatsTitle');
+  const radarToggle = document.getElementById('showRadarToggle');
+  if(viewMode === 'range'){
+    banner.style.display = 'flex';
+    document.getElementById('rangeBannerText').textContent = 'Viewing range: ' + rangeLabel;
+    statsTitle.textContent = 'Range Verification Stats';
+    // A single radar timestamp doesn't make sense across a multi-day
+    // range, so the control is disabled (not just hidden) rather than
+    // silently doing nothing when clicked.
+    if(radarToggle){ radarToggle.checked = false; radarToggle.disabled = true; }
+    showRadar = false;
+    document.getElementById('radarTimeSlider').style.display = 'none';
+    document.getElementById('radarTimeLabel').style.display = 'none';
+    if(radarLayer){ map.removeLayer(radarLayer); radarLayer = null; }
+  } else {
+    banner.style.display = 'none';
+    statsTitle.textContent = 'Day Verification Stats';
+    if(radarToggle) radarToggle.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  URL STATE — makes the current view shareable via the address bar
+// ══════════════════════════════════════════════════════════════
+function readUrlState(){
+  const params = new URLSearchParams(window.location.search);
+  return {
+    wfo: params.get('wfo'),
+    date: params.get('date'),
+    start: params.get('start'),
+    end: params.get('end'),
+    compare: params.get('compare')
+  };
+}
+function updateUrlState(){
+  const params = new URLSearchParams();
+  params.set('wfo', settings.wfo);
+  if(compareWfos.length) params.set('compare', compareWfos.join(','));
+  if(viewMode === 'range' && currentRangeStart && currentRangeEnd){
+    params.set('start', currentRangeStart);
+    params.set('end', currentRangeEnd);
+  } else if(selectedDateStr){
+    params.set('date', selectedDateStr);
+  }
+  const newUrl = window.location.pathname + '?' + params.toString();
+  history.replaceState(null, '', newUrl);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PDS / EMERGENCY SCAN
+// ══════════════════════════════════════════════════════════════
+async function scanForPdsEmergency(){
+  const candidates = currentEvents.filter(e => e.phenomena === 'TO' || e.phenomena === 'FF');
+  if(candidates.length === 0) return;
+  if(currentEvents.length > PDS_SCAN_MAX_EVENTS){
+    // Too many warnings in view (e.g. a wide archive range) to safely
+    // bulk-fetch full product text for each without hammering IEM with
+    // a burst of requests — skip the scan for this view. Selecting an
+    // individual warning still loads its own text normally.
+    return;
+  }
+  let idx = 0;
+  async function worker(){
+    while(idx < candidates.length){
+      const e = candidates[idx++];
+      const text = await getProductText(e);
+      if(text){
+        e.pdsFlag = PDS_REGEX.test(text);
+        e.emergencyFlag = TOR_EMERGENCY_REGEX.test(text) || FF_EMERGENCY_REGEX.test(text);
+      } else {
+        e.pdsFlag = false;
+        e.emergencyFlag = false;
+      }
+    }
+  }
+  const workerCount = Math.min(PDS_SCAN_CONCURRENCY, candidates.length);
+  await Promise.all(Array.from({ length: workerCount }, worker));
+  renderWarnTable();
+  drawWarningsOnMap();
+  if(selectedEventId){
+    const e = currentEvents.find(x => x.id === selectedEventId);
+    if(e) renderDetails(e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  WFO SEARCHABLE COMBOBOX
+// ══════════════════════════════════════════════════════════════
+function wfoLabel(o){ return o ? `${o.id} — ${o.name}` : ''; }
+
+function getRecentWfos(){
+  try{
+    const raw = localStorage.getItem('btv_wfo_recent');
+    return raw ? JSON.parse(raw) : [];
+  }catch(err){ return []; }
+}
+function addRecentWfo(code){
+  try{
+    let recents = getRecentWfos().filter(c => c !== code);
+    recents.unshift(code);
+    localStorage.setItem('btv_wfo_recent', JSON.stringify(recents.slice(0,5)));
+  }catch(err){ /* localStorage unavailable — recents just won't persist */ }
+}
+
+function initWfoCombo(){
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === settings.wfo));
+}
+
+function renderWfoDropdown(query){
+  const dd = document.getElementById('wfoDropdown');
+  const q = (query || '').trim().toUpperCase();
+  let list;
+  if(!q){
+    const recentCodes = getRecentWfos();
+    const recents = recentCodes.map(c => WFO_LIST.find(o => o.id === c)).filter(Boolean);
+    const recentIds = new Set(recents.map(o => o.id));
+    const rest = WFO_LIST.filter(o => !recentIds.has(o.id));
+    list = recents.length ? [...recents.map(o => ({ ...o, recent: true })), ...rest] : WFO_LIST.slice();
+  } else {
+    list = WFO_LIST.filter(o => o.id.includes(q) || o.name.toUpperCase().includes(q));
+  }
+  wfoFilteredList = list;
+  wfoHighlightIdx = list.length ? 0 : -1;
+
+  if(list.length === 0){
+    dd.innerHTML = `<div class="wfo-opt-empty">No matching office</div>`;
+  } else {
+    let html = '';
+    let printedRecentHeader = false, printedAllHeader = false;
+    list.forEach((o, i) => {
+      if(!q && o.recent && !printedRecentHeader){ html += `<div class="wfo-dd-label">Recent</div>`; printedRecentHeader = true; }
+      if(!q && !o.recent && printedRecentHeader && !printedAllHeader){ html += `<div class="wfo-dd-label">All Offices</div>`; printedAllHeader = true; }
+      html += `<div class="wfo-opt${i===wfoHighlightIdx?' highlighted':''}" data-idx="${i}" data-id="${o.id}">
+        <span class="wfo-opt-code">${o.id}</span><span class="wfo-opt-name">${escapeHtml(o.name)}</span>
+      </div>`;
+    });
+    dd.innerHTML = html;
+  }
+  dd.querySelectorAll('.wfo-opt').forEach(el => {
+    el.addEventListener('mousedown', (e) => { e.preventDefault(); chooseWfoOption(el.dataset.id); });
+    el.addEventListener('mouseenter', () => { wfoHighlightIdx = parseInt(el.dataset.idx, 10); updateWfoHighlight(); });
   });
-  legend.innerHTML = items.map(function(i){
-    const isOff = disabledHazards.has(i.key);
-    return '<span class="swatch legend-toggle'+(isOff ? ' off' : '')+'" data-key="'+i.key+'" title="Click to '+(isOff ? 'show' : 'hide')+' on map">'
-      + '<span class="dot" style="background:'+i.color+'"></span>'
-      + i.name + '<span class="count">(' + i.count + ')</span>'
-      + '</span>';
+}
+
+function updateWfoHighlight(){
+  const opts = document.querySelectorAll('.wfo-opt');
+  opts.forEach((el, i) => el.classList.toggle('highlighted', i === wfoHighlightIdx));
+  const active = document.querySelector('.wfo-opt.highlighted');
+  if(active) active.scrollIntoView({ block: 'nearest' });
+}
+
+function openWfoDropdown(){
+  wfoDropdownOpen = true;
+  document.getElementById('wfoDropdown').classList.add('open');
+  renderWfoDropdown(document.getElementById('wfoSearchInput').value === wfoLabel(WFO_LIST.find(o=>o.id===settings.wfo)) ? '' : document.getElementById('wfoSearchInput').value);
+}
+function closeWfoDropdown(){
+  wfoDropdownOpen = false;
+  document.getElementById('wfoDropdown').classList.remove('open');
+}
+function chooseWfoOption(code){
+  addRecentWfo(code);
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === code));
+  closeWfoDropdown();
+  switchWfo(code);
+}
+
+function switchWfo(newWfo){
+  if(!newWfo) return;
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === newWfo));
+  if(newWfo === settings.wfo) return;
+  settings.wfo = newWfo;
+  // Avoid the same office appearing as both primary and compare.
+  compareWfos = compareWfos.filter(c => c !== newWfo);
+  updateCompareBtnLabel();
+  document.getElementById('pageTitle').textContent = newWfo + ' WARNING VERIFICATION';
+  phenomenaFilter = null;
+  loadDay(selectedDateStr || todayInTZ(settings.timezone));
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COMPARE OFFICES — overlay up to 3 additional WFOs
+// ══════════════════════════════════════════════════════════════
+const COMPARE_MAX = 3;
+let pendingCompareWfos = [];
+
+function updateCompareBtnLabel(){
+  const btn = document.getElementById('compareBtn');
+  if(compareWfos.length){
+    btn.textContent = `Comparing ${compareWfos.length}`;
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '+ Compare';
+    btn.classList.remove('active');
+  }
+}
+
+function renderCompareList(query){
+  const list = document.getElementById('compareList');
+  const q = (query || '').trim().toUpperCase();
+  const options = WFO_LIST.filter(o => o.id !== settings.wfo)
+    .filter(o => !q || o.id.includes(q) || o.name.toUpperCase().includes(q));
+  list.innerHTML = options.map(o => {
+    const checked = pendingCompareWfos.includes(o.id);
+    return `<label class="compare-item" data-id="${o.id}">
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <span class="co-code">${o.id}</span><span class="co-name">${escapeHtml(o.name)}</span>
+    </label>`;
+  }).join('') || `<div class="wfo-opt-empty">No matching office</div>`;
+  list.querySelectorAll('.compare-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = el.dataset.id;
+      if(pendingCompareWfos.includes(id)){
+        pendingCompareWfos = pendingCompareWfos.filter(c => c !== id);
+      } else {
+        if(pendingCompareWfos.length >= COMPARE_MAX){
+          showToast(`You can compare up to ${COMPARE_MAX} additional offices at once.`);
+          return;
+        }
+        pendingCompareWfos.push(id);
+      }
+      renderCompareList(document.getElementById('compareSearchInput').value);
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: QUEUE CARDS
+// ══════════════════════════════════════════════════════════════
+function renderQueue(){
+  const grid = document.getElementById('queueGrid');
+  const counts = { TO:0, SV:0, FF:0, SQ:0 };
+  let needsCount = 0;
+  currentEvents.forEach(e => {
+    if(counts[e.phenomena] !== undefined) counts[e.phenomena]++;
+    if(e.status === 'needs_verification') needsCount++;
+  });
+  grid.innerHTML = Object.keys(PHEN_META).map(k => {
+    const meta = PHEN_META[k];
+    const active = phenomenaFilter === k;
+    return `<div class="queue-card ${meta.queueClass}${active ? ' active' : ''}" data-phen="${k}" title="Click to ${active ? 'clear filter' : 'filter for ' + meta.name + ' only'}">
+      <div class="qc-count">${counts[k]}</div>
+      <div class="qc-label">${meta.name.replace(' Warning','')}${counts[k]===1?'':'s'}</div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.queue-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const k = card.dataset.phen;
+      phenomenaFilter = (phenomenaFilter === k) ? null : k;
+      renderQueue();
+      renderWarnTable();
+      renderSummary();
+      drawWarningsOnMap();
+    });
+  });
+  const reviewEl = document.getElementById('queueReview');
+  if(needsCount > 0){
+    reviewEl.innerHTML = `&#9200; Estimated review time: ~${needsCount*2} minutes &nbsp;·&nbsp; <button class="mini-btn" id="nextUnverifiedBtn" title="Shortcut: n">Next unverified →</button>`;
+  } else {
+    reviewEl.innerHTML = `&#9989; Nothing pending review`;
+  }
+  if(phenomenaFilter){
+    reviewEl.innerHTML += ` &nbsp;·&nbsp; <span style="color:#60a5fa;cursor:pointer;" id="clearPhenFilterLink">Showing ${PHEN_META[phenomenaFilter].code} only — clear filter</span>`;
+    const clearLink = document.getElementById('clearPhenFilterLink');
+    if(clearLink) clearLink.addEventListener('click', () => {
+      phenomenaFilter = null;
+      renderQueue(); renderWarnTable(); renderSummary(); drawWarningsOnMap();
+    });
+  }
+  const nextUnverifiedBtn = document.getElementById('nextUnverifiedBtn');
+  if(nextUnverifiedBtn) nextUnverifiedBtn.addEventListener('click', jumpToNextUnverified);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ROW NAVIGATION (keyboard: j/k, n)
+// ══════════════════════════════════════════════════════════════
+function getVisibleRows(){
+  let rows = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue));
+  const onlyUnverified = document.getElementById('filterOnlyUnverified').checked;
+  if(onlyUnverified) rows = rows.filter(e => e.status !== 'verified');
+  if(phenomenaFilter) rows = rows.filter(e => e.phenomena === phenomenaFilter);
+  return rows;
+}
+
+function stepSelectedEvent(direction){
+  const rows = getVisibleRows();
+  if(rows.length === 0) return;
+  let idx = rows.findIndex(e => e.id === selectedEventId);
+  idx = idx === -1 ? (direction > 0 ? 0 : rows.length - 1) : ((idx + direction) % rows.length + rows.length) % rows.length;
+  selectEvent(rows[idx].id);
+  const tr = document.querySelector(`tr[data-id="${CSS.escape(rows[idx].id)}"]`);
+  if(tr) tr.scrollIntoView({ block: 'nearest' });
+}
+
+function jumpToNextUnverified(){
+  let pool = currentEvents.filter(e => e.status === 'needs_verification');
+  if(phenomenaFilter) pool = pool.filter(e => e.phenomena === phenomenaFilter);
+  pool.sort((a,b) => new Date(a.issue) - new Date(b.issue));
+  if(pool.length === 0) return;
+  let idx = pool.findIndex(e => e.id === selectedEventId);
+  idx = (idx + 1) % pool.length;
+  switchSubtab('map');
+  selectEvent(pool[idx].id);
+  const tr = document.querySelector(`tr[data-id="${CSS.escape(pool[idx].id)}"]`);
+  if(tr) tr.scrollIntoView({ block: 'nearest' });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: WARNINGS TABLE
+// ══════════════════════════════════════════════════════════════
+function countyLabel(counties){
+  if(!counties || counties.length === 0) return '—';
+  if(counties.length === 1) return counties[0];
+  return counties[0] + ' +' + (counties.length-1);
+}
+
+function renderWarnTable(){
+  const tbody = document.getElementById('warnTableBody');
+  const onlyUnverified = document.getElementById('filterOnlyUnverified').checked;
+  let rows = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue));
+  if(onlyUnverified) rows = rows.filter(e => e.status !== 'verified');
+  if(phenomenaFilter) rows = rows.filter(e => e.phenomena === phenomenaFilter);
+
+  document.getElementById('warnEmpty').style.display = rows.length === 0 ? 'block' : 'none';
+
+  tbody.innerHTML = rows.map(e => {
+    const meta = PHEN_META[e.phenomena] || { code: e.phenomena, name: e.phenomena, color:'#94a3b8' };
+    const st = STATUS_META[e.status];
+    const flagBadge = e.emergencyFlag ? '<span class="emg-badge" title="Tornado/Flash Flood Emergency">EMER</span>'
+      : (e.pdsFlag ? '<span class="pds-badge" title="Particularly Dangerous Situation">PDS</span>' : '');
+    const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(e.wfo)}</span>` : '';
+    return `<tr data-id="${escapeHtml(e.id)}" class="${e.id === selectedEventId ? 'selected' : ''}">
+      <td class="etn-cell">${wfoTag}${e.etn}</td>
+      <td><span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span>${flagBadge}</td>
+      <td>${escapeHtml(countyLabel(e.counties))}</td>
+      <td>${fmtLocal(e.expire, settings.timezone)}</td>
+      <td><span class="status-pill" style="color:${st.color};"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span></td>
+    </tr>`;
   }).join('');
 
-  legend.querySelectorAll('.legend-toggle').forEach(function(el){
-    el.addEventListener('click', function(){
-      const key = el.dataset.key;
-      if(disabledHazards.has(key)){
-        disabledHazards.delete(key);
-      } else {
-        disabledHazards.add(key);
-      }
-      applyMapFilters();
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', () => selectEvent(tr.dataset.id));
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: SUMMARY DONUT
+// ══════════════════════════════════════════════════════════════
+function renderSummary(){
+  const scoped = phenomenaFilter ? currentEvents.filter(e => e.phenomena === phenomenaFilter) : currentEvents;
+  const counts = { verified:0, pending:0, needs_verification:0 };
+  scoped.forEach(e => counts[e.status]++);
+  const total = scoped.length;
+  document.getElementById('donutTotal').textContent = total;
+
+  const svg = document.getElementById('donutSvg');
+  const order = ['verified','needs_verification','pending'];
+  let cumulative = 0;
+  const R = 40, CX = 50, CY = 50, STROKE = 14;
+  const circumference = 2 * Math.PI * R;
+
+  let arcs = '';
+  if(total === 0){
+    arcs = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#1e2a3a" stroke-width="${STROKE}"/>`;
+  } else {
+    order.forEach(key => {
+      const val = counts[key];
+      if(val === 0) return;
+      const frac = val / total;
+      const dash = frac * circumference;
+      const gap = circumference - dash;
+      const rotation = (cumulative / total) * 360 - 90;
+      arcs += `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${STATUS_META[key].color}" stroke-width="${STROKE}"
+        stroke-dasharray="${dash} ${gap}" transform="rotate(${rotation} ${CX} ${CY})"/>`;
+      cumulative += val;
+    });
+  }
+  svg.innerHTML = arcs;
+  svg.setAttribute('role', 'img');
+  const summaryParts = order.map(key => {
+    const pct = total ? Math.round((counts[key]/total)*100) : 0;
+    return `${STATUS_META[key].label} ${counts[key]} of ${total} (${pct}%)`;
+  });
+  svg.setAttribute('aria-label', total === 0 ? 'No warnings for this view.' : 'Verification summary: ' + summaryParts.join(', ') + '.');
+
+  const legend = document.getElementById('summaryLegend');
+  legend.innerHTML = order.map(key => {
+    const pct = total ? Math.round((counts[key]/total)*100) : 0;
+    return `<div class="leg-row">
+      <span class="leg-dot" style="background:${STATUS_META[key].color};"></span>
+      <span class="leg-label">${STATUS_META[key].label}</span>
+      <span class="leg-val">${counts[key]} (${pct}%)</span>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: REPORTS TABLE
+// ══════════════════════════════════════════════════════════════
+function renderReportsTable(){
+  const tbody = document.getElementById('reportsTableBody');
+  const rows = currentReports.filter(r => r.inRange).sort((a,b) => new Date(a.valid) - new Date(b.valid));
+  tbody.innerHTML = rows.map(r => {
+    const loc = [r.city, r.county ? r.county+' Co, ' : '', r.state].filter(Boolean).join(', ').replace(', ,', ',');
+    const assoc = (r.events || '').split(',').filter(Boolean);
+    return `<tr data-report-id="${r.id}">
+      <td>${fmtLocal(r.valid, settings.timezone)}</td>
+      <td>${escapeHtml(r.typetext || r.lsrtype)}</td>
+      <td>${r.magnitude !== null && r.magnitude !== undefined ? r.magnitude : '—'}</td>
+      <td>${escapeHtml(loc || '—')}</td>
+      <td><span class="warned-chip ${r.warned ? 'yes':'no'}">${r.warned ? 'Warned':'Unwarned'}</span></td>
+      <td>${assoc.map(a=>{
+        const ev = currentEvents.find(e=>e.id===a);
+        return ev ? `<span class="etn-cell" data-jump-etn="${escapeHtml(a)}" style="cursor:pointer;color:#60a5fa;">#${ev.etn}</span>` : '';
+      }).join(' ') || '—'}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('[data-jump-etn]').forEach(el => {
+    el.addEventListener('click', (ev) => { ev.stopPropagation(); switchSubtab('map'); selectEvent(el.dataset.jumpEtn); });
+  });
+  tbody.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const r = currentReports.find(x => String(x.id) === tr.dataset.reportId);
+      if(r && map) { map.setView([r.lat, r.lon], 11); }
     });
   });
 }
 
-function renderStats(prods){
-  const total = prods.length;
-  const warnings = prods.filter(p => p.sig === 'W').length;
-  const watches = prods.filter(p => p.sig === 'A').length;
-  const advisories = prods.filter(p => p.sig === 'Y').length;
-
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-warnings').textContent = warnings;
-  document.getElementById('stat-watches').textContent = watches;
-  document.getElementById('stat-advisories').textContent = advisories;
-
-  document.getElementById('stat-total-sub').textContent = warnings+' Warnings, '+watches+' Watch, '+advisories+' Advisory';
-
-  const sevCounts = {};
-  prods.filter(p=>p.sig==='W').forEach(p => { sevCounts[p.name]=(sevCounts[p.name]||0)+1; });
-  document.getElementById('stat-warnings-sub').textContent = Object.keys(sevCounts).length
-    ? Object.entries(sevCounts).map(([n,c]) => n.replace(' Warning','')+': '+c).join(', ')
-    : 'None active';
-
-  const watchNames = [...new Set(prods.filter(p=>p.sig==='A').map(p=>p.name))];
-  document.getElementById('stat-watches-sub').textContent = watchNames.length ? watchNames.join(', ') : 'None active';
-
-  const advNames = [...new Set(prods.filter(p=>p.sig==='Y').map(p=>p.name))];
-  document.getElementById('stat-advisories-sub').textContent = advNames.length ? advNames.join(', ') : 'None active';
+// ══════════════════════════════════════════════════════════════
+//  MAP
+// ══════════════════════════════════════════════════════════════
+function initMap(){
+  map = L.map('map', { zoomControl: true, attributionControl: false, preferCanvas: true, zoomSnap: 0, zoomDelta: 0.25 });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+  zoneLayer = L.layerGroup().addTo(map);
+  warningLayer = L.layerGroup().addTo(map);
+  lsrLayer = L.layerGroup().addTo(map);
+  map.setView([44.3,-72.9], 7);
+  drawZoneLayer();
 }
 
-// Zoom the map to a specific product's geometry when its table row is
-// clicked. Prefers the exact warning polygon (TO/SV/FF/FA warnings); falls
-// back to the union of the forecast zones the product covers.
-function zoomToProduct(p){
-  if(!map) return;
+async function drawZoneLayer(){
+  const activeWfos = [settings.wfo, ...compareWfos];
+  const fetchKey = activeWfos.slice().sort().join(',');
 
-  let bounds = null;
-
-  if(p.geometry){
+  await Promise.all(activeWfos.map(async wfo => {
+    if(zoneCacheByWfo[wfo]) return;
     try{
-      bounds = L.geoJSON(p.geometry).getBounds();
-    }catch(e){ bounds = null; }
-  }
+      const params = new URLSearchParams();
+      params.set('where', `cwa='${wfo}'`);
+      params.set('outFields', 'cwa,zone,state,state_zone,name');
+      params.set('f', 'geojson');
+      params.set('returnGeometry', 'true');
+      const res = await fetch(ZONE_QUERY_URL + '?' + params.toString());
+      const data = await res.json();
+      zoneCacheByWfo[wfo] = data.features || [];
+    }catch(err){
+      console.warn('zone fetch failed for', wfo, err);
+      zoneCacheByWfo[wfo] = [];
+    }
+  }));
 
-  if(!bounds || !bounds.isValid()){
-    const layers = activeZoneLayers().filter(function(layer){
-      const pr = layer.feature.properties;
-      return p.zoneKeys.includes(zoneKey(pr.STATE, pr.ZONE));
-    });
-    if(layers.length){
-      bounds = L.featureGroup(layers).getBounds();
+  // If the active WFO set changed again while these fetches were in
+  // flight, don't clobber the current (newer) view with stale results.
+  if(fetchKey !== activeWfos.slice().sort().join(',')) return;
+
+  const allFeatures = activeWfos.flatMap(wfo => zoneCacheByWfo[wfo] || []);
+  zoneLayer.clearLayers();
+  const gj = L.geoJSON({ type:'FeatureCollection', features: allFeatures }, {
+    style: { color:'#3a4f6c', weight:1, opacity:0.5, fillOpacity:0 }
+  }).addTo(zoneLayer);
+
+  // Only auto-fit when the active WFO set actually changed — otherwise
+  // this would fight the user's own panning/zooming every time the
+  // same set is reloaded for a different date or range.
+  if(fetchKey !== lastZoneFitWfo){
+    lastZoneFitWfo = fetchKey;
+    if(allFeatures.length > 0){
+      try{ map.fitBounds(gj.getBounds(), { padding: [20,20], maxZoom: 9 }); }catch(err){}
+    } else {
+      console.warn('No CWA zones found for WFO(s) "' + fetchKey + '" — check the office code(s).');
     }
   }
+}
 
-  if(!bounds || !bounds.isValid()) return;
-
-  map.fitBounds(bounds, { padding: [30,30], maxZoom: 11 });
-
-  // If this product has its own warning-polygon layer on the map (drawn in
-  // drawWarningPolygons), pop it open so it's obvious which one got selected.
-  if(p._mapLayer){
-    try{ p._mapLayer.openPopup(bounds.getCenter()); }catch(e){}
+function drawWarningsOnMap(){
+  warningLayer.clearLayers();
+  const bounds = [];
+  const scoped = phenomenaFilter ? currentEvents.filter(e => e.phenomena === phenomenaFilter) : currentEvents;
+  scoped.forEach(e => {
+    if(!e.geometry) return;
+    const meta = PHEN_META[e.phenomena] || { code: e.phenomena, color: '#94a3b8' };
+    const color = meta.color;
+    const gj = L.geoJSON(e.geometry, {
+      style: { color: color, weight: e.id === selectedEventId ? 3.5 : 2, fillColor: color, fillOpacity: e.id === selectedEventId ? 0.4 : 0.22 }
+    });
+    gj.on('click', () => selectEvent(e.id));
+    const flagText = e.emergencyFlag ? ' ⚠ EMERGENCY' : (e.pdsFlag ? ' ⚠ PDS' : '');
+    const wfoPrefix = compareWfos.length ? `[${e.wfo}] ` : '';
+    gj.bindTooltip(`${wfoPrefix}${meta.code} #${e.etn}${flagText} — ${STATUS_META[e.status].label}`, { sticky: true });
+    gj.addTo(warningLayer);
+    try{ bounds.push(gj.getBounds()); }catch(err){}
+    e._mapLayer = gj;
+  });
+  if(bounds.length){
+    let combined = bounds[0];
+    bounds.slice(1).forEach(b => combined.extend(b));
+    map.fitBounds(combined, { padding: [30,30], maxZoom: 10 });
   }
 }
 
-function renderTable(prods){
-  const tbody = document.getElementById('table-body');
-  const emptyState = document.getElementById('empty-state');
-  tbody.innerHTML = '';
-  if(prods.length === 0){
-    emptyState.style.display = 'block';
+function drawLsrsOnMap(){
+  lsrLayer.clearLayers();
+  if(!showLsrs) return;
+  currentReports.filter(r => r.inRange).forEach(r => {
+    const color = LSR_TYPE_COLOR[r.type] || LSR_TYPE_DEFAULT_COLOR;
+    const marker = L.circleMarker([r.lat, r.lon], {
+      radius: 5, color: r.warned ? '#ffffff' : '#dc2626', weight: r.warned ? 1 : 2.5, fillColor: color, fillOpacity: 0.9
+    });
+    const assoc = (r.events || '').split(',').filter(Boolean);
+    let assocHtml = assoc.map(a => {
+      const ev = currentEvents.find(e => e.id === a);
+      return ev ? `<div style="margin-top:4px;"><a href="#" data-jump="${escapeHtml(a)}" style="color:#60a5fa;">View ${(PHEN_META[ev.phenomena]||{}).code||ev.phenomena} #${ev.etn} details →</a></div>` : '';
+    }).join('');
+    marker.bindPopup(
+      `<div style="min-width:180px;"><b>${escapeHtml(r.typetext||r.lsrtype)}</b>${r.magnitude!==null&&r.magnitude!==undefined?' — '+r.magnitude:''}<br>` +
+      `${escapeHtml(r.city||'')}${r.county?', '+escapeHtml(r.county)+' Co':''} ${escapeHtml(r.state||'')}<br>` +
+      `<span style="color:#93a3b8;">${fmtLocal(r.valid, settings.timezone)}</span><br>` +
+      `${r.remark ? '<span style="color:#93a3b8;font-size:11px;">'+escapeHtml(r.remark)+'</span><br>' : ''}` +
+      `${assocHtml || '<span style="color:#f87171;">Not associated with any warning</span>'}</div>`
+    );
+    marker.on('popupopen', (ev) => {
+      const el = ev.popup._contentNode.querySelector('[data-jump]');
+      if(el) el.addEventListener('click', (clickEv) => { clickEv.preventDefault(); selectEvent(el.dataset.jump); });
+    });
+    marker.addTo(lsrLayer);
+  });
+}
+
+function renderMapLegend(){
+  const bar = document.getElementById('mapLegendBar');
+  let html = Object.keys(PHEN_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${PHEN_META[k].color};"></span>${PHEN_META[k].code}</span>`).join('');
+  if(showRadar && viewMode === 'day'){
+    const mins = parseInt(document.getElementById('radarTimeSlider').value, 10);
+    const hh = String(Math.floor(mins/60)).padStart(2,'0');
+    const mm = String(mins%60).padStart(2,'0');
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">Radar @ ${hh}:${mm} local</span>`;
+  }
+  if(showLsrs){
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">LSR:</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.T};border-radius:50%;"></span>Tornado</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.G};border-radius:50%;"></span>Wind</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.H};border-radius:50%;"></span>Hail</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.F};border-radius:50%;"></span>Flooding</span>`;
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.q};border-radius:50%;"></span>Snow Squall</span>`;
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">White ring = warned · Red ring = unwarned</span>`;
+  }
+  bar.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SELECT EVENT + RENDER DETAILS
+// ══════════════════════════════════════════════════════════════
+function selectEvent(id){
+  selectedEventId = id;
+  renderWarnTable();
+  drawWarningsOnMap();
+  drawLsrsOnMap();
+  const e = currentEvents.find(x => x.id === id);
+  if(!e) return;
+  if(e._mapLayer){
+    try{ map.fitBounds(e._mapLayer.getBounds(), { padding: [50,50], maxZoom: 10 }); }catch(err){}
+  }
+  renderDetails(e);
+}
+
+async function getProductText(e){
+  if(productTextCache[e.product_id]) return productTextCache[e.product_id];
+  try{
+    const res = await fetch(e.product_text_url);
+    const text = await res.text();
+    productTextCache[e.product_id] = text;
+    return text;
+  }catch(err){
+    return null;
+  }
+}
+
+function extractVtecLine(text){
+  if(!text) return null;
+  const m = text.match(/\/[OT]\.[A-Z]{3}\.[A-Z]{4}\.[A-Z]{2}\.[A-Z]\.\d{4}\.\d{6}T\d{4}Z-\d{6}T\d{4}Z\//);
+  return m ? m[0] : null;
+}
+
+function extractWarningBody(text){
+  if(!text) return null;
+  // Strip the WMO/AFOS header lines and leading UGC/VTEC lines, keep the
+  // human-readable bulletin body.
+  const lines = text.split('\n');
+  let startIdx = 0;
+  for(let i=0;i<lines.length;i++){
+    if(/^(BULLETIN|URGENT|Severe|Flash|Tornado|Snow Squall)/i.test(lines[i].trim())){ startIdx = i; break; }
+  }
+  return lines.slice(startIdx).join('\n').trim();
+}
+
+async function renderDetails(e){
+  document.getElementById('detailsEmpty').style.display = 'none';
+  const scroll = document.getElementById('detailsScroll');
+  scroll.style.display = 'block';
+
+  const meta = PHEN_META[e.phenomena] || { code: e.phenomena, name: e.phenomena, color:'#94a3b8' };
+  const st = STATUS_META[e.status];
+  const matchedReports = e.stormreports.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
+  const allNearbyReports = e.stormreports_all.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
+  const flagBadge = e.emergencyFlag ? '<span class="emg-badge">EMERGENCY</span>' : (e.pdsFlag ? '<span class="pds-badge">PDS</span>' : '');
+  const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(e.wfo)}</span>` : '';
+
+  scroll.innerHTML = `
+    <div class="details-header">
+      <span class="etn-badge">${wfoTag}ETN ${e.etn}</span>
+      <span class="dh-title">${meta.name}</span>${flagBadge}
+      <span class="status-pill" style="color:${st.color};margin-left:auto;"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span>
+    </div>
+    <div class="details-section">
+      <div class="kv-grid">
+        <div><div class="kv-k">Issued</div><div class="kv-v">${fmtLocalFull(e.issue, settings.timezone)}</div></div>
+        <div><div class="kv-k">Expires</div><div class="kv-v">${fmtLocalFull(e.expire, settings.timezone)}</div></div>
+        <div><div class="kv-k">County/Zone</div><div class="kv-v">${escapeHtml((e.counties||[]).join(', ') || '—')}</div></div>
+        <div><div class="kv-k">Forecaster</div><div class="kv-v">${escapeHtml(e.fcster || '—')}</div></div>
+      </div>
+      <div class="kv-k" style="margin-top:10px;">Timeline</div>
+      ${renderTimelineBar(e, matchedReports)}
+      <div class="kv-k" style="margin-top:10px;">VTEC</div>
+      <div class="vtec-line" id="vtecLine-${e.id}">Loading…</div>
+      <div class="kv-k" style="margin-top:10px;">Warning Text</div>
+      <div class="warn-text-box" id="warnText-${e.id}">Loading full text…</div>
+      <a class="view-full-link" href="${e.product_href}" target="_blank">View Full Text on IEM →</a>
+      &nbsp;·&nbsp;
+      <a class="view-full-link" href="${e.link}" target="_blank">Open in VTEC Browser →</a>
+    </div>
+    <div class="details-section">
+      <div class="ds-title">Associated Reports — Matched (${matchedReports.length}) / Nearby (${allNearbyReports.length})</div>
+      ${matchedReports.length === 0 ? '<div style="color:#7a8ba3;font-size:11.5px;">No verifying LSR found.</div>' : `
+      <table class="lsr-mini-table">
+        <thead><tr><th>Time</th><th>Type</th><th>Mag.</th><th>Location</th><th>Dist.</th></tr></thead>
+        <tbody>
+          ${matchedReports.map(r => {
+            return `<tr data-report-id="${r.id}">
+              <td>${fmtLocal(r.valid, settings.timezone)}</td>
+              <td>${escapeHtml(r.typetext || r.lsrtype)}</td>
+              <td>${r.magnitude !== null && r.magnitude !== undefined ? r.magnitude : '—'}</td>
+              <td>${escapeHtml(r.city || '—')}</td>
+              <td>${e.geometry ? distToEventMi(e, r).toFixed(1)+' mi' : '—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`}
+    </div>
+    ${renderRelatedEvents(e)}
+  `;
+
+  // Async: VTEC + warning text
+  const text = await getProductText(e);
+  const vtecEl = document.getElementById('vtecLine-'+e.id);
+  const textEl = document.getElementById('warnText-'+e.id);
+  if(vtecEl) vtecEl.textContent = extractVtecLine(text) || '(unavailable)';
+  if(textEl) textEl.textContent = extractWarningBody(text) || '(could not load warning text)';
+
+  scroll.querySelectorAll('[data-report-id]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const r = currentReports.find(x => String(x.id) === tr.dataset.reportId);
+      if(r && map){ switchSubtab('map'); map.setView([r.lat, r.lon], 12); }
+    });
+  });
+  scroll.querySelectorAll('[data-related-id]').forEach(tr => {
+    tr.addEventListener('click', () => { switchSubtab('map'); selectEvent(tr.dataset.relatedId); });
+  });
+}
+
+function renderTimelineBar(e, matchedReports){
+  const issueMs = new Date(e.issue).getTime();
+  const expireMs = new Date(e.expire).getTime();
+  const span = Math.max(1, expireMs - issueMs);
+  const marks = matchedReports.map(r => {
+    const t = new Date(r.valid).getTime();
+    const pct = Math.max(0, Math.min(100, ((t - issueMs) / span) * 100));
+    const color = LSR_TYPE_COLOR[r.type] || LSR_TYPE_DEFAULT_COLOR;
+    const label = escapeHtml((r.typetext || r.lsrtype) + ' @ ' + fmtLocal(r.valid, settings.timezone));
+    return `<div class="tl-mark" style="left:${pct.toFixed(1)}%;background:${color};" title="${label}"></div>`;
+  }).join('');
+  const srSummary = matchedReports.length === 0
+    ? `Warning active from ${fmtLocal(e.issue, settings.timezone)} to ${fmtLocal(e.expire, settings.timezone)}, no verifying reports.`
+    : `Warning active from ${fmtLocal(e.issue, settings.timezone)} to ${fmtLocal(e.expire, settings.timezone)}, with ${matchedReports.length} verifying report${matchedReports.length===1?'':'s'} at ` +
+      matchedReports.map(r => fmtLocal(r.valid, settings.timezone)).join(', ') + '.';
+  return `
+    <div class="timeline-bar" role="img" aria-label="${escapeHtml(srSummary)}">
+      <div class="tl-track" aria-hidden="true"></div>
+      ${marks}
+    </div>
+    <div class="timeline-labels" aria-hidden="true">
+      <span>Issued ${fmtLocal(e.issue, settings.timezone)}</span>
+      <span>Expires ${fmtLocal(e.expire, settings.timezone)}</span>
+    </div>
+  `;
+}
+
+// Not derived from any authoritative IEM linkage field — IEM Cow
+// doesn't expose "this warning replaced/upgraded that one" directly.
+// This is a timing + geography heuristic only: other warnings sharing
+// at least one county and issued within 30 minutes of this one's
+// active window. Close in a scanner's sense, not proven causation —
+// rendered with that caveat rather than asserted as fact.
+const RELATED_WINDOW_MS = 30 * 60 * 1000;
+function computeRelatedEvents(e){
+  const eIssueMs = new Date(e.issue).getTime();
+  const eExpireMs = new Date(e.expire).getTime();
+  const eCounties = new Set(e.counties || []);
+  if(eCounties.size === 0) return [];
+  return currentEvents.filter(other => {
+    if(other.id === e.id) return false;
+    const shareCounty = (other.counties || []).some(c => eCounties.has(c));
+    if(!shareCounty) return false;
+    const oIssueMs = new Date(other.issue).getTime();
+    return oIssueMs >= (eIssueMs - RELATED_WINDOW_MS) && oIssueMs <= (eExpireMs + RELATED_WINDOW_MS);
+  }).sort((a,b) => new Date(a.issue) - new Date(b.issue)).slice(0, 6);
+}
+
+function renderRelatedEvents(e){
+  const related = computeRelatedEvents(e);
+  if(related.length === 0) return '';
+  const eIssueMs = new Date(e.issue).getTime();
+  const rows = related.map(r => {
+    const meta = PHEN_META[r.phenomena] || { code: r.phenomena, color: '#94a3b8' };
+    const st = STATUS_META[r.status];
+    const offsetMin = Math.round((new Date(r.issue).getTime() - eIssueMs) / 60000);
+    const offsetText = offsetMin === 0 ? 'same time' : (offsetMin > 0 ? `+${offsetMin} min` : `${offsetMin} min`);
+    const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(r.wfo)}</span>` : '';
+    return `<tr data-related-id="${escapeHtml(r.id)}">
+      <td>${wfoTag}<span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span> #${r.etn}</td>
+      <td>${offsetText}</td>
+      <td><span class="status-pill" style="color:${st.color};"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span></td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="details-section">
+      <div class="ds-title">Possibly Related Warnings</div>
+      <div style="font-size:10.5px;color:#5a6b82;margin-bottom:8px;line-height:1.4;">Other warnings sharing a county and issued within 30 min of this one's active window — a timing/geography heuristic, not a confirmed upgrade or continuation sequence.</div>
+      <table class="lsr-mini-table">
+        <thead><tr><th>Warning</th><th>Issued</th><th>Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function distToEventMi(e, r){
+  // Use polygon centroid via Leaflet bounds if available.
+  try{
+    const b = L.geoJSON(e.geometry).getBounds().getCenter();
+    return haversineMiles(b.lat, b.lng, r.lat, r.lon);
+  }catch(err){ return 0; }
+}
+
+
+
+
+// ══════════════════════════════════════════════════════════════
+//  LIVE MODE — auto-poll IEM while viewing today, toast new warnings
+// ══════════════════════════════════════════════════════════════
+function showToast(message){
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.setAttribute('role', 'status');
+  t.textContent = message;
+  stack.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .4s ease'; t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 8000);
+}
+
+function startLiveMode(){
+  stopLiveMode();
+  document.getElementById('liveBadge').classList.add('on');
+  liveModeInterval = setInterval(pollLiveUpdates, LIVE_POLL_MS);
+}
+function stopLiveMode(){
+  if(liveModeInterval){ clearInterval(liveModeInterval); liveModeInterval = null; }
+  document.getElementById('liveBadge').classList.remove('on');
+}
+
+async function pollLiveUpdates(){
+  // Guard against a stray timer firing after the view moved on.
+  if(viewMode !== 'day' || selectedDateStr !== todayInTZ(settings.timezone)) { stopLiveMode(); return; }
+  try{
+    const dayStart = localMidnightToUTC(selectedDateStr, settings.timezone);
+    const dayEnd = localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone);
+    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd, { wfoCodes: [settings.wfo, ...compareWfos] });
+    const newOnes = events.filter(e => !knownIds.has(e.id));
+    currentEvents = events;
+    currentReports = reports;
+    computeDayStats();
+    renderAll();
+    scanForPdsEmergency();
+    newOnes.forEach(e => {
+      const meta = PHEN_META[e.phenomena] || { code: e.phenomena };
+      showToast(`New ${meta.code || e.phenomena} warning issued — ETN ${e.etn}`);
+    });
+  }catch(err){
+    console.warn('live poll failed', err);
+    // Stay silent in the UI for a transient poll failure — the next
+    // scheduled tick will just try again.
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TRENDS — POD/FAR/CSI over the last N days
+// ══════════════════════════════════════════════════════════════
+async function loadTrends(days){
+  const statusEl = document.getElementById('trendsStatus');
+  document.getElementById('trendsWfoLabel').textContent = settings.wfo;
+  statusEl.textContent = `Loading ${days}-day trend for ${settings.wfo}…`;
+  try{
+    const endDateStr = selectedDateStr || todayInTZ(settings.timezone);
+    const startDateStr = addDaysToDateStr(endDateStr, -(days - 1));
+    const rangeStart = localMidnightToUTC(startDateStr, settings.timezone);
+    const rangeEnd = localMidnightToUTC(addDaysToDateStr(endDateStr, 1), settings.timezone);
+    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd, {
+      onProgress: (done, total) => { if(total > 1) statusEl.textContent = `Loading ${days}-day trend for ${settings.wfo} — request ${done} of ${total}…`; }
+    });
+
+    const buckets = [];
+    for(let i = 0; i < days; i++){
+      const ds = addDaysToDateStr(startDateStr, i);
+      const dayStartMs = localMidnightToUTC(ds, settings.timezone).getTime();
+      const dayEndMs = localMidnightToUTC(addDaysToDateStr(ds, 1), settings.timezone).getTime();
+      const dayEvents = events.filter(e => {
+        const issMs = new Date(e.issue).getTime(), expMs = new Date(e.expire).getTime();
+        return expMs > dayStartMs && issMs < dayEndMs;
+      });
+      const decided = dayEvents.filter(e => e.status !== 'pending');
+      const hits = decided.filter(e => e.status === 'verified').length;
+      const falseAlarms = decided.filter(e => e.status === 'needs_verification').length;
+      const misses = reports.filter(r => {
+        const v = new Date(r.valid).getTime();
+        return v >= dayStartMs && v < dayEndMs && !r.warned;
+      }).length;
+      const pod = (hits + misses) > 0 ? hits / (hits + misses) : null;
+      const far = (hits + falseAlarms) > 0 ? falseAlarms / (hits + falseAlarms) : null;
+      const csi = (pod !== null && far !== null && pod > 0 && (1 - far) > 0)
+        ? 1 / ((1/pod) + (1/(1-far)) - 1) : null;
+      buckets.push({ date: ds, pod, far, csi, total: dayEvents.length });
+    }
+    const withData = buckets.filter(b => b.total > 0).length;
+    if(days >= 365){
+      document.getElementById('trendsSvg').style.display = 'none';
+      document.getElementById('trendsLineLegend').style.display = 'none';
+      document.getElementById('heatmapWrap').style.display = 'block';
+      renderTrendsHeatmap(buckets);
+    } else {
+      document.getElementById('trendsSvg').style.display = 'block';
+      document.getElementById('trendsLineLegend').style.display = 'flex';
+      document.getElementById('heatmapWrap').style.display = 'none';
+      renderTrendsChart(buckets);
+    }
+    statusEl.textContent = `${days} days ending ${endDateStr} — ${withData} day${withData===1?'':'s'} with warnings.`;
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = 'Could not load trend data: ' + err.message;
+  }
+}
+
+function renderTrendsHeatmap(buckets){
+  const grid = document.getElementById('heatmapGrid');
+  // Pad the front so the grid starts on a Sunday, GitHub-contributions
+  // style — makes the weekday rows line up into clean columns.
+  const firstDow = new Date(buckets[0].date + 'T00:00:00Z').getUTCDay(); // 0=Sun
+  const cells = [];
+  for(let i = 0; i < firstDow; i++) cells.push(null);
+  cells.push(...buckets);
+
+  function csiColor(csi){
+    if(csi === null || csi === undefined) return '#1a2536';
+    const stops = ['#0e3a2f', '#0f6b4f', '#16a866', '#4ade80'];
+    const idx = Math.min(stops.length - 1, Math.floor(csi * stops.length));
+    return stops[idx];
+  }
+
+  grid.setAttribute('role', 'group');
+  grid.setAttribute('aria-label', `Warning verification heatmap, ${buckets.length} days ending ${buckets[buckets.length-1].date}. Activate a day to open it.`);
+  grid.innerHTML = cells.map(b => {
+    if(!b) return `<div class="heatmap-cell empty" aria-hidden="true"></div>`;
+    const color = csiColor(b.csi);
+    const title = b.total === 0
+      ? `${b.date} — no warnings`
+      : `${b.date} — ${b.total} warning${b.total===1?'':'s'}${b.csi!==null ? ', CSI ' + b.csi.toFixed(2) : ''}`;
+    return `<div class="heatmap-cell" style="background:${color};" data-date="${b.date}" title="${escapeHtml(title)}" role="button" tabindex="0" aria-label="${escapeHtml(title)}"></div>`;
+  }).join('');
+
+  grid.querySelectorAll('.heatmap-cell[data-date]').forEach(el => {
+    el.addEventListener('click', () => {
+      closeModal('trendsModal');
+      switchSubtab('map');
+      loadDay(el.dataset.date);
+    });
+    el.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        closeModal('trendsModal');
+        switchSubtab('map');
+        loadDay(el.dataset.date);
+      }
+    });
+  });
+}
+
+function renderTrendsChart(buckets){
+  const svg = document.getElementById('trendsSvg');
+  const W = 640, H = 220, padL = 34, padR = 10, padT = 10, padB = 24;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const n = buckets.length;
+  const xFor = i => padL + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
+  const yFor = v => padT + (1 - Math.max(0, Math.min(1, v))) * plotH;
+
+  function pathFor(key){
+    let d = '', started = false;
+    buckets.forEach((b, i) => {
+      const v = b[key];
+      if(v === null || v === undefined){ started = false; return; }
+      const x = xFor(i), y = yFor(v);
+      d += (started ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+      started = true;
+    });
+    return d.trim();
+  }
+
+  let gridLines = '';
+  [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+    const y = padT + (1 - f) * plotH;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#1e2a3a" stroke-width="1"/>`;
+    gridLines += `<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="8.5" fill="#5a6b82">${Math.round(f*100)}%</text>`;
+  });
+
+  let xLabels = '';
+  const labelStep = Math.max(1, Math.ceil(n / 8));
+  buckets.forEach((b, i) => {
+    if(i % labelStep === 0 || i === n - 1){
+      xLabels += `<text x="${xFor(i)}" y="${H-6}" text-anchor="middle" font-size="8" fill="#5a6b82">${b.date.slice(5)}</text>`;
+    }
+  });
+
+  svg.innerHTML = `
+    ${gridLines}
+    ${xLabels}
+    <path d="${pathFor('csi')}" fill="none" stroke="#60a5fa" stroke-width="2" opacity="0.9"/>
+    <path d="${pathFor('far')}" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.9"/>
+    <path d="${pathFor('pod')}" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RADAR OVERLAY — IEM's time-enabled NEXRAD composite WMS
+// ══════════════════════════════════════════════════════════════
+// IEM's simple {z}/{x}/{y} tile cache (cache/tile.py) only serves the
+// CURRENT composite and "N minutes ago" (up to ~55 minutes) — it has
+// no arbitrary-historical-timestamp layer for the composite mosaic,
+// which is exactly why a first pass at this (using a guessed
+// nexrad-n0q-<timestamp>-900913 tile URL) silently 404'd for every
+// past date. Real historical composites live on IEM's WMS-T service
+// instead (layer nexrad-n0q-wmst, confirmed archive coverage back to
+// 2011-02-16), which is a bounding-box GetMap request per tile rather
+// than a plain slippy-tile URL — Leaflet's L.tileLayer.wms() builds
+// exactly that.
+const RADAR_WMS_URL = 'https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q-t.cgi?';
+const RADAR_ARCHIVE_START = '2011-02-16';
+
+function radarTimeIsoFor(dateStr, minutesOfDay){
+  const localDt = localMidnightToUTC(dateStr, settings.timezone);
+  const targetMs = localDt.getTime() + minutesOfDay * 60000;
+  const snappedMs = Math.floor(targetMs / (5*60000)) * (5*60000);
+  return new Date(snappedMs).toISOString().replace(/\.\d+Z$/, 'Z');
+}
+
+function refreshRadarTimeLabel(){
+  const mins = parseInt(document.getElementById('radarTimeSlider').value, 10);
+  const hh = String(Math.floor(mins/60)).padStart(2,'0');
+  const mm = String(mins%60).padStart(2,'0');
+  document.getElementById('radarTimeLabel').textContent = hh + ':' + mm + ' local';
+}
+
+function updateRadarLayer(){
+  if(radarLayer){ map.removeLayer(radarLayer); radarLayer = null; }
+  if(!showRadar || viewMode !== 'day') return;
+  const dateStr = selectedDateStr || todayInTZ(settings.timezone);
+  if(dateStr < RADAR_ARCHIVE_START){
+    setStatus('No radar archive available before ' + RADAR_ARCHIVE_START + '.', true);
     return;
   }
-  emptyState.style.display = 'none';
-  prods.forEach(function(p){
-    let badgeHtml = '';
-    if(p.damageThreat && DAMAGE_THREAT_STYLE[p.damageThreat]){
-      const st = DAMAGE_THREAT_STYLE[p.damageThreat];
-      badgeHtml += '<span class="tag-badge" style="background:'+st.bg+';color:'+st.color+'">'+p.damageThreat+'</span>';
-    }
-    if(p.detection && DETECTION_STYLE[p.detection]){
-      const st = DETECTION_STYLE[p.detection];
-      badgeHtml += '<span class="tag-badge" style="background:'+st.bg+';color:'+st.color+'">'+p.detection+'</span>';
-    }
-
-    const etnHtml = p.etn ? '<span class="product-etn">#'+p.etn+'</span>' : '';
-
-    const tr = document.createElement('tr');
-    tr.className = 'product-row';
-    tr.dataset.id = p.id;
-    tr.innerHTML =
-      '<td class="product-name" style="color:'+p.color+'"><span class="expand-caret">&#9656;</span>'+p.name+etnHtml+badgeHtml+'</td>' +
-      '<td>'+fmtTime(p.onset)+'</td>' +
-      '<td>'+fmtTime(p.expires)+'</td>' +
-      '<td>'+fmtTime(p.updateBy)+'</td>' +
-      '<td class="countdown" data-target="update">--:--:--</td>' +
-      '<td class="countdown" data-target="expire">--:--:--</td>';
-
-    const detailTr = document.createElement('tr');
-    detailTr.className = 'detail-row';
-    const detailTd = document.createElement('td');
-    detailTd.colSpan = 6;
-    let detailHtml = '<span class="detail-line"><span class="detail-label">Areas Affected:</span>' + (p.areaDesc || 'Not specified') + '</span>';
-    if(p.damageThreat){
-      detailHtml += '<span class="detail-line"><span class="detail-label">Damage Threat:</span>' + p.damageThreat + '</span>';
-    }
-    if(p.detection){
-      detailHtml += '<span class="detail-line"><span class="detail-label">Detection:</span>' + p.detection + '</span>';
-    }
-    if(p.hailTag){
-      detailHtml += '<span class="detail-line"><span class="detail-label">Max Hail Size:</span>' + p.hailTag + ' in</span>';
-    }
-    if(p.windTag){
-      detailHtml += '<span class="detail-line"><span class="detail-label">Max Wind Gust:</span>' + p.windTag + ' mph</span>';
-    }
-    if(p.stormMotion){
-      detailHtml += '<span class="detail-line"><span class="detail-label">Storm Motion:</span>' + p.stormMotion + '</span>';
-    }
-    detailTd.innerHTML = detailHtml;
-    detailTr.appendChild(detailTd);
-
-    tr.addEventListener('click', function(){
-      const caret = tr.querySelector('.expand-caret');
-      detailTr.classList.toggle('open');
-      caret.classList.toggle('open');
-      zoomToProduct(p);
-    });
-
-    tbody.appendChild(tr);
-    tbody.appendChild(detailTr);
+  const minutesOfDay = parseInt(document.getElementById('radarTimeSlider').value, 10);
+  const timeIso = radarTimeIsoFor(dateStr, minutesOfDay);
+  radarLayer = L.tileLayer.wms(RADAR_WMS_URL, {
+    layers: 'nexrad-n0q-wmst',
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.1',
+    time: timeIso,
+    opacity: 0.6,
+    zIndex: 350
   });
+  radarLayer.addTo(map);
 }
 
-function tickCountdowns(){
-  const now = new Date();
-  document.querySelectorAll('#table-body tr').forEach(function(tr){
-    const id = tr.dataset.id;
-    const p = products.find(x => x.id === id);
-    if(!p) return;
-    const updateCell = tr.querySelector('[data-target="update"]');
-    const expireCell = tr.querySelector('[data-target="expire"]');
-    if(!updateCell || !expireCell) return;
-    const updateMs = p.updateBy - now;
-    const expireMs = p.expires ? (p.expires - now) : 0;
-    updateCell.textContent = fmtCountdown(updateMs);
-    updateCell.className = 'countdown ' + countdownClass(updateMs);
-    expireCell.textContent = p.expires ? fmtCountdown(expireMs) : '—';
-    expireCell.className = 'countdown ' + countdownClass(expireMs);
+
+// ══════════════════════════════════════════════════════════════
+//  EXPORTS — CSV data dump, PNG snapshot
+// ══════════════════════════════════════════════════════════════
+function csvEscape(v){
+  if(v === null || v === undefined) return '';
+  const s = String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+function downloadBlob(filename, content, mime){
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function exportCsv(){
+  const label = (viewMode === 'range' ? (currentRangeStart+'_to_'+currentRangeEnd) : selectedDateStr) || 'export';
+  const lines = [];
+  lines.push(`# Warning Verification export — WFO ${settings.wfo} — ${viewMode==='range' ? ('Range '+rangeLabel) : ('Date '+selectedDateStr)}`);
+  lines.push('');
+  lines.push('## Warnings');
+  lines.push(['ETN','Product','Phenomena','County/Zone','Issued (UTC)','Expires (UTC)','Status','PDS','Emergency','Matched LSR Count'].join(','));
+  currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue)).forEach(e => {
+    const meta = PHEN_META[e.phenomena] || { code: e.phenomena };
+    lines.push([e.etn, meta.code, e.phenomena, (e.counties||[]).join('; '), e.issue, e.expire,
+      STATUS_META[e.status].label, e.pdsFlag ? 'Y' : '', e.emergencyFlag ? 'Y' : '', e.stormreports.length
+    ].map(csvEscape).join(','));
   });
+  lines.push('');
+  lines.push('## Local Storm Reports');
+  lines.push(['Time (UTC)','Type','Magnitude','City','County','State','Warned','Assoc. ETNs'].join(','));
+  currentReports.filter(r => r.inRange).sort((a,b) => new Date(a.valid) - new Date(b.valid)).forEach(r => {
+    lines.push([r.valid, r.typetext || r.lsrtype, r.magnitude, r.city, r.county, r.state, r.warned ? 'Y':'N', r.events
+    ].map(csvEscape).join(','));
+  });
+  if(dayStats){
+    lines.push('');
+    lines.push('## Stats');
+    lines.push(['Metric','Value'].join(','));
+    lines.push(['Hits', dayStats.hits].join(','));
+    lines.push(['False Alarms', dayStats.falseAlarms].join(','));
+    lines.push(['Misses', dayStats.misses].join(','));
+    lines.push(['POD', dayStats.pod !== null ? dayStats.pod.toFixed(3) : ''].join(','));
+    lines.push(['FAR', dayStats.far !== null ? dayStats.far.toFixed(3) : ''].join(','));
+    lines.push(['CSI', dayStats.csi !== null ? dayStats.csi.toFixed(3) : ''].join(','));
+  }
+  downloadBlob(`${settings.wfo}_warnings_${label}.csv`, lines.join('\n'), 'text/csv');
 }
 
-async function refresh(){
-  if(!zonesReady) return; // wait for zone geometry to finish loading first
-  const btn = document.getElementById('refresh-btn');
+async function exportPng(){
+  const btn = document.getElementById('exportPngBtn');
+  if(typeof html2canvas === 'undefined'){ alert('PNG export library failed to load — check your connection and try again.'); return; }
   btn.classList.add('spinning');
   try{
-    const alerts = await fetchAlerts();
-    products = buildProducts(alerts);
-
-    polygonProducts = products.filter(p =>
-      p.sig === "W" &&
-      ["TO","SV","FF","FA"].includes(p.phen)
-    );
-
-    zoneProducts = products.filter(p =>
-      !(p.sig === "W" &&
-        ["TO","SV","FF","FA"].includes(p.phen))
-    );
-
-    renderStats(products);
-    renderTable(products);
-    tickCountdowns();
-    applyMapFilters();
-    document.getElementById('last-updated').textContent = new Date().toLocaleString('en-US', { hour:'numeric', minute:'2-digit', timeZone:'America/New_York' }) + ' EDT';
-  } catch(e){
-    console.error('refresh error', e);
+    const target = document.querySelector('.main');
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#0a0e1a',
+      useCORS: true,
+      scale: 2,
+      ignoreElements: (el) => el.classList && el.classList.contains('leaflet-tile')
+    });
+    const label = (viewMode === 'range' ? (currentRangeStart+'_to_'+currentRangeEnd) : selectedDateStr) || 'export';
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `${settings.wfo}_verification_${label}.png`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }catch(err){
+    console.error(err);
+    alert('Could not export image: ' + err.message);
+  } finally {
+    btn.classList.remove('spinning');
   }
-  setTimeout(() => btn.classList.remove('spinning'), 600);
 }
 
-document.getElementById('refresh-btn').addEventListener('click', refresh);
+// ══════════════════════════════════════════════════════════════
+//  RENDER ALL
+// ══════════════════════════════════════════════════════════════
+function renderAll(){
+  renderQueue();
+  renderWarnTable();
+  renderSummary();
+  renderReportsTable();
+  renderCountiesTable();
+  renderDayStats();
+  drawZoneLayer();
+  drawWarningsOnMap();
+  drawLsrsOnMap();
+  updateRadarLayer();
+  renderMapLegend();
+  if(selectedEventId){
+    const e = currentEvents.find(x=>x.id===selectedEventId);
+    if(e) renderDetails(e);
+    else { document.getElementById('detailsEmpty').style.display='flex'; document.getElementById('detailsScroll').style.display='none'; }
+  } else {
+    document.getElementById('detailsEmpty').style.display='flex';
+    document.getElementById('detailsScroll').style.display='none';
+  }
+}
 
-document.getElementById('toggle-zone').addEventListener('click', function(){
-  showZoneWarnings = !showZoneWarnings;
-  this.classList.toggle('active', showZoneWarnings);
-  applyMapFilters();
+// ══════════════════════════════════════════════════════════════
+//  SUBTABS
+// ══════════════════════════════════════════════════════════════
+function switchSubtab(name){
+  document.querySelectorAll('.subtab-btn').forEach(b => b.classList.toggle('active', b.dataset.subtab === name));
+  document.getElementById('mapView').style.display = name === 'map' ? 'flex' : 'none';
+  document.getElementById('reportsView').style.display = name === 'reports' ? 'flex' : 'none';
+  document.getElementById('countiesView').style.display = name === 'counties' ? 'flex' : 'none';
+  if(name === 'map' && map) setTimeout(()=>map.invalidateSize(), 50);
+  if(name === 'counties') renderCountiesTable();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COUNTY / ZONE BREAKDOWN
+// ══════════════════════════════════════════════════════════════
+function computeCountyBreakdown(){
+  const tally = {}; // name -> { total, verified }
+  currentEvents.forEach(e => {
+    (e.counties || []).forEach(name => {
+      if(!tally[name]) tally[name] = { total: 0, verified: 0, decided: 0 };
+      tally[name].total++;
+      if(e.status !== 'pending'){
+        tally[name].decided++;
+        if(e.status === 'verified') tally[name].verified++;
+      }
+    });
+  });
+  return Object.keys(tally).map(name => {
+    const t = tally[name];
+    const far = t.decided > 0 ? (t.decided - t.verified) / t.decided : null;
+    return { name, total: t.total, verified: t.verified, far };
+  }).sort((a,b) => b.total - a.total);
+}
+
+function renderCountiesTable(){
+  const tbody = document.getElementById('countiesTableBody');
+  const rows = computeCountyBreakdown();
+  document.getElementById('countiesEmpty').style.display = rows.length === 0 ? 'block' : 'none';
+  const maxTotal = rows.length ? rows[0].total : 1;
+  tbody.innerHTML = rows.map(r => {
+    const pct = Math.max(4, Math.round((r.total / maxTotal) * 100));
+    const farText = r.far === null ? '—' : Math.round(r.far*100) + '%';
+    return `<tr>
+      <td>${escapeHtml(r.name)}</td>
+      <td><div class="cty-bar-wrap"><div class="cty-bar-track"><div class="cty-bar-fill" style="width:${pct}%;"></div></div><span>${r.total}</span></div></td>
+      <td>${r.verified}</td>
+      <td>${farText}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ARCHIVE — loads the whole range onto the main map/table/stats,
+//  rather than just showing a summary inside the modal.
+// ══════════════════════════════════════════════════════════════
+async function runArchive(){
+  const startStr = document.getElementById('archiveStart').value;
+  const endStr = document.getElementById('archiveEnd').value;
+  if(!startStr || !endStr){ alert('Pick both a start and end date.'); return; }
+  if(startStr > endStr){ alert('Start date must be on or before the end date.'); return; }
+  closeModal('archiveModal');
+  switchSubtab('map');
+  await loadRange(startStr, endStr);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EVENT WIRING
+// ══════════════════════════════════════════════════════════════
+document.getElementById('prevDayBtn').addEventListener('click', () => loadDay(addDaysToDateStr(selectedDateStr, -1)));
+document.getElementById('nextDayBtn').addEventListener('click', () => loadDay(addDaysToDateStr(selectedDateStr, 1)));
+document.getElementById('todayBtn').addEventListener('click', () => loadDay(todayInTZ(settings.timezone)));
+document.getElementById('datePicker').addEventListener('change', (e) => loadDay(e.target.value));
+document.getElementById('filterOnlyUnverified').addEventListener('change', renderWarnTable);
+document.getElementById('showLsrToggle').addEventListener('change', (e) => { showLsrs = e.target.checked; drawLsrsOnMap(); renderMapLegend(); });
+// WFO searchable combobox
+const wfoInput = document.getElementById('wfoSearchInput');
+wfoInput.addEventListener('focus', () => { wfoInput.select(); openWfoDropdown(); });
+wfoInput.addEventListener('input', () => openWfoDropdown());
+wfoInput.addEventListener('keydown', (e) => {
+  if(!wfoDropdownOpen && e.key === 'ArrowDown'){ openWfoDropdown(); return; }
+  if(!wfoDropdownOpen) return;
+  if(e.key === 'ArrowDown'){ e.preventDefault(); wfoHighlightIdx = Math.min(wfoHighlightIdx+1, wfoFilteredList.length-1); updateWfoHighlight(); }
+  else if(e.key === 'ArrowUp'){ e.preventDefault(); wfoHighlightIdx = Math.max(wfoHighlightIdx-1, 0); updateWfoHighlight(); }
+  else if(e.key === 'Enter'){ e.preventDefault(); const opt = wfoFilteredList[wfoHighlightIdx]; if(opt) chooseWfoOption(opt.id); }
+  else if(e.key === 'Escape'){ closeWfoDropdown(); wfoInput.value = wfoLabel(WFO_LIST.find(o=>o.id===settings.wfo)); wfoInput.blur(); }
+});
+document.addEventListener('click', (e) => { if(!document.getElementById('wfoCombo').contains(e.target)) closeWfoDropdown(); });
+
+// Compare Offices
+document.getElementById('compareBtn').addEventListener('click', () => {
+  pendingCompareWfos = compareWfos.slice();
+  document.getElementById('comparePrimaryLabel').textContent = settings.wfo;
+  document.getElementById('compareSearchInput').value = '';
+  renderCompareList('');
+  openModal('compareModal');
+});
+document.getElementById('compareSearchInput').addEventListener('input', (e) => renderCompareList(e.target.value));
+document.getElementById('compareClearBtn').addEventListener('click', () => { pendingCompareWfos = []; renderCompareList(document.getElementById('compareSearchInput').value); });
+document.getElementById('compareApplyBtn').addEventListener('click', () => {
+  compareWfos = pendingCompareWfos.slice();
+  updateCompareBtnLabel();
+  closeModal('compareModal');
+  lastZoneFitWfo = null; // active WFO set changed — let the map re-fit to the new combined bounds
+  if(viewMode === 'range' && currentRangeStart && currentRangeEnd){
+    loadRange(currentRangeStart, currentRangeEnd);
+  } else {
+    loadDay(selectedDateStr || todayInTZ(settings.timezone));
+  }
 });
 
-document.getElementById('toggle-polygon').addEventListener('click', function(){
-  showPolygonWarnings = !showPolygonWarnings;
-  this.classList.toggle('active', showPolygonWarnings);
-  applyMapFilters();
+// Radar overlay
+document.getElementById('showRadarToggle').addEventListener('change', (e) => {
+  showRadar = e.target.checked;
+  document.getElementById('radarTimeSlider').style.display = showRadar ? 'inline-block' : 'none';
+  document.getElementById('radarTimeLabel').style.display = showRadar ? 'inline' : 'none';
+  if(showRadar){
+    let defaultMin = 720;
+    if(currentEvents.length && selectedDateStr){
+      const first = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue))[0];
+      const dayStartMs = localMidnightToUTC(selectedDateStr, settings.timezone).getTime();
+      defaultMin = Math.max(0, Math.min(1439, Math.round((new Date(first.issue).getTime() - dayStartMs) / 60000)));
+    }
+    document.getElementById('radarTimeSlider').value = defaultMin;
+    refreshRadarTimeLabel();
+  }
+  updateRadarLayer();
+  renderMapLegend();
+});
+document.getElementById('radarTimeSlider').addEventListener('input', () => { refreshRadarTimeLabel(); updateRadarLayer(); renderMapLegend(); });
+
+// Trends modal
+document.getElementById('trendsBtn').addEventListener('click', () => { openModal('trendsModal'); loadTrends(30); });
+document.querySelectorAll('.trend-range-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.trend-range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadTrends(parseInt(btn.dataset.days, 10));
+}));
+
+// Exports + print
+document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
+document.getElementById('exportPngBtn').addEventListener('click', exportPng);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    if(wfoDropdownOpen){ closeWfoDropdown(); wfoInput.blur(); return; }
+    const openModalEl = document.querySelector('.modal-overlay.open');
+    if(openModalEl){ closeModal(openModalEl.id); return; }
+    return;
+  }
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  if(typing) return;
+  if(document.querySelector('.modal-overlay.open')) return;
+  if(e.key === 'ArrowLeft' && viewMode === 'day'){ e.preventDefault(); loadDay(addDaysToDateStr(selectedDateStr, -1)); }
+  else if(e.key === 'ArrowRight' && viewMode === 'day'){ e.preventDefault(); loadDay(addDaysToDateStr(selectedDateStr, 1)); }
+  else if(e.key === 'j'){ e.preventDefault(); stepSelectedEvent(1); }
+  else if(e.key === 'k'){ e.preventDefault(); stepSelectedEvent(-1); }
+  else if(e.key === 'n'){ e.preventDefault(); jumpToNextUnverified(); }
 });
 
-document.getElementById('reset-zoom-btn').addEventListener('click', function(){
-  resetMapView();
+document.querySelectorAll('.subtab-btn').forEach(btn => btn.addEventListener('click', () => switchSubtab(btn.dataset.subtab)));
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  document.getElementById('refreshIcon').parentElement.classList.add('spinning');
+  loadDay(selectedDateStr).finally(() => {
+    setTimeout(()=>document.getElementById('refreshBtn').classList.remove('spinning'), 500);
+  });
 });
 
-(async function start(){
-  await loadZones();
-  await refresh();
-  setInterval(tickCountdowns, 1000);
-  setInterval(refresh, 2*60*1000);
+// Modals
+let lastFocusedBeforeModal = null;
+const FOCUSABLE_SEL = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+function openModal(id){
+  const el = document.getElementById(id);
+  el.classList.add('open');
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  const box = el.querySelector('.modal-box');
+  const heading = box && box.querySelector('h2');
+  if(heading){
+    if(!heading.id) heading.id = id + 'Title';
+    el.setAttribute('aria-labelledby', heading.id);
+  }
+  lastFocusedBeforeModal = document.activeElement;
+  const focusables = box ? Array.from(box.querySelectorAll(FOCUSABLE_SEL)) : [];
+  if(focusables.length) focusables[0].focus();
+  el._focusTrapHandler = (e) => {
+    if(e.key !== 'Tab' || !box) return;
+    const items = Array.from(box.querySelectorAll(FOCUSABLE_SEL)).filter(x => x.offsetParent !== null);
+    if(items.length === 0) return;
+    const first = items[0], last = items[items.length - 1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  };
+  el.addEventListener('keydown', el._focusTrapHandler);
+}
+function closeModal(id){
+  const el = document.getElementById(id);
+  el.classList.remove('open');
+  el.removeAttribute('aria-modal');
+  if(el._focusTrapHandler){ el.removeEventListener('keydown', el._focusTrapHandler); el._focusTrapHandler = null; }
+  if(lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') lastFocusedBeforeModal.focus();
+  lastFocusedBeforeModal = null;
+}
+
+// One-time pass: give every icon-only / label-less control an
+// aria-label sourced from its existing title tooltip, so screen
+// readers announce something more useful than nothing.
+function applyAriaLabels(){
+  document.querySelectorAll('.icon-btn[title], .mini-btn[title], .subtab-btn[title], .queue-card[title]').forEach(el => {
+    if(!el.hasAttribute('aria-label')) el.setAttribute('aria-label', el.getAttribute('title'));
+  });
+  document.querySelectorAll('.subtab-btn').forEach(el => {
+    if(!el.hasAttribute('aria-label')) el.setAttribute('aria-label', el.textContent.trim() + ' view');
+  });
+  document.getElementById('wfoSearchInput').setAttribute('aria-label', 'Search NWS office');
+  document.getElementById('datePicker').setAttribute('aria-label', 'Selected date');
+}
+document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) closeModal(ov.id); }));
+
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  document.getElementById('setWfo').value = settings.wfo;
+  document.getElementById('setTimezone').value = settings.timezone;
+  document.getElementById('setHail').value = settings.hailsize;
+  document.getElementById('setWind').value = settings.wind;
+  document.getElementById('setBuffer').value = settings.lsrbuffer;
+  document.getElementById('setColorblind').checked = settings.colorblindMode;
+  openModal('settingsModal');
+});
+document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+  settings.timezone = document.getElementById('setTimezone').value.trim() || 'America/New_York';
+  settings.hailsize = parseFloat(document.getElementById('setHail').value) || 1.0;
+  settings.wind = parseFloat(document.getElementById('setWind').value) || 58;
+  settings.lsrbuffer = parseFloat(document.getElementById('setBuffer').value) || 15;
+  settings.colorblindMode = document.getElementById('setColorblind').checked;
+  applyColorblindPalette(settings.colorblindMode);
+  try{ localStorage.setItem('btv_colorblind_mode', settings.colorblindMode ? '1' : '0'); }catch(err){}
+  closeModal('settingsModal');
+  loadDay(selectedDateStr || todayInTZ(settings.timezone));
+});
+
+document.getElementById('exportSettingsBtn').addEventListener('click', () => {
+  const payload = {
+    kind: 'warning-verification-settings',
+    version: 1,
+    settings: {
+      timezone: document.getElementById('setTimezone').value.trim() || settings.timezone,
+      hailsize: parseFloat(document.getElementById('setHail').value) || settings.hailsize,
+      wind: parseFloat(document.getElementById('setWind').value) || settings.wind,
+      lsrbuffer: parseFloat(document.getElementById('setBuffer').value) || settings.lsrbuffer,
+      colorblindMode: document.getElementById('setColorblind').checked
+    },
+    recentWfos: getRecentWfos()
+  };
+  downloadBlob('warning-verification-settings.json', JSON.stringify(payload, null, 2), 'application/json');
+});
+
+document.getElementById('importSettingsBtn').addEventListener('click', () => {
+  document.getElementById('importSettingsFile').click();
+});
+document.getElementById('importSettingsFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    if(!payload || payload.kind !== 'warning-verification-settings' || !payload.settings){
+      alert("That file doesn't look like a settings export from this app.");
+      return;
+    }
+    const s = payload.settings;
+    if(s.timezone) document.getElementById('setTimezone').value = s.timezone;
+    if(typeof s.hailsize === 'number') document.getElementById('setHail').value = s.hailsize;
+    if(typeof s.wind === 'number') document.getElementById('setWind').value = s.wind;
+    if(typeof s.lsrbuffer === 'number') document.getElementById('setBuffer').value = s.lsrbuffer;
+    document.getElementById('setColorblind').checked = !!s.colorblindMode;
+    if(Array.isArray(payload.recentWfos)){
+      try{ localStorage.setItem('btv_wfo_recent', JSON.stringify(payload.recentWfos.slice(0,5))); }catch(err){}
+    }
+    showToast('Settings imported — click "Save & Refresh" to apply.');
+  }catch(err){
+    console.error(err);
+    alert('Could not read that settings file: ' + err.message);
+  }
+});
+
+document.getElementById('archiveBtn').addEventListener('click', () => {
+  const anchor = selectedDateStr || lastSingleDate || todayInTZ(settings.timezone);
+  document.getElementById('archiveEnd').value = anchor;
+  document.getElementById('archiveStart').value = addDaysToDateStr(anchor, -6);
+  openModal('archiveModal');
+});
+document.getElementById('runArchiveBtn').addEventListener('click', runArchive);
+document.getElementById('aboutBtn').addEventListener('click', () => openModal('aboutModal'));
+document.getElementById('exitRangeBtn').addEventListener('click', () => loadDay(lastSingleDate || todayInTZ(settings.timezone)));
+
+window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+(function start(){
+  try{
+    if(localStorage.getItem('btv_colorblind_mode') === '1'){
+      settings.colorblindMode = true;
+      applyColorblindPalette(true);
+    }
+  }catch(err){ /* localStorage unavailable — falls back to default palette */ }
+
+  const urlState = readUrlState();
+  if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
+    settings.wfo = urlState.wfo.toUpperCase();
+    document.getElementById('pageTitle').textContent = settings.wfo + ' WARNING VERIFICATION';
+  }
+  if(urlState.compare){
+    compareWfos = urlState.compare.split(',')
+      .map(c => c.trim().toUpperCase())
+      .filter(c => WFO_LIST.some(o => o.id === c) && c !== settings.wfo)
+      .slice(0, COMPARE_MAX);
+    updateCompareBtnLabel();
+  }
+  initWfoCombo();
+  applyAriaLabels();
+  initMap();
+  if(urlState.start && urlState.end){
+    switchSubtab('map');
+    loadRange(urlState.start, urlState.end);
+  } else {
+    loadDay(urlState.date || todayInTZ(settings.timezone));
+  }
 })();
 </script>
 </body>
