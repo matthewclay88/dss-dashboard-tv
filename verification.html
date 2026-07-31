@@ -375,7 +375,80 @@
   .trend-range-btn.active { background: #2563eb !important; color: #fff !important; }
 
   /* ── RADAR CONTROLS ── */
-  .radar-slider { accent-color: #3b82f6; width: 110px; vertical-align: middle; }
+
+  /* ── ACCESSIBILITY ── */
+  .icon-btn:focus-visible, .mini-btn:focus-visible, .subtab-btn:focus-visible,
+  .wfo-search-input:focus-visible, .btn:focus-visible, .queue-card:focus-visible,
+  .wfo-opt:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid #60a5fa; outline-offset: 2px;
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ── LIVE MODE ── */
+  .live-badge {
+    display: none; align-items: center; gap: 5px; font-size: 10px; font-weight: 800;
+    color: #f87171; letter-spacing: 0.05em; padding: 4px 9px; border-radius: 999px;
+    background: #2a0f0f; border: 1px solid #7f1d1d;
+  }
+  .live-badge.on { display: inline-flex; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: livePulse 1.6s ease-in-out infinite; }
+  @keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .toast-stack {
+    position: fixed; top: 64px; right: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px;
+    max-width: 320px;
+  }
+  .toast {
+    background: #101a28; border: 1px solid #26405c; border-left: 3px solid #3b82f6; border-radius: 8px;
+    padding: 10px 12px; font-size: 12px; color: #e2e8f0; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    animation: toastIn .2s ease-out;
+  }
+  @keyframes toastIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
+
+  /* ── HEATMAP (Trends modal, 1-year view) ── */
+  .heatmap-wrap { overflow-x: auto; padding-bottom: 6px; }
+  .heatmap-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; }
+  .heatmap-cell {
+    width: 12px; height: 12px; border-radius: 2.5px; background: #1a2536; cursor: pointer;
+  }
+  .heatmap-cell:hover { outline: 1.5px solid #93c5fd; }
+  .heatmap-cell.empty { background: transparent; cursor: default; }
+  .heatmap-legend { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #7a8ba3; margin-top: 8px; }
+  .heatmap-legend .heatmap-cell { cursor: default; }
+  .heatmap-legend .heatmap-cell:hover { outline: none; }
+
+  /* ── COUNTY/ZONE BREAKDOWN ── */
+  .counties-pane { flex: 1; min-height: 0; overflow-y: auto; }
+  .counties-pane table { width: 100%; }
+  .counties-pane thead th {
+    position: sticky; top: 0; background: #131c2b; text-align: left; font-size: 10px; font-weight: 800;
+    letter-spacing: 0.05em; text-transform: uppercase; color: #7a8ba3; padding: 8px 10px; border-bottom: 1px solid #1e2a3a;
+  }
+  .counties-pane tbody td { padding: 9px 10px; font-size: 12px; border-bottom: 1px solid #16202e; }
+  .counties-pane .cty-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .counties-pane .cty-bar-track { flex: 1; height: 6px; background: #1e2a3a; border-radius: 3px; overflow: hidden; }
+  .counties-pane .cty-bar-fill { height: 100%; background: #3b82f6; border-radius: 3px; }
+
+  /* ── RESPONSIVE / MOBILE ── */
+  @media (max-width: 900px) {
+    html, body { height: auto; overflow: auto; }
+    .header { flex-wrap: wrap; row-gap: 8px; }
+    .header-center { order: 3; width: 100%; flex-wrap: wrap; }
+    .wfo-search-input { width: 140px; }
+    .header-right { flex-wrap: wrap; }
+    .main { flex-direction: column; overflow: visible; height: auto; padding: 8px; }
+    .col-left, .col-center, .col-right { width: 100%; }
+    .center-body { min-height: 380px; }
+    #map { min-height: 320px; }
+    .queue-grid { grid-template-columns: 1fr 1fr; }
+    .warn-table-wrap { max-height: 340px; }
+    .warn-scroll { max-height: 300px; }
+    .modal-box, .modal-box.wide { width: 94vw; }
+    .kv-grid { grid-template-columns: 1fr; }
+  }
 
   /* ── PRINT ── */
   @media print {
@@ -406,6 +479,7 @@
       <input type="text" id="wfoSearchInput" class="wfo-search-input" placeholder="Search office…" autocomplete="off" title="Search NWS office">
       <div class="wfo-dropdown" id="wfoDropdown"></div>
     </div>
+    <span class="live-badge" id="liveBadge" title="Auto-refreshing for today"><span class="live-dot"></span>LIVE</span>
     <div class="date-nav">
       <button id="prevDayBtn" title="Previous day">&#9664;</button>
       <input type="date" id="datePicker">
@@ -425,6 +499,7 @@
   </div>
 </div>
 
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
 <div class="status-banner hidden" id="statusBanner">Loading…</div>
 <div class="range-banner" id="rangeBanner" style="display:none;">
   <span id="rangeBannerText">Viewing range</span>
@@ -473,6 +548,7 @@
     <div class="subtabs">
       <button class="subtab-btn active" data-subtab="map">MAP</button>
       <button class="subtab-btn" data-subtab="reports">REPORTS</button>
+      <button class="subtab-btn" data-subtab="counties">COUNTIES</button>
       <div class="spacer"></div>
       <label class="lsr-toggle"><input type="checkbox" id="showLsrToggle" checked> Show LSRs on map</label>
       <label class="lsr-toggle"><input type="checkbox" id="showRadarToggle"> Radar</label>
@@ -492,6 +568,17 @@
             </tr></thead>
             <tbody id="reportsTableBody"></tbody>
           </table>
+        </div>
+      </div>
+      <div id="countiesView" style="display:none; flex:1; min-height:0; flex-direction:column;">
+        <div class="counties-pane">
+          <table>
+            <thead><tr>
+              <th>County / Zone</th><th>Warnings</th><th>Verified</th><th>FAR</th>
+            </tr></thead>
+            <tbody id="countiesTableBody"></tbody>
+          </table>
+          <div class="warn-empty" id="countiesEmpty" style="display:none;">No warnings for this view yet.</div>
         </div>
       </div>
     </div>
@@ -544,6 +631,13 @@
         <input type="number" id="setBuffer" step="1" min="1">
         <div class="hint">How far from the warning polygon IEM will look for a verifying Local Storm Report.</div>
       </div>
+      <div class="field-row">
+        <label style="display:flex;align-items:center;gap:7px;text-transform:none;font-size:12px;color:#cbd5e1;">
+          <input type="checkbox" id="setColorblind" style="width:auto;">
+          Colorblind-safe status colors
+        </label>
+        <div class="hint">Swaps the Verified / Pending / Needs Verification colors for a blue/orange/vermilion palette instead of green/yellow/red.</div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn secondary" data-close="settingsModal">Cancel</button>
@@ -578,15 +672,29 @@
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <button class="btn secondary trend-range-btn active" data-days="30">Last 30 Days</button>
         <button class="btn secondary trend-range-btn" data-days="90">Last 90 Days</button>
+        <button class="btn secondary trend-range-btn" data-days="365">1 Year (Heatmap)</button>
       </div>
       <div id="trendsStatus" style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Loading…</div>
       <svg viewBox="0 0 640 220" id="trendsSvg" style="width:100%;height:220px;"></svg>
-      <div style="display:flex;gap:14px;margin-top:10px;font-size:11px;">
+      <div id="trendsLineLegend" style="display:flex;gap:14px;margin-top:10px;font-size:11px;">
         <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#4ade80;margin-right:5px;"></span>POD</span>
         <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#ef4444;margin-right:5px;"></span>FAR</span>
         <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#60a5fa;margin-right:5px;"></span>CSI</span>
       </div>
-      <div class="hint" style="margin-top:10px;">Computed client-side from IEM Cow data for the selected office, using the same calendar-day boundaries as the main view. Days with no decided warnings are skipped over (gap in the lines).</div>
+      <div class="heatmap-wrap" id="heatmapWrap" style="display:none;">
+        <div class="heatmap-grid" id="heatmapGrid"></div>
+        <div class="heatmap-legend">
+          <span>Lower CSI</span>
+          <div class="heatmap-cell" style="background:#1a2536;"></div>
+          <div class="heatmap-cell" style="background:#0e3a2f;"></div>
+          <div class="heatmap-cell" style="background:#0f6b4f;"></div>
+          <div class="heatmap-cell" style="background:#16a866;"></div>
+          <div class="heatmap-cell" style="background:#4ade80;"></div>
+          <span>Higher CSI</span>
+          <span style="margin-left:10px;color:#5a6b82;">Click a day to open it</span>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:10px;">Computed client-side from IEM Cow data for the selected office, using the same calendar-day boundaries as the main view. Days with no decided warnings are skipped over (gap in the lines / gray cell).</div>
     </div>
   </div>
 </div>
@@ -608,6 +716,11 @@
       <p><strong>Keyboard shortcuts:</strong> <code>←</code> / <code>→</code> previous/next day, <code>j</code> / <code>k</code> step through the warnings table, <code>n</code> jump to the next unverified warning, <code>Esc</code> close dialogs.</p>
       <p><strong>Sharing a view:</strong> the URL updates automatically with the current office and date (or range), so copying the address bar link takes someone straight to the same view.</p>
       <p><strong>PNG export:</strong> captures the queue, table, summary, stats, and warning-details panels, plus the warning polygons/zone lines/LSR markers on the map — but not the basemap street imagery itself, since CartoDB's tile server doesn't allow that imagery to be read back into an exported image. Use "Print" instead for a version with full basemap tiles included.</p>
+      <p><strong>Year heatmap:</strong> the Trends modal's "1 Year" option shows a GitHub-style calendar grid colored by that day's CSI — click any cell to jump straight into that day.</p>
+      <p><strong>Counties tab:</strong> a ranked breakdown of which counties/zones see the most warnings and their false-alarm rate for the current day or range.</p>
+      <p><strong>Live mode:</strong> while viewing today, the app quietly re-polls IEM every few minutes and toasts new warnings as they're issued — a red "LIVE" badge next to the date shows it's active. It turns off automatically for any other day or a date range.</p>
+      <p><strong>Forecaster coverage:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
+      <p><strong>Accessibility:</strong> modals trap focus and return it on close, icon-only controls carry aria-labels, and Settings has a colorblind-safe palette toggle for the status colors. The layout also reflows to a single column below ~900px wide for phones and tablets.</p>
     </div>
   </div>
 </div>
@@ -643,6 +756,19 @@ const STATUS_META = {
   pending:            { label: 'Pending',             color: '#f0c419' },
   needs_verification: { label: 'Needs Verification',  color: '#ef4444' }
 };
+// Default colors above are green/yellow/red. This is an Okabe-Ito-style
+// colorblind-safe alternative (blue/orange/vermilion) that stays
+// distinguishable under the common forms of color vision deficiency.
+// STATUS_META's own binding is const, but its property objects are
+// still mutable, so toggling the palette is just overwriting .color
+// in place rather than swapping which object every render function
+// references.
+const STATUS_COLORS_DEFAULT = { verified: '#4ade80', pending: '#f0c419', needs_verification: '#ef4444' };
+const STATUS_COLORS_COLORBLIND = { verified: '#0072B2', pending: '#E69F00', needs_verification: '#D55E00' };
+function applyColorblindPalette(on){
+  const src = on ? STATUS_COLORS_COLORBLIND : STATUS_COLORS_DEFAULT;
+  Object.keys(STATUS_META).forEach(k => { STATUS_META[k].color = src[k]; });
+}
 // Live, official NWS zone boundaries — queryable by CWA on demand, so
 // this works for ANY office, not just a pre-baked static extract.
 // (Confirmed nationwide coverage: BTV, OUN, LOX, MFL all return real
@@ -730,7 +856,7 @@ const PDS_SCAN_CONCURRENCY = 6;
 // ══════════════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════════════
-let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 58, lsrbuffer: 15 };
+let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 58, lsrbuffer: 15, colorblindMode: false };
 let selectedDateStr = null;   // 'YYYY-MM-DD' in settings.timezone
 let currentEvents = [];       // parsed + status-enriched event objects
 let currentReports = [];      // parsed report objects
@@ -751,6 +877,8 @@ let wfoFilteredList = [];
 let showRadar = false;
 let currentRangeStart = null;   // set while viewMode === 'range', for URL state
 let currentRangeEnd = null;
+let liveModeInterval = null;
+const LIVE_POLL_MS = 3 * 60 * 1000;
 
 // ══════════════════════════════════════════════════════════════
 //  DATE / TIMEZONE HELPERS
@@ -859,13 +987,21 @@ function computeDayStats(){
     });
   });
 
+  // Office-level aggregate only — a count of distinct forecaster codes
+  // active in this window, not a per-person breakdown. Individual
+  // scorecards read as surveillance and aren't something this tool
+  // does; if per-forecaster review is genuinely needed, that belongs
+  // in a controlled internal process, not a shareable-URL dashboard.
+  const distinctForecasters = new Set(currentEvents.map(e => e.fcster).filter(Boolean)).size;
+
   dayStats = {
     hits, falseAlarms, misses,
     pod, far, csi,
     avgLead1st: lead0s.length ? lead0s.reduce((a,b)=>a+b,0)/lead0s.length : null,
     avgLeadAll: matchedReportsAll.length ? matchedReportsAll.reduce((a,b)=>a+b,0)/matchedReportsAll.length : null,
     maxLead: matchedReportsAll.length ? Math.max(...matchedReportsAll) : null,
-    minLead: matchedReportsAll.length ? Math.min(...matchedReportsAll) : null
+    minLead: matchedReportsAll.length ? Math.min(...matchedReportsAll) : null,
+    distinctForecasters
   };
 }
 
@@ -886,6 +1022,7 @@ function renderDayStats(){
     <div class="daystat-row"><div><div class="ds-name">Avg Lead Time, All Events</div></div><div class="ds-val">${fmtMin(dayStats.avgLeadAll)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Max Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.maxLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Min Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.minLead)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Forecasters On Shift</div><span class="ds-formula">distinct codes, not individually broken out</span></div><div class="ds-val">${dayStats.distinctForecasters}</div></div>
   `;
 }
 
@@ -1016,6 +1153,7 @@ async function loadDay(dateStr){
   renderAll();
   updateUrlState();
   scanForPdsEmergency();
+  if(dateStr === todayInTZ(settings.timezone)) startLiveMode(); else stopLiveMode();
 }
 
 async function loadRange(startStr, endStr){
@@ -1044,6 +1182,7 @@ async function loadRange(startStr, endStr){
   renderAll();
   updateUrlState();
   scanForPdsEmergency();
+  stopLiveMode();
 }
 
 function updateRangeBanner(){
@@ -1697,6 +1836,55 @@ function distToEventMi(e, r){
 
 
 
+
+// ══════════════════════════════════════════════════════════════
+//  LIVE MODE — auto-poll IEM while viewing today, toast new warnings
+// ══════════════════════════════════════════════════════════════
+function showToast(message){
+  const stack = document.getElementById('toastStack');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.setAttribute('role', 'status');
+  t.textContent = message;
+  stack.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .4s ease'; t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 8000);
+}
+
+function startLiveMode(){
+  stopLiveMode();
+  document.getElementById('liveBadge').classList.add('on');
+  liveModeInterval = setInterval(pollLiveUpdates, LIVE_POLL_MS);
+}
+function stopLiveMode(){
+  if(liveModeInterval){ clearInterval(liveModeInterval); liveModeInterval = null; }
+  document.getElementById('liveBadge').classList.remove('on');
+}
+
+async function pollLiveUpdates(){
+  // Guard against a stray timer firing after the view moved on.
+  if(viewMode !== 'day' || selectedDateStr !== todayInTZ(settings.timezone)) { stopLiveMode(); return; }
+  try{
+    const dayStart = localMidnightToUTC(selectedDateStr, settings.timezone);
+    const dayEnd = localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone);
+    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd);
+    const knownIds = new Set(currentEvents.map(e => e.id));
+    const newOnes = events.filter(e => !knownIds.has(e.id));
+    currentEvents = events;
+    currentReports = reports;
+    computeDayStats();
+    renderAll();
+    scanForPdsEmergency();
+    newOnes.forEach(e => {
+      const meta = PHEN_META[e.phenomena] || { code: e.phenomena };
+      showToast(`New ${meta.code || e.phenomena} warning issued — ETN ${e.etn}`);
+    });
+  }catch(err){
+    console.warn('live poll failed', err);
+    // Stay silent in the UI for a transient poll failure — the next
+    // scheduled tick will just try again.
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
 //  TRENDS — POD/FAR/CSI over the last N days
 // ══════════════════════════════════════════════════════════════
@@ -1733,13 +1921,57 @@ async function loadTrends(days){
         ? 1 / ((1/pod) + (1/(1-far)) - 1) : null;
       buckets.push({ date: ds, pod, far, csi, total: dayEvents.length });
     }
-    renderTrendsChart(buckets);
     const withData = buckets.filter(b => b.total > 0).length;
+    if(days >= 365){
+      document.getElementById('trendsSvg').style.display = 'none';
+      document.getElementById('trendsLineLegend').style.display = 'none';
+      document.getElementById('heatmapWrap').style.display = 'block';
+      renderTrendsHeatmap(buckets);
+    } else {
+      document.getElementById('trendsSvg').style.display = 'block';
+      document.getElementById('trendsLineLegend').style.display = 'flex';
+      document.getElementById('heatmapWrap').style.display = 'none';
+      renderTrendsChart(buckets);
+    }
     statusEl.textContent = `${days} days ending ${endDateStr} — ${withData} day${withData===1?'':'s'} with warnings.`;
   }catch(err){
     console.error(err);
     statusEl.textContent = 'Could not load trend data: ' + err.message;
   }
+}
+
+function renderTrendsHeatmap(buckets){
+  const grid = document.getElementById('heatmapGrid');
+  // Pad the front so the grid starts on a Sunday, GitHub-contributions
+  // style — makes the weekday rows line up into clean columns.
+  const firstDow = new Date(buckets[0].date + 'T00:00:00Z').getUTCDay(); // 0=Sun
+  const cells = [];
+  for(let i = 0; i < firstDow; i++) cells.push(null);
+  cells.push(...buckets);
+
+  function csiColor(csi){
+    if(csi === null || csi === undefined) return '#1a2536';
+    const stops = ['#0e3a2f', '#0f6b4f', '#16a866', '#4ade80'];
+    const idx = Math.min(stops.length - 1, Math.floor(csi * stops.length));
+    return stops[idx];
+  }
+
+  grid.innerHTML = cells.map(b => {
+    if(!b) return `<div class="heatmap-cell empty"></div>`;
+    const color = csiColor(b.csi);
+    const title = b.total === 0
+      ? `${b.date} — no warnings`
+      : `${b.date} — ${b.total} warning${b.total===1?'':'s'}${b.csi!==null ? ', CSI ' + b.csi.toFixed(2) : ''}`;
+    return `<div class="heatmap-cell" style="background:${color};" data-date="${b.date}" title="${escapeHtml(title)}"></div>`;
+  }).join('');
+
+  grid.querySelectorAll('.heatmap-cell[data-date]').forEach(el => {
+    el.addEventListener('click', () => {
+      closeModal('trendsModal');
+      switchSubtab('map');
+      loadDay(el.dataset.date);
+    });
+  });
 }
 
 function renderTrendsChart(buckets){
@@ -1900,6 +2132,7 @@ function renderAll(){
   renderWarnTable();
   renderSummary();
   renderReportsTable();
+  renderCountiesTable();
   renderDayStats();
   drawZoneLayer();
   drawWarningsOnMap();
@@ -1923,7 +2156,48 @@ function switchSubtab(name){
   document.querySelectorAll('.subtab-btn').forEach(b => b.classList.toggle('active', b.dataset.subtab === name));
   document.getElementById('mapView').style.display = name === 'map' ? 'flex' : 'none';
   document.getElementById('reportsView').style.display = name === 'reports' ? 'flex' : 'none';
+  document.getElementById('countiesView').style.display = name === 'counties' ? 'flex' : 'none';
   if(name === 'map' && map) setTimeout(()=>map.invalidateSize(), 50);
+  if(name === 'counties') renderCountiesTable();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COUNTY / ZONE BREAKDOWN
+// ══════════════════════════════════════════════════════════════
+function computeCountyBreakdown(){
+  const tally = {}; // name -> { total, verified }
+  currentEvents.forEach(e => {
+    (e.counties || []).forEach(name => {
+      if(!tally[name]) tally[name] = { total: 0, verified: 0, decided: 0 };
+      tally[name].total++;
+      if(e.status !== 'pending'){
+        tally[name].decided++;
+        if(e.status === 'verified') tally[name].verified++;
+      }
+    });
+  });
+  return Object.keys(tally).map(name => {
+    const t = tally[name];
+    const far = t.decided > 0 ? (t.decided - t.verified) / t.decided : null;
+    return { name, total: t.total, verified: t.verified, far };
+  }).sort((a,b) => b.total - a.total);
+}
+
+function renderCountiesTable(){
+  const tbody = document.getElementById('countiesTableBody');
+  const rows = computeCountyBreakdown();
+  document.getElementById('countiesEmpty').style.display = rows.length === 0 ? 'block' : 'none';
+  const maxTotal = rows.length ? rows[0].total : 1;
+  tbody.innerHTML = rows.map(r => {
+    const pct = Math.max(4, Math.round((r.total / maxTotal) * 100));
+    const farText = r.far === null ? '—' : Math.round(r.far*100) + '%';
+    return `<tr>
+      <td>${escapeHtml(r.name)}</td>
+      <td><div class="cty-bar-wrap"><div class="cty-bar-track"><div class="cty-bar-fill" style="width:${pct}%;"></div></div><span>${r.total}</span></div></td>
+      <td>${r.verified}</td>
+      <td>${farText}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2025,8 +2299,55 @@ document.getElementById('refreshBtn').addEventListener('click', () => {
 });
 
 // Modals
-function openModal(id){ document.getElementById(id).classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+let lastFocusedBeforeModal = null;
+const FOCUSABLE_SEL = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+function openModal(id){
+  const el = document.getElementById(id);
+  el.classList.add('open');
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  const box = el.querySelector('.modal-box');
+  const heading = box && box.querySelector('h2');
+  if(heading){
+    if(!heading.id) heading.id = id + 'Title';
+    el.setAttribute('aria-labelledby', heading.id);
+  }
+  lastFocusedBeforeModal = document.activeElement;
+  const focusables = box ? Array.from(box.querySelectorAll(FOCUSABLE_SEL)) : [];
+  if(focusables.length) focusables[0].focus();
+  el._focusTrapHandler = (e) => {
+    if(e.key !== 'Tab' || !box) return;
+    const items = Array.from(box.querySelectorAll(FOCUSABLE_SEL)).filter(x => x.offsetParent !== null);
+    if(items.length === 0) return;
+    const first = items[0], last = items[items.length - 1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  };
+  el.addEventListener('keydown', el._focusTrapHandler);
+}
+function closeModal(id){
+  const el = document.getElementById(id);
+  el.classList.remove('open');
+  el.removeAttribute('aria-modal');
+  if(el._focusTrapHandler){ el.removeEventListener('keydown', el._focusTrapHandler); el._focusTrapHandler = null; }
+  if(lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') lastFocusedBeforeModal.focus();
+  lastFocusedBeforeModal = null;
+}
+
+// One-time pass: give every icon-only / label-less control an
+// aria-label sourced from its existing title tooltip, so screen
+// readers announce something more useful than nothing.
+function applyAriaLabels(){
+  document.querySelectorAll('.icon-btn[title], .mini-btn[title], .subtab-btn[title], .queue-card[title]').forEach(el => {
+    if(!el.hasAttribute('aria-label')) el.setAttribute('aria-label', el.getAttribute('title'));
+  });
+  document.querySelectorAll('.subtab-btn').forEach(el => {
+    if(!el.hasAttribute('aria-label')) el.setAttribute('aria-label', el.textContent.trim() + ' view');
+  });
+  document.getElementById('wfoSearchInput').setAttribute('aria-label', 'Search NWS office');
+  document.getElementById('datePicker').setAttribute('aria-label', 'Selected date');
+}
 document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
 document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) closeModal(ov.id); }));
 
@@ -2036,6 +2357,7 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('setHail').value = settings.hailsize;
   document.getElementById('setWind').value = settings.wind;
   document.getElementById('setBuffer').value = settings.lsrbuffer;
+  document.getElementById('setColorblind').checked = settings.colorblindMode;
   openModal('settingsModal');
 });
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
@@ -2043,6 +2365,9 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   settings.hailsize = parseFloat(document.getElementById('setHail').value) || 1.0;
   settings.wind = parseFloat(document.getElementById('setWind').value) || 58;
   settings.lsrbuffer = parseFloat(document.getElementById('setBuffer').value) || 15;
+  settings.colorblindMode = document.getElementById('setColorblind').checked;
+  applyColorblindPalette(settings.colorblindMode);
+  try{ localStorage.setItem('btv_colorblind_mode', settings.colorblindMode ? '1' : '0'); }catch(err){}
   closeModal('settingsModal');
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 });
@@ -2063,12 +2388,20 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
 //  INIT
 // ══════════════════════════════════════════════════════════════
 (function start(){
+  try{
+    if(localStorage.getItem('btv_colorblind_mode') === '1'){
+      settings.colorblindMode = true;
+      applyColorblindPalette(true);
+    }
+  }catch(err){ /* localStorage unavailable — falls back to default palette */ }
+
   const urlState = readUrlState();
   if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
     settings.wfo = urlState.wfo.toUpperCase();
     document.getElementById('pageTitle').textContent = settings.wfo + ' WARNING VERIFICATION';
   }
   initWfoCombo();
+  applyAriaLabels();
   initMap();
   if(urlState.start && urlState.end){
     switchSubtab('map');
