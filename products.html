@@ -78,6 +78,47 @@
   .refresh-btn:hover { color: #fff; border-color: #3a6ea8; }
   .refresh-btn.spinning { transform: rotate(360deg); }
 
+  .sound-toggle-btn {
+    background: #15243a; border: 1px solid #2a3f5c; color: #93a3b8;
+    font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 8px;
+    cursor: pointer; font-family: inherit; white-space: nowrap;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .sound-toggle-btn:hover { border-color: #3a6ea8; color: #fff; }
+  .sound-toggle-btn.active { background: #16324f; border-color: #3a6ea8; color: #5fd07a; }
+
+  .tor-alert-overlay {
+    display: none; position: fixed; inset: 0; z-index: 99999;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(139,0,0,0.5);
+    animation: torFlash 0.9s ease-in-out infinite;
+  }
+  .tor-alert-overlay.show { display: flex; }
+  @keyframes torFlash {
+    0%, 100% { background: rgba(139,0,0,0.55); }
+    50% { background: rgba(30,0,0,0.85); }
+  }
+  .tor-alert-inner {
+    background: #1a0505; border: 3px solid #ff0000; border-radius: 14px;
+    padding: 30px 40px; max-width: 640px; width: 100%;
+    box-shadow: 0 0 60px rgba(255,0,0,0.6); text-align: center;
+  }
+  .tor-alert-heading {
+    font-size: 30px; font-weight: 900; color: #ff4136; letter-spacing: 1px;
+    margin-bottom: 18px; text-shadow: 0 0 12px rgba(255,65,54,0.7);
+  }
+  .tor-alert-item {
+    background: rgba(255,255,255,0.06); border-radius: 8px; padding: 14px 16px;
+    margin-bottom: 12px; font-size: 16px; color: #fff; line-height: 1.5; text-align: left;
+  }
+  .tor-alert-time { color: #f0c419; font-size: 13px; }
+  .tor-alert-dismiss {
+    margin-top: 10px; background: #ff4136; border: none; color: #fff;
+    font-size: 15px; font-weight: 700; padding: 10px 24px; border-radius: 8px;
+    cursor: pointer; font-family: inherit;
+  }
+  .tor-alert-dismiss:hover { background: #ff6b60; }
+
   .container {
     flex: 1;
     min-height: 0;
@@ -240,6 +281,8 @@
   }
   tr.detail-row .detail-line { display: block; margin-top: 4px; }
   tr.detail-row .detail-line:first-child { margin-top: 0; }
+  .ver-link { color: #6fa8dc; text-decoration: none; font-weight: 600; font-size: 13px; }
+  .ver-link:hover { text-decoration: underline; }
   .product-name { font-weight: 700; }
   .product-etn { font-weight: 600; color: #93a3b8; margin-left: 6px; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; }
   .mono { font-family: "SFMono-Regular", Consolas, monospace; color: #cdd8e6; }
@@ -288,6 +331,34 @@
     .header { flex-wrap: wrap; row-gap: 10px; }
     .wfo-search-input { width: 160px; }
   }
+
+  @media (max-width: 640px) {
+    body { font-size: 14px; }
+    .header { padding: 12px 16px; }
+    .header h1 { font-size: 17px; }
+    .header-right { flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .header-right .label { display: none; }  /* "Last Updated:" label — the time value alone is enough on a phone */
+    .wfo-search-input { width: 130px; font-size: 13px; padding: 7px 10px; }
+    .sound-toggle-btn { font-size: 11px; padding: 6px 9px; }
+    .container { padding: 10px 12px 14px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card { min-height: 84px; padding: 8px; }
+    .stat-card .stat-value { font-size: 28px; margin-bottom: 4px; }
+    .stat-card .stat-label { font-size: 13px; }
+    .stat-card .stat-sub { font-size: 11px; }
+    #map, .map-wrap { height: 240px; }
+    .map-toggles { gap: 6px; padding: 8px 10px; }
+    .toggle-btn, .action-btn { font-size: 12px; padding: 6px 9px; }
+    .active-products-title { font-size: 16px; padding: 10px 14px; }
+    /* Six columns of real data won't comfortably reflow on a phone —
+       horizontal scroll within the table panel beats squeezing text
+       unreadably small or hiding columns silently. */
+    .table-scroll { overflow-x: auto; }
+    table { min-width: 640px; }
+    thead th, tbody td { font-size: 12px; padding: 9px 7px; }
+    .tor-alert-inner { padding: 20px 22px; }
+    .tor-alert-heading { font-size: 22px; }
+  }
 </style>
 </head>
 <body>
@@ -306,6 +377,7 @@
       <div class="label">Last Updated:</div>
       <div class="time" id="last-updated">--</div>
     </div>
+    <button class="sound-toggle-btn" id="sound-toggle-btn" type="button" title="Play a siren + full-screen flash when a new Tornado Warning appears">&#128263; Enable Alert Sound</button>
     <button class="refresh-btn" id="refresh-btn" aria-label="Refresh"><i style="font-style:normal">&#8635;</i></button>
   </div>
 </div>
@@ -382,6 +454,14 @@
   </div>
 
   <div class="footer"> Created by Matthew Clay | All times are Eastern Time | Alerts: NWS api.weather.gov | Colors: weather.gov/help-map | Auto-refresh every 2 minutes</div>
+</div>
+
+<div class="tor-alert-overlay" id="tornado-alert-overlay" role="alertdialog" aria-label="New Tornado Warning">
+  <div class="tor-alert-inner">
+    <div class="tor-alert-heading">&#9888; NEW TORNADO WARNING &#9888;</div>
+    <div id="tornado-alert-body"></div>
+    <button class="tor-alert-dismiss" id="tornado-alert-dismiss" type="button">Dismiss</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -558,6 +638,7 @@ async function switchWfo(newWfo){
   document.getElementById('page-title').textContent = newWfo + ' CWA Active Watches, Warnings & Advisories';
   document.getElementById('map-panel-title').textContent = newWfo + ' CWA Map -- Click the Legend below to turn off and on warning types';
   updateUrlState();
+  suppressNextTornadoCheck = true;
   await switchWfoZones(newWfo);
   await refresh();
 }
@@ -974,6 +1055,19 @@ function activeZoneLayers(){ return geoLayer ? geoLayer.getLayers() : []; }
 const SIG_RANK = { W: 3, Y: 2, A: 1 };
 function rankOf(sig){ return SIG_RANK[sig] || 0; }
 
+// Impact-based severity score for table sort order — Warning > Advisory >
+// Watch first (sig), then within that tier by IBW damage-threat tag
+// (CATASTROPHIC/DESTRUCTIVE/CONSIDERABLE/BASE), then a small bump for
+// OBSERVED over RADAR INDICATED. The goal: the scariest active thing is
+// always at the top of the table, not just whatever updates soonest.
+const DAMAGE_THREAT_RANK = { CATASTROPHIC: 4, DESTRUCTIVE: 3, CONSIDERABLE: 2, BASE: 1 };
+function severityScore(p){
+  const sigScore = rankOf(p.sig) * 10;
+  const threatScore = (p.damageThreat && DAMAGE_THREAT_RANK[p.damageThreat] ? DAMAGE_THREAT_RANK[p.damageThreat] : 0) * 3;
+  const detectionScore = p.detection === 'OBSERVED' ? 1 : 0;
+  return sigScore + threatScore + detectionScore;
+}
+
 // Removes any product whose PHEN.SIG key is currently toggled off in the
 // legend. Applied on top of the zone/polygon master toggles.
 function filterDisabled(prods){
@@ -1179,6 +1273,18 @@ function fmtTime(d){
   return d.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZone:'America/New_York' });
 }
 
+// Links a storm-based warning through to the companion Verification
+// Dashboard for the day/office it was issued, so a forecaster can jump
+// straight from "this warning is active" to "did it verify" once it's
+// played out. Assumes both dashboards are hosted in the same directory
+// (relative path) — adjust VERIFICATION_DASHBOARD_URL below if not.
+const VERIFICATION_DASHBOARD_URL = 'warning-verification.html';
+function verificationDashboardUrl(p){
+  if(!p.verifiable || !p.onset) return null;
+  const dateStr = p.onset.toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); // en-CA => YYYY-MM-DD
+  return VERIFICATION_DASHBOARD_URL + '?wfo=' + p.office + '&date=' + dateStr;
+}
+
 function fmtCountdown(ms){
   if(ms <= 0) return '00:00';
   const totalSec = Math.floor(ms/1000);
@@ -1266,6 +1372,26 @@ const DAMAGE_THREAT_STYLE = {
 const DETECTION_STYLE = {
   'OBSERVED':          { bg:'#3a0d0d', color:'#ff4136' },
   'RADAR INDICATED':   { bg:'#1c2c41', color:'#93a3b8' }
+};
+
+// VTEC action codes, surfaced as their own badge — previously only visible
+// buried inside the raw VTEC code string (e.g. the ".CON." in
+// "SVR010.CON.OKX"). NEW/upgraded issuances get the most visually distinct
+// treatment since those are the ones worth a second look.
+const VTEC_ACTION_NAMES = {
+  NEW: 'NEW', CON: 'CONT', EXT: 'EXT', EXA: 'EXT-A', EXB: 'EXT-B',
+  UPG: 'UPGD', COR: 'COR', CAN: 'CAN', EXP: 'EXP'
+};
+const VTEC_ACTION_STYLE = {
+  NEW: { bg:'#0d2a1a', color:'#5fd07a' },
+  CON: { bg:'#1c2c41', color:'#93a3b8' },
+  EXT: { bg:'#122a41', color:'#6fa8dc' },
+  EXA: { bg:'#122a41', color:'#6fa8dc' },
+  EXB: { bg:'#122a41', color:'#6fa8dc' },
+  UPG: { bg:'#3a2410', color:'#f0c419' },
+  COR: { bg:'#3a2410', color:'#f0c419' },
+  CAN: { bg:'#1c2c41', color:'#6b7c93' },
+  EXP: { bg:'#1c2c41', color:'#6b7c93' }
 };
 
 function buildProducts(alerts){
@@ -1427,6 +1553,13 @@ function buildProducts(alerts){
       firstParam(p, 'flashFloodDetection');
     const stormMotion = firstParam(p, 'eventMotionDescription');
 
+    const office = vtec ? vtec.office : settings.wfo;
+    // The companion Verification Dashboard only tracks storm-based
+    // Tornado/Severe Thunderstorm/Flash Flood/Snow Squall WARNINGS (not
+    // watches/advisories, not other hazard types) — link-through only
+    // makes sense for those, so this stays null otherwise.
+    const verifiable = sig === 'W' && ['TO','SV','FF','SQ'].includes(phen);
+
     out.push({
 
       feature: f,
@@ -1440,6 +1573,8 @@ function buildProducts(alerts){
       sig,
       action,
       phen,
+      office,
+      verifiable,
       color,
       hazardClass,
       areaDesc: p.areaDesc || '',
@@ -1460,7 +1595,7 @@ function buildProducts(alerts){
 
   });
 
-  out.sort((a,b)=>a.updateBy-b.updateBy);
+  out.sort((a,b) => severityScore(b) - severityScore(a) || a.updateBy - b.updateBy);
 
   return out;
 }
@@ -1587,6 +1722,10 @@ function renderTable(prods){
   emptyState.style.display = 'none';
   prods.forEach(function(p){
     let badgeHtml = '';
+    if(p.action && VTEC_ACTION_STYLE[p.action]){
+      const ast = VTEC_ACTION_STYLE[p.action];
+      badgeHtml += '<span class="tag-badge" style="background:'+ast.bg+';color:'+ast.color+'" title="VTEC action: '+p.action+'">'+(VTEC_ACTION_NAMES[p.action]||p.action)+'</span>';
+    }
     if(p.damageThreat && DAMAGE_THREAT_STYLE[p.damageThreat]){
       const st = DAMAGE_THREAT_STYLE[p.damageThreat];
       badgeHtml += '<span class="tag-badge" style="background:'+st.bg+';color:'+st.color+'">'+p.damageThreat+'</span>';
@@ -1629,6 +1768,10 @@ function renderTable(prods){
     if(p.stormMotion){
       detailHtml += '<span class="detail-line"><span class="detail-label">Storm Motion:</span>' + p.stormMotion + '</span>';
     }
+    const verLink = verificationDashboardUrl(p);
+    if(verLink){
+      detailHtml += '<span class="detail-line"><a href="'+verLink+'" target="_blank" rel="noopener" class="ver-link">View in Verification Dashboard &rarr;</a></span>';
+    }
     detailTd.innerHTML = detailHtml;
     detailTr.appendChild(detailTd);
 
@@ -1662,6 +1805,99 @@ function tickCountdowns(){
   });
 }
 
+// ══════════════════════════════════════════════════════════════
+//  NEW TORNADO WARNING ALERT — sound + full-screen flash
+// ══════════════════════════════════════════════════════════════
+// Tracks every product ID this browser session has already shown, so a
+// Tornado Warning that's newly VISIBLE to this viewer triggers the alert —
+// including one that was already active when the page first loaded (e.g.
+// unattended signage just powering on mid-event). That's a deliberate
+// choice for this use case: better to alert on an already-active tornado
+// warning than stay silent because it "wasn't new" in a purely technical
+// VTEC sense.
+let seenProductIds = new Set();
+let suppressNextTornadoCheck = false;
+let audioCtx = null;
+let soundEnabled = false;
+let tornadoAlertTimeout = null;
+
+function initSoundPreference(){
+  try{ soundEnabled = localStorage.getItem('wwa_sound_enabled') === '1'; }catch(err){ soundEnabled = false; }
+  updateSoundButton();
+}
+
+function updateSoundButton(){
+  const btn = document.getElementById('sound-toggle-btn');
+  if(!btn) return;
+  btn.textContent = soundEnabled ? '\uD83D\uDD0A Alert Sound On' : '\uD83D\uDD07 Enable Alert Sound';
+  btn.classList.toggle('active', soundEnabled);
+}
+
+function enableSound(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx.resume();
+    soundEnabled = true;
+    try{ localStorage.setItem('wwa_sound_enabled', '1'); }catch(err){}
+    updateSoundButton();
+  }catch(err){ console.warn('could not init audio context', err); }
+}
+
+// Synthesizes a rising/falling siren warble entirely client-side — no
+// audio file to host or fail to load, works offline, and is unmistakable
+// on TV speakers. Repeats a few sweeps then stops.
+function playSirenTone(){
+  if(!soundEnabled || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  const sweeps = 3;
+  const sweepDur = 1.1;
+  for(let i = 0; i < sweeps; i++){
+    const t0 = now + i * sweepDur;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(500, t0);
+    osc.frequency.linearRampToValueAtTime(1100, t0 + sweepDur/2);
+    osc.frequency.linearRampToValueAtTime(500, t0 + sweepDur);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.18, t0 + 0.05);
+    gain.gain.linearRampToValueAtTime(0.18, t0 + sweepDur - 0.05);
+    gain.gain.linearRampToValueAtTime(0, t0 + sweepDur);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + sweepDur);
+  }
+}
+
+function checkForNewTornadoWarnings(currentProducts){
+  if(suppressNextTornadoCheck){
+    currentProducts.forEach(p => seenProductIds.add(p.id));
+    suppressNextTornadoCheck = false;
+    return;
+  }
+
+  const newTors = currentProducts.filter(p => p.phen === 'TO' && p.sig === 'W' && !seenProductIds.has(p.id));
+  currentProducts.forEach(p => seenProductIds.add(p.id));
+
+  if(newTors.length === 0) return;
+
+  showTornadoAlertOverlay(newTors);
+  playSirenTone();
+}
+
+function showTornadoAlertOverlay(newTors){
+  const overlay = document.getElementById('tornado-alert-overlay');
+  const body = document.getElementById('tornado-alert-body');
+  body.innerHTML = newTors.map(p =>
+    '<div class="tor-alert-item"><b>' + p.name + (p.etn ? ' #' + p.etn : '') + '</b><br>' +
+    (p.areaDesc || 'Area not specified') + '<br>' +
+    '<span class="tor-alert-time">Expires ' + fmtTime(p.expires) + '</span></div>'
+  ).join('');
+  overlay.classList.add('show');
+  if(tornadoAlertTimeout) clearTimeout(tornadoAlertTimeout);
+  tornadoAlertTimeout = setTimeout(() => overlay.classList.remove('show'), 20000);
+}
+
 async function refresh(){
   if(!zonesReady) return; // wait for zone geometry to finish loading first
   const btn = document.getElementById('refresh-btn');
@@ -1682,6 +1918,8 @@ async function refresh(){
 
     countyProducts = products.filter(p => p.countyKeys && p.countyKeys.length > 0);
 
+    checkForNewTornadoWarnings(products);
+
     renderStats(products);
     renderTable(products);
     tickCountdowns();
@@ -1694,6 +1932,25 @@ async function refresh(){
 }
 
 document.getElementById('refresh-btn').addEventListener('click', refresh);
+
+document.getElementById('sound-toggle-btn').addEventListener('click', enableSound);
+document.getElementById('tornado-alert-dismiss').addEventListener('click', () => {
+  document.getElementById('tornado-alert-overlay').classList.remove('show');
+  if(tornadoAlertTimeout) clearTimeout(tornadoAlertTimeout);
+});
+// Browsers require a user gesture before audio can play. If sound was
+// enabled in a previous visit (persisted via localStorage), this quietly
+// resumes the audio context on the very first interaction with the page,
+// rather than making the operator click "Enable Alert Sound" again every
+// single time. On a truly unattended kiosk that never gets touched, the
+// very first enable still has to happen manually once — that's a browser
+// autoplay-policy limit, not something any code here can fully route
+// around.
+document.addEventListener('click', function resumeAudioOnce(){
+  if(soundEnabled && audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  else if(soundEnabled && !audioCtx) enableSound();
+  document.removeEventListener('click', resumeAudioOnce);
+}, { once: true });
 
 document.getElementById('toggle-zone').addEventListener('click', function(){
   showZoneWarnings = !showZoneWarnings;
@@ -1734,6 +1991,7 @@ document.addEventListener('click', (e) => { if(!document.getElementById('wfoComb
     document.getElementById('map-panel-title').textContent = settings.wfo + ' CWA Map -- Click the Legend below to turn off and on warning types';
   }
   initWfoCombo();
+  initSoundPreference();
   await loadZones();
   updateUrlState();
   await refresh();
