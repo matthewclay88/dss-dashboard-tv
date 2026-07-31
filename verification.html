@@ -371,6 +371,25 @@
   .pds-badge { background: #3b0764; color: #e9d5ff; border: 1px solid #6d28d9; }
   .emg-badge { background: #450a0a; color: #fecaca; border: 1px solid #b91c1c; }
 
+  /* ── COMPARE OFFICES ── */
+  .compare-chip-btn {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd; font-size: 10.5px; font-weight: 800;
+    padding: 6px 9px; border-radius: 7px; cursor: pointer; font-family: inherit;
+  }
+  .compare-chip-btn:hover { border-color: #3b82f6; background: #16233a; }
+  .compare-chip-btn.active { border-color: #a855f7; color: #d8b4fe; background: #190f2e; }
+  .compare-list { display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow-y: auto; margin-top: 10px; border: 1px solid #1e2a3a; border-radius: 8px; }
+  .compare-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12px; cursor: pointer; }
+  .compare-item:hover { background: #16233a; }
+  .compare-item input { pointer-events: none; }
+  .compare-item .co-code { font-weight: 800; color: #93c5fd; width: 32px; flex-shrink: 0; }
+  .compare-item .co-name { color: #cbd5e1; }
+  .wfo-tag {
+    display: inline-block; font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
+    margin-right: 5px; letter-spacing: .03em; background: #1e293b; color: #93c5fd; border: 1px solid #334155;
+  }
+
+
   /* ── TRENDS MODAL ── */
   .trend-range-btn.active { background: #2563eb !important; color: #fff !important; }
 
@@ -479,6 +498,7 @@
       <input type="text" id="wfoSearchInput" class="wfo-search-input" placeholder="Search office…" autocomplete="off" title="Search NWS office">
       <div class="wfo-dropdown" id="wfoDropdown"></div>
     </div>
+    <button class="compare-chip-btn" id="compareBtn" title="Overlay additional NWS offices on this map">+ Compare</button>
     <span class="live-badge" id="liveBadge" title="Auto-refreshing for today"><span class="live-dot"></span>LIVE</span>
     <div class="date-nav">
       <button id="prevDayBtn" title="Previous day">&#9664;</button>
@@ -638,6 +658,15 @@
         </label>
         <div class="hint">Swaps the Verified / Pending / Needs Verification colors for a blue/orange/vermilion palette instead of green/yellow/red.</div>
       </div>
+      <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
+        <label>Preferences on another device</label>
+        <div style="display:flex;gap:8px;">
+          <button class="btn secondary" id="exportSettingsBtn" type="button">Export Settings…</button>
+          <button class="btn secondary" id="importSettingsBtn" type="button">Import Settings…</button>
+          <input type="file" id="importSettingsFile" accept="application/json" style="display:none;">
+        </div>
+        <div class="hint">These settings, the colorblind toggle, and recent-office list live in this browser only — export a JSON file here to carry them to another machine.</div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn secondary" data-close="settingsModal">Cancel</button>
@@ -660,6 +689,22 @@
     <div class="modal-footer">
       <button class="btn secondary" data-close="archiveModal">Cancel</button>
       <button class="btn primary" id="runArchiveBtn">Load Range</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARE OFFICES MODAL -->
+<div class="modal-overlay" id="compareModal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Compare Offices</h2><button class="modal-close" data-close="compareModal">&times;</button></div>
+    <div class="modal-body">
+      <div class="hint">Overlay up to 3 additional offices' warnings on the same map, table, and stats as <strong id="comparePrimaryLabel">BTV</strong>. Useful for multi-state outbreaks that cross WFO boundaries.</div>
+      <input type="text" id="compareSearchInput" class="wfo-search-input" style="width:100%;margin-top:10px;" placeholder="Search office to add…" autocomplete="off">
+      <div class="compare-list" id="compareList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" id="compareClearBtn">Clear All</button>
+      <button class="btn primary" id="compareApplyBtn">Apply</button>
     </div>
   </div>
 </div>
@@ -719,8 +764,11 @@
       <p><strong>Year heatmap:</strong> the Trends modal's "1 Year" option shows a GitHub-style calendar grid colored by that day's CSI — click any cell to jump straight into that day.</p>
       <p><strong>Counties tab:</strong> a ranked breakdown of which counties/zones see the most warnings and their false-alarm rate for the current day or range.</p>
       <p><strong>Live mode:</strong> while viewing today, the app quietly re-polls IEM every few minutes and toasts new warnings as they're issued — a red "LIVE" badge next to the date shows it's active. It turns off automatically for any other day or a date range.</p>
+      <p><strong>Accessibility:</strong> modals trap focus and return it on close, icon-only controls carry aria-labels, and Settings has a colorblind-safe palette toggle for the status colors. The summary donut, warning timeline, and year heatmap all carry text equivalents for screen readers, and the heatmap is keyboard-operable. The layout also reflows to a single column below ~900px wide for phones and tablets.</p>
+      <p><strong>Compare Offices:</strong> overlay up to 3 additional WFOs on the same map/table/stats as the primary office — useful for outbreaks that cross office boundaries. Warnings show a small office tag when active. Large loads (a wide date range, several offices, or the 1-year heatmap) are split into chunks with progress shown in the status bar, rather than one silent request.</p>
+      <p><strong>Related warnings:</strong> the details panel lists other warnings sharing a county and issued within 30 minutes of the selected one. This is a timing/geography heuristic only — IEM Cow doesn't expose an authoritative "this warning replaced that one" link — so treat it as a lead, not a confirmed sequence.</p>
+      <p><strong>Settings portability:</strong> Settings has Export/Import buttons for carrying your thresholds, timezone, colorblind preference, and recent-office list to another browser or machine — everything here is stored locally in this browser, there's no server-side account.</p>
       <p><strong>Forecaster coverage:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
-      <p><strong>Accessibility:</strong> modals trap focus and return it on close, icon-only controls carry aria-labels, and Settings has a colorblind-safe palette toggle for the status colors. The layout also reflows to a single column below ~900px wide for phones and tablets.</p>
     </div>
   </div>
 </div>
@@ -877,6 +925,7 @@ let wfoFilteredList = [];
 let showRadar = false;
 let currentRangeStart = null;   // set while viewMode === 'range', for URL state
 let currentRangeEnd = null;
+let compareWfos = [];   // additional WFO codes overlaid alongside settings.wfo
 let liveModeInterval = null;
 const LIVE_POLL_MS = 3 * 60 * 1000;
 
@@ -1045,56 +1094,124 @@ function setStatus(msg, isError){
 // the query window and filtering back down to the true window afterward
 // fixes this (confirmed against a real BTV case on 2026-07-15).
 const BOUNDARY_PAD_HOURS = 6;
+// IEM's own server has no documented request-size cap, but a single
+// multi-month or multi-office query is slow and gives no feedback while
+// it's in flight. Splitting into ~31-day chunks lets us report progress
+// and keeps any one request modest — chunks fetch with limited
+// concurrency rather than all at once, out of courtesy to IEM's public
+// server (see the "review our practices" line on their site).
+const COW_CHUNK_MS = 31 * 24 * 3600 * 1000;
+const COW_CHUNK_CONCURRENCY = 3;
 
-// Shared by both single-day and date-range loading: fetches a padded
-// window from IEM, then filters back down to whatever the true window
-// (windowStart/windowEnd, both real Date objects) actually is.
-async function fetchAndParseCow(windowStart, windowEnd){
-  const queryStart = new Date(windowStart.getTime() - BOUNDARY_PAD_HOURS*3600*1000);
-  const queryEnd = new Date(windowEnd.getTime() + BOUNDARY_PAD_HOURS*3600*1000);
-
+async function fetchCowRaw(wfoCode, queryStart, queryEnd){
   const params = new URLSearchParams();
-  params.set('wfo', settings.wfo);
+  params.set('wfo', wfoCode);
   ['TO','SV','FF','SQ'].forEach(p => params.append('phenomena', p));
   params.set('begints', isoZ(queryStart));
   params.set('endts', isoZ(queryEnd));
   params.set('hailsize', settings.hailsize);
   params.set('wind', settings.wind);
   params.set('lsrbuffer', settings.lsrbuffer);
-
   const res = await fetch(COW_API + '?' + params.toString());
-  if(!res.ok) throw new Error('IEM Cow API returned HTTP ' + res.status);
-  const data = await res.json();
+  if(!res.ok) throw new Error('IEM Cow API returned HTTP ' + res.status + ' for ' + wfoCode);
+  return res.json();
+}
+
+function mapRawEventFeature(f){
+  const p = f.properties;
+  return {
+    id: f.id,
+    geometry: f.geometry,
+    etn: p.eventid,
+    phenomena: p.phenomena,
+    significance: p.significance,
+    wfo: p.wfo,
+    issue: p.issue,
+    expire: p.expire,
+    counties: p.ar_ugcname || [],
+    fcster: p.fcster,
+    verify: p.verify,
+    lead0: p.lead0,
+    windtag: p.windtag,
+    hailtag: p.hailtag,
+    stormreports: (p.stormreports || '').split(',').filter(Boolean),
+    stormreports_all: (p.stormreports_all || '').split(',').filter(Boolean),
+    product_id: p.product_id,
+    product_href: p.product_href,
+    product_text_url: p.product_text,
+    link: p.link,
+    year: p.year,
+    status: computeStatus(p)
+  };
+}
+
+function mapRawReportFeature(f, windowStartMs, windowEndMs){
+  const p = f.properties;
+  const validMs = new Date(p.valid).getTime();
+  return {
+    id: f.id,
+    lat: f.geometry.coordinates[1],
+    lon: f.geometry.coordinates[0],
+    city: p.city, county: p.county, state: p.state,
+    valid: p.valid, lsrtype: p.lsrtype, type: p.type, magnitude: p.magnitude,
+    remark: p.remark, source: p.source, leadtime: p.leadtime,
+    warned: p.warned, events: p.events, typetext: p.typetext,
+    inRange: validMs >= windowStartMs && validMs < windowEndMs
+  };
+}
+
+// Fetches a padded window from IEM, then filters back down to whatever
+// the true window (windowStart/windowEnd, both real Date objects)
+// actually is. Splits into date chunks and/or multiple WFOs as needed,
+// with limited concurrency and an optional progress callback —
+// options: { wfoCodes: [...], onProgress: (done, total) => {} }.
+async function fetchAndParseCow(windowStart, windowEnd, options){
+  options = options || {};
+  const wfoCodes = options.wfoCodes && options.wfoCodes.length ? options.wfoCodes : [settings.wfo];
+  const onProgress = options.onProgress || null;
+
+  const queryStart = new Date(windowStart.getTime() - BOUNDARY_PAD_HOURS*3600*1000);
+  const queryEnd = new Date(windowEnd.getTime() + BOUNDARY_PAD_HOURS*3600*1000);
+
+  const dateChunks = [];
+  let cursor = queryStart.getTime();
+  const queryEndMs = queryEnd.getTime();
+  if(queryEndMs - cursor <= COW_CHUNK_MS){
+    dateChunks.push([queryStart, queryEnd]);
+  } else {
+    while(cursor < queryEndMs){
+      const chunkEndMs = Math.min(cursor + COW_CHUNK_MS, queryEndMs);
+      dateChunks.push([new Date(cursor), new Date(chunkEndMs)]);
+      cursor = chunkEndMs;
+    }
+  }
+
+  const tasks = [];
+  wfoCodes.forEach(wfo => dateChunks.forEach(([cs, ce]) => tasks.push({ wfo, cs, ce })));
+
+  const seenEventIds = new Set(), seenReportIds = new Set();
+  const rawEventFeatures = [], rawReportFeatures = [];
+  let completed = 0;
+  let taskIdx = 0;
+  async function worker(){
+    while(taskIdx < tasks.length){
+      const t = tasks[taskIdx++];
+      const data = await fetchCowRaw(t.wfo, t.cs, t.ce);
+      (data.events.features || []).forEach(f => {
+        if(!seenEventIds.has(f.id)){ seenEventIds.add(f.id); rawEventFeatures.push(f); }
+      });
+      (data.stormreports.features || []).forEach(f => {
+        if(!seenReportIds.has(f.id)){ seenReportIds.add(f.id); rawReportFeatures.push(f); }
+      });
+      completed++;
+      if(onProgress) onProgress(completed, tasks.length);
+    }
+  }
+  const workerCount = Math.min(COW_CHUNK_CONCURRENCY, tasks.length);
+  await Promise.all(Array.from({ length: workerCount }, worker));
 
   const windowStartMs = windowStart.getTime(), windowEndMs = windowEnd.getTime();
-
-  const allEvents = (data.events.features || []).map(f => {
-    const p = f.properties;
-    return {
-      id: f.id,
-      geometry: f.geometry,
-      etn: p.eventid,
-      phenomena: p.phenomena,
-      significance: p.significance,
-      wfo: p.wfo,
-      issue: p.issue,
-      expire: p.expire,
-      counties: p.ar_ugcname || [],
-      fcster: p.fcster,
-      verify: p.verify,
-      lead0: p.lead0,
-      windtag: p.windtag,
-      hailtag: p.hailtag,
-      stormreports: (p.stormreports || '').split(',').filter(Boolean),
-      stormreports_all: (p.stormreports_all || '').split(',').filter(Boolean),
-      product_id: p.product_id,
-      product_href: p.product_href,
-      product_text_url: p.product_text,
-      link: p.link,
-      year: p.year,
-      status: computeStatus(p)
-    };
-  });
+  const allEvents = rawEventFeatures.map(mapRawEventFeature);
   // Keep any warning whose active window overlaps the true window at
   // all — not just ones issued strictly within it.
   const events = allEvents.filter(e => {
@@ -1102,25 +1219,11 @@ async function fetchAndParseCow(windowStart, windowEnd){
     const issMs = new Date(e.issue).getTime();
     return expMs > windowStartMs && issMs < windowEndMs;
   });
-
   // Keep the FULL padded report set for cross-referencing (an event
   // shown may have verified via a report from just outside the true
   // window), but flag which ones actually fall inside it, for anything
   // that displays "reports in view" specifically.
-  const reports = (data.stormreports.features || []).map(f => {
-    const p = f.properties;
-    const validMs = new Date(p.valid).getTime();
-    return {
-      id: f.id,
-      lat: f.geometry.coordinates[1],
-      lon: f.geometry.coordinates[0],
-      city: p.city, county: p.county, state: p.state,
-      valid: p.valid, lsrtype: p.lsrtype, type: p.type, magnitude: p.magnitude,
-      remark: p.remark, source: p.source, leadtime: p.leadtime,
-      warned: p.warned, events: p.events, typetext: p.typetext,
-      inRange: validMs >= windowStartMs && validMs < windowEndMs
-    };
-  });
+  const reports = rawReportFeatures.map(f => mapRawReportFeature(f, windowStartMs, windowEndMs));
 
   return { events, reports };
 }
@@ -1137,7 +1240,11 @@ async function loadDay(dateStr){
   try{
     const dayStart = localMidnightToUTC(dateStr, settings.timezone);
     const dayEnd = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
-    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd);
+    const wfoCodes = [settings.wfo, ...compareWfos];
+    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd, {
+      wfoCodes,
+      onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${dateStr} — request ${done} of ${total}…`, false); }
+    });
     currentEvents = events;
     currentReports = reports;
     computeDayStats();
@@ -1166,7 +1273,11 @@ async function loadRange(startStr, endStr){
   try{
     const rangeStart = localMidnightToUTC(startStr, settings.timezone);
     const rangeEnd = localMidnightToUTC(addDaysToDateStr(endStr, 1), settings.timezone);
-    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd);
+    const wfoCodes = [settings.wfo, ...compareWfos];
+    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd, {
+      wfoCodes,
+      onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${rangeLabel} — request ${done} of ${total}…`, false); }
+    });
     currentEvents = events;
     currentReports = reports;
     computeDayStats();
@@ -1217,12 +1328,14 @@ function readUrlState(){
     wfo: params.get('wfo'),
     date: params.get('date'),
     start: params.get('start'),
-    end: params.get('end')
+    end: params.get('end'),
+    compare: params.get('compare')
   };
 }
 function updateUrlState(){
   const params = new URLSearchParams();
   params.set('wfo', settings.wfo);
+  if(compareWfos.length) params.set('compare', compareWfos.join(','));
   if(viewMode === 'range' && currentRangeStart && currentRangeEnd){
     params.set('start', currentRangeStart);
     params.set('end', currentRangeEnd);
@@ -1357,9 +1470,59 @@ function switchWfo(newWfo){
   document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === newWfo));
   if(newWfo === settings.wfo) return;
   settings.wfo = newWfo;
+  // Avoid the same office appearing as both primary and compare.
+  compareWfos = compareWfos.filter(c => c !== newWfo);
+  updateCompareBtnLabel();
   document.getElementById('pageTitle').textContent = newWfo + ' WARNING VERIFICATION';
   phenomenaFilter = null;
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COMPARE OFFICES — overlay up to 3 additional WFOs
+// ══════════════════════════════════════════════════════════════
+const COMPARE_MAX = 3;
+let pendingCompareWfos = [];
+
+function updateCompareBtnLabel(){
+  const btn = document.getElementById('compareBtn');
+  if(compareWfos.length){
+    btn.textContent = `Comparing ${compareWfos.length}`;
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '+ Compare';
+    btn.classList.remove('active');
+  }
+}
+
+function renderCompareList(query){
+  const list = document.getElementById('compareList');
+  const q = (query || '').trim().toUpperCase();
+  const options = WFO_LIST.filter(o => o.id !== settings.wfo)
+    .filter(o => !q || o.id.includes(q) || o.name.toUpperCase().includes(q));
+  list.innerHTML = options.map(o => {
+    const checked = pendingCompareWfos.includes(o.id);
+    return `<label class="compare-item" data-id="${o.id}">
+      <input type="checkbox" ${checked ? 'checked' : ''}>
+      <span class="co-code">${o.id}</span><span class="co-name">${escapeHtml(o.name)}</span>
+    </label>`;
+  }).join('') || `<div class="wfo-opt-empty">No matching office</div>`;
+  list.querySelectorAll('.compare-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = el.dataset.id;
+      if(pendingCompareWfos.includes(id)){
+        pendingCompareWfos = pendingCompareWfos.filter(c => c !== id);
+      } else {
+        if(pendingCompareWfos.length >= COMPARE_MAX){
+          showToast(`You can compare up to ${COMPARE_MAX} additional offices at once.`);
+          return;
+        }
+        pendingCompareWfos.push(id);
+      }
+      renderCompareList(document.getElementById('compareSearchInput').value);
+    });
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1466,8 +1629,9 @@ function renderWarnTable(){
     const st = STATUS_META[e.status];
     const flagBadge = e.emergencyFlag ? '<span class="emg-badge" title="Tornado/Flash Flood Emergency">EMER</span>'
       : (e.pdsFlag ? '<span class="pds-badge" title="Particularly Dangerous Situation">PDS</span>' : '');
+    const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(e.wfo)}</span>` : '';
     return `<tr data-id="${escapeHtml(e.id)}" class="${e.id === selectedEventId ? 'selected' : ''}">
-      <td class="etn-cell">${e.etn}</td>
+      <td class="etn-cell">${wfoTag}${e.etn}</td>
       <td><span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span>${flagBadge}</td>
       <td>${escapeHtml(countyLabel(e.counties))}</td>
       <td>${fmtLocal(e.expire, settings.timezone)}</td>
@@ -1513,6 +1677,12 @@ function renderSummary(){
     });
   }
   svg.innerHTML = arcs;
+  svg.setAttribute('role', 'img');
+  const summaryParts = order.map(key => {
+    const pct = total ? Math.round((counts[key]/total)*100) : 0;
+    return `${STATUS_META[key].label} ${counts[key]} of ${total} (${pct}%)`;
+  });
+  svg.setAttribute('aria-label', total === 0 ? 'No warnings for this view.' : 'Verification summary: ' + summaryParts.join(', ') + '.');
 
   const legend = document.getElementById('summaryLegend');
   legend.innerHTML = order.map(key => {
@@ -1574,9 +1744,11 @@ function initMap(){
 }
 
 async function drawZoneLayer(){
-  const wfo = settings.wfo;
-  let features = zoneCacheByWfo[wfo];
-  if(!features){
+  const activeWfos = [settings.wfo, ...compareWfos];
+  const fetchKey = activeWfos.slice().sort().join(',');
+
+  await Promise.all(activeWfos.map(async wfo => {
+    if(zoneCacheByWfo[wfo]) return;
     try{
       const params = new URLSearchParams();
       params.set('where', `cwa='${wfo}'`);
@@ -1585,31 +1757,32 @@ async function drawZoneLayer(){
       params.set('returnGeometry', 'true');
       const res = await fetch(ZONE_QUERY_URL + '?' + params.toString());
       const data = await res.json();
-      features = data.features || [];
-      zoneCacheByWfo[wfo] = features;
+      zoneCacheByWfo[wfo] = data.features || [];
     }catch(err){
       console.warn('zone fetch failed for', wfo, err);
-      features = [];
+      zoneCacheByWfo[wfo] = [];
     }
-  }
-  // If the WFO changed again while this fetch was in flight, don't
-  // clobber the current (newer) view with now-stale results.
-  if(wfo !== settings.wfo) return;
+  }));
 
+  // If the active WFO set changed again while these fetches were in
+  // flight, don't clobber the current (newer) view with stale results.
+  if(fetchKey !== activeWfos.slice().sort().join(',')) return;
+
+  const allFeatures = activeWfos.flatMap(wfo => zoneCacheByWfo[wfo] || []);
   zoneLayer.clearLayers();
-  const gj = L.geoJSON({ type:'FeatureCollection', features }, {
+  const gj = L.geoJSON({ type:'FeatureCollection', features: allFeatures }, {
     style: { color:'#3a4f6c', weight:1, opacity:0.5, fillOpacity:0 }
   }).addTo(zoneLayer);
 
-  // Only auto-fit when the WFO actually changed — otherwise this would
-  // fight the user's own panning/zooming every time the same-WFO date
-  // or range is reloaded.
-  if(wfo !== lastZoneFitWfo){
-    lastZoneFitWfo = wfo;
-    if(features.length > 0){
+  // Only auto-fit when the active WFO set actually changed — otherwise
+  // this would fight the user's own panning/zooming every time the
+  // same set is reloaded for a different date or range.
+  if(fetchKey !== lastZoneFitWfo){
+    lastZoneFitWfo = fetchKey;
+    if(allFeatures.length > 0){
       try{ map.fitBounds(gj.getBounds(), { padding: [20,20], maxZoom: 9 }); }catch(err){}
     } else {
-      console.warn('No CWA zones found for WFO "' + wfo + '" — check the 3-letter office code in Settings.');
+      console.warn('No CWA zones found for WFO(s) "' + fetchKey + '" — check the office code(s).');
     }
   }
 }
@@ -1627,7 +1800,8 @@ function drawWarningsOnMap(){
     });
     gj.on('click', () => selectEvent(e.id));
     const flagText = e.emergencyFlag ? ' ⚠ EMERGENCY' : (e.pdsFlag ? ' ⚠ PDS' : '');
-    gj.bindTooltip(`${meta.code} #${e.etn}${flagText} — ${STATUS_META[e.status].label}`, { sticky: true });
+    const wfoPrefix = compareWfos.length ? `[${e.wfo}] ` : '';
+    gj.bindTooltip(`${wfoPrefix}${meta.code} #${e.etn}${flagText} — ${STATUS_META[e.status].label}`, { sticky: true });
     gj.addTo(warningLayer);
     try{ bounds.push(gj.getBounds()); }catch(err){}
     e._mapLayer = gj;
@@ -1744,10 +1918,11 @@ async function renderDetails(e){
   const matchedReports = e.stormreports.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
   const allNearbyReports = e.stormreports_all.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
   const flagBadge = e.emergencyFlag ? '<span class="emg-badge">EMERGENCY</span>' : (e.pdsFlag ? '<span class="pds-badge">PDS</span>' : '');
+  const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(e.wfo)}</span>` : '';
 
   scroll.innerHTML = `
     <div class="details-header">
-      <span class="etn-badge">ETN ${e.etn}</span>
+      <span class="etn-badge">${wfoTag}ETN ${e.etn}</span>
       <span class="dh-title">${meta.name}</span>${flagBadge}
       <span class="status-pill" style="color:${st.color};margin-left:auto;"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span>
     </div>
@@ -1786,6 +1961,7 @@ async function renderDetails(e){
         </tbody>
       </table>`}
     </div>
+    ${renderRelatedEvents(e)}
   `;
 
   // Async: VTEC + warning text
@@ -1801,6 +1977,9 @@ async function renderDetails(e){
       if(r && map){ switchSubtab('map'); map.setView([r.lat, r.lon], 12); }
     });
   });
+  scroll.querySelectorAll('[data-related-id]').forEach(tr => {
+    tr.addEventListener('click', () => { switchSubtab('map'); selectEvent(tr.dataset.relatedId); });
+  });
 }
 
 function renderTimelineBar(e, matchedReports){
@@ -1814,14 +1993,67 @@ function renderTimelineBar(e, matchedReports){
     const label = escapeHtml((r.typetext || r.lsrtype) + ' @ ' + fmtLocal(r.valid, settings.timezone));
     return `<div class="tl-mark" style="left:${pct.toFixed(1)}%;background:${color};" title="${label}"></div>`;
   }).join('');
+  const srSummary = matchedReports.length === 0
+    ? `Warning active from ${fmtLocal(e.issue, settings.timezone)} to ${fmtLocal(e.expire, settings.timezone)}, no verifying reports.`
+    : `Warning active from ${fmtLocal(e.issue, settings.timezone)} to ${fmtLocal(e.expire, settings.timezone)}, with ${matchedReports.length} verifying report${matchedReports.length===1?'':'s'} at ` +
+      matchedReports.map(r => fmtLocal(r.valid, settings.timezone)).join(', ') + '.';
   return `
-    <div class="timeline-bar">
-      <div class="tl-track"></div>
+    <div class="timeline-bar" role="img" aria-label="${escapeHtml(srSummary)}">
+      <div class="tl-track" aria-hidden="true"></div>
       ${marks}
     </div>
-    <div class="timeline-labels">
+    <div class="timeline-labels" aria-hidden="true">
       <span>Issued ${fmtLocal(e.issue, settings.timezone)}</span>
       <span>Expires ${fmtLocal(e.expire, settings.timezone)}</span>
+    </div>
+  `;
+}
+
+// Not derived from any authoritative IEM linkage field — IEM Cow
+// doesn't expose "this warning replaced/upgraded that one" directly.
+// This is a timing + geography heuristic only: other warnings sharing
+// at least one county and issued within 30 minutes of this one's
+// active window. Close in a scanner's sense, not proven causation —
+// rendered with that caveat rather than asserted as fact.
+const RELATED_WINDOW_MS = 30 * 60 * 1000;
+function computeRelatedEvents(e){
+  const eIssueMs = new Date(e.issue).getTime();
+  const eExpireMs = new Date(e.expire).getTime();
+  const eCounties = new Set(e.counties || []);
+  if(eCounties.size === 0) return [];
+  return currentEvents.filter(other => {
+    if(other.id === e.id) return false;
+    const shareCounty = (other.counties || []).some(c => eCounties.has(c));
+    if(!shareCounty) return false;
+    const oIssueMs = new Date(other.issue).getTime();
+    return oIssueMs >= (eIssueMs - RELATED_WINDOW_MS) && oIssueMs <= (eExpireMs + RELATED_WINDOW_MS);
+  }).sort((a,b) => new Date(a.issue) - new Date(b.issue)).slice(0, 6);
+}
+
+function renderRelatedEvents(e){
+  const related = computeRelatedEvents(e);
+  if(related.length === 0) return '';
+  const eIssueMs = new Date(e.issue).getTime();
+  const rows = related.map(r => {
+    const meta = PHEN_META[r.phenomena] || { code: r.phenomena, color: '#94a3b8' };
+    const st = STATUS_META[r.status];
+    const offsetMin = Math.round((new Date(r.issue).getTime() - eIssueMs) / 60000);
+    const offsetText = offsetMin === 0 ? 'same time' : (offsetMin > 0 ? `+${offsetMin} min` : `${offsetMin} min`);
+    const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(r.wfo)}</span>` : '';
+    return `<tr data-related-id="${escapeHtml(r.id)}">
+      <td>${wfoTag}<span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span> #${r.etn}</td>
+      <td>${offsetText}</td>
+      <td><span class="status-pill" style="color:${st.color};"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span></td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="details-section">
+      <div class="ds-title">Possibly Related Warnings</div>
+      <div style="font-size:10.5px;color:#5a6b82;margin-bottom:8px;line-height:1.4;">Other warnings sharing a county and issued within 30 min of this one's active window — a timing/geography heuristic, not a confirmed upgrade or continuation sequence.</div>
+      <table class="lsr-mini-table">
+        <thead><tr><th>Warning</th><th>Issued</th><th>Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
     </div>
   `;
 }
@@ -1866,8 +2098,7 @@ async function pollLiveUpdates(){
   try{
     const dayStart = localMidnightToUTC(selectedDateStr, settings.timezone);
     const dayEnd = localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone);
-    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd);
-    const knownIds = new Set(currentEvents.map(e => e.id));
+    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd, { wfoCodes: [settings.wfo, ...compareWfos] });
     const newOnes = events.filter(e => !knownIds.has(e.id));
     currentEvents = events;
     currentReports = reports;
@@ -1897,7 +2128,9 @@ async function loadTrends(days){
     const startDateStr = addDaysToDateStr(endDateStr, -(days - 1));
     const rangeStart = localMidnightToUTC(startDateStr, settings.timezone);
     const rangeEnd = localMidnightToUTC(addDaysToDateStr(endDateStr, 1), settings.timezone);
-    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd);
+    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd, {
+      onProgress: (done, total) => { if(total > 1) statusEl.textContent = `Loading ${days}-day trend for ${settings.wfo} — request ${done} of ${total}…`; }
+    });
 
     const buckets = [];
     for(let i = 0; i < days; i++){
@@ -1956,13 +2189,15 @@ function renderTrendsHeatmap(buckets){
     return stops[idx];
   }
 
+  grid.setAttribute('role', 'group');
+  grid.setAttribute('aria-label', `Warning verification heatmap, ${buckets.length} days ending ${buckets[buckets.length-1].date}. Activate a day to open it.`);
   grid.innerHTML = cells.map(b => {
-    if(!b) return `<div class="heatmap-cell empty"></div>`;
+    if(!b) return `<div class="heatmap-cell empty" aria-hidden="true"></div>`;
     const color = csiColor(b.csi);
     const title = b.total === 0
       ? `${b.date} — no warnings`
       : `${b.date} — ${b.total} warning${b.total===1?'':'s'}${b.csi!==null ? ', CSI ' + b.csi.toFixed(2) : ''}`;
-    return `<div class="heatmap-cell" style="background:${color};" data-date="${b.date}" title="${escapeHtml(title)}"></div>`;
+    return `<div class="heatmap-cell" style="background:${color};" data-date="${b.date}" title="${escapeHtml(title)}" role="button" tabindex="0" aria-label="${escapeHtml(title)}"></div>`;
   }).join('');
 
   grid.querySelectorAll('.heatmap-cell[data-date]').forEach(el => {
@@ -1970,6 +2205,14 @@ function renderTrendsHeatmap(buckets){
       closeModal('trendsModal');
       switchSubtab('map');
       loadDay(el.dataset.date);
+    });
+    el.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        closeModal('trendsModal');
+        switchSubtab('map');
+        loadDay(el.dataset.date);
+      }
     });
   });
 }
@@ -2262,6 +2505,28 @@ wfoInput.addEventListener('keydown', (e) => {
 });
 document.addEventListener('click', (e) => { if(!document.getElementById('wfoCombo').contains(e.target)) closeWfoDropdown(); });
 
+// Compare Offices
+document.getElementById('compareBtn').addEventListener('click', () => {
+  pendingCompareWfos = compareWfos.slice();
+  document.getElementById('comparePrimaryLabel').textContent = settings.wfo;
+  document.getElementById('compareSearchInput').value = '';
+  renderCompareList('');
+  openModal('compareModal');
+});
+document.getElementById('compareSearchInput').addEventListener('input', (e) => renderCompareList(e.target.value));
+document.getElementById('compareClearBtn').addEventListener('click', () => { pendingCompareWfos = []; renderCompareList(document.getElementById('compareSearchInput').value); });
+document.getElementById('compareApplyBtn').addEventListener('click', () => {
+  compareWfos = pendingCompareWfos.slice();
+  updateCompareBtnLabel();
+  closeModal('compareModal');
+  lastZoneFitWfo = null; // active WFO set changed — let the map re-fit to the new combined bounds
+  if(viewMode === 'range' && currentRangeStart && currentRangeEnd){
+    loadRange(currentRangeStart, currentRangeEnd);
+  } else {
+    loadDay(selectedDateStr || todayInTZ(settings.timezone));
+  }
+});
+
 // Radar overlay
 document.getElementById('showRadarToggle').addEventListener('change', (e) => {
   showRadar = e.target.checked;
@@ -2397,6 +2662,52 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 });
 
+document.getElementById('exportSettingsBtn').addEventListener('click', () => {
+  const payload = {
+    kind: 'warning-verification-settings',
+    version: 1,
+    settings: {
+      timezone: document.getElementById('setTimezone').value.trim() || settings.timezone,
+      hailsize: parseFloat(document.getElementById('setHail').value) || settings.hailsize,
+      wind: parseFloat(document.getElementById('setWind').value) || settings.wind,
+      lsrbuffer: parseFloat(document.getElementById('setBuffer').value) || settings.lsrbuffer,
+      colorblindMode: document.getElementById('setColorblind').checked
+    },
+    recentWfos: getRecentWfos()
+  };
+  downloadBlob('warning-verification-settings.json', JSON.stringify(payload, null, 2), 'application/json');
+});
+
+document.getElementById('importSettingsBtn').addEventListener('click', () => {
+  document.getElementById('importSettingsFile').click();
+});
+document.getElementById('importSettingsFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const payload = JSON.parse(text);
+    if(!payload || payload.kind !== 'warning-verification-settings' || !payload.settings){
+      alert("That file doesn't look like a settings export from this app.");
+      return;
+    }
+    const s = payload.settings;
+    if(s.timezone) document.getElementById('setTimezone').value = s.timezone;
+    if(typeof s.hailsize === 'number') document.getElementById('setHail').value = s.hailsize;
+    if(typeof s.wind === 'number') document.getElementById('setWind').value = s.wind;
+    if(typeof s.lsrbuffer === 'number') document.getElementById('setBuffer').value = s.lsrbuffer;
+    document.getElementById('setColorblind').checked = !!s.colorblindMode;
+    if(Array.isArray(payload.recentWfos)){
+      try{ localStorage.setItem('btv_wfo_recent', JSON.stringify(payload.recentWfos.slice(0,5))); }catch(err){}
+    }
+    showToast('Settings imported — click "Save & Refresh" to apply.');
+  }catch(err){
+    console.error(err);
+    alert('Could not read that settings file: ' + err.message);
+  }
+});
+
 document.getElementById('archiveBtn').addEventListener('click', () => {
   const anchor = selectedDateStr || lastSingleDate || todayInTZ(settings.timezone);
   document.getElementById('archiveEnd').value = anchor;
@@ -2424,6 +2735,13 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
   if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
     settings.wfo = urlState.wfo.toUpperCase();
     document.getElementById('pageTitle').textContent = settings.wfo + ' WARNING VERIFICATION';
+  }
+  if(urlState.compare){
+    compareWfos = urlState.compare.split(',')
+      .map(c => c.trim().toUpperCase())
+      .filter(c => WFO_LIST.some(o => o.id === c) && c !== settings.wfo)
+      .slice(0, COMPARE_MAX);
+    updateCompareBtnLabel();
   }
   initWfoCombo();
   applyAriaLabels();
