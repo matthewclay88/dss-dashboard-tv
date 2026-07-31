@@ -53,6 +53,18 @@
     font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 7px;
     letter-spacing: 0.04em;
   }
+  .wfo-select {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd;
+    font-size: 11px; font-weight: 700; padding: 6px 26px 6px 10px; border-radius: 7px;
+    letter-spacing: 0.04em; font-family: inherit; cursor: pointer; max-width: 260px;
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0 L5 6 L10 0 Z' fill='%2393c5fd'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .wfo-select:hover { border-color: #3b82f6; background-color: #16233a; }
+  .wfo-select:focus { outline: none; border-color: #3b82f6; }
+  .wfo-select option { background: #101d30; color: #e2e8f0; font-weight: 600; }
   .date-nav { display: flex; align-items: center; gap: 4px; background: #101d30; border: 1px solid #26405c; border-radius: 8px; padding: 4px; }
   .date-nav button {
     background: none; border: none; color: #93a3b8; width: 26px; height: 26px; border-radius: 6px;
@@ -275,6 +287,7 @@
     width: 100%; background: #0d1622; border: 1px solid #26405c; color: #e2e8f0; padding: 8px 10px;
     border-radius: 7px; font-size: 12.5px; font-family: inherit;
   }
+  .field-row input:disabled, .field-row select:disabled { opacity: 0.6; cursor: not-allowed; }
   .field-row .hint { font-size: 10px; color: #5a6b82; margin-top: 4px; line-height: 1.4; }
   .field-row-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .btn {
@@ -322,7 +335,7 @@
     </div>
   </div>
   <div class="header-center">
-    <span class="wfo-badge" id="wfoBadge">BTV</span>
+    <select class="wfo-select" id="wfoSelect" title="Switch NWS office"></select>
     <div class="date-nav">
       <button id="prevDayBtn" title="Previous day">&#9664;</button>
       <input type="date" id="datePicker">
@@ -430,9 +443,9 @@
     <div class="modal-header"><h2>Settings</h2><button class="modal-close" data-close="settingsModal">&times;</button></div>
     <div class="modal-body">
       <div class="field-row">
-        <label>WFO (3-letter office ID)</label>
-        <input type="text" id="setWfo" maxlength="3" style="text-transform:uppercase;">
-        <div class="hint">e.g. BTV (Burlington), ALY (Albany), GYX (Gray/Portland). Determines which office's warnings are pulled from IEM.</div>
+        <label>WFO (NWS office)</label>
+        <input type="text" id="setWfo" disabled>
+        <div class="hint">Switch offices from the dropdown in the header, next to the date navigator — it works for any WFO nationwide, not just BTV.</div>
       </div>
       <div class="field-row">
         <label>Calendar-day timezone (IANA name)</label>
@@ -490,9 +503,9 @@
       <p><strong>Calendar day:</strong> dates here are bounded by local midnight in the configured timezone (Settings), not 00Z UTC — so an overnight event isn't split across two different "days" the way a strict UTC day would.</p>
       <p><strong>Confidence score:</strong> the percentage shown per-warning is a simple, unofficial heuristic (based on lead time and number of matching reports) meant to give a quick visual sense of how solid the verification is — it is <em>not</em> an NWS or IEM statistic.</p>
       <p><strong>Data is unofficial.</strong> Per IEM's own disclaimer, this data is intended for educational/situational-awareness use, not as an official verification record.</p>
-      <p><strong>Switching offices:</strong> changing the WFO in Settings re-queries live NWS zone boundaries for that office and re-centers the map — works for any WFO nationwide, not just BTV.</p>
+      <p><strong>Switching offices:</strong> the office dropdown in the header lists every NWS Weather Forecast Office nationwide (sourced live from IEM's own WFO network table) — pick one and the app re-queries live NWS zone boundaries for that office and re-centers the map.</p>
       <p><strong>Date ranges:</strong> the Archive picker loads every matching warning and LSR for the whole range directly onto the map, table, and stats (using the same boundary-safe padding logic as single-day view), rather than just showing a summary.</p>
-      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Map library: Leaflet.</p>
+      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Office list: IEM WFO network table. Map library: Leaflet.</p>
     </div>
   </div>
 </div>
@@ -533,6 +546,74 @@ const STATUS_META = {
 // zone sets from this service.)
 const ZONE_QUERY_URL = 'https://mapservices.weather.noaa.gov/static/rest/services/nws_reference_maps/nws_reference_map/MapServer/8/query';
 const COW_API = 'https://mesonet.agron.iastate.edu/api/1/cow.json';
+// Every NWS Weather Forecast Office nationwide, keyed by 3-letter ID.
+// Sourced from IEM's own WFO network table (the same data source IEM
+// Cow itself recognizes for the wfo= parameter), so this list stays a
+// direct match for what the app can actually query — rather than a
+// separately-maintained static list that could drift out of sync.
+const WFO_LIST = [
+  { id:'ABQ', name:'Albuquerque, NM' }, { id:'ABR', name:'Aberdeen, SD' },
+  { id:'AFC', name:'Anchorage, AK' }, { id:'AFG', name:'Fairbanks, AK' },
+  { id:'AJK', name:'Juneau, AK' }, { id:'AKQ', name:'Wakefield, VA' },
+  { id:'ALY', name:'Albany, NY' }, { id:'AMA', name:'Amarillo, TX' },
+  { id:'APX', name:'Gaylord, MI' }, { id:'ARX', name:'La Crosse, WI' },
+  { id:'BGM', name:'Binghamton, NY' }, { id:'BIS', name:'Bismarck, ND' },
+  { id:'BMX', name:'Birmingham, AL' }, { id:'BOI', name:'Boise, ID' },
+  { id:'BOU', name:'Denver, CO' }, { id:'BOX', name:'Boston / Norton, MA' },
+  { id:'BRO', name:'Brownsville, TX' }, { id:'BTV', name:'Burlington, VT' },
+  { id:'BUF', name:'Buffalo, NY' }, { id:'BYZ', name:'Billings, MT' },
+  { id:'CAE', name:'Columbia, SC' }, { id:'CAR', name:'Caribou, ME' },
+  { id:'CHS', name:'Charleston, SC' }, { id:'CLE', name:'Cleveland, OH' },
+  { id:'CRP', name:'Corpus Christi, TX' }, { id:'CTP', name:'State College, PA' },
+  { id:'CYS', name:'Cheyenne, WY' }, { id:'DDC', name:'Dodge City, KS' },
+  { id:'DLH', name:'Duluth, MN' }, { id:'DMX', name:'Des Moines, IA' },
+  { id:'DTX', name:'Detroit, MI' }, { id:'DVN', name:'Quad Cities, IA/IL' },
+  { id:'EAX', name:'Kansas City/Pleasant Hill, MO' }, { id:'EKA', name:'Eureka, CA' },
+  { id:'EPZ', name:'El Paso, TX' }, { id:'EWX', name:'Austin/San Antonio, TX' },
+  { id:'FFC', name:'Peachtree City, GA' }, { id:'FGF', name:'Grand Forks, ND' },
+  { id:'FGZ', name:'Flagstaff, AZ' }, { id:'FSD', name:'Sioux Falls, SD' },
+  { id:'FWD', name:'Dallas/Fort Worth, TX' }, { id:'GGW', name:'Glasgow, MT' },
+  { id:'GID', name:'Hastings, NE' }, { id:'GJT', name:'Grand Junction, CO' },
+  { id:'GLD', name:'Goodland, KS' }, { id:'GRB', name:'Green Bay, WI' },
+  { id:'GRR', name:'Grand Rapids, MI' }, { id:'GSP', name:'Greenville/Spartanburg, SC' },
+  { id:'GUM', name:'Guam' }, { id:'GYX', name:'Gray, ME' },
+  { id:'HFO', name:'Honolulu, HI' }, { id:'HGX', name:'Houston/Galveston, TX' },
+  { id:'HNX', name:'San Joaquin Valley/Hanford, CA' }, { id:'HUN', name:'Huntsville, AL' },
+  { id:'ICT', name:'Wichita, KS' }, { id:'ILM', name:'Wilmington, NC' },
+  { id:'ILN', name:'Wilmington, OH' }, { id:'ILX', name:'Lincoln, IL' },
+  { id:'IND', name:'Indianapolis, IN' }, { id:'IWX', name:'Northern Indiana, IN' },
+  { id:'JAN', name:'Jackson, MS' }, { id:'JAX', name:'Jacksonville, FL' },
+  { id:'JKL', name:'Jackson, KY' }, { id:'KEY', name:'Key West, FL' },
+  { id:'LBF', name:'North Platte, NE' }, { id:'LCH', name:'Lake Charles, LA' },
+  { id:'LIX', name:'New Orleans, LA' }, { id:'LKN', name:'Elko, NV' },
+  { id:'LMK', name:'Louisville, KY' }, { id:'LOT', name:'Chicago, IL' },
+  { id:'LOX', name:'Los Angeles/Oxnard, CA' }, { id:'LSX', name:'St Louis, MO' },
+  { id:'LUB', name:'Lubbock, TX' }, { id:'LWX', name:'Baltimore/Washington, VA' },
+  { id:'LZK', name:'Little Rock, AR' }, { id:'MAF', name:'Midland/Odessa, TX' },
+  { id:'MEG', name:'Memphis, TN' }, { id:'MFL', name:'Miami, FL' },
+  { id:'MFR', name:'Medford, OR' }, { id:'MHX', name:'Newport/Morehead City, NC' },
+  { id:'MKX', name:'Milwaukee/Sullivan, WI' }, { id:'MLB', name:'Melbourne, FL' },
+  { id:'MOB', name:'Mobile, AL' }, { id:'MPX', name:'Twin Cities/Chanhassen, MN' },
+  { id:'MQT', name:'Marquette, MI' }, { id:'MRX', name:'Morristown, TN' },
+  { id:'MSO', name:'Missoula, MT' }, { id:'MTR', name:'San Francisco, CA' },
+  { id:'OAX', name:'Omaha/Valley, NE' }, { id:'OHX', name:'Nashville, TN' },
+  { id:'OKX', name:'New York, NY' }, { id:'OTX', name:'Spokane, WA' },
+  { id:'OUN', name:'Norman, OK' }, { id:'PAH', name:'Paducah, KY' },
+  { id:'PBZ', name:'Pittsburgh, PA' }, { id:'PDT', name:'Pendleton, OR' },
+  { id:'PHI', name:'Mount Holly, NJ' }, { id:'PIH', name:'Pocatello/Idaho Falls, ID' },
+  { id:'PQR', name:'Portland, OR' }, { id:'PSR', name:'Phoenix, AZ' },
+  { id:'PUB', name:'Pueblo, CO' }, { id:'RAH', name:'Raleigh, NC' },
+  { id:'REV', name:'Reno, NV' }, { id:'RIW', name:'Riverton, WY' },
+  { id:'RLX', name:'Charleston, WV' }, { id:'RNK', name:'Blacksburg, VA' },
+  { id:'SEW', name:'Seattle, WA' }, { id:'SGF', name:'Springfield, MO' },
+  { id:'SGX', name:'San Diego, CA' }, { id:'SHV', name:'Shreveport, LA' },
+  { id:'SJT', name:'San Angelo, TX' }, { id:'SJU', name:'San Juan, PR' },
+  { id:'SLC', name:'Salt Lake City, UT' }, { id:'STO', name:'Sacramento, CA' },
+  { id:'TAE', name:'Tallahassee, FL' }, { id:'TBW', name:'Tampa Bay Area/Ruskin, FL' },
+  { id:'TFX', name:'Great Falls, MT' }, { id:'TOP', name:'Topeka, KS' },
+  { id:'TSA', name:'Tulsa, OK' }, { id:'TWC', name:'Tucson, AZ' },
+  { id:'UNR', name:'Rapid City, SD' }, { id:'VEF', name:'Las Vegas, NV' }
+];
 
 // ══════════════════════════════════════════════════════════════
 //  STATE
@@ -850,6 +931,25 @@ function updateRangeBanner(){
     banner.style.display = 'none';
     statsTitle.textContent = 'Day Verification Stats';
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER: WFO SELECT
+// ══════════════════════════════════════════════════════════════
+function populateWfoSelect(){
+  const sel = document.getElementById('wfoSelect');
+  sel.innerHTML = WFO_LIST.map(o => `<option value="${o.id}">${o.id} — ${escapeHtml(o.name)}</option>`).join('');
+  sel.value = settings.wfo;
+}
+
+function switchWfo(newWfo){
+  if(!newWfo || newWfo === settings.wfo) return;
+  settings.wfo = newWfo;
+  document.getElementById('wfoSelect').value = newWfo;
+  document.getElementById('wfoBadgeText') && (document.getElementById('wfoBadgeText').textContent = newWfo);
+  document.getElementById('pageTitle').textContent = newWfo + ' WARNING VERIFICATION';
+  phenomenaFilter = null;
+  loadDay(selectedDateStr || todayInTZ(settings.timezone));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1310,6 +1410,7 @@ document.getElementById('todayBtn').addEventListener('click', () => loadDay(toda
 document.getElementById('datePicker').addEventListener('change', (e) => loadDay(e.target.value));
 document.getElementById('filterOnlyUnverified').addEventListener('change', renderWarnTable);
 document.getElementById('showLsrToggle').addEventListener('change', (e) => { showLsrs = e.target.checked; drawLsrsOnMap(); renderMapLegend(); });
+document.getElementById('wfoSelect').addEventListener('change', (e) => switchWfo(e.target.value));
 
 document.querySelectorAll('.subtab-btn').forEach(btn => btn.addEventListener('click', () => switchSubtab(btn.dataset.subtab)));
 
@@ -1335,14 +1436,10 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   openModal('settingsModal');
 });
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-  const newWfo = (document.getElementById('setWfo').value || 'BTV').trim().toUpperCase().slice(0,3);
-  settings.wfo = newWfo;
   settings.timezone = document.getElementById('setTimezone').value.trim() || 'America/New_York';
   settings.hailsize = parseFloat(document.getElementById('setHail').value) || 1.0;
   settings.wind = parseFloat(document.getElementById('setWind').value) || 58;
   settings.lsrbuffer = parseFloat(document.getElementById('setBuffer').value) || 15;
-  document.getElementById('wfoBadge').textContent = settings.wfo;
-  document.getElementById('pageTitle').textContent = settings.wfo + ' WARNING VERIFICATION';
   closeModal('settingsModal');
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 });
@@ -1363,7 +1460,7 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
 //  INIT
 // ══════════════════════════════════════════════════════════════
 (function start(){
-  document.getElementById('wfoBadge').textContent = settings.wfo;
+  populateWfoSelect();
   initMap();
   loadDay(todayInTZ(settings.timezone));
 })();
