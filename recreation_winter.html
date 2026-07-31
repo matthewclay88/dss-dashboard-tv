@@ -676,6 +676,95 @@ body {
   width: 0%;
   transition: width 0.5s ease;
 }
+
+.snow-summary .record-range-row {
+  margin-top: 16px;
+}
+
+.snow-summary .record-range-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #9db6d4;
+}
+
+.snow-summary .record-range-label .readout {
+  font-size: 13px;
+  font-weight: 800;
+  color: #eaf1fa;
+  letter-spacing: 0;
+}
+
+.snow-summary .record-range-track {
+  position: relative;
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.10), rgba(255,255,255,0.22), rgba(255,255,255,0.10));
+}
+
+.snow-summary .record-range-marker {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #eaf1fa;
+  border: 3px solid var(--snow-card-to);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  transform: translate(-50%, -50%);
+  transition: left 0.5s ease;
+}
+
+.snow-summary .record-range-endpoints {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9db6d4;
+}
+
+/* Off-season state: current_depth/normal/record fields all come back
+   null outside winter (confirmed against the live feed). Rather than
+   a wall of "—" placeholders that reads like something's broken, this
+   fills the same space with one deliberate, centered message — and
+   since it flex-grows to fill whatever room is left in the card, it
+   also closes the "too much empty space" gap this whole fix is about. */
+.snow-summary .off-season-block {
+  display: none;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  color: #bcd6f2;
+  padding: 10px 0;
+}
+
+.snow-summary .off-season-block .snowflake-ghost {
+  width: 34px;
+  height: 34px;
+  opacity: 0.45;
+}
+
+.snow-summary .off-season-block .off-season-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #eaf1fa;
+}
+
+.snow-summary .off-season-block .off-season-subtext {
+  font-size: 11.5px;
+  color: #9db6d4;
+  max-width: 240px;
+  line-height: 1.5;
+}
   
 /* ================= DIAGNOSTIC CARD GRID (moved into snow-row) ================= */
 
@@ -912,29 +1001,57 @@ body {
             Departure — pending wiring
           </div>
 
-          <div class="stats-mini">
-            <div class="stat-mini-col">
-              <span class="label">NORMAL</span>
-              <span class="value" data-field="snow-normal">—</span>
+          <div data-section="in-season">
+            <div class="stats-mini">
+              <div class="stat-mini-col">
+                <span class="label">NORMAL</span>
+                <span class="value" data-field="snow-normal">—</span>
+              </div>
+              <div class="stat-mini-col">
+                <span class="label">RECORD HIGH</span>
+                <span class="value" data-field="snow-record-high">—</span>
+              </div>
+              <div class="stat-mini-col">
+                <span class="label">RECORD LOW</span>
+                <span class="value" data-field="snow-record-low">—</span>
+              </div>
+              <div class="stat-mini-col">
+                <span class="label">RANK</span>
+                <span class="value" data-field="snow-rank">—</span>
+              </div>
             </div>
-            <div class="stat-mini-col">
-              <span class="label">RECORD HIGH</span>
-              <span class="value" data-field="snow-record-high">—</span>
+
+            <div class="pct-normal-row">
+              <div class="pct-normal-label">
+                <span>% OF NORMAL</span>
+                <span class="readout" data-field="snow-pct-readout">&mdash;</span>
+              </div>
+              <div class="pct-normal-track">
+                <div class="pct-normal-fill" data-field="snow-pct-fill"></div>
+              </div>
             </div>
-            <div class="stat-mini-col">
-              <span class="label">RECORD LOW</span>
-              <span class="value" data-field="snow-record-low">—</span>
+
+            <div class="record-range-row">
+              <div class="record-range-label">
+                <span>RECORD RANGE</span>
+                <span class="readout" data-field="record-range-readout">&mdash;</span>
+              </div>
+              <div class="record-range-track">
+                <div class="record-range-marker" data-field="record-range-marker"></div>
+              </div>
+              <div class="record-range-endpoints">
+                <span data-field="record-range-low-label">—</span>
+                <span data-field="record-range-high-label">—</span>
+              </div>
             </div>
           </div>
 
-          <div class="pct-normal-row">
-            <div class="pct-normal-label">
-              <span>% OF NORMAL</span>
-              <span class="readout" data-field="snow-pct-readout">&mdash;</span>
-            </div>
-            <div class="pct-normal-track">
-              <div class="pct-normal-fill" data-field="snow-pct-fill"></div>
-            </div>
+          <div class="off-season-block" data-section="off-season">
+            <svg class="snowflake-ghost" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+              <path d="M12 2 V22 M4 7 L20 17 M20 7 L4 17"/>
+            </svg>
+            <div class="off-season-title">Off-Season</div>
+            <div class="off-season-subtext" data-field="off-season-subtext">Normals and records return once accumulation begins this winter.</div>
           </div>
           
           <div class="updated">Updated: <span data-field="updated">25 Jul 2026 02:03 UTC</span></div>
@@ -2466,10 +2583,81 @@ document.querySelectorAll('[data-field="rime-icing-potential"]').forEach((el) =>
         document.querySelectorAll('[data-field="snow-pct-fill"]').forEach((el) => {
           el.style.width = pctOfNormal !== null ? `${Math.min(100, Math.max(0, pctOfNormal))}%` : "0%";
         });
-        
+
+        // RANK — already computed server-side (rank/rank_of in the feed)
+        // but wasn't being displayed anywhere until now.
+        setField(
+          "snow-rank",
+          data.rank !== null && data.rank !== undefined && data.rank_of !== null && data.rank_of !== undefined
+            ? `${ordinalSuffix_(data.rank)} of ${data.rank_of}`
+            : "\u2014"
+        );
+
+        // RECORD RANGE — where today's depth sits between the record low
+        // and record high for this date, using fields already fetched
+        // for the mini-stats above (no new data source needed).
+        const recordLowIn = data.record_low_in;
+        const recordHighIn = data.record_high_in;
+        let recordRangePct = null;
+
+        if (
+          currentIn !== null && currentIn !== undefined &&
+          recordLowIn !== null && recordLowIn !== undefined &&
+          recordHighIn !== null && recordHighIn !== undefined &&
+          recordHighIn > recordLowIn
+        ) {
+          recordRangePct = ((currentIn - recordLowIn) / (recordHighIn - recordLowIn)) * 100;
+        }
+
+        document.querySelectorAll('[data-field="record-range-marker"]').forEach((el) => {
+          el.style.left = recordRangePct !== null ? `${Math.min(100, Math.max(0, recordRangePct))}%` : "0%";
+          el.style.opacity = recordRangePct !== null ? "1" : "0.25";
+        });
+
+        setField(
+          "record-range-readout",
+          currentIn !== null && currentIn !== undefined ? `${Math.round(currentIn)}" today` : "\u2014"
+        );
+        setField(
+          "record-range-low-label",
+          recordLowIn !== null && recordLowIn !== undefined ? `${Math.round(recordLowIn)}"` : "\u2014"
+        );
+        setField(
+          "record-range-high-label",
+          recordHighIn !== null && recordHighIn !== undefined ? `${Math.round(recordHighIn)}"` : "\u2014"
+        );
+
+        // OFF-SEASON — normal/record/rank fields all come back null
+        // outside winter (confirmed against the live feed: season itself
+        // is explicitly null then too). Swap the mini-stats/bars for one
+        // deliberate message instead of a wall of "—" placeholders.
+        const isOffSeason =
+          data.season === null || data.season === undefined ||
+          (normalIn == null && recordLowIn == null && recordHighIn == null);
+
+        document.querySelectorAll('[data-section="in-season"]').forEach((el) => {
+          el.style.display = isOffSeason ? "none" : "block";
+        });
+        document.querySelectorAll('[data-section="off-season"]').forEach((el) => {
+          el.style.display = isOffSeason ? "flex" : "none";
+        });
+
         setField("updated", formatDateUTC(data.generated_at));
       } catch (err) {
         console.warn("Snow depth status fetch failed:", err);
+      }
+    }
+
+    // "1st" / "2nd" / "3rd" / "4th"... with the 11/12/13 exception.
+    function ordinalSuffix_(n) {
+      const rounded = Math.round(n);
+      const mod100 = rounded % 100;
+      if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
+      switch (rounded % 10) {
+        case 1: return `${rounded}st`;
+        case 2: return `${rounded}nd`;
+        case 3: return `${rounded}rd`;
+        default: return `${rounded}th`;
       }
     }
 
