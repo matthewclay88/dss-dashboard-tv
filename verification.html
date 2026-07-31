@@ -711,7 +711,7 @@
       <p><strong>Data is unofficial.</strong> Per IEM's own disclaimer, this data is intended for educational/situational-awareness use, not as an official verification record.</p>
       <p><strong>Switching offices:</strong> the office dropdown in the header lists every NWS Weather Forecast Office nationwide (sourced live from IEM's own WFO network table) — pick one and the app re-queries live NWS zone boundaries for that office and re-centers the map.</p>
       <p><strong>Date ranges:</strong> the Archive picker loads every matching warning and LSR for the whole range directly onto the map, table, and stats (using the same boundary-safe padding logic as single-day view), rather than just showing a summary.</p>
-      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Office list: IEM WFO network table. Radar: IEM's archived NEXRAD composite reflectivity tiles, snapped to the nearest 5-minute composite. Map library: Leaflet.</p>
+      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Office list: IEM WFO network table. Radar: IEM's time-enabled NEXRAD composite reflectivity WMS, snapped to the nearest 5-minute composite (archive available back to Feb 16, 2011). Map library: Leaflet.</p>
       <p><strong>PDS / Emergency badges:</strong> shown when a Tornado or Flash Flood warning's product text contains "PARTICULARLY DANGEROUS SITUATION" or "TORNADO/FLASH FLOOD EMERGENCY" wording. This is a plain-text scan, not a structured IEM field, so it's skipped for very large date ranges to avoid hammering IEM with requests — it still works normally for a single day or a short range.</p>
       <p><strong>Keyboard shortcuts:</strong> <code>←</code> / <code>→</code> previous/next day, <code>j</code> / <code>k</code> step through the warnings table, <code>n</code> jump to the next unverified warning, <code>Esc</code> close dialogs.</p>
       <p><strong>Sharing a view:</strong> the URL updates automatically with the current office and date (or range), so copying the address bar link takes someone straight to the same view.</p>
@@ -2019,15 +2019,26 @@ function renderTrendsChart(buckets){
 }
 
 // ══════════════════════════════════════════════════════════════
-//  RADAR OVERLAY — IEM archived NEXRAD composite reflectivity tiles
+//  RADAR OVERLAY — IEM's time-enabled NEXRAD composite WMS
 // ══════════════════════════════════════════════════════════════
-function radarTileUrlFor(dateStr, minutesOfDay){
+// IEM's simple {z}/{x}/{y} tile cache (cache/tile.py) only serves the
+// CURRENT composite and "N minutes ago" (up to ~55 minutes) — it has
+// no arbitrary-historical-timestamp layer for the composite mosaic,
+// which is exactly why a first pass at this (using a guessed
+// nexrad-n0q-<timestamp>-900913 tile URL) silently 404'd for every
+// past date. Real historical composites live on IEM's WMS-T service
+// instead (layer nexrad-n0q-wmst, confirmed archive coverage back to
+// 2011-02-16), which is a bounding-box GetMap request per tile rather
+// than a plain slippy-tile URL — Leaflet's L.tileLayer.wms() builds
+// exactly that.
+const RADAR_WMS_URL = 'https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q-t.cgi?';
+const RADAR_ARCHIVE_START = '2011-02-16';
+
+function radarTimeIsoFor(dateStr, minutesOfDay){
   const localDt = localMidnightToUTC(dateStr, settings.timezone);
   const targetMs = localDt.getTime() + minutesOfDay * 60000;
   const snappedMs = Math.floor(targetMs / (5*60000)) * (5*60000);
-  const d = new Date(snappedMs);
-  const stamp = d.getUTCFullYear() + pad2(d.getUTCMonth()+1) + pad2(d.getUTCDate()) + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes());
-  return `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-${stamp}-900913/{z}/{x}/{y}.png`;
+  return new Date(snappedMs).toISOString().replace(/\.\d+Z$/, 'Z');
 }
 
 function refreshRadarTimeLabel(){
@@ -2040,11 +2051,25 @@ function refreshRadarTimeLabel(){
 function updateRadarLayer(){
   if(radarLayer){ map.removeLayer(radarLayer); radarLayer = null; }
   if(!showRadar || viewMode !== 'day') return;
+  const dateStr = selectedDateStr || todayInTZ(settings.timezone);
+  if(dateStr < RADAR_ARCHIVE_START){
+    setStatus('No radar archive available before ' + RADAR_ARCHIVE_START + '.', true);
+    return;
+  }
   const minutesOfDay = parseInt(document.getElementById('radarTimeSlider').value, 10);
-  const url = radarTileUrlFor(selectedDateStr || todayInTZ(settings.timezone), minutesOfDay);
-  radarLayer = L.tileLayer(url, { opacity: 0.55, zIndex: 350 });
+  const timeIso = radarTimeIsoFor(dateStr, minutesOfDay);
+  radarLayer = L.tileLayer.wms(RADAR_WMS_URL, {
+    layers: 'nexrad-n0q-wmst',
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.1',
+    time: timeIso,
+    opacity: 0.6,
+    zIndex: 350
+  });
   radarLayer.addTo(map);
 }
+
 
 // ══════════════════════════════════════════════════════════════
 //  EXPORTS — CSV data dump, PNG snapshot
