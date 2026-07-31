@@ -322,6 +322,73 @@
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #2a3b52; border-radius: 4px; }
+
+  /* ── WFO SEARCHABLE COMBOBOX ── */
+  .wfo-combo { position: relative; }
+  .wfo-search-input {
+    background: #101d30; border: 1px solid #26405c; color: #93c5fd;
+    font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 7px;
+    letter-spacing: 0.04em; font-family: inherit; width: 190px;
+  }
+  .wfo-search-input:focus { outline: none; border-color: #3b82f6; background: #16233a; }
+  .wfo-dropdown {
+    display: none; position: absolute; top: calc(100% + 4px); left: 0; width: 280px;
+    max-height: 320px; overflow-y: auto; background: #101a28; border: 1px solid #26405c;
+    border-radius: 9px; z-index: 5000; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  }
+  .wfo-dropdown.open { display: block; }
+  .wfo-dd-label {
+    font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+    color: #5a6b82; padding: 7px 10px 3px;
+  }
+  .wfo-opt { display: flex; align-items: baseline; gap: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
+  .wfo-opt:hover, .wfo-opt.highlighted { background: #16233a; }
+  .wfo-opt-code { font-weight: 800; color: #93c5fd; flex-shrink: 0; width: 32px; }
+  .wfo-opt-name { color: #cbd5e1; }
+  .wfo-opt-empty { padding: 10px; font-size: 11.5px; color: #7a8ba3; }
+
+  /* ── MINI BUTTON (Next Unverified) ── */
+  .mini-btn {
+    background: none; border: none; color: #60a5fa; font-size: 11px; font-weight: 700;
+    cursor: pointer; padding: 0; font-family: inherit; text-decoration: none;
+  }
+  .mini-btn:hover { text-decoration: underline; }
+
+  /* ── TIMELINE BAR (warning duration + LSR marks) ── */
+  .timeline-bar { position: relative; height: 20px; margin: 6px 0 2px; }
+  .tl-track { position: absolute; top: 9px; left: 0; right: 0; height: 3px; background: #1e2a3a; border-radius: 2px; }
+  .tl-mark {
+    position: absolute; top: 4px; width: 11px; height: 11px; border-radius: 50%;
+    border: 2px solid #0f1620; transform: translateX(-50%); cursor: default;
+  }
+  .timeline-labels { display: flex; justify-content: space-between; font-size: 9.5px; color: #7a8ba3; }
+
+  /* ── PDS / EMERGENCY BADGES ── */
+  .pds-badge, .emg-badge {
+    display: inline-block; font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
+    margin-left: 5px; letter-spacing: .03em; vertical-align: middle; white-space: nowrap;
+  }
+  .pds-badge { background: #3b0764; color: #e9d5ff; border: 1px solid #6d28d9; }
+  .emg-badge { background: #450a0a; color: #fecaca; border: 1px solid #b91c1c; }
+
+  /* ── TRENDS MODAL ── */
+  .trend-range-btn.active { background: #2563eb !important; color: #fff !important; }
+
+  /* ── RADAR CONTROLS ── */
+  .radar-slider { accent-color: #3b82f6; width: 110px; vertical-align: middle; }
+
+  /* ── PRINT ── */
+  @media print {
+    * { color: #111 !important; background: transparent !important; border-color: #ccc !important; box-shadow: none !important; }
+    body { background: #fff !important; overflow: visible !important; height: auto !important; }
+    .header-right, .icon-btn, .subtabs, .range-banner .btn, .status-banner, .wfo-dropdown,
+    .warn-filters, .queue-review, .details-empty { display: none !important; }
+    .main { overflow: visible !important; height: auto !important; display: block !important; padding: 0; }
+    .col-left, .col-center, .col-right { width: 100% !important; display: block !important; margin-bottom: 12px; }
+    #map { height: 380px !important; }
+    .panel, .center-body { border: 1px solid #ccc !important; break-inside: avoid; margin-bottom: 10px; }
+    .warn-scroll, .details-scroll { overflow: visible !important; max-height: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -335,7 +402,10 @@
     </div>
   </div>
   <div class="header-center">
-    <select class="wfo-select" id="wfoSelect" title="Switch NWS office"></select>
+    <div class="wfo-combo" id="wfoCombo">
+      <input type="text" id="wfoSearchInput" class="wfo-search-input" placeholder="Search office…" autocomplete="off" title="Search NWS office">
+      <div class="wfo-dropdown" id="wfoDropdown"></div>
+    </div>
     <div class="date-nav">
       <button id="prevDayBtn" title="Previous day">&#9664;</button>
       <input type="date" id="datePicker">
@@ -344,6 +414,10 @@
     </div>
   </div>
   <div class="header-right">
+    <button class="icon-btn" id="trendsBtn" title="Verification trends over time">&#128200;</button>
+    <button class="icon-btn" id="exportCsvBtn" title="Export CSV">&#128190;</button>
+    <button class="icon-btn" id="exportPngBtn" title="Export PNG snapshot (basemap imagery excluded — see About)">&#128247;</button>
+    <button class="icon-btn" id="printBtn" title="Print report">&#128424;</button>
     <button class="icon-btn" id="archiveBtn" title="Archive / date range stats">&#128197;</button>
     <button class="icon-btn" id="settingsBtn" title="Settings">&#9881;</button>
     <button class="icon-btn" id="aboutBtn" title="About">?</button>
@@ -401,6 +475,9 @@
       <button class="subtab-btn" data-subtab="reports">REPORTS</button>
       <div class="spacer"></div>
       <label class="lsr-toggle"><input type="checkbox" id="showLsrToggle" checked> Show LSRs on map</label>
+      <label class="lsr-toggle"><input type="checkbox" id="showRadarToggle"> Radar</label>
+      <input type="range" id="radarTimeSlider" class="radar-slider" style="display:none;" min="0" max="1439" step="5" value="720" title="Radar time (local)">
+      <span id="radarTimeLabel" style="display:none;font-size:10px;color:#93a3b8;"></span>
     </div>
     <div class="center-body">
       <div id="mapView" style="flex:1; min-height:0; display:flex; flex-direction:column;">
@@ -493,6 +570,27 @@
   </div>
 </div>
 
+<!-- TRENDS MODAL -->
+<div class="modal-overlay" id="trendsModal">
+  <div class="modal-box wide">
+    <div class="modal-header"><h2>Verification Trends — <span id="trendsWfoLabel">BTV</span></h2><button class="modal-close" data-close="trendsModal">&times;</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn secondary trend-range-btn active" data-days="30">Last 30 Days</button>
+        <button class="btn secondary trend-range-btn" data-days="90">Last 90 Days</button>
+      </div>
+      <div id="trendsStatus" style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Loading…</div>
+      <svg viewBox="0 0 640 220" id="trendsSvg" style="width:100%;height:220px;"></svg>
+      <div style="display:flex;gap:14px;margin-top:10px;font-size:11px;">
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#4ade80;margin-right:5px;"></span>POD</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#ef4444;margin-right:5px;"></span>FAR</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#60a5fa;margin-right:5px;"></span>CSI</span>
+      </div>
+      <div class="hint" style="margin-top:10px;">Computed client-side from IEM Cow data for the selected office, using the same calendar-day boundaries as the main view. Days with no decided warnings are skipped over (gap in the lines).</div>
+    </div>
+  </div>
+</div>
+
 <!-- ABOUT MODAL -->
 <div class="modal-overlay" id="aboutModal">
   <div class="modal-box wide">
@@ -505,12 +603,17 @@
       <p><strong>Data is unofficial.</strong> Per IEM's own disclaimer, this data is intended for educational/situational-awareness use, not as an official verification record.</p>
       <p><strong>Switching offices:</strong> the office dropdown in the header lists every NWS Weather Forecast Office nationwide (sourced live from IEM's own WFO network table) — pick one and the app re-queries live NWS zone boundaries for that office and re-centers the map.</p>
       <p><strong>Date ranges:</strong> the Archive picker loads every matching warning and LSR for the whole range directly onto the map, table, and stats (using the same boundary-safe padding logic as single-day view), rather than just showing a summary.</p>
-      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Office list: IEM WFO network table. Map library: Leaflet.</p>
+      <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Office list: IEM WFO network table. Radar: IEM's archived NEXRAD composite reflectivity tiles, snapped to the nearest 5-minute composite. Map library: Leaflet.</p>
+      <p><strong>PDS / Emergency badges:</strong> shown when a Tornado or Flash Flood warning's product text contains "PARTICULARLY DANGEROUS SITUATION" or "TORNADO/FLASH FLOOD EMERGENCY" wording. This is a plain-text scan, not a structured IEM field, so it's skipped for very large date ranges to avoid hammering IEM with requests — it still works normally for a single day or a short range.</p>
+      <p><strong>Keyboard shortcuts:</strong> <code>←</code> / <code>→</code> previous/next day, <code>j</code> / <code>k</code> step through the warnings table, <code>n</code> jump to the next unverified warning, <code>Esc</code> close dialogs.</p>
+      <p><strong>Sharing a view:</strong> the URL updates automatically with the current office and date (or range), so copying the address bar link takes someone straight to the same view.</p>
+      <p><strong>PNG export:</strong> captures the queue, table, summary, stats, and warning-details panels, plus the warning polygons/zone lines/LSR markers on the map — but not the basemap street imagery itself, since CartoDB's tile server doesn't allow that imagery to be read back into an exported image. Use "Print" instead for a version with full basemap tiles included.</p>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════════════════
 //  CONSTANTS
@@ -614,6 +717,15 @@ const WFO_LIST = [
   { id:'TSA', name:'Tulsa, OK' }, { id:'TWC', name:'Tucson, AZ' },
   { id:'UNR', name:'Rapid City, SD' }, { id:'VEF', name:'Las Vegas, NV' }
 ];
+// Plain-text scan for PDS / Emergency wording — IEM Cow doesn't expose
+// these as structured fields, so they're detected from the product
+// text itself (already fetched lazily for the details panel; here we
+// fetch it proactively, capped, to power the table/map badges too).
+const PDS_REGEX = /PARTICULARLY\s+DANGEROUS\s+SITUATION/i;
+const TOR_EMERGENCY_REGEX = /TORNADO\s+EMERGENCY/i;
+const FF_EMERGENCY_REGEX = /FLASH\s+FLOOD\s+EMERGENCY/i;
+const PDS_SCAN_MAX_EVENTS = 75;
+const PDS_SCAN_CONCURRENCY = 6;
 
 // ══════════════════════════════════════════════════════════════
 //  STATE
@@ -631,8 +743,14 @@ let rangeLabel = '';
 let lastSingleDate = null;    // last single day viewed, so exiting a range returns somewhere sensible
 let lastZoneFitWfo = null;    // tracks which WFO the map was last auto-fit to
 let phenomenaFilter = null;   // 'TO'|'SV'|'FF'|'SQ'|null — set by clicking a queue card
-let map, zoneLayer, warningLayer, lsrLayer;
+let map, zoneLayer, warningLayer, lsrLayer, radarLayer;
 let productTextCache = {};
+let wfoDropdownOpen = false;
+let wfoHighlightIdx = -1;
+let wfoFilteredList = [];
+let showRadar = false;
+let currentRangeStart = null;   // set while viewMode === 'range', for URL state
+let currentRangeEnd = null;
 
 // ══════════════════════════════════════════════════════════════
 //  DATE / TIMEZONE HELPERS
@@ -872,6 +990,8 @@ async function fetchAndParseCow(windowStart, windowEnd){
 
 async function loadDay(dateStr){
   viewMode = 'day';
+  currentRangeStart = null;
+  currentRangeEnd = null;
   selectedDateStr = dateStr;
   lastSingleDate = dateStr;
   selectedEventId = null;
@@ -894,11 +1014,15 @@ async function loadDay(dateStr){
   }
   updateRangeBanner();
   renderAll();
+  updateUrlState();
+  scanForPdsEmergency();
 }
 
 async function loadRange(startStr, endStr){
   viewMode = 'range';
   rangeLabel = startStr + '  →  ' + endStr;
+  currentRangeStart = startStr;
+  currentRangeEnd = endStr;
   selectedEventId = null;
   setStatus('Loading warnings for ' + rangeLabel + ' from IEM Cow…', false);
   try{
@@ -918,35 +1042,182 @@ async function loadRange(startStr, endStr){
   }
   updateRangeBanner();
   renderAll();
+  updateUrlState();
+  scanForPdsEmergency();
 }
 
 function updateRangeBanner(){
   const banner = document.getElementById('rangeBanner');
   const statsTitle = document.getElementById('dayStatsTitle');
+  const radarToggle = document.getElementById('showRadarToggle');
   if(viewMode === 'range'){
     banner.style.display = 'flex';
     document.getElementById('rangeBannerText').textContent = 'Viewing range: ' + rangeLabel;
     statsTitle.textContent = 'Range Verification Stats';
+    // A single radar timestamp doesn't make sense across a multi-day
+    // range, so the control is disabled (not just hidden) rather than
+    // silently doing nothing when clicked.
+    if(radarToggle){ radarToggle.checked = false; radarToggle.disabled = true; }
+    showRadar = false;
+    document.getElementById('radarTimeSlider').style.display = 'none';
+    document.getElementById('radarTimeLabel').style.display = 'none';
+    if(radarLayer){ map.removeLayer(radarLayer); radarLayer = null; }
   } else {
     banner.style.display = 'none';
     statsTitle.textContent = 'Day Verification Stats';
+    if(radarToggle) radarToggle.disabled = false;
   }
 }
 
 // ══════════════════════════════════════════════════════════════
-//  RENDER: WFO SELECT
+//  URL STATE — makes the current view shareable via the address bar
 // ══════════════════════════════════════════════════════════════
-function populateWfoSelect(){
-  const sel = document.getElementById('wfoSelect');
-  sel.innerHTML = WFO_LIST.map(o => `<option value="${o.id}">${o.id} — ${escapeHtml(o.name)}</option>`).join('');
-  sel.value = settings.wfo;
+function readUrlState(){
+  const params = new URLSearchParams(window.location.search);
+  return {
+    wfo: params.get('wfo'),
+    date: params.get('date'),
+    start: params.get('start'),
+    end: params.get('end')
+  };
+}
+function updateUrlState(){
+  const params = new URLSearchParams();
+  params.set('wfo', settings.wfo);
+  if(viewMode === 'range' && currentRangeStart && currentRangeEnd){
+    params.set('start', currentRangeStart);
+    params.set('end', currentRangeEnd);
+  } else if(selectedDateStr){
+    params.set('date', selectedDateStr);
+  }
+  const newUrl = window.location.pathname + '?' + params.toString();
+  history.replaceState(null, '', newUrl);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PDS / EMERGENCY SCAN
+// ══════════════════════════════════════════════════════════════
+async function scanForPdsEmergency(){
+  const candidates = currentEvents.filter(e => e.phenomena === 'TO' || e.phenomena === 'FF');
+  if(candidates.length === 0) return;
+  if(currentEvents.length > PDS_SCAN_MAX_EVENTS){
+    // Too many warnings in view (e.g. a wide archive range) to safely
+    // bulk-fetch full product text for each without hammering IEM with
+    // a burst of requests — skip the scan for this view. Selecting an
+    // individual warning still loads its own text normally.
+    return;
+  }
+  let idx = 0;
+  async function worker(){
+    while(idx < candidates.length){
+      const e = candidates[idx++];
+      const text = await getProductText(e);
+      if(text){
+        e.pdsFlag = PDS_REGEX.test(text);
+        e.emergencyFlag = TOR_EMERGENCY_REGEX.test(text) || FF_EMERGENCY_REGEX.test(text);
+      } else {
+        e.pdsFlag = false;
+        e.emergencyFlag = false;
+      }
+    }
+  }
+  const workerCount = Math.min(PDS_SCAN_CONCURRENCY, candidates.length);
+  await Promise.all(Array.from({ length: workerCount }, worker));
+  renderWarnTable();
+  drawWarningsOnMap();
+  if(selectedEventId){
+    const e = currentEvents.find(x => x.id === selectedEventId);
+    if(e) renderDetails(e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  WFO SEARCHABLE COMBOBOX
+// ══════════════════════════════════════════════════════════════
+function wfoLabel(o){ return o ? `${o.id} — ${o.name}` : ''; }
+
+function getRecentWfos(){
+  try{
+    const raw = localStorage.getItem('btv_wfo_recent');
+    return raw ? JSON.parse(raw) : [];
+  }catch(err){ return []; }
+}
+function addRecentWfo(code){
+  try{
+    let recents = getRecentWfos().filter(c => c !== code);
+    recents.unshift(code);
+    localStorage.setItem('btv_wfo_recent', JSON.stringify(recents.slice(0,5)));
+  }catch(err){ /* localStorage unavailable — recents just won't persist */ }
+}
+
+function initWfoCombo(){
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === settings.wfo));
+}
+
+function renderWfoDropdown(query){
+  const dd = document.getElementById('wfoDropdown');
+  const q = (query || '').trim().toUpperCase();
+  let list;
+  if(!q){
+    const recentCodes = getRecentWfos();
+    const recents = recentCodes.map(c => WFO_LIST.find(o => o.id === c)).filter(Boolean);
+    const recentIds = new Set(recents.map(o => o.id));
+    const rest = WFO_LIST.filter(o => !recentIds.has(o.id));
+    list = recents.length ? [...recents.map(o => ({ ...o, recent: true })), ...rest] : WFO_LIST.slice();
+  } else {
+    list = WFO_LIST.filter(o => o.id.includes(q) || o.name.toUpperCase().includes(q));
+  }
+  wfoFilteredList = list;
+  wfoHighlightIdx = list.length ? 0 : -1;
+
+  if(list.length === 0){
+    dd.innerHTML = `<div class="wfo-opt-empty">No matching office</div>`;
+  } else {
+    let html = '';
+    let printedRecentHeader = false, printedAllHeader = false;
+    list.forEach((o, i) => {
+      if(!q && o.recent && !printedRecentHeader){ html += `<div class="wfo-dd-label">Recent</div>`; printedRecentHeader = true; }
+      if(!q && !o.recent && printedRecentHeader && !printedAllHeader){ html += `<div class="wfo-dd-label">All Offices</div>`; printedAllHeader = true; }
+      html += `<div class="wfo-opt${i===wfoHighlightIdx?' highlighted':''}" data-idx="${i}" data-id="${o.id}">
+        <span class="wfo-opt-code">${o.id}</span><span class="wfo-opt-name">${escapeHtml(o.name)}</span>
+      </div>`;
+    });
+    dd.innerHTML = html;
+  }
+  dd.querySelectorAll('.wfo-opt').forEach(el => {
+    el.addEventListener('mousedown', (e) => { e.preventDefault(); chooseWfoOption(el.dataset.id); });
+    el.addEventListener('mouseenter', () => { wfoHighlightIdx = parseInt(el.dataset.idx, 10); updateWfoHighlight(); });
+  });
+}
+
+function updateWfoHighlight(){
+  const opts = document.querySelectorAll('.wfo-opt');
+  opts.forEach((el, i) => el.classList.toggle('highlighted', i === wfoHighlightIdx));
+  const active = document.querySelector('.wfo-opt.highlighted');
+  if(active) active.scrollIntoView({ block: 'nearest' });
+}
+
+function openWfoDropdown(){
+  wfoDropdownOpen = true;
+  document.getElementById('wfoDropdown').classList.add('open');
+  renderWfoDropdown(document.getElementById('wfoSearchInput').value === wfoLabel(WFO_LIST.find(o=>o.id===settings.wfo)) ? '' : document.getElementById('wfoSearchInput').value);
+}
+function closeWfoDropdown(){
+  wfoDropdownOpen = false;
+  document.getElementById('wfoDropdown').classList.remove('open');
+}
+function chooseWfoOption(code){
+  addRecentWfo(code);
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === code));
+  closeWfoDropdown();
+  switchWfo(code);
 }
 
 function switchWfo(newWfo){
-  if(!newWfo || newWfo === settings.wfo) return;
+  if(!newWfo) return;
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === newWfo));
+  if(newWfo === settings.wfo) return;
   settings.wfo = newWfo;
-  document.getElementById('wfoSelect').value = newWfo;
-  document.getElementById('wfoBadgeText') && (document.getElementById('wfoBadgeText').textContent = newWfo);
   document.getElementById('pageTitle').textContent = newWfo + ' WARNING VERIFICATION';
   phenomenaFilter = null;
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
@@ -983,7 +1254,7 @@ function renderQueue(){
   });
   const reviewEl = document.getElementById('queueReview');
   if(needsCount > 0){
-    reviewEl.innerHTML = `&#9200; Estimated review time: ~${needsCount*2} minutes`;
+    reviewEl.innerHTML = `&#9200; Estimated review time: ~${needsCount*2} minutes &nbsp;·&nbsp; <button class="mini-btn" id="nextUnverifiedBtn" title="Shortcut: n">Next unverified →</button>`;
   } else {
     reviewEl.innerHTML = `&#9989; Nothing pending review`;
   }
@@ -995,6 +1266,42 @@ function renderQueue(){
       renderQueue(); renderWarnTable(); renderSummary(); drawWarningsOnMap();
     });
   }
+  const nextUnverifiedBtn = document.getElementById('nextUnverifiedBtn');
+  if(nextUnverifiedBtn) nextUnverifiedBtn.addEventListener('click', jumpToNextUnverified);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ROW NAVIGATION (keyboard: j/k, n)
+// ══════════════════════════════════════════════════════════════
+function getVisibleRows(){
+  let rows = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue));
+  const onlyUnverified = document.getElementById('filterOnlyUnverified').checked;
+  if(onlyUnverified) rows = rows.filter(e => e.status !== 'verified');
+  if(phenomenaFilter) rows = rows.filter(e => e.phenomena === phenomenaFilter);
+  return rows;
+}
+
+function stepSelectedEvent(direction){
+  const rows = getVisibleRows();
+  if(rows.length === 0) return;
+  let idx = rows.findIndex(e => e.id === selectedEventId);
+  idx = idx === -1 ? (direction > 0 ? 0 : rows.length - 1) : ((idx + direction) % rows.length + rows.length) % rows.length;
+  selectEvent(rows[idx].id);
+  const tr = document.querySelector(`tr[data-id="${CSS.escape(rows[idx].id)}"]`);
+  if(tr) tr.scrollIntoView({ block: 'nearest' });
+}
+
+function jumpToNextUnverified(){
+  let pool = currentEvents.filter(e => e.status === 'needs_verification');
+  if(phenomenaFilter) pool = pool.filter(e => e.phenomena === phenomenaFilter);
+  pool.sort((a,b) => new Date(a.issue) - new Date(b.issue));
+  if(pool.length === 0) return;
+  let idx = pool.findIndex(e => e.id === selectedEventId);
+  idx = (idx + 1) % pool.length;
+  switchSubtab('map');
+  selectEvent(pool[idx].id);
+  const tr = document.querySelector(`tr[data-id="${CSS.escape(pool[idx].id)}"]`);
+  if(tr) tr.scrollIntoView({ block: 'nearest' });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1018,9 +1325,11 @@ function renderWarnTable(){
   tbody.innerHTML = rows.map(e => {
     const meta = PHEN_META[e.phenomena] || { code: e.phenomena, name: e.phenomena, color:'#94a3b8' };
     const st = STATUS_META[e.status];
+    const flagBadge = e.emergencyFlag ? '<span class="emg-badge" title="Tornado/Flash Flood Emergency">EMER</span>'
+      : (e.pdsFlag ? '<span class="pds-badge" title="Particularly Dangerous Situation">PDS</span>' : '');
     return `<tr data-id="${escapeHtml(e.id)}" class="${e.id === selectedEventId ? 'selected' : ''}">
       <td class="etn-cell">${e.etn}</td>
-      <td><span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span></td>
+      <td><span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span>${flagBadge}</td>
       <td>${escapeHtml(countyLabel(e.counties))}</td>
       <td>${fmtLocal(e.expire, settings.timezone)}</td>
       <td><span class="status-pill" style="color:${st.color};"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span></td>
@@ -1178,7 +1487,8 @@ function drawWarningsOnMap(){
       style: { color: color, weight: e.id === selectedEventId ? 3.5 : 2, fillColor: color, fillOpacity: e.id === selectedEventId ? 0.4 : 0.22 }
     });
     gj.on('click', () => selectEvent(e.id));
-    gj.bindTooltip(`${meta.code} #${e.etn} — ${STATUS_META[e.status].label}`, { sticky: true });
+    const flagText = e.emergencyFlag ? ' ⚠ EMERGENCY' : (e.pdsFlag ? ' ⚠ PDS' : '');
+    gj.bindTooltip(`${meta.code} #${e.etn}${flagText} — ${STATUS_META[e.status].label}`, { sticky: true });
     gj.addTo(warningLayer);
     try{ bounds.push(gj.getBounds()); }catch(err){}
     e._mapLayer = gj;
@@ -1221,6 +1531,12 @@ function drawLsrsOnMap(){
 function renderMapLegend(){
   const bar = document.getElementById('mapLegendBar');
   let html = Object.keys(PHEN_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${PHEN_META[k].color};"></span>${PHEN_META[k].code}</span>`).join('');
+  if(showRadar && viewMode === 'day'){
+    const mins = parseInt(document.getElementById('radarTimeSlider').value, 10);
+    const hh = String(Math.floor(mins/60)).padStart(2,'0');
+    const mm = String(mins%60).padStart(2,'0');
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">Radar @ ${hh}:${mm} local</span>`;
+  }
   if(showLsrs){
     html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">LSR:</span>`;
     html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.T};border-radius:50%;"></span>Tornado</span>`;
@@ -1288,11 +1604,12 @@ async function renderDetails(e){
   const st = STATUS_META[e.status];
   const matchedReports = e.stormreports.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
   const allNearbyReports = e.stormreports_all.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
+  const flagBadge = e.emergencyFlag ? '<span class="emg-badge">EMERGENCY</span>' : (e.pdsFlag ? '<span class="pds-badge">PDS</span>' : '');
 
   scroll.innerHTML = `
     <div class="details-header">
       <span class="etn-badge">ETN ${e.etn}</span>
-      <span class="dh-title">${meta.name}</span>
+      <span class="dh-title">${meta.name}</span>${flagBadge}
       <span class="status-pill" style="color:${st.color};margin-left:auto;"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span>
     </div>
     <div class="details-section">
@@ -1302,6 +1619,8 @@ async function renderDetails(e){
         <div><div class="kv-k">County/Zone</div><div class="kv-v">${escapeHtml((e.counties||[]).join(', ') || '—')}</div></div>
         <div><div class="kv-k">Forecaster</div><div class="kv-v">${escapeHtml(e.fcster || '—')}</div></div>
       </div>
+      <div class="kv-k" style="margin-top:10px;">Timeline</div>
+      ${renderTimelineBar(e, matchedReports)}
       <div class="kv-k" style="margin-top:10px;">VTEC</div>
       <div class="vtec-line" id="vtecLine-${e.id}">Loading…</div>
       <div class="kv-k" style="margin-top:10px;">Warning Text</div>
@@ -1345,6 +1664,29 @@ async function renderDetails(e){
   });
 }
 
+function renderTimelineBar(e, matchedReports){
+  const issueMs = new Date(e.issue).getTime();
+  const expireMs = new Date(e.expire).getTime();
+  const span = Math.max(1, expireMs - issueMs);
+  const marks = matchedReports.map(r => {
+    const t = new Date(r.valid).getTime();
+    const pct = Math.max(0, Math.min(100, ((t - issueMs) / span) * 100));
+    const color = LSR_TYPE_COLOR[r.type] || LSR_TYPE_DEFAULT_COLOR;
+    const label = escapeHtml((r.typetext || r.lsrtype) + ' @ ' + fmtLocal(r.valid, settings.timezone));
+    return `<div class="tl-mark" style="left:${pct.toFixed(1)}%;background:${color};" title="${label}"></div>`;
+  }).join('');
+  return `
+    <div class="timeline-bar">
+      <div class="tl-track"></div>
+      ${marks}
+    </div>
+    <div class="timeline-labels">
+      <span>Issued ${fmtLocal(e.issue, settings.timezone)}</span>
+      <span>Expires ${fmtLocal(e.expire, settings.timezone)}</span>
+    </div>
+  `;
+}
+
 function distToEventMi(e, r){
   // Use polygon centroid via Leaflet bounds if available.
   try{
@@ -1353,6 +1695,202 @@ function distToEventMi(e, r){
   }catch(err){ return 0; }
 }
 
+
+
+// ══════════════════════════════════════════════════════════════
+//  TRENDS — POD/FAR/CSI over the last N days
+// ══════════════════════════════════════════════════════════════
+async function loadTrends(days){
+  const statusEl = document.getElementById('trendsStatus');
+  document.getElementById('trendsWfoLabel').textContent = settings.wfo;
+  statusEl.textContent = `Loading ${days}-day trend for ${settings.wfo}…`;
+  try{
+    const endDateStr = selectedDateStr || todayInTZ(settings.timezone);
+    const startDateStr = addDaysToDateStr(endDateStr, -(days - 1));
+    const rangeStart = localMidnightToUTC(startDateStr, settings.timezone);
+    const rangeEnd = localMidnightToUTC(addDaysToDateStr(endDateStr, 1), settings.timezone);
+    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd);
+
+    const buckets = [];
+    for(let i = 0; i < days; i++){
+      const ds = addDaysToDateStr(startDateStr, i);
+      const dayStartMs = localMidnightToUTC(ds, settings.timezone).getTime();
+      const dayEndMs = localMidnightToUTC(addDaysToDateStr(ds, 1), settings.timezone).getTime();
+      const dayEvents = events.filter(e => {
+        const issMs = new Date(e.issue).getTime(), expMs = new Date(e.expire).getTime();
+        return expMs > dayStartMs && issMs < dayEndMs;
+      });
+      const decided = dayEvents.filter(e => e.status !== 'pending');
+      const hits = decided.filter(e => e.status === 'verified').length;
+      const falseAlarms = decided.filter(e => e.status === 'needs_verification').length;
+      const misses = reports.filter(r => {
+        const v = new Date(r.valid).getTime();
+        return v >= dayStartMs && v < dayEndMs && !r.warned;
+      }).length;
+      const pod = (hits + misses) > 0 ? hits / (hits + misses) : null;
+      const far = (hits + falseAlarms) > 0 ? falseAlarms / (hits + falseAlarms) : null;
+      const csi = (pod !== null && far !== null && pod > 0 && (1 - far) > 0)
+        ? 1 / ((1/pod) + (1/(1-far)) - 1) : null;
+      buckets.push({ date: ds, pod, far, csi, total: dayEvents.length });
+    }
+    renderTrendsChart(buckets);
+    const withData = buckets.filter(b => b.total > 0).length;
+    statusEl.textContent = `${days} days ending ${endDateStr} — ${withData} day${withData===1?'':'s'} with warnings.`;
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = 'Could not load trend data: ' + err.message;
+  }
+}
+
+function renderTrendsChart(buckets){
+  const svg = document.getElementById('trendsSvg');
+  const W = 640, H = 220, padL = 34, padR = 10, padT = 10, padB = 24;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const n = buckets.length;
+  const xFor = i => padL + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
+  const yFor = v => padT + (1 - Math.max(0, Math.min(1, v))) * plotH;
+
+  function pathFor(key){
+    let d = '', started = false;
+    buckets.forEach((b, i) => {
+      const v = b[key];
+      if(v === null || v === undefined){ started = false; return; }
+      const x = xFor(i), y = yFor(v);
+      d += (started ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+      started = true;
+    });
+    return d.trim();
+  }
+
+  let gridLines = '';
+  [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+    const y = padT + (1 - f) * plotH;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#1e2a3a" stroke-width="1"/>`;
+    gridLines += `<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="8.5" fill="#5a6b82">${Math.round(f*100)}%</text>`;
+  });
+
+  let xLabels = '';
+  const labelStep = Math.max(1, Math.ceil(n / 8));
+  buckets.forEach((b, i) => {
+    if(i % labelStep === 0 || i === n - 1){
+      xLabels += `<text x="${xFor(i)}" y="${H-6}" text-anchor="middle" font-size="8" fill="#5a6b82">${b.date.slice(5)}</text>`;
+    }
+  });
+
+  svg.innerHTML = `
+    ${gridLines}
+    ${xLabels}
+    <path d="${pathFor('csi')}" fill="none" stroke="#60a5fa" stroke-width="2" opacity="0.9"/>
+    <path d="${pathFor('far')}" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.9"/>
+    <path d="${pathFor('pod')}" fill="none" stroke="#4ade80" stroke-width="2.5"/>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RADAR OVERLAY — IEM archived NEXRAD composite reflectivity tiles
+// ══════════════════════════════════════════════════════════════
+function radarTileUrlFor(dateStr, minutesOfDay){
+  const localDt = localMidnightToUTC(dateStr, settings.timezone);
+  const targetMs = localDt.getTime() + minutesOfDay * 60000;
+  const snappedMs = Math.floor(targetMs / (5*60000)) * (5*60000);
+  const d = new Date(snappedMs);
+  const stamp = d.getUTCFullYear() + pad2(d.getUTCMonth()+1) + pad2(d.getUTCDate()) + pad2(d.getUTCHours()) + pad2(d.getUTCMinutes());
+  return `https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-${stamp}-900913/{z}/{x}/{y}.png`;
+}
+
+function refreshRadarTimeLabel(){
+  const mins = parseInt(document.getElementById('radarTimeSlider').value, 10);
+  const hh = String(Math.floor(mins/60)).padStart(2,'0');
+  const mm = String(mins%60).padStart(2,'0');
+  document.getElementById('radarTimeLabel').textContent = hh + ':' + mm + ' local';
+}
+
+function updateRadarLayer(){
+  if(radarLayer){ map.removeLayer(radarLayer); radarLayer = null; }
+  if(!showRadar || viewMode !== 'day') return;
+  const minutesOfDay = parseInt(document.getElementById('radarTimeSlider').value, 10);
+  const url = radarTileUrlFor(selectedDateStr || todayInTZ(settings.timezone), minutesOfDay);
+  radarLayer = L.tileLayer(url, { opacity: 0.55, zIndex: 350 });
+  radarLayer.addTo(map);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXPORTS — CSV data dump, PNG snapshot
+// ══════════════════════════════════════════════════════════════
+function csvEscape(v){
+  if(v === null || v === undefined) return '';
+  const s = String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+function downloadBlob(filename, content, mime){
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function exportCsv(){
+  const label = (viewMode === 'range' ? (currentRangeStart+'_to_'+currentRangeEnd) : selectedDateStr) || 'export';
+  const lines = [];
+  lines.push(`# Warning Verification export — WFO ${settings.wfo} — ${viewMode==='range' ? ('Range '+rangeLabel) : ('Date '+selectedDateStr)}`);
+  lines.push('');
+  lines.push('## Warnings');
+  lines.push(['ETN','Product','Phenomena','County/Zone','Issued (UTC)','Expires (UTC)','Status','PDS','Emergency','Matched LSR Count'].join(','));
+  currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue)).forEach(e => {
+    const meta = PHEN_META[e.phenomena] || { code: e.phenomena };
+    lines.push([e.etn, meta.code, e.phenomena, (e.counties||[]).join('; '), e.issue, e.expire,
+      STATUS_META[e.status].label, e.pdsFlag ? 'Y' : '', e.emergencyFlag ? 'Y' : '', e.stormreports.length
+    ].map(csvEscape).join(','));
+  });
+  lines.push('');
+  lines.push('## Local Storm Reports');
+  lines.push(['Time (UTC)','Type','Magnitude','City','County','State','Warned','Assoc. ETNs'].join(','));
+  currentReports.filter(r => r.inRange).sort((a,b) => new Date(a.valid) - new Date(b.valid)).forEach(r => {
+    lines.push([r.valid, r.typetext || r.lsrtype, r.magnitude, r.city, r.county, r.state, r.warned ? 'Y':'N', r.events
+    ].map(csvEscape).join(','));
+  });
+  if(dayStats){
+    lines.push('');
+    lines.push('## Stats');
+    lines.push(['Metric','Value'].join(','));
+    lines.push(['Hits', dayStats.hits].join(','));
+    lines.push(['False Alarms', dayStats.falseAlarms].join(','));
+    lines.push(['Misses', dayStats.misses].join(','));
+    lines.push(['POD', dayStats.pod !== null ? dayStats.pod.toFixed(3) : ''].join(','));
+    lines.push(['FAR', dayStats.far !== null ? dayStats.far.toFixed(3) : ''].join(','));
+    lines.push(['CSI', dayStats.csi !== null ? dayStats.csi.toFixed(3) : ''].join(','));
+  }
+  downloadBlob(`${settings.wfo}_warnings_${label}.csv`, lines.join('\n'), 'text/csv');
+}
+
+async function exportPng(){
+  const btn = document.getElementById('exportPngBtn');
+  if(typeof html2canvas === 'undefined'){ alert('PNG export library failed to load — check your connection and try again.'); return; }
+  btn.classList.add('spinning');
+  try{
+    const target = document.querySelector('.main');
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#0a0e1a',
+      useCORS: true,
+      scale: 2,
+      ignoreElements: (el) => el.classList && el.classList.contains('leaflet-tile')
+    });
+    const label = (viewMode === 'range' ? (currentRangeStart+'_to_'+currentRangeEnd) : selectedDateStr) || 'export';
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `${settings.wfo}_verification_${label}.png`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }catch(err){
+    console.error(err);
+    alert('Could not export image: ' + err.message);
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 //  RENDER ALL
@@ -1366,6 +1904,7 @@ function renderAll(){
   drawZoneLayer();
   drawWarningsOnMap();
   drawLsrsOnMap();
+  updateRadarLayer();
   renderMapLegend();
   if(selectedEventId){
     const e = currentEvents.find(x=>x.id===selectedEventId);
@@ -1410,7 +1949,71 @@ document.getElementById('todayBtn').addEventListener('click', () => loadDay(toda
 document.getElementById('datePicker').addEventListener('change', (e) => loadDay(e.target.value));
 document.getElementById('filterOnlyUnverified').addEventListener('change', renderWarnTable);
 document.getElementById('showLsrToggle').addEventListener('change', (e) => { showLsrs = e.target.checked; drawLsrsOnMap(); renderMapLegend(); });
-document.getElementById('wfoSelect').addEventListener('change', (e) => switchWfo(e.target.value));
+// WFO searchable combobox
+const wfoInput = document.getElementById('wfoSearchInput');
+wfoInput.addEventListener('focus', () => { wfoInput.select(); openWfoDropdown(); });
+wfoInput.addEventListener('input', () => openWfoDropdown());
+wfoInput.addEventListener('keydown', (e) => {
+  if(!wfoDropdownOpen && e.key === 'ArrowDown'){ openWfoDropdown(); return; }
+  if(!wfoDropdownOpen) return;
+  if(e.key === 'ArrowDown'){ e.preventDefault(); wfoHighlightIdx = Math.min(wfoHighlightIdx+1, wfoFilteredList.length-1); updateWfoHighlight(); }
+  else if(e.key === 'ArrowUp'){ e.preventDefault(); wfoHighlightIdx = Math.max(wfoHighlightIdx-1, 0); updateWfoHighlight(); }
+  else if(e.key === 'Enter'){ e.preventDefault(); const opt = wfoFilteredList[wfoHighlightIdx]; if(opt) chooseWfoOption(opt.id); }
+  else if(e.key === 'Escape'){ closeWfoDropdown(); wfoInput.value = wfoLabel(WFO_LIST.find(o=>o.id===settings.wfo)); wfoInput.blur(); }
+});
+document.addEventListener('click', (e) => { if(!document.getElementById('wfoCombo').contains(e.target)) closeWfoDropdown(); });
+
+// Radar overlay
+document.getElementById('showRadarToggle').addEventListener('change', (e) => {
+  showRadar = e.target.checked;
+  document.getElementById('radarTimeSlider').style.display = showRadar ? 'inline-block' : 'none';
+  document.getElementById('radarTimeLabel').style.display = showRadar ? 'inline' : 'none';
+  if(showRadar){
+    let defaultMin = 720;
+    if(currentEvents.length && selectedDateStr){
+      const first = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue))[0];
+      const dayStartMs = localMidnightToUTC(selectedDateStr, settings.timezone).getTime();
+      defaultMin = Math.max(0, Math.min(1439, Math.round((new Date(first.issue).getTime() - dayStartMs) / 60000)));
+    }
+    document.getElementById('radarTimeSlider').value = defaultMin;
+    refreshRadarTimeLabel();
+  }
+  updateRadarLayer();
+  renderMapLegend();
+});
+document.getElementById('radarTimeSlider').addEventListener('input', () => { refreshRadarTimeLabel(); updateRadarLayer(); renderMapLegend(); });
+
+// Trends modal
+document.getElementById('trendsBtn').addEventListener('click', () => { openModal('trendsModal'); loadTrends(30); });
+document.querySelectorAll('.trend-range-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.trend-range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadTrends(parseInt(btn.dataset.days, 10));
+}));
+
+// Exports + print
+document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
+document.getElementById('exportPngBtn').addEventListener('click', exportPng);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    if(wfoDropdownOpen){ closeWfoDropdown(); wfoInput.blur(); return; }
+    const openModalEl = document.querySelector('.modal-overlay.open');
+    if(openModalEl){ closeModal(openModalEl.id); return; }
+    return;
+  }
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  if(typing) return;
+  if(document.querySelector('.modal-overlay.open')) return;
+  if(e.key === 'ArrowLeft' && viewMode === 'day'){ e.preventDefault(); loadDay(addDaysToDateStr(selectedDateStr, -1)); }
+  else if(e.key === 'ArrowRight' && viewMode === 'day'){ e.preventDefault(); loadDay(addDaysToDateStr(selectedDateStr, 1)); }
+  else if(e.key === 'j'){ e.preventDefault(); stepSelectedEvent(1); }
+  else if(e.key === 'k'){ e.preventDefault(); stepSelectedEvent(-1); }
+  else if(e.key === 'n'){ e.preventDefault(); jumpToNextUnverified(); }
+});
 
 document.querySelectorAll('.subtab-btn').forEach(btn => btn.addEventListener('click', () => switchSubtab(btn.dataset.subtab)));
 
@@ -1460,9 +2063,19 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
 //  INIT
 // ══════════════════════════════════════════════════════════════
 (function start(){
-  populateWfoSelect();
+  const urlState = readUrlState();
+  if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
+    settings.wfo = urlState.wfo.toUpperCase();
+    document.getElementById('pageTitle').textContent = settings.wfo + ' WARNING VERIFICATION';
+  }
+  initWfoCombo();
   initMap();
-  loadDay(todayInTZ(settings.timezone));
+  if(urlState.start && urlState.end){
+    switchSubtab('map');
+    loadRange(urlState.start, urlState.end);
+  } else {
+    loadDay(urlState.date || todayInTZ(settings.timezone));
+  }
 })();
 </script>
 </body>
