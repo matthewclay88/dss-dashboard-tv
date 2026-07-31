@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>BTV CWA Active Watches, Warnings & Advisories</title>
+<title id="page-title">BTV CWA Active Watches, Warnings & Advisories</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   /* Inline fallback in case leaflet.css fails to load on restrictive
@@ -13,6 +13,14 @@
   .leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0;}
   .leaflet-container{overflow:hidden;}
   .leaflet-tile{filter:none !important;}
+  /* Esri's World Topo Map renders noticeably paler at the zoomed-out
+     level needed to fit an entire CWA than it does zoomed in on a city —
+     that's the tile provider's own styling, not a loading bug (tiles
+     load fine, they're just genuinely faint at this zoom). This
+     compensates with a moderate contrast/saturation boost, applied to
+     the tile PANE so it survives the !important rule above (which only
+     targets individual tile <img> elements, not their container). */
+  .leaflet-tile-pane{filter:saturate(1.4) contrast(1.18) brightness(0.93);}
   .leaflet-zoom-box{width:0;height:0;box-sizing:border-box;z-index:800;}
   .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important;}
   .leaflet-tile-pane{z-index:200;}
@@ -248,6 +256,26 @@
   .leaflet-popup-content-wrapper { background: #0f1d30; color: #e8edf4; }
   .leaflet-popup-tip { background: #0f1d30; }
 
+  /* ── WFO SEARCHABLE COMBOBOX ── */
+  .wfo-combo { position: relative; }
+  .wfo-search-input {
+    background: #15243a; border: 1px solid #2a3f5c; color: #e8edf4;
+    font-size: 15px; font-weight: 700; padding: 9px 14px; border-radius: 8px;
+    font-family: inherit; width: 220px;
+  }
+  .wfo-search-input:focus { outline: none; border-color: #3a6ea8; background: #16324f; }
+  .wfo-dropdown {
+    display: none; position: absolute; top: calc(100% + 6px); left: 0; width: 320px;
+    max-height: 340px; overflow-y: auto; background: #0f1d30; border: 1px solid #2a3f5c;
+    border-radius: 10px; z-index: 5000; box-shadow: 0 12px 32px rgba(0,0,0,.55);
+  }
+  .wfo-dropdown.open { display: block; }
+  .wfo-opt { display: flex; align-items: baseline; gap: 10px; padding: 9px 14px; cursor: pointer; font-size: 14px; }
+  .wfo-opt:hover, .wfo-opt.highlighted { background: #17263d; }
+  .wfo-opt-code { font-weight: 800; color: #6fa8dc; width: 34px; flex-shrink: 0; }
+  .wfo-opt-name { color: #cdd8e6; }
+  .wfo-opt-empty { padding: 12px 14px; font-size: 13px; color: #93a3b8; }
+
   @media (max-width: 1200px) {
     html, body { height: auto; }
     body { overflow: auto; }
@@ -257,6 +285,8 @@
     .panel, .active-products-panel { height: auto; }
     #map, .map-wrap { height: 320px; flex: none; }
     .table-scroll { max-height: 420px; flex: none; }
+    .header { flex-wrap: wrap; row-gap: 10px; }
+    .wfo-search-input { width: 160px; }
   }
 </style>
 </head>
@@ -265,9 +295,13 @@
 <div class="header">
   <div class="header-left">
     <div class="logo">NWS</div>
-    <h1>BTV CWA Active Watches, Warnings &amp; Advisories</h1>
+    <h1 id="page-h1">BTV CWA Active Watches, Warnings &amp; Advisories</h1>
   </div>
   <div class="header-right">
+    <div class="wfo-combo" id="wfoCombo">
+      <input type="text" id="wfoSearchInput" class="wfo-search-input" placeholder="Search office…" autocomplete="off" title="Search NWS office">
+      <div class="wfo-dropdown" id="wfoDropdown"></div>
+    </div>
     <div>
       <div class="label">Last Updated:</div>
       <div class="time" id="last-updated">--</div>
@@ -304,7 +338,7 @@
   <div class="main-grid">
 
     <div class="panel">
-      <div class="panel-title">BTV CWA Map -- Click the Legend below to turn off and on warning types</div>
+      <div class="panel-title" id="map-panel-title">BTV CWA Map -- Click the Legend below to turn off and on warning types</div>
       <div class="map-toggles">
         <button class="toggle-btn active" id="toggle-zone" type="button">
           <span class="toggle-dot"></span>Zone Based WWA
@@ -341,7 +375,7 @@
           </thead>
           <tbody id="table-body"></tbody>
         </table>
-        <div class="empty-state" id="empty-state" style="display:none;">No active watches, warnings, or advisories for the BTV CWA.</div>
+        <div class="empty-state" id="empty-state" style="display:none;">No active watches, warnings, or advisories for this CWA.</div>
       </div>
     </div>
 
@@ -353,16 +387,190 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ---------------------------------------------------------------------------
-// Zone geometry is fetched at runtime from the community-maintained
-// "allzones.geojson" file. That file covers every NWS forecast zone
-// nationwide, so we filter it down to the zones BTV (Burlington) actually
-// services, which historically includes a few border Albany (ALY) zones too
-// (Bennington, Western Windham, Eastern Windham).
+// Zone AND county geometry are fetched live, per selected office, from the
+// official NWS zone reference service — not a static file. (An earlier
+// version of this pulled from a community "allzones.geojson" that despite
+// its name only actually covered 2 offices — BTV and neighboring ALY — a
+// discovery made the same way in a sibling dashboard on this same live
+// service, which is confirmed to return real zone/county sets for any WFO
+// nationwide.)
 // ---------------------------------------------------------------------------
-const GEOJSON_URL =
-  "https://raw.githubusercontent.com/matthewclay88/severe-climatology/main/allzones.geojson";
-const TARGET_CWAS = ['BTV'];
-const EXTRA_ZONES = ['VT013', 'VT014', 'VT015']; // Bennington, W. Windham, E. Windham (ALY, borders BTV)
+const ZONE_QUERY_URL = 'https://mapservices.weather.noaa.gov/static/rest/services/nws_reference_maps/nws_reference_map/MapServer/8/query';
+const COUNTY_QUERY_URL = 'https://mapservices.weather.noaa.gov/static/rest/services/nws_reference_maps/nws_reference_map/MapServer/2/query';
+const ALERTS_API = 'https://api.weather.gov/alerts/active';
+
+// Every NWS Weather Forecast Office nationwide, keyed by 3-letter ID —
+// shared list with the companion warning-verification dashboard, sourced
+// from IEM's own WFO network table.
+const WFO_LIST = [
+  { id:'ABQ', name:'Albuquerque, NM' }, { id:'ABR', name:'Aberdeen, SD' },
+  { id:'AFC', name:'Anchorage, AK' }, { id:'AFG', name:'Fairbanks, AK' },
+  { id:'AJK', name:'Juneau, AK' }, { id:'AKQ', name:'Wakefield, VA' },
+  { id:'ALY', name:'Albany, NY' }, { id:'AMA', name:'Amarillo, TX' },
+  { id:'APX', name:'Gaylord, MI' }, { id:'ARX', name:'La Crosse, WI' },
+  { id:'BGM', name:'Binghamton, NY' }, { id:'BIS', name:'Bismarck, ND' },
+  { id:'BMX', name:'Birmingham, AL' }, { id:'BOI', name:'Boise, ID' },
+  { id:'BOU', name:'Denver, CO' }, { id:'BOX', name:'Boston / Norton, MA' },
+  { id:'BRO', name:'Brownsville, TX' }, { id:'BTV', name:'Burlington, VT' },
+  { id:'BUF', name:'Buffalo, NY' }, { id:'BYZ', name:'Billings, MT' },
+  { id:'CAE', name:'Columbia, SC' }, { id:'CAR', name:'Caribou, ME' },
+  { id:'CHS', name:'Charleston, SC' }, { id:'CLE', name:'Cleveland, OH' },
+  { id:'CRP', name:'Corpus Christi, TX' }, { id:'CTP', name:'State College, PA' },
+  { id:'CYS', name:'Cheyenne, WY' }, { id:'DDC', name:'Dodge City, KS' },
+  { id:'DLH', name:'Duluth, MN' }, { id:'DMX', name:'Des Moines, IA' },
+  { id:'DTX', name:'Detroit, MI' }, { id:'DVN', name:'Quad Cities, IA/IL' },
+  { id:'EAX', name:'Kansas City/Pleasant Hill, MO' }, { id:'EKA', name:'Eureka, CA' },
+  { id:'EPZ', name:'El Paso, TX' }, { id:'EWX', name:'Austin/San Antonio, TX' },
+  { id:'FFC', name:'Peachtree City, GA' }, { id:'FGF', name:'Grand Forks, ND' },
+  { id:'FGZ', name:'Flagstaff, AZ' }, { id:'FSD', name:'Sioux Falls, SD' },
+  { id:'FWD', name:'Dallas/Fort Worth, TX' }, { id:'GGW', name:'Glasgow, MT' },
+  { id:'GID', name:'Hastings, NE' }, { id:'GJT', name:'Grand Junction, CO' },
+  { id:'GLD', name:'Goodland, KS' }, { id:'GRB', name:'Green Bay, WI' },
+  { id:'GRR', name:'Grand Rapids, MI' }, { id:'GSP', name:'Greenville/Spartanburg, SC' },
+  { id:'GUM', name:'Guam' }, { id:'GYX', name:'Gray, ME' },
+  { id:'HFO', name:'Honolulu, HI' }, { id:'HGX', name:'Houston/Galveston, TX' },
+  { id:'HNX', name:'San Joaquin Valley/Hanford, CA' }, { id:'HUN', name:'Huntsville, AL' },
+  { id:'ICT', name:'Wichita, KS' }, { id:'ILM', name:'Wilmington, NC' },
+  { id:'ILN', name:'Wilmington, OH' }, { id:'ILX', name:'Lincoln, IL' },
+  { id:'IND', name:'Indianapolis, IN' }, { id:'IWX', name:'Northern Indiana, IN' },
+  { id:'JAN', name:'Jackson, MS' }, { id:'JAX', name:'Jacksonville, FL' },
+  { id:'JKL', name:'Jackson, KY' }, { id:'KEY', name:'Key West, FL' },
+  { id:'LBF', name:'North Platte, NE' }, { id:'LCH', name:'Lake Charles, LA' },
+  { id:'LIX', name:'New Orleans, LA' }, { id:'LKN', name:'Elko, NV' },
+  { id:'LMK', name:'Louisville, KY' }, { id:'LOT', name:'Chicago, IL' },
+  { id:'LOX', name:'Los Angeles/Oxnard, CA' }, { id:'LSX', name:'St Louis, MO' },
+  { id:'LUB', name:'Lubbock, TX' }, { id:'LWX', name:'Baltimore/Washington, VA' },
+  { id:'LZK', name:'Little Rock, AR' }, { id:'MAF', name:'Midland/Odessa, TX' },
+  { id:'MEG', name:'Memphis, TN' }, { id:'MFL', name:'Miami, FL' },
+  { id:'MFR', name:'Medford, OR' }, { id:'MHX', name:'Newport/Morehead City, NC' },
+  { id:'MKX', name:'Milwaukee/Sullivan, WI' }, { id:'MLB', name:'Melbourne, FL' },
+  { id:'MOB', name:'Mobile, AL' }, { id:'MPX', name:'Twin Cities/Chanhassen, MN' },
+  { id:'MQT', name:'Marquette, MI' }, { id:'MRX', name:'Morristown, TN' },
+  { id:'MSO', name:'Missoula, MT' }, { id:'MTR', name:'San Francisco, CA' },
+  { id:'OAX', name:'Omaha/Valley, NE' }, { id:'OHX', name:'Nashville, TN' },
+  { id:'OKX', name:'New York, NY' }, { id:'OTX', name:'Spokane, WA' },
+  { id:'OUN', name:'Norman, OK' }, { id:'PAH', name:'Paducah, KY' },
+  { id:'PBZ', name:'Pittsburgh, PA' }, { id:'PDT', name:'Pendleton, OR' },
+  { id:'PHI', name:'Mount Holly, NJ' }, { id:'PIH', name:'Pocatello/Idaho Falls, ID' },
+  { id:'PQR', name:'Portland, OR' }, { id:'PSR', name:'Phoenix, AZ' },
+  { id:'PUB', name:'Pueblo, CO' }, { id:'RAH', name:'Raleigh, NC' },
+  { id:'REV', name:'Reno, NV' }, { id:'RIW', name:'Riverton, WY' },
+  { id:'RLX', name:'Charleston, WV' }, { id:'RNK', name:'Blacksburg, VA' },
+  { id:'SEW', name:'Seattle, WA' }, { id:'SGF', name:'Springfield, MO' },
+  { id:'SGX', name:'San Diego, CA' }, { id:'SHV', name:'Shreveport, LA' },
+  { id:'SJT', name:'San Angelo, TX' }, { id:'SJU', name:'San Juan, PR' },
+  { id:'SLC', name:'Salt Lake City, UT' }, { id:'STO', name:'Sacramento, CA' },
+  { id:'TAE', name:'Tallahassee, FL' }, { id:'TBW', name:'Tampa Bay Area/Ruskin, FL' },
+  { id:'TFX', name:'Great Falls, MT' }, { id:'TOP', name:'Topeka, KS' },
+  { id:'TSA', name:'Tulsa, OK' }, { id:'TWC', name:'Tucson, AZ' },
+  { id:'UNR', name:'Rapid City, SD' }, { id:'VEF', name:'Las Vegas, NV' }
+];
+
+let settings = { wfo: 'BTV' };
+
+// ══════════════════════════════════════════════════════════════
+//  WFO SEARCHABLE COMBOBOX + URL STATE
+// ══════════════════════════════════════════════════════════════
+let wfoDropdownOpen = false;
+let wfoHighlightIdx = -1;
+let wfoFilteredList = [];
+
+function wfoLabel(o){ return o ? `${o.id} — ${o.name}` : ''; }
+
+function getRecentWfos(){
+  try{
+    const raw = localStorage.getItem('wwa_wfo_recent');
+    return raw ? JSON.parse(raw) : [];
+  }catch(err){ return []; }
+}
+function addRecentWfo(code){
+  try{
+    let recents = getRecentWfos().filter(c => c !== code);
+    recents.unshift(code);
+    localStorage.setItem('wwa_wfo_recent', JSON.stringify(recents.slice(0,5)));
+  }catch(err){ /* localStorage unavailable — recents just won't persist */ }
+}
+
+function initWfoCombo(){
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === settings.wfo));
+}
+
+function renderWfoDropdown(query){
+  const dd = document.getElementById('wfoDropdown');
+  const q = (query || '').trim().toUpperCase();
+  let list;
+  if(!q){
+    const recentCodes = getRecentWfos();
+    const recents = recentCodes.map(c => WFO_LIST.find(o => o.id === c)).filter(Boolean);
+    const recentIds = new Set(recents.map(o => o.id));
+    const rest = WFO_LIST.filter(o => !recentIds.has(o.id));
+    list = recents.length ? [...recents.map(o => ({ ...o, recent: true })), ...rest] : WFO_LIST.slice();
+  } else {
+    list = WFO_LIST.filter(o => o.id.includes(q) || o.name.toUpperCase().includes(q));
+  }
+  wfoFilteredList = list;
+  wfoHighlightIdx = list.length ? 0 : -1;
+
+  if(list.length === 0){
+    dd.innerHTML = `<div class="wfo-opt-empty">No matching office</div>`;
+  } else {
+    dd.innerHTML = list.map((o, i) => `<div class="wfo-opt${i===wfoHighlightIdx?' highlighted':''}" data-idx="${i}" data-id="${o.id}">
+      <span class="wfo-opt-code">${o.id}</span><span class="wfo-opt-name">${o.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>
+    </div>`).join('');
+  }
+  dd.querySelectorAll('.wfo-opt').forEach(el => {
+    el.addEventListener('mousedown', (e) => { e.preventDefault(); chooseWfoOption(el.dataset.id); });
+    el.addEventListener('mouseenter', () => { wfoHighlightIdx = parseInt(el.dataset.idx, 10); updateWfoHighlight(); });
+  });
+}
+
+function updateWfoHighlight(){
+  const opts = document.querySelectorAll('.wfo-opt');
+  opts.forEach((el, i) => el.classList.toggle('highlighted', i === wfoHighlightIdx));
+  const active = document.querySelector('.wfo-opt.highlighted');
+  if(active) active.scrollIntoView({ block: 'nearest' });
+}
+
+function openWfoDropdown(){
+  wfoDropdownOpen = true;
+  document.getElementById('wfoDropdown').classList.add('open');
+  const current = document.getElementById('wfoSearchInput').value;
+  renderWfoDropdown(current === wfoLabel(WFO_LIST.find(o=>o.id===settings.wfo)) ? '' : current);
+}
+function closeWfoDropdown(){
+  wfoDropdownOpen = false;
+  document.getElementById('wfoDropdown').classList.remove('open');
+}
+function chooseWfoOption(code){
+  addRecentWfo(code);
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === code));
+  closeWfoDropdown();
+  switchWfo(code);
+}
+
+async function switchWfo(newWfo){
+  if(!newWfo) return;
+  document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === newWfo));
+  if(newWfo === settings.wfo) return;
+  settings.wfo = newWfo;
+  disabledHazards = new Set();
+  document.getElementById('page-h1').textContent = newWfo + ' CWA Active Watches, Warnings & Advisories';
+  document.getElementById('page-title').textContent = newWfo + ' CWA Active Watches, Warnings & Advisories';
+  document.getElementById('map-panel-title').textContent = newWfo + ' CWA Map -- Click the Legend below to turn off and on warning types';
+  updateUrlState();
+  await switchWfoZones(newWfo);
+  await refresh();
+}
+
+function readUrlState(){
+  const params = new URLSearchParams(window.location.search);
+  return { wfo: params.get('wfo') };
+}
+function updateUrlState(){
+  const params = new URLSearchParams();
+  params.set('wfo', settings.wfo);
+  history.replaceState(null, '', window.location.pathname + '?' + params.toString());
+}
 
 const PRODUCT_NAMES = {
   'SV.W':'Severe Thunderstorm Warning','SV.A':'Severe Thunderstorm Watch',
@@ -421,7 +629,10 @@ const HAZARD_COLORS = {
 // Opacity tuning — adjust these to make hazard shading more/less prominent.
 // ---------------------------------------------------------------------------
 const ZONE_FILL_OPACITY = 0.45;       // active zone shading on the map
-const ZONE_BASE_FILL_OPACITY = 0.05;  // inactive/no-product zones
+const ZONE_BASE_FILL_OPACITY = 0;     // inactive/no-product zones — no fill at all, outline only (a 5% haze across the ENTIRE visible map, all the time, was a major contributor to the washed-out look)
+const ZONE_BASE_LINE_COLOR = '#6f89a8'; // was solid black at 2.5px — a full CWA's worth of that reads as a dense mesh over the whole basemap
+const ZONE_BASE_LINE_WEIGHT = 1.1;
+const ZONE_BASE_LINE_OPACITY = 0.6;
 const POLYGON_FILL_OPACITY = 0.12;    // warning polygons (tornado/SVR/FFW/FLW)
 const POLYGON_HOVER_FILL_OPACITY = 0.35; // warning polygons on mouseover (cap)
 
@@ -432,21 +643,20 @@ const POLYGON_STYLE = {
   FA: { color: HAZARD_COLORS['FA.W'], weight: 3, fillColor: HAZARD_COLORS['FA.W'], fillOpacity: POLYGON_FILL_OPACITY }
 };
 
-// County-based products (e.g. SPC severe thunderstorm / tornado WATCHES) use
-// FIPS county UGC codes ("VTC007"), not forecast-zone codes ("VTZ007"). The
-// two numbering schemes are unrelated, so county-form alerts need a manual
-// crosswalk to the forecast zones. Covers every VT/NY county overlapping BTV.
-const COUNTY_TO_ZONES = {
-  'VT001': ['009','018'], 'VT005': ['007'], 'VT007': ['017','005'], 'VT009': ['004'],
-  'VT011': ['016','002'], 'VT013': ['001'], 'VT015': ['006'], 'VT017': ['010'],
-  'VT019': ['003'], 'VT021': ['011','019'], 'VT023': ['008'], 'VT027': ['020','021'],
-  'NY019': ['028','031'], 'NY031': ['034','035'], 'NY033': ['027','030'],
-  'NY089': ['026','029','087']
-};
+// County-based products (e.g. SPC severe thunderstorm / tornado WATCHES)
+// use FIPS county UGC codes ("VTC007"), which are numbered independently
+// of forecast zones. Rather than a hand-maintained crosswalk table (only
+// ever practical for one office, and BTV/VT/NY-specific), county-form
+// products get the real county polygon fetched directly from the live NWS
+// county service and drawn as their own layer — see countyPolygonLayer /
+// drawCountyProducts() below. Works for any office nationwide with no
+// per-office setup.
 
 let polygonLayer = null;
+let countyPolygonLayer = null;
 let zoneProducts = [];
 let polygonProducts = [];
+let countyProducts = [];
 
 // Disables Leaflet's use of CSS 3D transforms for panning/zooming.
 // Confirmed helpful on the Samsung Tizen TV browser elsewhere in this
@@ -465,10 +675,15 @@ let showPolygonWarnings = true;
 let disabledHazards = new Set();
 
 function zoneKey(state, zoneNum){ return state + zoneNum; }
+function countyKey(state, fips3){ return state + fips3; }
 
 let map, geoLayer;
-let BTV_ZONE_SET = new Set();
+let ACTIVE_ZONE_SET = new Set();
+let ACTIVE_COUNTY_SET = new Set();
+let countyGeomByKey = {};   // countyKey -> GeoJSON geometry, for on-demand shading of county-form products
+let countyNameByKey = {};   // countyKey -> display name, for popups
 let zonesReady = false;
+
 
 function initMap(filteredGeojson){
 
@@ -552,18 +767,20 @@ function initMap(filteredGeojson){
   });
 
   polygonLayer = L.layerGroup().addTo(map);
+  countyPolygonLayer = L.layerGroup().addTo(map);
 
   geoLayer = L.geoJSON(filteredGeojson,{
     style:function(){
       return {
-        color:"#000000",
-        weight:2.5,
+        color: ZONE_BASE_LINE_COLOR,
+        weight: ZONE_BASE_LINE_WEIGHT,
+        opacity: ZONE_BASE_LINE_OPACITY,
         fillColor:"#3a4f6c",
         fillOpacity:ZONE_BASE_FILL_OPACITY
       };
     },
     onEachFeature:function(feature,layer){
-      layer._baseWeight=2.5;
+      layer._baseWeight = ZONE_BASE_LINE_WEIGHT;
 
       layer.on("mouseover",function(){
         layer.setStyle({
@@ -606,7 +823,7 @@ function resetMapView(){
       padding:[10,10]
     });
   }else{
-    map.setView([44.3,-72.9],8);
+    map.setView([39.8,-98.5],4);
   }
 }
 
@@ -642,21 +859,76 @@ window.addEventListener('load', function(){
 });
 window.addEventListener('resize', forceMapPixelSize);
 
+// Converts the live ArcGIS query response (lowercase field names: state,
+// zone, name, cwa, state_zone / fips, countyname) into the property shape
+// the rest of this file already expects (uppercase: STATE, ZONE, NAME,
+// STATE_ZONE) — keeps every existing p.STATE / p.ZONE / p.NAME reference
+// elsewhere in the file working unchanged, whether the geometry came from
+// the old static file or this live service.
+function remapZoneProps(attrs){
+  return {
+    STATE: attrs.state,
+    ZONE: attrs.zone,
+    NAME: attrs.name,
+    STATE_ZONE: attrs.state + attrs.zone,
+    CWA: attrs.cwa
+  };
+}
+
+async function fetchArcGisGeoJSON(url, wfo){
+  const params = new URLSearchParams();
+  params.set('where', `cwa='${wfo}'`);
+  params.set('outFields', '*');
+  params.set('returnGeometry', 'true');
+  params.set('f', 'geojson');
+  const res = await fetch(url + '?' + params.toString());
+  if(!res.ok) throw new Error('NWS zone service returned HTTP ' + res.status);
+  const data = await res.json();
+  return data.features || [];
+}
+
+// Fetches both zone and county geometry for a given WFO from the live NWS
+// reference service (nationwide coverage, confirmed against multiple
+// offices) and returns them normalized for use elsewhere in this file.
+async function loadZonesData(wfo){
+  const [zoneFeatures, countyFeatures] = await Promise.all([
+    fetchArcGisGeoJSON(ZONE_QUERY_URL, wfo),
+    fetchArcGisGeoJSON(COUNTY_QUERY_URL, wfo)
+  ]);
+
+  const zoneFC = {
+    type: 'FeatureCollection',
+    features: zoneFeatures.map(f => ({ type: 'Feature', geometry: f.geometry, properties: remapZoneProps(f.properties) }))
+  };
+
+  const zoneSet = new Set(zoneFeatures.map(f => zoneKey(f.properties.state, f.properties.zone)));
+
+  const countySet = new Set();
+  const geomByKey = {};
+  const nameByKey = {};
+  countyFeatures.forEach(f => {
+    const p = f.properties;
+    if(!p.fips || p.fips.length < 3) return;
+    const key = countyKey(p.state, p.fips.slice(-3));
+    countySet.add(key);
+    geomByKey[key] = f.geometry;
+    nameByKey[key] = p.countyname;
+  });
+
+  return { zoneFC, zoneSet, countySet, geomByKey, nameByKey };
+}
+
+// First load only — creates the Leaflet map itself (can't be re-run; a
+// second L.map() call on an already-initialized container throws).
 async function loadZones(){
   const statusEl = document.getElementById('map-status');
   try{
-    const res = await fetch(GEOJSON_URL);
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const features = (data.features || []).filter(function(f){
-      const p = f.properties || {};
-      if(TARGET_CWAS.includes(p.CWA)) return true;
-      if(EXTRA_ZONES.includes(p.STATE_ZONE)) return true;
-      return false;
-    });
-    const filtered = { type: 'FeatureCollection', features: features };
-    BTV_ZONE_SET = new Set(features.map(f => zoneKey(f.properties.STATE, f.properties.ZONE)));
-    initMap(filtered);
+    const result = await loadZonesData(settings.wfo);
+    ACTIVE_ZONE_SET = result.zoneSet;
+    ACTIVE_COUNTY_SET = result.countySet;
+    countyGeomByKey = result.geomByKey;
+    countyNameByKey = result.nameByKey;
+    initMap(result.zoneFC);
     statusEl.style.display = 'none';
     zonesReady = true;
   } catch(e){
@@ -665,6 +937,32 @@ async function loadZones(){
     // Still init an empty map so the rest of the dashboard (table/stats) works.
     initMap({ type:'FeatureCollection', features: [] });
     zonesReady = true;
+  }
+}
+
+// WFO switch — updates the already-created map's zone/county data in place
+// rather than recreating the map (which would throw, and would also throw
+// away the user's current pan/zoom for no reason on every switch).
+async function switchWfoZones(wfo){
+  const statusEl = document.getElementById('map-status');
+  statusEl.textContent = 'Loading ' + wfo + ' zone boundaries…';
+  statusEl.style.display = 'flex';
+  try{
+    const result = await loadZonesData(wfo);
+    ACTIVE_ZONE_SET = result.zoneSet;
+    ACTIVE_COUNTY_SET = result.countySet;
+    countyGeomByKey = result.geomByKey;
+    countyNameByKey = result.nameByKey;
+    geoLayer.clearLayers();
+    geoLayer.addData(result.zoneFC);
+    if(polygonLayer) polygonLayer.clearLayers();
+    if(countyPolygonLayer) countyPolygonLayer.clearLayers();
+    resetMapView();
+    statusEl.style.display = 'none';
+  } catch(e){
+    console.error('zone switch error', e);
+    statusEl.textContent = 'Could not load zone boundaries for ' + wfo + ' (' + e.message + ')';
+    statusEl.style.display = 'flex';
   }
 }
 
@@ -723,8 +1021,8 @@ function highlightZones(prods){
         { maxWidth: 280 }
       );
     } else {
-      layer._baseWeight = 2.5;
-      layer.setStyle({ color:'#000000', weight:2.5, fillOpacity:ZONE_BASE_FILL_OPACITY, fillColor:'#3a4f6c', opacity:0.9 });
+      layer._baseWeight = ZONE_BASE_LINE_WEIGHT;
+      layer.setStyle({ color: ZONE_BASE_LINE_COLOR, weight: ZONE_BASE_LINE_WEIGHT, fillOpacity:ZONE_BASE_FILL_OPACITY, fillColor:'#3a4f6c', opacity: ZONE_BASE_LINE_OPACITY });
       layer.bindPopup('<b>'+p.NAME+'</b><br>Zone '+p.STATE_ZONE+'<hr style="border-color:#2a3f5c;margin:6px 0;">No active products');
     }
   });
@@ -805,6 +1103,51 @@ function drawWarningPolygons(products){
 
 }
 
+// County-form products (SPC Tornado/Severe Thunderstorm Watches, and
+// occasionally Flood Watches/Warnings) are issued by county UGC rather
+// than forecast zone. Rather than approximating them onto nearby forecast
+// zones, this draws the actual county polygon — geometry already loaded
+// for the current WFO in countyGeomByKey, no extra fetch needed here.
+function drawCountyProducts(products){
+
+  if(!countyPolygonLayer) return;
+
+  countyPolygonLayer.clearLayers();
+
+  products.forEach(function(p){
+
+    if(!p.countyKeys || p.countyKeys.length === 0) return;
+
+    const color = p.color || '#cdd8e6';
+    const style = { color: color, weight: 2.5, fillColor: color, fillOpacity: ZONE_FILL_OPACITY, opacity: 0.9 };
+
+    p.countyKeys.forEach(function(key){
+      const geom = countyGeomByKey[key];
+      if(!geom) return; // county not in the current WFO's own set — shouldn't happen, matched against it already
+
+      const countyName = countyNameByKey[key] || key;
+      const popupHtml =
+        '<div style="min-width:200px;"><b>' + p.name + '</b><br>' + countyName + ' County' +
+        '<hr style="border-color:#2a3f5c;margin:6px 0;">' +
+        '<div style="font-size:11px;color:#93a3b8;">' + p.code + ' &middot; expires ' + fmtTime(p.expires) + '</div></div>';
+
+      const gj = L.geoJSON(geom, {
+        style: style,
+        onEachFeature: function(feature, layer){
+          layer.on({
+            mouseover: function(){ layer.setStyle({ weight: style.weight + 1, fillOpacity: Math.min(style.fillOpacity + 0.15, 0.6) }); layer.bringToFront(); },
+            mouseout: function(){ layer.setStyle(style); }
+          });
+        }
+      }).bindPopup(popupHtml).addTo(countyPolygonLayer);
+
+      // First matching county becomes the row's zoom/popup target if the
+      // product has no storm-based polygon of its own.
+      if(!p._mapLayer) p._mapLayer = gj;
+    });
+  });
+}
+
 // Re-applies the current map toggle state (zone/polygon master toggles PLUS
 // per-hazard legend toggles) to the already-computed product lists. Called
 // after every refresh AND whenever any toggle/legend item is clicked (no
@@ -812,8 +1155,10 @@ function drawWarningPolygons(products){
 function applyMapFilters(){
   const zProds = filterDisabled(showZoneWarnings ? zoneProducts : []);
   const pProds = filterDisabled(showPolygonWarnings ? polygonProducts : []);
+  const cProds = filterDisabled(showZoneWarnings ? countyProducts : []);
   highlightZones(zProds);
   drawWarningPolygons(pProds);
+  drawCountyProducts(cProds);
   // Legend always reflects the full active product set (not just what's
   // currently shown) so hidden hazard types remain clickable to re-enable.
   renderLegend(products);
@@ -860,36 +1205,49 @@ function countdownClass(ms){
 
 let products = [];
 
+// Builds the exact zone/county UGC list this office actually has (rather
+// than guessing which states to query), and fetches every active alert
+// touching any of them in one request. NWS's zone= parameter accepts a
+// mix of forecast-zone AND county UGCs together (confirmed against the
+// live API), which is what lets county-form SPC watches show up here
+// without a separate query. A busy office's combined UGC list still only
+// runs a few hundred characters — comfortably under normal URL limits.
 async function fetchAlerts(){
-  const states = ['VT','NY'];
-  let all = [];
-  for(const st of states){
-    try{
-      const res = await fetch('https://api.weather.gov/alerts/active?area='+st, { headers: { 'Accept':'application/geo+json' } });
-      const data = await res.json();
-      if(data.features) all = all.concat(data.features);
-    } catch(e){ console.error('fetch error', st, e); }
+  const zoneUgcs = [...ACTIVE_ZONE_SET].map(k => k.slice(0,2) + 'Z' + k.slice(2));
+  const countyUgcs = [...ACTIVE_COUNTY_SET].map(k => k.slice(0,2) + 'C' + k.slice(2));
+  const allUgcs = zoneUgcs.concat(countyUgcs);
+  if(allUgcs.length === 0) return [];
+  try{
+    const res = await fetch(ALERTS_API + '?zone=' + allUgcs.join(','), { headers: { 'Accept':'application/geo+json' } });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return data.features || [];
+  } catch(e){
+    console.error('alerts fetch error', e);
+    return [];
   }
-  return all;
 }
 
-function extractUgcZoneKeys(geocodeUGC){
-  const keys = [];
-  if(!geocodeUGC) return keys;
+// Splits a CAP alert's UGC list into forecast-zone keys and county keys —
+// the two numbering schemes are unrelated, so each is matched against its
+// own active set (ACTIVE_ZONE_SET / ACTIVE_COUNTY_SET) rather than forced
+// into one via a crosswalk.
+function extractUgcKeys(geocodeUGC){
+  const zoneKeys = [], countyKeys = [];
+  if(!geocodeUGC) return { zoneKeys, countyKeys };
   geocodeUGC.forEach(function(ugc){
     if(ugc.length >= 6){
       const state = ugc.substring(0,2);
       const type = ugc.substring(2,3); // 'C' = county FIPS, 'Z' = forecast zone
       const num = ugc.substring(3,6);
       if(type === 'C'){
-        const crossed = COUNTY_TO_ZONES[state+num];
-        if(crossed) crossed.forEach(z => keys.push(state+z));
+        countyKeys.push(countyKey(state, num));
       } else {
-        keys.push(state+num);
+        zoneKeys.push(zoneKey(state, num));
       }
     }
   });
-  return keys;
+  return { zoneKeys, countyKeys };
 }
 
 function firstParam(p, key){
@@ -918,13 +1276,14 @@ function buildProducts(alerts){
 
     const p = f.properties || {};
 
-    const ugcKeys = extractUgcZoneKeys(
+    const ugcKeys = extractUgcKeys(
       p.geocode ? p.geocode.UGC : null
     );
 
-    const matchedKeys = ugcKeys.filter(k => BTV_ZONE_SET.has(k));
+    const matchedZoneKeys = ugcKeys.zoneKeys.filter(k => ACTIVE_ZONE_SET.has(k));
+    const matchedCountyKeys = ugcKeys.countyKeys.filter(k => ACTIVE_COUNTY_SET.has(k));
 
-    if (matchedKeys.length === 0) return;
+    if (matchedZoneKeys.length === 0 && matchedCountyKeys.length === 0) return;
 
     if(seen.has(p.id)) return;
     seen.add(p.id);
@@ -1094,7 +1453,8 @@ function buildProducts(alerts){
       expires,
       updateBy,
 
-      zoneKeys: matchedKeys
+      zoneKeys: matchedZoneKeys,
+      countyKeys: matchedCountyKeys
 
     });
 
@@ -1194,6 +1554,15 @@ function zoomToProduct(p){
     if(layers.length){
       bounds = L.featureGroup(layers).getBounds();
     }
+  }
+
+  if((!bounds || !bounds.isValid()) && p.countyKeys && p.countyKeys.length){
+    try{
+      const countyGeoms = p.countyKeys.map(k => countyGeomByKey[k]).filter(Boolean);
+      if(countyGeoms.length){
+        bounds = L.geoJSON({ type: 'FeatureCollection', features: countyGeoms.map(g => ({ type:'Feature', geometry:g, properties:{} })) }).getBounds();
+      }
+    }catch(e){ /* fall through — bounds stays whatever it was */ }
   }
 
   if(!bounds || !bounds.isValid()) return;
@@ -1311,6 +1680,8 @@ async function refresh(){
         ["TO","SV","FF","FA"].includes(p.phen))
     );
 
+    countyProducts = products.filter(p => p.countyKeys && p.countyKeys.length > 0);
+
     renderStats(products);
     renderTable(products);
     tickCountdowns();
@@ -1340,8 +1711,31 @@ document.getElementById('reset-zoom-btn').addEventListener('click', function(){
   resetMapView();
 });
 
+// WFO searchable combobox
+const wfoInput = document.getElementById('wfoSearchInput');
+wfoInput.addEventListener('focus', () => { wfoInput.select(); openWfoDropdown(); });
+wfoInput.addEventListener('input', () => openWfoDropdown());
+wfoInput.addEventListener('keydown', (e) => {
+  if(!wfoDropdownOpen && e.key === 'ArrowDown'){ openWfoDropdown(); return; }
+  if(!wfoDropdownOpen) return;
+  if(e.key === 'ArrowDown'){ e.preventDefault(); wfoHighlightIdx = Math.min(wfoHighlightIdx+1, wfoFilteredList.length-1); updateWfoHighlight(); }
+  else if(e.key === 'ArrowUp'){ e.preventDefault(); wfoHighlightIdx = Math.max(wfoHighlightIdx-1, 0); updateWfoHighlight(); }
+  else if(e.key === 'Enter'){ e.preventDefault(); const opt = wfoFilteredList[wfoHighlightIdx]; if(opt) chooseWfoOption(opt.id); }
+  else if(e.key === 'Escape'){ closeWfoDropdown(); wfoInput.value = wfoLabel(WFO_LIST.find(o=>o.id===settings.wfo)); wfoInput.blur(); }
+});
+document.addEventListener('click', (e) => { if(!document.getElementById('wfoCombo').contains(e.target)) closeWfoDropdown(); });
+
 (async function start(){
+  const urlState = readUrlState();
+  if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
+    settings.wfo = urlState.wfo.toUpperCase();
+    document.getElementById('page-h1').textContent = settings.wfo + ' CWA Active Watches, Warnings & Advisories';
+    document.getElementById('page-title').textContent = settings.wfo + ' CWA Active Watches, Warnings & Advisories';
+    document.getElementById('map-panel-title').textContent = settings.wfo + ' CWA Map -- Click the Legend below to turn off and on warning types';
+  }
+  initWfoCombo();
   await loadZones();
+  updateUrlState();
   await refresh();
   setInterval(tickCountdowns, 1000);
   setInterval(refresh, 2*60*1000);
