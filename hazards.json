@@ -10,7 +10,7 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f14b6faa08a7c9f7de14f8c78f010c488c790c52.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.041e43cdbffad9411aa83ed840bfbd3788e21ece.001.1",
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
@@ -40,9 +40,9 @@
                 ]
             },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f14b6faa08a7c9f7de14f8c78f010c488c790c52.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.041e43cdbffad9411aa83ed840bfbd3788e21ece.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.f14b6faa08a7c9f7de14f8c78f010c488c790c52.001.1",
+                "id": "urn:oid:2.49.0.1.840.0.041e43cdbffad9411aa83ed840bfbd3788e21ece.001.1",
                 "areaDesc": "Baca, CO",
                 "geocode": {
                     "SAME": [
@@ -55,14 +55,21 @@
                 "affectedZones": [
                     "https://api.weather.gov/zones/county/COC009"
                 ],
-                "references": [],
-                "sent": "2026-08-06T21:59:00-06:00",
-                "effective": "2026-08-06T21:59:00-06:00",
-                "onset": "2026-08-06T21:59:00-06:00",
-                "expires": "2026-08-06T22:15:00-06:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f14b6faa08a7c9f7de14f8c78f010c488c790c52.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.f14b6faa08a7c9f7de14f8c78f010c488c790c52.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T21:59:00-06:00"
+                    }
+                ],
+                "sent": "2026-08-06T22:12:00-06:00",
+                "effective": "2026-08-06T22:12:00-06:00",
+                "onset": "2026-08-06T22:12:00-06:00",
+                "expires": "2026-08-06T22:22:00-06:00",
                 "ends": "2026-08-06T22:15:00-06:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Observed",
@@ -70,32 +77,23 @@
                 "event": "Severe Thunderstorm Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Pueblo CO",
-                "headline": "Severe Thunderstorm Warning issued August 6 at 9:59PM MDT until August 6 at 10:15PM MDT by NWS Pueblo CO",
-                "description": "SVRPUB\n\nThe National Weather Service in Pueblo has issued a\n\n* Severe Thunderstorm Warning for...\nSouth central Baca County in southeastern Colorado...\n\n* Until 1015 PM MDT.\n\n* At 959 PM MDT, a severe thunderstorm was located 10 miles southeast\nof Campo, or 19 miles north of Boise City, moving south at 10 mph.\n\nHAZARD...Ping pong ball size hail and 60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...People and animals outdoors will be injured. Expect hail\ndamage to roofs, siding, windows, and vehicles. Expect\nwind damage to roofs, siding, and trees.\n\n* This severe thunderstorm will remain over mainly rural areas of\nsouth central Baca County.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
+                "headline": "Severe Thunderstorm Warning issued August 6 at 10:12PM MDT until August 6 at 10:15PM MDT by NWS Pueblo CO",
+                "description": "The storm which prompted the warning has moved out of the area.\nTherefore, the warning will be allowed to expire.  However, small\nhail, gusty winds and heavy rain are still possible with this\nthunderstorm.\n\nA Severe Thunderstorm Watch remains in effect until 300 AM MDT for\nsoutheastern Colorado.",
+                "instruction": null,
                 "response": "Shelter",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SVRPUB"
+                        "SVSPUB"
                     ],
                     "WMOidentifier": [
-                        "WUUS55 KPUB 070359"
+                        "WWUS55 KPUB 070412"
+                    ],
+                    "NWSheadline": [
+                        "THE SEVERE THUNDERSTORM WARNING FOR SOUTH CENTRAL BACA COUNTY WILL EXPIRE AT 1015 PM MDT"
                     ],
                     "eventMotionDescription": [
-                        "2026-08-07T03:59:00-00:00...storm...346DEG...9KT...37.01,-102.44"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxHailSize": [
-                        "1.50"
+                        "2026-08-07T04:12:00-00:00...storm...346DEG...9KT...36.99,-102.43"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
@@ -106,7 +104,7 @@
                         "WXR"
                     ],
                     "VTEC": [
-                        "/O.NEW.KPUB.SV.W.0211.260807T0359Z-260807T0415Z/"
+                        "/O.EXP.KPUB.SV.W.0211.000000T0000Z-260807T0415Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-06T22:15:00-06:00"
@@ -118,7 +116,7 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SVR"
+                        "SVS"
                     ],
                     "NationalWeatherService": [
                         "SVW"
@@ -127,13 +125,674 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-58728",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.747103391246ac9463bd102c33c6ac4dfe6f4d0e.001.1",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-58728",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.747103391246ac9463bd102c33c6ac4dfe6f4d0e.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-58728",
+                "id": "urn:oid:2.49.0.1.840.0.747103391246ac9463bd102c33c6ac4dfe6f4d0e.001.1",
+                "areaDesc": "Douglas, CO; Broomfield, CO; Boulder, CO; Denver, CO; Jefferson, CO; Adams, CO; Larimer, CO; Weld, CO; Arapahoe, CO",
+                "geocode": {
+                    "SAME": [
+                        "008035",
+                        "008014",
+                        "008013",
+                        "008031",
+                        "008059",
+                        "008001",
+                        "008069",
+                        "008123",
+                        "008005"
+                    ],
+                    "UGC": [
+                        "COC035",
+                        "COC014",
+                        "COC013",
+                        "COC031",
+                        "COC059",
+                        "COC001",
+                        "COC069",
+                        "COC123",
+                        "COC005"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/COC035",
+                    "https://api.weather.gov/zones/county/COC014",
+                    "https://api.weather.gov/zones/county/COC013",
+                    "https://api.weather.gov/zones/county/COC031",
+                    "https://api.weather.gov/zones/county/COC059",
+                    "https://api.weather.gov/zones/county/COC001",
+                    "https://api.weather.gov/zones/county/COC069",
+                    "https://api.weather.gov/zones/county/COC123",
+                    "https://api.weather.gov/zones/county/COC005"
+                ],
+                "references": [],
+                "sent": "2026-08-06T22:11:00-06:00",
+                "effective": "2026-08-06T22:10:00-06:00",
+                "onset": "2026-08-06T22:10:00-06:00",
+                "expires": "2026-08-07T16:00:00-06:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Air Quality Alert",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Denver CO",
+                "headline": "Air Quality Alert issued August 6 at 10:10PM MDT by NWS Denver CO",
+                "description": "The Colorado Department of Public Health and Environment has\nissued the following...\n\nWHAT...Action Day for Multiple Pollutants.\n\nWHERE...Douglas, Jefferson, Denver, western Arapahoe, western\nAdams, Broomfield, Boulder, Larimer, and Weld Counties\n\nWHEN...400 PM Thursday August 06 to 400 PM Friday August 07\n\nIMPACTS...Action Day for Multiple Pollutants is now in effect for\nthe Front Range Urban Corridor.  Ozone is expected to be in the\nModerate to Unhealthy for Sensitive Groups range on Thursday and\nFriday. The highest concentrations of ozone are most likely in the\nsouthern and western portions of the Denver Metro area. Fine\nparticulate concentrations are expected to be in the Moderate to\nUnhealthy for Sensitive Groups range on Thursday and Friday.  For\nColorado air quality conditions, forecasts, and advisories, visit:\nhttps://www.colorado.gov/airquality/colorado_summary.aspx   If\npossible, please help us reduce ozone pollution by limiting\ndriving gas and diesel-powered vehicles until at least 4 p.m.\nFriday, August 7, 2026. Colorado is also addressing ozone\npollution through state policies. For more information about\nhealth impacts and how ozone pollution forms in Colorado, visit:\nhttps://cdphe.colorado.gov/ozone- pollution-and-your-health\n\nHEALTH INFORMATION...Increasing likelihood of respiratory symptoms\nand breathing discomfort in active children and adults and people\nwith lung disease, such as asthma. Active children and adults, and\npeople with lung disease, such as asthma, should reduce prolonged\nor heavy outdoor exertion.",
+                "instruction": null,
+                "response": "Monitor",
+                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "AQABOU"
+                    ],
+                    "WMOidentifier": [
+                        "AEUS75 KBOU 070411"
+                    ],
+                    "NWSheadline": [
+                        "ACTION DAY FOR MULTIPLE POLLUTANTS FROM 400 PM THURSDAY UNTIL 400 PM FRIDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "AQA"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.747103391246ac9463bd102c33c6ac4dfe6f4d0e.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.747103391246ac9463bd102c33c6ac4dfe6f4d0e.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.747103391246ac9463bd102c33c6ac4dfe6f4d0e.002.1",
+                "areaDesc": "Elbert, CO; Park, CO; Summit, CO; Morgan, CO; Clear Creek, CO; Jackson, CO; Grand, CO; Gilpin, CO",
+                "geocode": {
+                    "SAME": [
+                        "008039",
+                        "008093",
+                        "008117",
+                        "008087",
+                        "008019",
+                        "008057",
+                        "008049",
+                        "008047"
+                    ],
+                    "UGC": [
+                        "COC039",
+                        "COC093",
+                        "COC117",
+                        "COC087",
+                        "COC019",
+                        "COC057",
+                        "COC049",
+                        "COC047"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/COC039",
+                    "https://api.weather.gov/zones/county/COC093",
+                    "https://api.weather.gov/zones/county/COC117",
+                    "https://api.weather.gov/zones/county/COC087",
+                    "https://api.weather.gov/zones/county/COC019",
+                    "https://api.weather.gov/zones/county/COC057",
+                    "https://api.weather.gov/zones/county/COC049",
+                    "https://api.weather.gov/zones/county/COC047"
+                ],
+                "references": [],
+                "sent": "2026-08-06T22:11:00-06:00",
+                "effective": "2026-08-06T22:10:00-06:00",
+                "onset": "2026-08-06T22:10:00-06:00",
+                "expires": "2026-08-07T16:00:00-06:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Air Quality Alert",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Denver CO",
+                "headline": "Air Quality Alert issued August 6 at 10:10PM MDT by NWS Denver CO",
+                "description": "The Colorado Department of Public Health and Environment has\nissued the following...\n\nWHAT...Air Quality Health Advisory for Wildfire Smoke.\n\nWHERE...Moffat, Routt, Grand, Rio Blanco, Eagle, Summit, Garfield,\nPitkin, Mesa, Delta, Gunnison, Montrose, Ouray, San Miguel,\nDolores, Montezuma, La Plata, Saguache, San Juan, Hinsdale,\nMineral, Archuleta, Morgan, Elbert, Huerfano, Rio Grande, Alamosa,\nCostilla, Conejos, Chaffee, Jackson, Gilpin, Clear Creek, Lake,\nPark, Fremont and Custer Counties. Locations include, but are not\nlimited to Craig, Steamboat Springs, Granby, Hot Sulphur Springs,\nKremmling, Meeker, Rangely, Eagle, Vail, Breckenridge, Glenwood\nSprings, Aspen, Grand Junction, Delta, Gunnison, Montrose, Nucla,\nOuray, Telluride, Dove Creek, Cortez, Durango, Hermosa,\nHoneyville, Rockwood, Saguache, Silverton, Lake City, Creede,\nPagosa Springs, Fort Morgan, Kiowa, Walsenburg, Del Norte, South\nFork, Alamosa, San Luis, Conejos, Buena Vista, Salida, Walden,\nCentral City, Georgetown, Leadville, Fairplay, Canon City and\nWestcliffe.\n\nWHEN...900 AM Thursday August 06 to 900 AM Friday August 07\n\nIMPACTS...Areas of moderate to heavy smoke, from in-state and out-\nof-state wildfires, will be possible across the advisory area\nthrough at least Friday morning.\n\nHEALTH INFORMATION...If smoke is thick or becomes thick in your\nneighborhood you may want to remain indoors. This is especially\ntrue for those with heart disease, respiratory illnesses, the very\nyoung, and older adults. Consider limiting outdoor activity when\nmoderate to heavy smoke is present. Consider relocating\ntemporarily if smoke is present indoors and is making you ill. If\nvisibility is less than 5 miles in smoke in your neighborhood,\nsmoke has reached levels that are unhealthy.",
+                "instruction": null,
+                "response": "Monitor",
+                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "AQABOU"
+                    ],
+                    "WMOidentifier": [
+                        "AEUS75 KBOU 070411"
+                    ],
+                    "NWSheadline": [
+                        "AIR QUALITY HEALTH ADVISORY FOR WILDFIRE SMOKE FROM 900 AM THURSDAY UNTIL 900 AM FRIDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "AQA"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.c79a4253460cc01836700f52528f42f83ffbdb91.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.c79a4253460cc01836700f52528f42f83ffbdb91.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.c79a4253460cc01836700f52528f42f83ffbdb91.001.1",
+                "areaDesc": "Ouray, CO; Archuleta, CO; Garfield, CO; Routt, CO; Rio Blanco, CO; La Plata, CO; Gunnison, CO; Eagle, CO; Mesa, CO; San Juan, CO; Delta, CO; Moffat, CO; Pitkin, CO; San Miguel, CO; Dolores, CO; Hinsdale, CO; Montrose, CO; Montezuma, CO",
+                "geocode": {
+                    "SAME": [
+                        "008091",
+                        "008007",
+                        "008045",
+                        "008107",
+                        "008103",
+                        "008067",
+                        "008051",
+                        "008037",
+                        "008077",
+                        "008111",
+                        "008029",
+                        "008081",
+                        "008097",
+                        "008113",
+                        "008033",
+                        "008053",
+                        "008085",
+                        "008083"
+                    ],
+                    "UGC": [
+                        "COC091",
+                        "COC007",
+                        "COC045",
+                        "COC107",
+                        "COC103",
+                        "COC067",
+                        "COC051",
+                        "COC037",
+                        "COC077",
+                        "COC111",
+                        "COC029",
+                        "COC081",
+                        "COC097",
+                        "COC113",
+                        "COC033",
+                        "COC053",
+                        "COC085",
+                        "COC083"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/COC091",
+                    "https://api.weather.gov/zones/county/COC007",
+                    "https://api.weather.gov/zones/county/COC045",
+                    "https://api.weather.gov/zones/county/COC107",
+                    "https://api.weather.gov/zones/county/COC103",
+                    "https://api.weather.gov/zones/county/COC067",
+                    "https://api.weather.gov/zones/county/COC051",
+                    "https://api.weather.gov/zones/county/COC037",
+                    "https://api.weather.gov/zones/county/COC077",
+                    "https://api.weather.gov/zones/county/COC111",
+                    "https://api.weather.gov/zones/county/COC029",
+                    "https://api.weather.gov/zones/county/COC081",
+                    "https://api.weather.gov/zones/county/COC097",
+                    "https://api.weather.gov/zones/county/COC113",
+                    "https://api.weather.gov/zones/county/COC033",
+                    "https://api.weather.gov/zones/county/COC053",
+                    "https://api.weather.gov/zones/county/COC085",
+                    "https://api.weather.gov/zones/county/COC083"
+                ],
+                "references": [],
+                "sent": "2026-08-06T22:11:00-06:00",
+                "effective": "2026-08-06T22:10:00-06:00",
+                "onset": "2026-08-06T22:10:00-06:00",
+                "expires": "2026-08-07T09:00:00-06:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Air Quality Alert",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Grand Junction CO",
+                "headline": "Air Quality Alert issued August 6 at 10:10PM MDT by NWS Grand Junction CO",
+                "description": "The Colorado Department of Public Health and Environment has\nissued the following...\n\nWHAT...Air Quality Health Advisory for Wildfire Smoke.\n\nWHERE...Moffat, Routt, Grand, Rio Blanco, Eagle, Summit, Garfield,\nPitkin, Mesa, Delta, Gunnison, Montrose, Ouray, San Miguel,\nDolores, Montezuma, La Plata, Saguache, San Juan, Hinsdale,\nMineral, Archuleta, Morgan, Elbert, Huerfano, Rio Grande, Alamosa,\nCostilla, Conejos, Chaffee, Jackson, Gilpin, Clear Creek, Lake,\nPark, Fremont and Custer Counties. Locations include, but are not\nlimited to Craig, Steamboat Springs, Granby, Hot Sulphur Springs,\nKremmling, Meeker, Rangely, Eagle, Vail, Breckenridge, Glenwood\nSprings, Aspen, Grand Junction, Delta, Gunnison, Montrose, Nucla,\nOuray, Telluride, Dove Creek, Cortez, Durango, Hermosa,\nHoneyville, Rockwood, Saguache, Silverton, Lake City, Creede,\nPagosa Springs, Fort Morgan, Kiowa, Walsenburg, Del Norte, South\nFork, Alamosa, San Luis, Conejos, Buena Vista, Salida, Walden,\nCentral City, Georgetown, Leadville, Fairplay, Canon City and\nWestcliffe.\n\nWHEN...900 AM Thursday August 06 to 900 AM Friday August 07\n\nIMPACTS...Areas of moderate to heavy smoke, from in-state and out-\nof-state wildfires, will be possible across the advisory area\nthrough at least Friday morning.\n\nHEALTH INFORMATION...If smoke is thick or becomes thick in your\nneighborhood you may want to remain indoors. This is especially\ntrue for those with heart disease, respiratory illnesses, the very\nyoung, and older adults. Consider limiting outdoor activity when\nmoderate to heavy smoke is present. Consider relocating\ntemporarily if smoke is present indoors and is making you ill. If\nvisibility is less than 5 miles in smoke in your neighborhood,\nsmoke has reached levels that are unhealthy.",
+                "instruction": null,
+                "response": "Monitor",
+                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "AQAGJT"
+                    ],
+                    "WMOidentifier": [
+                        "AEUS75 KGJT 070411"
+                    ],
+                    "NWSheadline": [
+                        "AIR QUALITY HEALTH ADVISORY FOR WILDFIRE SMOKE FROM 900 AM THURSDAY UNTIL 900 AM FRIDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "AQA"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4c1662aef3c9f4c57ff6cdd7b60d32001fa3cc9b.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4c1662aef3c9f4c57ff6cdd7b60d32001fa3cc9b.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.4c1662aef3c9f4c57ff6cdd7b60d32001fa3cc9b.001.1",
+                "areaDesc": "Saguache, CO; Mineral, CO; Fremont, CO; Chaffee, CO; Conejos, CO; Huerfano, CO; Alamosa, CO; Costilla, CO; Lake, CO; Custer, CO; Rio Grande, CO",
+                "geocode": {
+                    "SAME": [
+                        "008109",
+                        "008079",
+                        "008043",
+                        "008015",
+                        "008021",
+                        "008055",
+                        "008003",
+                        "008023",
+                        "008065",
+                        "008027",
+                        "008105"
+                    ],
+                    "UGC": [
+                        "COC109",
+                        "COC079",
+                        "COC043",
+                        "COC015",
+                        "COC021",
+                        "COC055",
+                        "COC003",
+                        "COC023",
+                        "COC065",
+                        "COC027",
+                        "COC105"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/COC109",
+                    "https://api.weather.gov/zones/county/COC079",
+                    "https://api.weather.gov/zones/county/COC043",
+                    "https://api.weather.gov/zones/county/COC015",
+                    "https://api.weather.gov/zones/county/COC021",
+                    "https://api.weather.gov/zones/county/COC055",
+                    "https://api.weather.gov/zones/county/COC003",
+                    "https://api.weather.gov/zones/county/COC023",
+                    "https://api.weather.gov/zones/county/COC065",
+                    "https://api.weather.gov/zones/county/COC027",
+                    "https://api.weather.gov/zones/county/COC105"
+                ],
+                "references": [],
+                "sent": "2026-08-06T22:10:00-06:00",
+                "effective": "2026-08-06T22:10:00-06:00",
+                "onset": "2026-08-06T22:10:00-06:00",
+                "expires": "2026-08-07T09:00:00-06:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Air Quality Alert",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Pueblo CO",
+                "headline": "Air Quality Alert issued August 6 at 10:10PM MDT by NWS Pueblo CO",
+                "description": "The Colorado Department of Public Health and Environment has\nissued the following...\n\nWHAT...Air Quality Health Advisory for Wildfire Smoke.\n\nWHERE...Moffat, Routt, Grand, Rio Blanco, Eagle, Summit, Garfield,\nPitkin, Mesa, Delta, Gunnison, Montrose, Ouray, San Miguel,\nDolores, Montezuma, La Plata, Saguache, San Juan, Hinsdale,\nMineral, Archuleta, Morgan, Elbert, Huerfano, Rio Grande, Alamosa,\nCostilla, Conejos, Chaffee, Jackson, Gilpin, Clear Creek, Lake,\nPark, Fremont and Custer Counties. Locations include, but are not\nlimited to Craig, Steamboat Springs, Granby, Hot Sulphur Springs,\nKremmling, Meeker, Rangely, Eagle, Vail, Breckenridge, Glenwood\nSprings, Aspen, Grand Junction, Delta, Gunnison, Montrose, Nucla,\nOuray, Telluride, Dove Creek, Cortez, Durango, Hermosa,\nHoneyville, Rockwood, Saguache, Silverton, Lake City, Creede,\nPagosa Springs, Fort Morgan, Kiowa, Walsenburg, Del Norte, South\nFork, Alamosa, San Luis, Conejos, Buena Vista, Salida, Walden,\nCentral City, Georgetown, Leadville, Fairplay, Canon City and\nWestcliffe.\n\nWHEN...900 AM Thursday August 06 to 900 AM Friday August 07\n\nIMPACTS...Areas of moderate to heavy smoke, from in-state and out-\nof-state wildfires, will be possible across the advisory area\nthrough at least Friday morning.\n\nHEALTH INFORMATION...If smoke is thick or becomes thick in your\nneighborhood you may want to remain indoors. This is especially\ntrue for those with heart disease, respiratory illnesses, the very\nyoung, and older adults. Consider limiting outdoor activity when\nmoderate to heavy smoke is present. Consider relocating\ntemporarily if smoke is present indoors and is making you ill. If\nvisibility is less than 5 miles in smoke in your neighborhood,\nsmoke has reached levels that are unhealthy.",
+                "instruction": null,
+                "response": "Monitor",
+                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "AQAPUB"
+                    ],
+                    "WMOidentifier": [
+                        "AEUS75 KPUB 070410"
+                    ],
+                    "NWSheadline": [
+                        "AIR QUALITY HEALTH ADVISORY FOR WILDFIRE SMOKE FROM 900 AM THURSDAY UNTIL 900 AM FRIDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "AQA"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a31b3fb9d99ecb36ec4ed9343a1eb3560f0833d2.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -100.6,
+                            37.35
+                        ],
+                        [
+                            -100.37,
+                            37.34
+                        ],
+                        [
+                            -100.37,
+                            37.07
+                        ],
+                        [
+                            -100.62,
+                            37.08
+                        ],
+                        [
+                            -100.78,
+                            37.09
+                        ],
+                        [
+                            -100.6,
+                            37.35
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a31b3fb9d99ecb36ec4ed9343a1eb3560f0833d2.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.a31b3fb9d99ecb36ec4ed9343a1eb3560f0833d2.001.1",
+                "areaDesc": "Meade, KS; Seward, KS",
+                "geocode": {
+                    "SAME": [
+                        "020119",
+                        "020175"
+                    ],
+                    "UGC": [
+                        "KSC119",
+                        "KSC175"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/KSC119",
+                    "https://api.weather.gov/zones/county/KSC175"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e1c4cab5eb18c69e8628d8f11bd295816190e797.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.e1c4cab5eb18c69e8628d8f11bd295816190e797.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T22:40:00-05:00"
+                    }
+                ],
+                "sent": "2026-08-06T23:09:00-05:00",
+                "effective": "2026-08-06T23:09:00-05:00",
+                "onset": "2026-08-06T23:09:00-05:00",
+                "expires": "2026-08-06T23:30:00-05:00",
+                "ends": "2026-08-06T23:30:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Dodge City KS",
+                "headline": "Severe Thunderstorm Warning issued August 6 at 11:09PM CDT until August 6 at 11:30PM CDT by NWS Dodge City KS",
+                "description": "At 1109 PM CDT, a severe thunderstorm was located near Plains, or 8\nmiles northwest of Meade State Park, moving south at 10 mph.\n\nHAZARD...60 mph wind gusts and quarter size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage to\nroofs, siding, and trees.\n\nThis severe thunderstorm will remain over mainly rural areas of east\ncentral Seward and southwestern Meade Counties.",
+                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
+                "response": "Shelter",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SVSDDC"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS53 KDDC 070409"
+                    ],
+                    "NWSheadline": [
+                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 1130 PM CDT FOR EAST CENTRAL SEWARD AND SOUTHWESTERN MEADE COUNTIES"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-08-07T04:09:00-00:00...storm...014DEG...10KT...37.24,-100.54"
+                    ],
+                    "windThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxWindGust": [
+                        "60 MPH"
+                    ],
+                    "hailThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxHailSize": [
+                        "1.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KDDC.SV.W.0241.000000T0000Z-260807T0430Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-06T23:30:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVS"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.62a6853daab4d7d9a198a93531621165d54e8941.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -102.32,
+                            36.68
+                        ],
+                        [
+                            -102.07,
+                            36.72
+                        ],
+                        [
+                            -101.97,
+                            36.51
+                        ],
+                        [
+                            -101.7,
+                            36.44
+                        ],
+                        [
+                            -102.35,
+                            36.27
+                        ],
+                        [
+                            -102.32,
+                            36.68
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.62a6853daab4d7d9a198a93531621165d54e8941.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.62a6853daab4d7d9a198a93531621165d54e8941.001.1",
+                "areaDesc": "Cimarron; Texas; Dallam; Sherman",
+                "geocode": {
+                    "SAME": [
+                        "040025",
+                        "040139",
+                        "048111",
+                        "048421"
+                    ],
+                    "UGC": [
+                        "OKZ001",
+                        "OKZ002",
+                        "TXZ001",
+                        "TXZ002"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/OKZ001",
+                    "https://api.weather.gov/zones/forecast/OKZ002",
+                    "https://api.weather.gov/zones/forecast/TXZ001",
+                    "https://api.weather.gov/zones/forecast/TXZ002"
+                ],
+                "references": [],
+                "sent": "2026-08-06T23:07:00-05:00",
+                "effective": "2026-08-06T23:07:00-05:00",
+                "onset": "2026-08-06T23:07:00-05:00",
+                "expires": "2026-08-06T23:30:00-05:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Amarillo TX",
+                "headline": "Special Weather Statement issued August 6 at 11:07PM CDT by NWS Amarillo TX",
+                "description": "At 1105 PM CDT, Doppler radar was tracking a strong thunderstorm over\nGriggs, or 18 miles north of Stratford, moving south at 30 mph.\n\nHAZARD...Wind gusts of 50 to 55 mph and penny size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects. Minor hail damage to vegetation is\npossible.\n\nLocations impacted include...\nGriggs.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.\n\nTorrential rainfall is also occurring with this storm and may lead to\nlocalized flooding. Do not drive your vehicle through flooded\nroadways.\n\nFrequent cloud to ground lightning is occurring with this storm.\nLightning can strike 10 miles away from a thunderstorm. Seek a safe\nshelter inside a building or vehicle.\n\nA Severe Thunderstorm Watch remains in effect until 400 AM CDT for\nthe Panhandle of Oklahoma...and the Panhandle of Texas.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSAMA"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS84 KAMA 070407"
+                    ],
+                    "NWSheadline": [
+                        "A STRONG THUNDERSTORM WILL IMPACT SOUTHWESTERN TEXAS... SOUTHEASTERN CIMARRON...NORTHWESTERN SHERMAN AND NORTHEASTERN DALLAM COUNTIES THROUGH 1130 PM CDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-08-07T04:05:00-00:00...storm...345DEG...25KT...36.59,-102.15"
+                    ],
+                    "maxWindGust": [
+                        "55 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.75"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-32274",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-32274",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-32274",
                 "areaDesc": "Montgomery",
                 "geocode": {
                     "SAME": [
@@ -147,10 +806,10 @@
                     "https://api.weather.gov/zones/county/MDC031"
                 ],
                 "references": [],
-                "sent": "2026-08-07T03:56:19+00:00",
-                "effective": "2026-08-07T03:56:19+00:00",
+                "sent": "2026-08-07T04:06:19+00:00",
+                "effective": "2026-08-07T04:06:19+00:00",
                 "onset": null,
-                "expires": "2026-08-07T04:06:19+00:00",
+                "expires": "2026-08-07T04:16:19+00:00",
                 "ends": null,
                 "status": "Test",
                 "messageType": "Alert",
@@ -171,7 +830,7 @@
                         "KEPWBC"
                     ],
                     "WMOidentifier": [
-                        "NZUS91 KWBC 070356"
+                        "NZUS91 KWBC 070406"
                     ],
                     "BLOCKCHANNEL": [
                         "CMAS",
@@ -189,6 +848,250 @@
                     ],
                     "NationalWeatherService": [
                         "TST"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b7ab249427589b5178664777efae5647a33bc69c.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -109.92,
+                            32.29
+                        ],
+                        [
+                            -109.79,
+                            32.35
+                        ],
+                        [
+                            -109.63,
+                            32.37
+                        ],
+                        [
+                            -109.49,
+                            32.32
+                        ],
+                        [
+                            -109.43,
+                            32.05
+                        ],
+                        [
+                            -109.44,
+                            31.92
+                        ],
+                        [
+                            -109.7,
+                            31.93
+                        ],
+                        [
+                            -109.92,
+                            32.29
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b7ab249427589b5178664777efae5647a33bc69c.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.b7ab249427589b5178664777efae5647a33bc69c.001.1",
+                "areaDesc": "Cochise, AZ",
+                "geocode": {
+                    "SAME": [
+                        "004003"
+                    ],
+                    "UGC": [
+                        "AZC003"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/AZC003"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d3a8d39102803c11c56ceed6f47d7050856526dd.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.d3a8d39102803c11c56ceed6f47d7050856526dd.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T20:15:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-06T21:06:00-07:00",
+                "effective": "2026-08-06T21:06:00-07:00",
+                "onset": "2026-08-06T21:06:00-07:00",
+                "expires": "2026-08-06T22:15:00-07:00",
+                "ends": "2026-08-06T22:15:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Flood Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Tucson AZ",
+                "headline": "Flood Advisory issued August 6 at 9:06PM MST until August 6 at 10:15PM MST by NWS Tucson AZ",
+                "description": "* WHAT...Flooding caused by excessive rainfall continues.\n\n* WHERE...North Central Cochise County in southeastern Arizona...\n\n* WHEN...Until 1015 PM MST.\n\n* IMPACTS...Minor flooding in low-lying and poor drainage areas.\n\n* ADDITIONAL DETAILS...\n- At 906 PM MST, Doppler radar indicated heavy rain due to\nthunderstorms. Minor flooding is ongoing or expected to begin\nshortly in the advisory area. Between 0.8 and 2 inches of rain\nhave fallen.\n- This includes the following streams and drainages...\nFivemile Creek, Gold Gulch, Big Sand Wash, West Whitetail Creek,\nO B Draw, Pinery Creek, Happy Camp Wash and Witch Creek.\n- Some locations that will experience flooding include...\nWillcox and Kansas Settlement.\n- This includes the following highways...\nRoute 181 between mile markers 54 and 61. Interstate 10 between\nmile markers 337 and 361...and near mile marker 364. Route 186\nbetween mile markers 327 and 359.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nBe especially cautious at night when it is harder to recognize the\ndangers of flooding.\n\nRemain alert for flooding even in locations not receiving rain.\nWashes, streams, and rivers can become raging killer currents in a\nmatter of minutes, even from distant rainfall.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSTWC"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS85 KTWC 070406"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD ADVISORY REMAINS IN EFFECT UNTIL 1015 PM MST THIS EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KTWC.FA.Y.0056.000000T0000Z-260807T0515Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-06T22:15:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "FAY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1244fa03537fc0b25d9d529ff28b471eb56f0f08.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -82,
+                            25.14
+                        ],
+                        [
+                            -82.17,
+                            24.91
+                        ],
+                        [
+                            -82.31,
+                            24.93
+                        ],
+                        [
+                            -82.47,
+                            24.82
+                        ],
+                        [
+                            -82.63,
+                            24.87
+                        ],
+                        [
+                            -82.55,
+                            25.02
+                        ],
+                        [
+                            -82.32,
+                            25.03
+                        ],
+                        [
+                            -82.36,
+                            25.11
+                        ],
+                        [
+                            -82.43,
+                            25.19
+                        ],
+                        [
+                            -82.39,
+                            25.19
+                        ],
+                        [
+                            -82,
+                            25.14
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1244fa03537fc0b25d9d529ff28b471eb56f0f08.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.1244fa03537fc0b25d9d529ff28b471eb56f0f08.001.1",
+                "areaDesc": "Gulf of America from East Cape Sable to Chokoloskee 20 to 60 NM out and beyond 5 fathoms; Gulf of America including Dry Tortugas and Rebecca Shoal Channel",
+                "geocode": {
+                    "SAME": [
+                        "077033",
+                        "077034"
+                    ],
+                    "UGC": [
+                        "GMZ033",
+                        "GMZ034"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/GMZ033",
+                    "https://api.weather.gov/zones/forecast/GMZ034"
+                ],
+                "references": [],
+                "sent": "2026-08-07T00:03:00-04:00",
+                "effective": "2026-08-07T00:03:00-04:00",
+                "onset": "2026-08-07T00:03:00-04:00",
+                "expires": "2026-08-07T01:00:00-04:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Marine Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Key West FL",
+                "headline": "Marine Weather Statement issued August 7 at 12:03AM EDT by NWS Key West FL",
+                "description": "The areas affected include...\nGulf Waters from East Cape Sable to Chokoloskee 20 to 60 nm out and\nbeyond 5 fathoms...\nGulf of America including Dry Tortugas and Rebecca Shoal Channel...\n\nAt 1203 AM EDT, National Weather Service meteorologists detected a\nstrong thunderstorm, capable of producing wind gusts near 30 knots.\nThis thunderstorm was located over S Tower. The thunderstorm was\nnearly stationary.\n\nThe strong thunderstorm will remain over mainly open waters.",
+                "instruction": "Prepare for thunderstorms with wind gusts near 30 knots, locally\nrough and confused seas, occasional lightning strikes, and\npotentially blinding downpours. Get to a safe port as quickly, and as\nsafely as possible. When downpours reduce visibility, slow down.\n\nIntense and continuous lightning is occurring with this storm. Stay\nlow, or go below. Lower VHF antenna, outriggers, fishing rods, and\numbrellas. Avoid open areas on islands and sandbars. Do not shelter\nunder tall or isolated trees on nearby mangrove islands.",
+                "response": "Monitor",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWSKEY"
+                    ],
+                    "WMOidentifier": [
+                        "FZUS72 KKEY 070403"
+                    ],
+                    "NWSheadline": [
+                        "A STRONG THUNDERSTORM OVER S TOWER IN THE SOUTHEAST GULF"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "MWS"
                     ]
                 }
             }
@@ -978,109 +1881,84 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e1c4cab5eb18c69e8628d8f11bd295816190e797.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.001.1",
             "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -100.69,
-                            37.38
-                        ],
-                        [
-                            -100.33,
-                            37.36
-                        ],
-                        [
-                            -100.29,
-                            37.07
-                        ],
-                        [
-                            -100.83,
-                            37.09
-                        ],
-                        [
-                            -100.69,
-                            37.38
-                        ]
-                    ]
-                ]
-            },
+            "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e1c4cab5eb18c69e8628d8f11bd295816190e797.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.e1c4cab5eb18c69e8628d8f11bd295816190e797.001.1",
-                "areaDesc": "Meade, KS; Seward, KS",
+                "id": "urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.001.1",
+                "areaDesc": "Humboldt County",
                 "geocode": {
                     "SAME": [
-                        "020119",
-                        "020175"
+                        "032013"
                     ],
                     "UGC": [
-                        "KSC119",
-                        "KSC175"
+                        "NVZ030"
                     ]
                 },
                 "affectedZones": [
-                    "https://api.weather.gov/zones/county/KSC119",
-                    "https://api.weather.gov/zones/county/KSC175"
+                    "https://api.weather.gov/zones/forecast/NVZ030"
                 ],
-                "references": [],
-                "sent": "2026-08-06T22:40:00-05:00",
-                "effective": "2026-08-06T22:40:00-05:00",
-                "onset": "2026-08-06T22:40:00-05:00",
-                "expires": "2026-08-06T23:30:00-05:00",
-                "ends": "2026-08-06T23:30:00-05:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a1bc55d3b99d9976f35428e75e78655385a9f925.001.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.a1bc55d3b99d9976f35428e75e78655385a9f925.001.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T11:06:00-07:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.001.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.001.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T11:10:00-07:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T12:38:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-06T20:37:00-07:00",
+                "effective": "2026-08-06T20:37:00-07:00",
+                "onset": "2026-08-07T06:00:00-07:00",
+                "expires": "2026-08-07T11:00:00-07:00",
+                "ends": "2026-08-07T23:00:00-07:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Severe Thunderstorm Warning",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Extreme Heat Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Dodge City KS",
-                "headline": "Severe Thunderstorm Warning issued August 6 at 10:40PM CDT until August 6 at 11:30PM CDT by NWS Dodge City KS",
-                "description": "SVRDDC\n\nThe National Weather Service in Dodge City has issued a\n\n* Severe Thunderstorm Warning for...\nNortheastern Seward County in southwestern Kansas...\nSouthwestern Meade County in southwestern Kansas...\n\n* Until 1130 PM CDT.\n\n* At 1039 PM CDT, a severe thunderstorm was located near Missler,\nmoving south at 20 mph.\n\nHAZARD...60 mph wind gusts and half dollar size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage\nto roofs, siding, and trees.\n\n* This severe thunderstorm will be near...\nPlains around 1045 PM CDT.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
-                "response": "Shelter",
+                "senderName": "NWS Elko NV",
+                "headline": "Extreme Heat Warning issued August 6 at 8:37PM PDT until August 7 at 11:00PM PDT by NWS Elko NV",
+                "description": "* WHAT...High temperatures 100 to 103 degrees in the valleys each\nafternoon. Low temperatures 60 to 65 degrees in the valleys each\nnight. This will result in a major risk for heat-related illnesses\nfor much of the population, especially those without effective\ncooling.\n\n* WHERE...Humboldt County.\n\n* WHEN...For the Heat Advisory, until 6 AM PDT Friday. For the\nExtreme Heat Warning, from 6 AM to 11 PM PDT Friday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nDo not leave young children and pets in unattended vehicles. Car\ninteriors will reach lethal temperatures in a matter of minutes.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
+                "response": "Execute",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SVRDDC"
+                        "NPWLKN"
                     ],
                     "WMOidentifier": [
-                        "WUUS53 KDDC 070340"
+                        "WWUS75 KLKN 070337"
                     ],
-                    "eventMotionDescription": [
-                        "2026-08-07T03:39:00-00:00...storm...016DEG...18KT...37.33,-100.51"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxHailSize": [
-                        "1.25"
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 6 AM PDT FRIDAY... ...EXTREME HEAT WARNING REMAINS IN EFFECT FROM 6 AM TO 11 PM PDT FRIDAY"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
                         "NWEM",
                         "CMAS"
                     ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
                     "VTEC": [
-                        "/O.NEW.KDDC.SV.W.0241.260807T0340Z-260807T0430Z/"
+                        "/O.CON.KLKN.XH.W.0001.260807T1300Z-260808T0600Z/"
                     ],
                     "eventEndingTime": [
-                        "2026-08-06T23:30:00-05:00"
+                        "2026-08-07T23:00:00-07:00"
                     ]
                 },
                 "scope": "Public",
@@ -1089,10 +1967,10 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SVR"
+                        "NWS"
                     ],
                     "NationalWeatherService": [
-                        "SVW"
+                        "XHW"
                     ]
                 }
             }
@@ -1193,6 +2071,109 @@
                     ],
                     "NationalWeatherService": [
                         "XHW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.002.2",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.002.2",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.002.2",
+                "areaDesc": "Northern Lander County and Northern Eureka County; Southern Lander County and Southern Eureka County; Southwest Elko County; Northwestern Nye County; Northeastern Nye County",
+                "geocode": {
+                    "SAME": [
+                        "032011",
+                        "032015",
+                        "032007",
+                        "032023"
+                    ],
+                    "UGC": [
+                        "NVZ036",
+                        "NVZ037",
+                        "NVZ038",
+                        "NVZ040",
+                        "NVZ041"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/NVZ036",
+                    "https://api.weather.gov/zones/forecast/NVZ037",
+                    "https://api.weather.gov/zones/forecast/NVZ038",
+                    "https://api.weather.gov/zones/forecast/NVZ040",
+                    "https://api.weather.gov/zones/forecast/NVZ041"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T11:10:00-07:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.002.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.002.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-06T12:38:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-06T20:37:00-07:00",
+                "effective": "2026-08-06T20:37:00-07:00",
+                "onset": "2026-08-06T20:37:00-07:00",
+                "expires": "2026-08-07T11:00:00-07:00",
+                "ends": "2026-08-07T06:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Elko NV",
+                "headline": "Heat Advisory issued August 6 at 8:37PM PDT until August 7 at 6:00AM PDT by NWS Elko NV",
+                "description": "* WHAT...High temperatures 100 to 105 degrees in the valleys each\nafternoon. Low temperatures 62 to 70 degrees in the valleys each\nnight. This will result in a major risk for heat-related illnesses\nfor much of the population, especially those without effective\ncooling.\n\n* WHERE...Northern Lander and Northern Eureka, Southern Lander and\nSouthern Eureka, Southwest Elko, Northeastern Nye, and\nNorthwestern Nye Counties.\n\n* WHEN...For the Heat Advisory, until 6 AM PDT Friday. For the\nExtreme Heat Warning, from 6 AM Friday to 11 PM PDT Saturday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nDo not leave young children and pets in unattended vehicles. Car\ninteriors will reach lethal temperatures in a matter of minutes.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWLKN"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS75 KLKN 070337"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 6 AM PDT FRIDAY... ...EXTREME HEAT WARNING REMAINS IN EFFECT FROM 6 AM FRIDAY TO 11 PM PDT SATURDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KLKN.HT.Y.0007.000000T0000Z-260807T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-07T06:00:00-07:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a1bc55d3b99d9976f35428e75e78655385a9f925.002.1,2026-08-06T11:06:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.918cc823d294daa8e7c6ac7ae234391d5f189147.002.2,2026-08-05T16:53:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6569d57b1254409c747fa275fe25208140b760cc.002.1,2026-08-06T00:07:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
                     ]
                 }
             }
@@ -1482,204 +2463,6 @@
                     ],
                     "eventEndingTime": [
                         "2026-08-08T23:00:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "XHW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.002.2",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.002.2",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.002.2",
-                "areaDesc": "Northern Lander County and Northern Eureka County; Southern Lander County and Southern Eureka County; Southwest Elko County; Northwestern Nye County; Northeastern Nye County",
-                "geocode": {
-                    "SAME": [
-                        "032011",
-                        "032015",
-                        "032007",
-                        "032023"
-                    ],
-                    "UGC": [
-                        "NVZ036",
-                        "NVZ037",
-                        "NVZ038",
-                        "NVZ040",
-                        "NVZ041"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/NVZ036",
-                    "https://api.weather.gov/zones/forecast/NVZ037",
-                    "https://api.weather.gov/zones/forecast/NVZ038",
-                    "https://api.weather.gov/zones/forecast/NVZ040",
-                    "https://api.weather.gov/zones/forecast/NVZ041"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.002.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.002.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-06T11:10:00-07:00"
-                    },
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.002.2",
-                        "identifier": "urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.002.2",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-06T12:38:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-06T20:37:00-07:00",
-                "effective": "2026-08-06T20:37:00-07:00",
-                "onset": "2026-08-06T20:37:00-07:00",
-                "expires": "2026-08-07T11:00:00-07:00",
-                "ends": "2026-08-07T06:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Elko NV",
-                "headline": "Heat Advisory issued August 6 at 8:37PM PDT until August 7 at 6:00AM PDT by NWS Elko NV",
-                "description": "* WHAT...High temperatures 100 to 105 degrees in the valleys each\nafternoon. Low temperatures 62 to 70 degrees in the valleys each\nnight. This will result in a major risk for heat-related illnesses\nfor much of the population, especially those without effective\ncooling.\n\n* WHERE...Northern Lander and Northern Eureka, Southern Lander and\nSouthern Eureka, Southwest Elko, Northeastern Nye, and\nNorthwestern Nye Counties.\n\n* WHEN...For the Heat Advisory, until 6 AM PDT Friday. For the\nExtreme Heat Warning, from 6 AM Friday to 11 PM PDT Saturday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nDo not leave young children and pets in unattended vehicles. Car\ninteriors will reach lethal temperatures in a matter of minutes.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWLKN"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KLKN 070337"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 6 AM PDT FRIDAY... ...EXTREME HEAT WARNING REMAINS IN EFFECT FROM 6 AM FRIDAY TO 11 PM PDT SATURDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KLKN.HT.Y.0007.000000T0000Z-260807T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-07T06:00:00-07:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a1bc55d3b99d9976f35428e75e78655385a9f925.002.1,2026-08-06T11:06:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.918cc823d294daa8e7c6ac7ae234391d5f189147.002.2,2026-08-05T16:53:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6569d57b1254409c747fa275fe25208140b760cc.002.1,2026-08-06T00:07:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.4f3ad2a8dff6bd911cb95fb98ea653674a046de4.001.1",
-                "areaDesc": "Humboldt County",
-                "geocode": {
-                    "SAME": [
-                        "032013"
-                    ],
-                    "UGC": [
-                        "NVZ030"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/NVZ030"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a1bc55d3b99d9976f35428e75e78655385a9f925.001.2",
-                        "identifier": "urn:oid:2.49.0.1.840.0.a1bc55d3b99d9976f35428e75e78655385a9f925.001.2",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-06T11:06:00-07:00"
-                    },
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.001.2",
-                        "identifier": "urn:oid:2.49.0.1.840.0.6a564381ab5e15190f1d7ea529ec7be9576a1fa2.001.2",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-06T11:10:00-07:00"
-                    },
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.5a8c21858e71eda5f1e77b1ec11b4973481eba7a.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-06T12:38:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-06T20:37:00-07:00",
-                "effective": "2026-08-06T20:37:00-07:00",
-                "onset": "2026-08-07T06:00:00-07:00",
-                "expires": "2026-08-07T11:00:00-07:00",
-                "ends": "2026-08-07T23:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Extreme Heat Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Elko NV",
-                "headline": "Extreme Heat Warning issued August 6 at 8:37PM PDT until August 7 at 11:00PM PDT by NWS Elko NV",
-                "description": "* WHAT...High temperatures 100 to 103 degrees in the valleys each\nafternoon. Low temperatures 60 to 65 degrees in the valleys each\nnight. This will result in a major risk for heat-related illnesses\nfor much of the population, especially those without effective\ncooling.\n\n* WHERE...Humboldt County.\n\n* WHEN...For the Heat Advisory, until 6 AM PDT Friday. For the\nExtreme Heat Warning, from 6 AM to 11 PM PDT Friday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nDo not leave young children and pets in unattended vehicles. Car\ninteriors will reach lethal temperatures in a matter of minutes.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWLKN"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KLKN 070337"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 6 AM PDT FRIDAY... ...EXTREME HEAT WARNING REMAINS IN EFFECT FROM 6 AM TO 11 PM PDT FRIDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KLKN.XH.W.0001.260807T1300Z-260808T0600Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-07T23:00:00-07:00"
                     ]
                 },
                 "scope": "Public",
@@ -2988,120 +3771,6 @@
                     ],
                     "NationalWeatherService": [
                         "HTY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d3a8d39102803c11c56ceed6f47d7050856526dd.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -109.92,
-                            32.29
-                        ],
-                        [
-                            -109.79,
-                            32.35
-                        ],
-                        [
-                            -109.63,
-                            32.37
-                        ],
-                        [
-                            -109.49,
-                            32.32
-                        ],
-                        [
-                            -109.43,
-                            32.05
-                        ],
-                        [
-                            -109.44,
-                            31.92
-                        ],
-                        [
-                            -109.7,
-                            31.93
-                        ],
-                        [
-                            -109.92,
-                            32.29
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d3a8d39102803c11c56ceed6f47d7050856526dd.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.d3a8d39102803c11c56ceed6f47d7050856526dd.001.1",
-                "areaDesc": "Cochise, AZ",
-                "geocode": {
-                    "SAME": [
-                        "004003"
-                    ],
-                    "UGC": [
-                        "AZC003"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/AZC003"
-                ],
-                "references": [],
-                "sent": "2026-08-06T20:15:00-07:00",
-                "effective": "2026-08-06T20:15:00-07:00",
-                "onset": "2026-08-06T20:15:00-07:00",
-                "expires": "2026-08-06T22:15:00-07:00",
-                "ends": "2026-08-06T22:15:00-07:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Flood Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Tucson AZ",
-                "headline": "Flood Advisory issued August 6 at 8:15PM MST until August 6 at 10:15PM MST by NWS Tucson AZ",
-                "description": "* WHAT...Flooding caused by excessive rainfall is expected.\n\n* WHERE...North Central Cochise County in southeastern Arizona...\n\n* WHEN...Until 1015 PM MST.\n\n* IMPACTS...Minor flooding in low-lying and poor drainage areas.\n\n* ADDITIONAL DETAILS...\n- At 815 PM MST, Doppler radar indicated heavy rain due to\nthunderstorms. Minor flooding is ongoing or expected to begin\nshortly in the advisory area. Between 0.5 and 1.8 inches of rain\nhave fallen.\n- This includes the following streams and drainages...\nFivemile Creek, Gold Gulch, Big Sand Wash, West Whitetail Creek,\nO B Draw, Pinery Creek, Happy Camp Wash and Witch Creek.\nAdditional rainfall amounts up to 0.8 inches are expected over\nthe area. This additional rain will result in minor flooding.\n- Some locations that will experience flooding include...\nWillcox and Kansas Settlement.\n- This includes the following highways...\nRoute 181 between mile markers 54 and 61. Interstate 10 between\nmile markers 337 and 361...and near mile marker 364. Route 186\nbetween mile markers 327 and 359.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nBe especially cautious at night when it is harder to recognize the\ndangers of flooding.\n\nRemain alert for flooding even in locations not receiving rain.\nWashes, streams, and rivers can become raging killer currents in a\nmatter of minutes, even from distant rainfall.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSTWC"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS85 KTWC 070315"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD ADVISORY IN EFFECT UNTIL 1015 PM MST THIS EVENING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KTWC.FA.Y.0056.260807T0315Z-260807T0515Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-06T22:15:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "FAY"
                     ]
                 }
             }
@@ -9351,85 +10020,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.76f73371ca30da37b5fc6dbe5e04c923f331e895.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.76f73371ca30da37b5fc6dbe5e04c923f331e895.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.76f73371ca30da37b5fc6dbe5e04c923f331e895.001.1",
-                "areaDesc": "Coastal waters from Florence to Cape Blanco OR out 10 nm; Waters from Florence to Cape Blanco OR from 10 to 60 nm",
-                "geocode": {
-                    "SAME": [
-                        "057350",
-                        "057370"
-                    ],
-                    "UGC": [
-                        "PZZ350",
-                        "PZZ370"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PZZ350",
-                    "https://api.weather.gov/zones/forecast/PZZ370"
-                ],
-                "references": [],
-                "sent": "2026-08-06T14:48:00-07:00",
-                "effective": "2026-08-06T14:48:00-07:00",
-                "onset": "2026-08-08T14:00:00-07:00",
-                "expires": "2026-08-07T04:00:00-07:00",
-                "ends": "2026-08-08T23:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Medford OR",
-                "headline": "Small Craft Advisory issued August 6 at 2:48PM PDT until August 8 at 11:00PM PDT by NWS Medford OR",
-                "description": "* WHAT...North winds 15 to 20 kt with gusts up to 25 kt and seas 5\nto 7 ft at 6 seconds expected.\n\n* WHERE...All of the area.\n\n* WHEN...From 2 PM to 11 PM PDT Saturday.\n\n* IMPACTS...Gusty winds and/or steep seas could capsize or\ndamage smaller vessels.\n\n* View the hazard area in detail at https://go.usa.gov/x6hks",
-                "instruction": "Inexperienced mariners and those operating smaller vessels should\nremain in port and avoid the area of hazardous conditions.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "MWWMFR"
-                    ],
-                    "WMOidentifier": [
-                        "WHUS76 KMFR 062148"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY IN EFFECT FROM 2 PM TO 11 PM PDT SATURDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KMFR.SC.Y.0067.260808T2100Z-260809T0600Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-08T23:00:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.76f73371ca30da37b5fc6dbe5e04c923f331e895.002.1",
             "type": "Feature",
             "geometry": null,
@@ -9495,6 +10085,85 @@
                     ],
                     "expiredReferences": [
                         "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.46343943ec6eb9494b411aa57c2c8b1501fdd99d.001.2,2026-08-05T13:22:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.76f73371ca30da37b5fc6dbe5e04c923f331e895.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.76f73371ca30da37b5fc6dbe5e04c923f331e895.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.76f73371ca30da37b5fc6dbe5e04c923f331e895.001.1",
+                "areaDesc": "Coastal waters from Florence to Cape Blanco OR out 10 nm; Waters from Florence to Cape Blanco OR from 10 to 60 nm",
+                "geocode": {
+                    "SAME": [
+                        "057350",
+                        "057370"
+                    ],
+                    "UGC": [
+                        "PZZ350",
+                        "PZZ370"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PZZ350",
+                    "https://api.weather.gov/zones/forecast/PZZ370"
+                ],
+                "references": [],
+                "sent": "2026-08-06T14:48:00-07:00",
+                "effective": "2026-08-06T14:48:00-07:00",
+                "onset": "2026-08-08T14:00:00-07:00",
+                "expires": "2026-08-07T04:00:00-07:00",
+                "ends": "2026-08-08T23:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Medford OR",
+                "headline": "Small Craft Advisory issued August 6 at 2:48PM PDT until August 8 at 11:00PM PDT by NWS Medford OR",
+                "description": "* WHAT...North winds 15 to 20 kt with gusts up to 25 kt and seas 5\nto 7 ft at 6 seconds expected.\n\n* WHERE...All of the area.\n\n* WHEN...From 2 PM to 11 PM PDT Saturday.\n\n* IMPACTS...Gusty winds and/or steep seas could capsize or\ndamage smaller vessels.\n\n* View the hazard area in detail at https://go.usa.gov/x6hks",
+                "instruction": "Inexperienced mariners and those operating smaller vessels should\nremain in port and avoid the area of hazardous conditions.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWWMFR"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS76 KMFR 062148"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY IN EFFECT FROM 2 PM TO 11 PM PDT SATURDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KMFR.SC.Y.0067.260808T2100Z-260809T0600Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-08T23:00:00-07:00"
                     ]
                 },
                 "scope": "Public",
@@ -17424,85 +18093,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.126a8920606242cb2378e921ae6f69e8b9141a8a.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.126a8920606242cb2378e921ae6f69e8b9141a8a.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.126a8920606242cb2378e921ae6f69e8b9141a8a.001.1",
-                "areaDesc": "Western Nevada Basin and Range including Pyramid Lake",
-                "geocode": {
-                    "SAME": [
-                        "032001",
-                        "032019",
-                        "032027",
-                        "032031"
-                    ],
-                    "UGC": [
-                        "NVZ004"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/NVZ004"
-                ],
-                "references": [],
-                "sent": "2026-08-06T00:50:00-07:00",
-                "effective": "2026-08-06T00:50:00-07:00",
-                "onset": "2026-08-07T08:00:00-07:00",
-                "expires": "2026-08-07T11:30:00-07:00",
-                "ends": "2026-08-10T08:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Extreme Heat Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Reno NV",
-                "headline": "Extreme Heat Warning issued August 6 at 12:50AM PDT until August 10 at 8:00AM PDT by NWS Reno NV",
-                "description": "* WHAT...For the Heat Advisory, high temperatures of 100 to 105\ndegrees with overnight lows of 64 to 72 degrees. Widespread Major\n(level 3 out of 4) HeatRisk across lower valleys. For the Extreme\nHeat Warning, high temperatures of 101 to 106 degrees with\novernight lows of 67 to 74 degrees. Widespread Major (level 3 out\nof 4) HeatRisk and isolated Extreme HeatRisk (level 4 out of 4) in\nlower valleys.\n\n* WHERE...Western Nevada Basin and Range including Pyramid Lake.\n\n* WHEN...For the Heat Advisory, until 8 AM PDT Friday. For the\nExtreme Heat Warning, from 8 AM Friday to 8 AM PDT Monday.\n\n* IMPACTS...For the Heat Advisory, heat related illnesses will be\nmore likely, especially for those spending extended periods\noutdoors, in poorly cooled indoor spaces, or who are sensitive to\nheat. For the Extreme Heat Warning, heat related illnesses increase\nsignificantly, particularly for those working or participating in\noutdoor activities.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTo reduce risk during outdoor work, schedule frequent rest breaks in\nshaded or air conditioned environments. Anyone overcome by heat\nshould be moved to a cool and shaded location. Heat stroke is an\nemergency!",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWREV"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KREV 060750"
-                    ],
-                    "NWSheadline": [
-                        "EXTREME HEAT WARNING IN EFFECT FROM 8 AM FRIDAY TO 8 AM PDT MONDAY... ...HEAT ADVISORY NOW IN EFFECT UNTIL 8 AM PDT FRIDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KREV.XH.W.0001.260807T1500Z-260810T1500Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-10T08:00:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "XHW"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.126a8920606242cb2378e921ae6f69e8b9141a8a.003.1",
             "type": "Feature",
             "geometry": null,
@@ -17585,6 +18175,85 @@
                     ],
                     "NationalWeatherService": [
                         "HTY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.126a8920606242cb2378e921ae6f69e8b9141a8a.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.126a8920606242cb2378e921ae6f69e8b9141a8a.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.126a8920606242cb2378e921ae6f69e8b9141a8a.001.1",
+                "areaDesc": "Western Nevada Basin and Range including Pyramid Lake",
+                "geocode": {
+                    "SAME": [
+                        "032001",
+                        "032019",
+                        "032027",
+                        "032031"
+                    ],
+                    "UGC": [
+                        "NVZ004"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/NVZ004"
+                ],
+                "references": [],
+                "sent": "2026-08-06T00:50:00-07:00",
+                "effective": "2026-08-06T00:50:00-07:00",
+                "onset": "2026-08-07T08:00:00-07:00",
+                "expires": "2026-08-07T11:30:00-07:00",
+                "ends": "2026-08-10T08:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Extreme Heat Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Reno NV",
+                "headline": "Extreme Heat Warning issued August 6 at 12:50AM PDT until August 10 at 8:00AM PDT by NWS Reno NV",
+                "description": "* WHAT...For the Heat Advisory, high temperatures of 100 to 105\ndegrees with overnight lows of 64 to 72 degrees. Widespread Major\n(level 3 out of 4) HeatRisk across lower valleys. For the Extreme\nHeat Warning, high temperatures of 101 to 106 degrees with\novernight lows of 67 to 74 degrees. Widespread Major (level 3 out\nof 4) HeatRisk and isolated Extreme HeatRisk (level 4 out of 4) in\nlower valleys.\n\n* WHERE...Western Nevada Basin and Range including Pyramid Lake.\n\n* WHEN...For the Heat Advisory, until 8 AM PDT Friday. For the\nExtreme Heat Warning, from 8 AM Friday to 8 AM PDT Monday.\n\n* IMPACTS...For the Heat Advisory, heat related illnesses will be\nmore likely, especially for those spending extended periods\noutdoors, in poorly cooled indoor spaces, or who are sensitive to\nheat. For the Extreme Heat Warning, heat related illnesses increase\nsignificantly, particularly for those working or participating in\noutdoor activities.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTo reduce risk during outdoor work, schedule frequent rest breaks in\nshaded or air conditioned environments. Anyone overcome by heat\nshould be moved to a cool and shaded location. Heat stroke is an\nemergency!",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWREV"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS75 KREV 060750"
+                    ],
+                    "NWSheadline": [
+                        "EXTREME HEAT WARNING IN EFFECT FROM 8 AM FRIDAY TO 8 AM PDT MONDAY... ...HEAT ADVISORY NOW IN EFFECT UNTIL 8 AM PDT FRIDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KREV.XH.W.0001.260807T1500Z-260810T1500Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-10T08:00:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "XHW"
                     ]
                 }
             }
@@ -19132,5 +19801,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-08-07T04:01:49+00:00"
+    "updated": "2026-08-07T04:13:05+00:00"
 }
