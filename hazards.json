@@ -10,56 +10,93 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-51946",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6972c274d7c00a5374fbf8b001c33d01cbb8d02b.001.1",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-51946",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6972c274d7c00a5374fbf8b001c33d01cbb8d02b.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-51946",
-                "areaDesc": "Montgomery",
+                "id": "urn:oid:2.49.0.1.840.0.6972c274d7c00a5374fbf8b001c33d01cbb8d02b.001.1",
+                "areaDesc": "Larimer County Below 6000 Feet/Northwest Weld County; Boulder And Jefferson Counties Below 6000 Feet/West Broomfield County; North Douglas County Below 6000 Feet/Denver/West Adams and Arapahoe Counties/East Broomfield County",
                 "geocode": {
                     "SAME": [
-                        "024031"
+                        "008069",
+                        "008123",
+                        "008013",
+                        "008014",
+                        "008059",
+                        "008001",
+                        "008005",
+                        "008031",
+                        "008035"
                     ],
                     "UGC": [
-                        "MDC031"
+                        "COZ038",
+                        "COZ039",
+                        "COZ040"
                     ]
                 },
                 "affectedZones": [
-                    "https://api.weather.gov/zones/county/MDC031"
+                    "https://api.weather.gov/zones/forecast/COZ038",
+                    "https://api.weather.gov/zones/forecast/COZ039",
+                    "https://api.weather.gov/zones/forecast/COZ040"
                 ],
-                "references": [],
-                "sent": "2026-08-08T09:36:19+00:00",
-                "effective": "2026-08-08T09:36:19+00:00",
-                "onset": null,
-                "expires": "2026-08-08T09:46:19+00:00",
-                "ends": null,
-                "status": "Test",
-                "messageType": "Alert",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T12:09:00-06:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T12:09:00-06:00"
+                    }
+                ],
+                "sent": "2026-08-08T03:51:00-06:00",
+                "effective": "2026-08-08T03:51:00-06:00",
+                "onset": "2026-08-08T11:00:00-06:00",
+                "expires": "2026-08-08T16:00:00-06:00",
+                "ends": "2026-08-09T20:00:00-06:00",
+                "status": "Actual",
+                "messageType": "Update",
                 "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Test Message",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
                 "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS",
-                "headline": null,
-                "description": "Monitoring message only. Please disregard.",
-                "instruction": "Monitoring message only. Please disregard.",
-                "response": "None",
-                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "senderName": "NWS Denver CO",
+                "headline": "Heat Advisory issued August 8 at 3:51AM MDT until August 9 at 8:00PM MDT by NWS Denver CO",
+                "description": "* WHAT...Hot temperatures ranging from 98 to 102 degrees.\n\n* WHERE...Denver metro, western suburbs of Denver, and portions of\nthe Urban Corridor including Boulder.\n\n* WHEN...From 11 AM this morning to 8 PM MDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illness.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
+                "response": "Execute",
+                "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "KEPWBC"
+                        "NPWBOU"
                     ],
                     "WMOidentifier": [
-                        "NZUS91 KWBC 080936"
+                        "WWUS75 KBOU 080951"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT FROM 11 AM THIS MORNING TO 8 PM MDT SUNDAY"
                     ],
                     "BLOCKCHANNEL": [
-                        "CMAS",
                         "EAS",
-                        "NWEM"
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KBOU.HT.Y.0006.260808T1700Z-260810T0200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-09T20:00:00-06:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.7989936facfed3310130df4da717f899e91aba14.001.1,2026-08-07T04:01:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.88de34f46c8ced87f4f3dfd54941a0d392d1fa77.001.1,2026-08-06T13:42:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.7eab1ea43a207bb825beb6b839085340057b9466.001.1,2026-08-06T12:07:00-06:00"
                     ]
                 },
                 "scope": "Public",
@@ -71,32 +108,36 @@
                         "NWS"
                     ],
                     "NationalWeatherService": [
-                        "TST"
+                        "HTY"
                     ]
                 }
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dd31d8825c1b4a502644590b4537b16d1df2436a.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d5cab001727247a910dcf085a4ce4fb8b29a8644.001.1",
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [
                     [
                         [
-                            -82,
+                            -81.87,
                             40.24
                         ],
                         [
-                            -82.03,
+                            -81.9,
                             40.37
                         ],
                         [
-                            -81.9,
-                            40.43
+                            -81.86,
+                            40.44
                         ],
                         [
-                            -81.83,
+                            -81.84,
+                            40.45
+                        ],
+                        [
+                            -81.79,
                             40.45
                         ],
                         [
@@ -124,16 +165,16 @@
                             40.26
                         ],
                         [
-                            -82,
+                            -81.87,
                             40.24
                         ]
                     ]
                 ]
             },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dd31d8825c1b4a502644590b4537b16d1df2436a.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d5cab001727247a910dcf085a4ce4fb8b29a8644.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.dd31d8825c1b4a502644590b4537b16d1df2436a.001.1",
+                "id": "urn:oid:2.49.0.1.840.0.d5cab001727247a910dcf085a4ce4fb8b29a8644.001.1",
                 "areaDesc": "Coshocton, OH; Tuscarawas, OH",
                 "geocode": {
                     "SAME": [
@@ -149,14 +190,21 @@
                     "https://api.weather.gov/zones/county/OHC031",
                     "https://api.weather.gov/zones/county/OHC157"
                 ],
-                "references": [],
-                "sent": "2026-08-08T05:36:00-04:00",
-                "effective": "2026-08-08T05:36:00-04:00",
-                "onset": "2026-08-08T05:36:00-04:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dd31d8825c1b4a502644590b4537b16d1df2436a.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.dd31d8825c1b4a502644590b4537b16d1df2436a.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-08T05:36:00-04:00"
+                    }
+                ],
+                "sent": "2026-08-08T05:50:00-04:00",
+                "effective": "2026-08-08T05:50:00-04:00",
+                "onset": "2026-08-08T05:50:00-04:00",
                 "expires": "2026-08-08T06:15:00-04:00",
                 "ends": "2026-08-08T06:15:00-04:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Observed",
@@ -164,20 +212,23 @@
                 "event": "Severe Thunderstorm Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Pittsburgh PA",
-                "headline": "Severe Thunderstorm Warning issued August 8 at 5:36AM EDT until August 8 at 6:15AM EDT by NWS Pittsburgh PA",
-                "description": "SVRPBZ\n\nThe National Weather Service in Pittsburgh has issued a\n\n* Severe Thunderstorm Warning for...\nCentral Coshocton County in east central Ohio...\nCentral Tuscarawas County in east central Ohio...\n\n* Until 615 AM EDT.\n\n* At 536 AM EDT, a severe thunderstorm was located 6 miles north of\nCoshocton, moving east at 40 mph.\n\nHAZARD...60 mph wind gusts and small hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\n* Locations impacted include...\nNew Philadelphia, Dover, Coshocton, Uhrichsville, Newcomerstown,\nDennison, West Lafayette, Gnadenhutten, Tuscarawas, Baltic,\nMidvale, Warsaw, Port Washington, Barnhill, Roswell, Stone Creek,\nGilmore, Bakersville, Chili and Blissfield.",
+                "headline": "Severe Thunderstorm Warning issued August 8 at 5:50AM EDT until August 8 at 6:15AM EDT by NWS Pittsburgh PA",
+                "description": "At 550 AM EDT, a severe thunderstorm was located 7 miles northeast of\nWest Lafayette, or 11 miles northeast of Coshocton, moving east at 40\nmph.\n\nHAZARD...60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\nLocations impacted include...\nNew Philadelphia, Dover, Coshocton, Uhrichsville, Newcomerstown,\nDennison, West Lafayette, Gnadenhutten, Tuscarawas, Baltic,\nMidvale, Port Washington, Barnhill, Roswell, Stone Creek, Gilmore,\nBakersville and Chili.",
                 "instruction": "Seek shelter inside a well-built structure and stay away from\nwindows. This storm is capable of producing damaging winds.",
                 "response": "Shelter",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SVRPBZ"
+                        "SVSPBZ"
                     ],
                     "WMOidentifier": [
-                        "WUUS51 KPBZ 080936"
+                        "WWUS51 KPBZ 080950"
+                    ],
+                    "NWSheadline": [
+                        "SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 615 AM EDT FOR NORTHEASTERN COSHOCTON AND CENTRAL TUSCARAWAS COUNTIES"
                     ],
                     "eventMotionDescription": [
-                        "2026-08-08T09:35:00-00:00...storm...258DEG...44KT...40.34,-81.89"
+                        "2026-08-08T09:36:00-00:00...storm...259DEG...38KT...40.34,-81.89"
                     ],
                     "windThreat": [
                         "RADAR INDICATED"
@@ -188,6 +239,9 @@
                     "hailThreat": [
                         "RADAR INDICATED"
                     ],
+                    "maxHailSize": [
+                        "0.00"
+                    ],
                     "BLOCKCHANNEL": [
                         "EAS",
                         "NWEM",
@@ -197,7 +251,7 @@
                         "WXR"
                     ],
                     "VTEC": [
-                        "/O.NEW.KPBZ.SV.W.0249.260808T0936Z-260808T1015Z/"
+                        "/O.CON.KPBZ.SV.W.0249.000000T0000Z-260808T1015Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-08T06:15:00-04:00"
@@ -209,10 +263,181 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SVR"
+                        "SVS"
                     ],
                     "NationalWeatherService": [
                         "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-11579",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-11579",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-11579",
+                "areaDesc": "Montgomery",
+                "geocode": {
+                    "SAME": [
+                        "024031"
+                    ],
+                    "UGC": [
+                        "MDC031"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MDC031"
+                ],
+                "references": [],
+                "sent": "2026-08-08T09:46:19+00:00",
+                "effective": "2026-08-08T09:46:19+00:00",
+                "onset": null,
+                "expires": "2026-08-08T09:56:19+00:00",
+                "ends": null,
+                "status": "Test",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Test Message",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS",
+                "headline": null,
+                "description": "Monitoring message only. Please disregard.",
+                "instruction": "Monitoring message only. Please disregard.",
+                "response": "None",
+                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "KEPWBC"
+                    ],
+                    "WMOidentifier": [
+                        "NZUS91 KWBC 080946"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "CMAS",
+                        "EAS",
+                        "NWEM"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "TST"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3af1bdd3240d862c9b81b7b325edd22cd58b8cef.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -81.87,
+                            40.45
+                        ],
+                        [
+                            -81.67,
+                            40.53
+                        ],
+                        [
+                            -81.67,
+                            40.44
+                        ],
+                        [
+                            -81.87,
+                            40.45
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3af1bdd3240d862c9b81b7b325edd22cd58b8cef.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.3af1bdd3240d862c9b81b7b325edd22cd58b8cef.001.1",
+                "areaDesc": "Holmes",
+                "geocode": {
+                    "SAME": [
+                        "039075"
+                    ],
+                    "UGC": [
+                        "OHZ038"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/OHZ038"
+                ],
+                "references": [],
+                "sent": "2026-08-08T05:45:00-04:00",
+                "effective": "2026-08-08T05:45:00-04:00",
+                "onset": "2026-08-08T05:45:00-04:00",
+                "expires": "2026-08-08T06:15:00-04:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Cleveland OH",
+                "headline": "Special Weather Statement issued August 8 at 5:45AM EDT by NWS Cleveland OH",
+                "description": "At 544 AM EDT, Doppler radar was tracking a strong thunderstorm 7\nmiles northwest of West Lafayette, or 7 miles north of Coshocton,\nmoving east at 40 mph.\n\nHAZARD...Wind gusts up to 50 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nFarmerstown and Baltic.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.\n\nTorrential rainfall is also occurring with this storm and may lead to\nlocalized flooding. Do not drive your vehicle through flooded\nroadways.\n\nFrequent cloud to ground lightning is occurring with this storm.\nLightning can strike 10 miles away from a thunderstorm. Seek a safe\nshelter inside a building or vehicle.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSCLE"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS81 KCLE 080945"
+                    ],
+                    "NWSheadline": [
+                        "A STRONG THUNDERSTORM WILL IMPACT SOUTHEASTERN HOLMES COUNTY THROUGH 615 AM EDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-08-08T09:44:00-00:00...storm...247DEG...36KT...40.38,-81.81"
+                    ],
+                    "maxWindGust": [
+                        "50 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
                     ]
                 }
             }
@@ -7604,6 +7829,89 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.007.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.007.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.007.1",
+                "areaDesc": "San Diego County Inland Valleys",
+                "geocode": {
+                    "SAME": [
+                        "006073"
+                    ],
+                    "UGC": [
+                        "CAZ050"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/CAZ050"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.003.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.003.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T10:03:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-07T21:49:00-07:00",
+                "effective": "2026-08-07T21:49:00-07:00",
+                "onset": "2026-08-08T10:00:00-07:00",
+                "expires": "2026-08-08T06:15:00-07:00",
+                "ends": "2026-08-09T20:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS San Diego CA",
+                "headline": "Heat Advisory issued August 7 at 9:49PM PDT until August 9 at 8:00PM PDT by NWS San Diego CA",
+                "description": "* WHAT...High temperatures in the mid to upper 90s, locally up to\n100 degrees east of Interstate 15.\n\n* WHERE...San Diego County Valleys.\n\n* WHEN...From 10 AM Saturday to 8 PM PDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illnesses.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWSGX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS76 KSGX 080449"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT FROM 10 AM SATURDAY TO 8 PM PDT SUNDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KSGX.HT.Y.0008.260808T1700Z-260810T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-09T20:00:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.001.1",
             "type": "Feature",
             "geometry": null,
@@ -7685,93 +7993,6 @@
                     ],
                     "NationalWeatherService": [
                         "XHW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.008.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.008.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.008.1",
-                "areaDesc": "Santa Ana Mountains and Foothills; Orange County Inland",
-                "geocode": {
-                    "SAME": [
-                        "006059",
-                        "006065",
-                        "006073"
-                    ],
-                    "UGC": [
-                        "CAZ057",
-                        "CAZ554"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/CAZ057",
-                    "https://api.weather.gov/zones/forecast/CAZ554"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.004.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.004.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-07T10:03:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-07T21:49:00-07:00",
-                "effective": "2026-08-07T21:49:00-07:00",
-                "onset": "2026-08-08T10:00:00-07:00",
-                "expires": "2026-08-08T06:15:00-07:00",
-                "ends": "2026-08-09T20:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS San Diego CA",
-                "headline": "Heat Advisory issued August 7 at 9:49PM PDT until August 9 at 8:00PM PDT by NWS San Diego CA",
-                "description": "* WHAT...High temperatures in the low 90s east of Interstate 5. High\ntemperatures in the mid-90s in the Santa Ana mountains.\n\n* WHERE...Orange County Inland Areas and Santa Ana Mountains and\nFoothills.\n\n* WHEN...From 10 AM Saturday to 8 PM PDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illnesses.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWSGX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS76 KSGX 080449"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT FROM 10 AM SATURDAY TO 8 PM PDT SUNDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KSGX.HT.Y.0008.260808T1700Z-260810T0300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T20:00:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
                     ]
                 }
             }
@@ -7863,89 +8084,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.007.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.007.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.007.1",
-                "areaDesc": "San Diego County Inland Valleys",
-                "geocode": {
-                    "SAME": [
-                        "006073"
-                    ],
-                    "UGC": [
-                        "CAZ050"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/CAZ050"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.003.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.003.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-07T10:03:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-07T21:49:00-07:00",
-                "effective": "2026-08-07T21:49:00-07:00",
-                "onset": "2026-08-08T10:00:00-07:00",
-                "expires": "2026-08-08T06:15:00-07:00",
-                "ends": "2026-08-09T20:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS San Diego CA",
-                "headline": "Heat Advisory issued August 7 at 9:49PM PDT until August 9 at 8:00PM PDT by NWS San Diego CA",
-                "description": "* WHAT...High temperatures in the mid to upper 90s, locally up to\n100 degrees east of Interstate 15.\n\n* WHERE...San Diego County Valleys.\n\n* WHEN...From 10 AM Saturday to 8 PM PDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illnesses.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWSGX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS76 KSGX 080449"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT FROM 10 AM SATURDAY TO 8 PM PDT SUNDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KSGX.HT.Y.0008.260808T1700Z-260810T0300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T20:00:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.006.1",
             "type": "Feature",
             "geometry": null,
@@ -8015,6 +8153,93 @@
                     ],
                     "expiredReferences": [
                         "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6847d73f2a80f3ead19a50938f40981cbe121ac8.006.1,2026-08-07T04:10:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d306ded6b558ac05179585c06b59a73a6b8a4d23.006.1,2026-08-06T20:36:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.de1fc140494c4cb09ea879fa0bd883c2d4d0e22d.006.1,2026-08-06T11:27:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.ded5cc7c56226cbbb58664eb45198c4414827d1d.006.1,2026-08-06T00:28:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.529fa6437be5b9a0ffd86f52ba32e3f54e2c2326.006.1,2026-08-05T21:41:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.20aca7b09c38502bfab57b50751d4b3ea8c2b01c.006.1,2026-08-05T12:50:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2f2c063b32bf31953ea5069b42870993ce10ade0.006.1,2026-08-05T03:57:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0dbf313a161a28e32d386187db4740343723e175.006.1,2026-08-04T21:35:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.19779de262667c0ce4c17772e6725d044190659e.006.1,2026-08-04T12:21:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1eecc443b6e46002391e0d759fcf63c4cf573001.006.1,2026-08-04T00:24:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.008.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.008.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.008.1",
+                "areaDesc": "Santa Ana Mountains and Foothills; Orange County Inland",
+                "geocode": {
+                    "SAME": [
+                        "006059",
+                        "006065",
+                        "006073"
+                    ],
+                    "UGC": [
+                        "CAZ057",
+                        "CAZ554"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/CAZ057",
+                    "https://api.weather.gov/zones/forecast/CAZ554"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.004.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.004.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T10:03:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-07T21:49:00-07:00",
+                "effective": "2026-08-07T21:49:00-07:00",
+                "onset": "2026-08-08T10:00:00-07:00",
+                "expires": "2026-08-08T06:15:00-07:00",
+                "ends": "2026-08-09T20:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS San Diego CA",
+                "headline": "Heat Advisory issued August 7 at 9:49PM PDT until August 9 at 8:00PM PDT by NWS San Diego CA",
+                "description": "* WHAT...High temperatures in the low 90s east of Interstate 5. High\ntemperatures in the mid-90s in the Santa Ana mountains.\n\n* WHERE...Orange County Inland Areas and Santa Ana Mountains and\nFoothills.\n\n* WHEN...From 10 AM Saturday to 8 PM PDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illnesses.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWSGX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS76 KSGX 080449"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT FROM 10 AM SATURDAY TO 8 PM PDT SUNDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KSGX.HT.Y.0008.260808T1700Z-260810T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-09T20:00:00-07:00"
                     ]
                 },
                 "scope": "Public",
@@ -8119,92 +8344,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.004.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.004.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.004.1",
-                "areaDesc": "San Bernardino County Mountains",
-                "geocode": {
-                    "SAME": [
-                        "006071"
-                    ],
-                    "UGC": [
-                        "CAZ055"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/CAZ055"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.006.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.006.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-07T10:03:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-07T21:49:00-07:00",
-                "effective": "2026-08-07T21:49:00-07:00",
-                "onset": "2026-08-07T21:49:00-07:00",
-                "expires": "2026-08-08T06:15:00-07:00",
-                "ends": "2026-08-09T20:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS San Diego CA",
-                "headline": "Heat Advisory issued August 7 at 9:49PM PDT until August 9 at 8:00PM PDT by NWS San Diego CA",
-                "description": "* WHAT...High temperatures mostly in the mid 80s to upper 90s below\n6500 feet expected.\n\n* WHERE...San Bernardino County Mountains.\n\n* WHEN...Until 8 PM PDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illnesses.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWSGX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS76 KSGX 080449"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 8 PM PDT SUNDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KSGX.HT.Y.0008.000000T0000Z-260810T0300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T20:00:00-07:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6847d73f2a80f3ead19a50938f40981cbe121ac8.004.1,2026-08-07T04:10:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d306ded6b558ac05179585c06b59a73a6b8a4d23.004.1,2026-08-06T20:36:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.de1fc140494c4cb09ea879fa0bd883c2d4d0e22d.004.1,2026-08-06T11:27:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.ded5cc7c56226cbbb58664eb45198c4414827d1d.004.1,2026-08-06T00:28:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.529fa6437be5b9a0ffd86f52ba32e3f54e2c2326.004.1,2026-08-05T21:41:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.20aca7b09c38502bfab57b50751d4b3ea8c2b01c.004.1,2026-08-05T12:50:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2f2c063b32bf31953ea5069b42870993ce10ade0.004.1,2026-08-05T03:57:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0dbf313a161a28e32d386187db4740343723e175.004.1,2026-08-04T21:35:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.19779de262667c0ce4c17772e6725d044190659e.004.1,2026-08-04T12:21:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1eecc443b6e46002391e0d759fcf63c4cf573001.004.1,2026-08-04T00:24:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.002.1",
             "type": "Feature",
             "geometry": null,
@@ -8291,6 +8430,92 @@
                     ],
                     "NationalWeatherService": [
                         "XHW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.004.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.004.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.92740b6a272009cf13c9910e8589060893bef8c3.004.1",
+                "areaDesc": "San Bernardino County Mountains",
+                "geocode": {
+                    "SAME": [
+                        "006071"
+                    ],
+                    "UGC": [
+                        "CAZ055"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/CAZ055"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.006.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.dea9c518ecce266057b3490c65d4818ed326a8fc.006.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T10:03:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-07T21:49:00-07:00",
+                "effective": "2026-08-07T21:49:00-07:00",
+                "onset": "2026-08-07T21:49:00-07:00",
+                "expires": "2026-08-08T06:15:00-07:00",
+                "ends": "2026-08-09T20:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS San Diego CA",
+                "headline": "Heat Advisory issued August 7 at 9:49PM PDT until August 9 at 8:00PM PDT by NWS San Diego CA",
+                "description": "* WHAT...High temperatures mostly in the mid 80s to upper 90s below\n6500 feet expected.\n\n* WHERE...San Bernardino County Mountains.\n\n* WHEN...Until 8 PM PDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illnesses.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWSGX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS76 KSGX 080449"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 8 PM PDT SUNDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KSGX.HT.Y.0008.000000T0000Z-260810T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-09T20:00:00-07:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6847d73f2a80f3ead19a50938f40981cbe121ac8.004.1,2026-08-07T04:10:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d306ded6b558ac05179585c06b59a73a6b8a4d23.004.1,2026-08-06T20:36:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.de1fc140494c4cb09ea879fa0bd883c2d4d0e22d.004.1,2026-08-06T11:27:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.ded5cc7c56226cbbb58664eb45198c4414827d1d.004.1,2026-08-06T00:28:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.529fa6437be5b9a0ffd86f52ba32e3f54e2c2326.004.1,2026-08-05T21:41:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.20aca7b09c38502bfab57b50751d4b3ea8c2b01c.004.1,2026-08-05T12:50:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2f2c063b32bf31953ea5069b42870993ce10ade0.004.1,2026-08-05T03:57:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.0dbf313a161a28e32d386187db4740343723e175.004.1,2026-08-04T21:35:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.19779de262667c0ce4c17772e6725d044190659e.004.1,2026-08-04T12:21:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1eecc443b6e46002391e0d759fcf63c4cf573001.004.1,2026-08-04T00:24:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
                     ]
                 }
             }
@@ -9610,6 +9835,100 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7e9c1c0c86c4552a4884d971071c5fb9441e3099.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7e9c1c0c86c4552a4884d971071c5fb9441e3099.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.7e9c1c0c86c4552a4884d971071c5fb9441e3099.002.1",
+                "areaDesc": "Lower Washington County; Zion National Park; Glen Canyon Recreation Area/Lake Powell",
+                "geocode": {
+                    "SAME": [
+                        "049053",
+                        "049021",
+                        "049025",
+                        "049017",
+                        "049037"
+                    ],
+                    "UGC": [
+                        "UTZ123",
+                        "UTZ124",
+                        "UTZ131"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/UTZ123",
+                    "https://api.weather.gov/zones/forecast/UTZ124",
+                    "https://api.weather.gov/zones/forecast/UTZ131"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.40ec7d45346752c7574dfab61e43dc8a2139b25e.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.40ec7d45346752c7574dfab61e43dc8a2139b25e.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T14:30:00-06:00"
+                    }
+                ],
+                "sent": "2026-08-07T22:02:00-06:00",
+                "effective": "2026-08-07T22:02:00-06:00",
+                "onset": "2026-08-07T22:02:00-06:00",
+                "expires": "2026-08-08T13:00:00-06:00",
+                "ends": "2026-08-08T21:00:00-06:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Extreme Heat Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Salt Lake City UT",
+                "headline": "Extreme Heat Warning issued August 7 at 10:02PM MDT until August 8 at 9:00PM MDT by NWS Salt Lake City UT",
+                "description": "* WHAT...Dangerously hot conditions with temperatures up to 110\nexpected with little overnight relief through Saturday.\n\n* WHERE...Glen Canyon Recreation Area/Lake Powell, Lower Washington\nCounty, and Zion National Park.\n\n* WHEN...Until 9 PM MDT Saturday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat events.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nDo not leave young children and pets in unattended vehicles. Car\ninteriors will reach lethal temperatures in a matter of minutes.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.\n\nTo reduce risk during outdoor work, the Occupational Safety and\nHealth Administration recommends scheduling frequent rest breaks in\nshaded or air conditioned environments. Anyone overcome by heat\nshould be moved to a cool and shaded location. Heat stroke is an\nemergency! Call 9 1 1.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWSLC"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS75 KSLC 080402"
+                    ],
+                    "NWSheadline": [
+                        "EXTREME HEAT WARNING REMAINS IN EFFECT UNTIL 9 PM MDT SATURDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KSLC.XH.W.0005.000000T0000Z-260809T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-08T21:00:00-06:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6bbeacd9a324c0f3d3382891fb21bc0e82eef911.001.1,2026-08-06T23:02:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9f86d8170ea56e07f525a591a9fe9215c97b2d79.001.1,2026-08-06T08:20:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.e69beaa91a3fb7dd4dc834f6a7ba091d489469fa.001.1,2026-08-05T22:57:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.557d9f7565d3dfc38a33a3fdb07f73304f16ed50.001.1,2026-08-05T09:46:00-06:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "XHW"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7e9c1c0c86c4552a4884d971071c5fb9441e3099.001.1",
             "type": "Feature",
             "geometry": null,
@@ -9701,100 +10020,6 @@
                     ],
                     "expiredReferences": [
                         "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6bbeacd9a324c0f3d3382891fb21bc0e82eef911.003.1,2026-08-06T23:02:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9f86d8170ea56e07f525a591a9fe9215c97b2d79.003.1,2026-08-06T08:20:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.e69beaa91a3fb7dd4dc834f6a7ba091d489469fa.002.1,2026-08-05T22:57:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.557d9f7565d3dfc38a33a3fdb07f73304f16ed50.002.1,2026-08-05T09:46:00-06:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "XHW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7e9c1c0c86c4552a4884d971071c5fb9441e3099.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7e9c1c0c86c4552a4884d971071c5fb9441e3099.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.7e9c1c0c86c4552a4884d971071c5fb9441e3099.002.1",
-                "areaDesc": "Lower Washington County; Zion National Park; Glen Canyon Recreation Area/Lake Powell",
-                "geocode": {
-                    "SAME": [
-                        "049053",
-                        "049021",
-                        "049025",
-                        "049017",
-                        "049037"
-                    ],
-                    "UGC": [
-                        "UTZ123",
-                        "UTZ124",
-                        "UTZ131"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/UTZ123",
-                    "https://api.weather.gov/zones/forecast/UTZ124",
-                    "https://api.weather.gov/zones/forecast/UTZ131"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.40ec7d45346752c7574dfab61e43dc8a2139b25e.002.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.40ec7d45346752c7574dfab61e43dc8a2139b25e.002.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-07T14:30:00-06:00"
-                    }
-                ],
-                "sent": "2026-08-07T22:02:00-06:00",
-                "effective": "2026-08-07T22:02:00-06:00",
-                "onset": "2026-08-07T22:02:00-06:00",
-                "expires": "2026-08-08T13:00:00-06:00",
-                "ends": "2026-08-08T21:00:00-06:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Extreme Heat Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Salt Lake City UT",
-                "headline": "Extreme Heat Warning issued August 7 at 10:02PM MDT until August 8 at 9:00PM MDT by NWS Salt Lake City UT",
-                "description": "* WHAT...Dangerously hot conditions with temperatures up to 110\nexpected with little overnight relief through Saturday.\n\n* WHERE...Glen Canyon Recreation Area/Lake Powell, Lower Washington\nCounty, and Zion National Park.\n\n* WHEN...Until 9 PM MDT Saturday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat events.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nDo not leave young children and pets in unattended vehicles. Car\ninteriors will reach lethal temperatures in a matter of minutes.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.\n\nTo reduce risk during outdoor work, the Occupational Safety and\nHealth Administration recommends scheduling frequent rest breaks in\nshaded or air conditioned environments. Anyone overcome by heat\nshould be moved to a cool and shaded location. Heat stroke is an\nemergency! Call 9 1 1.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWSLC"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KSLC 080402"
-                    ],
-                    "NWSheadline": [
-                        "EXTREME HEAT WARNING REMAINS IN EFFECT UNTIL 9 PM MDT SATURDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KSLC.XH.W.0005.000000T0000Z-260809T0300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-08T21:00:00-06:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6bbeacd9a324c0f3d3382891fb21bc0e82eef911.001.1,2026-08-06T23:02:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9f86d8170ea56e07f525a591a9fe9215c97b2d79.001.1,2026-08-06T08:20:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.e69beaa91a3fb7dd4dc834f6a7ba091d489469fa.001.1,2026-08-05T22:57:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.557d9f7565d3dfc38a33a3fdb07f73304f16ed50.001.1,2026-08-05T09:46:00-06:00"
                     ]
                 },
                 "scope": "Public",
@@ -10200,6 +10425,98 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.13bbde41e09f34f2e27e8b4404334b660ab25427.001.2",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.13bbde41e09f34f2e27e8b4404334b660ab25427.001.2",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.13bbde41e09f34f2e27e8b4404334b660ab25427.001.2",
+                "areaDesc": "Southeast Utah; Arches/Grand Flat",
+                "geocode": {
+                    "SAME": [
+                        "049037",
+                        "049019"
+                    ],
+                    "UGC": [
+                        "UTZ022",
+                        "UTZ027"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/UTZ022",
+                    "https://api.weather.gov/zones/forecast/UTZ027"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ad2f8377fb2ca2d7a28937ca6eea7e0169bc860c.001.3",
+                        "identifier": "urn:oid:2.49.0.1.840.0.ad2f8377fb2ca2d7a28937ca6eea7e0169bc860c.001.3",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T19:53:00-06:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.776f0b2b58de0d97ff8945e895a6a25297b13ec8.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.776f0b2b58de0d97ff8945e895a6a25297b13ec8.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-07T12:13:00-06:00"
+                    }
+                ],
+                "sent": "2026-08-07T21:52:00-06:00",
+                "effective": "2026-08-07T21:52:00-06:00",
+                "onset": "2026-08-09T13:00:00-06:00",
+                "expires": "2026-08-08T16:00:00-06:00",
+                "ends": "2026-08-09T20:00:00-06:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Grand Junction CO",
+                "headline": "Heat Advisory issued August 7 at 9:52PM MDT until August 9 at 8:00PM MDT by NWS Grand Junction CO",
+                "description": "* WHAT...High temperatures 103 to 108 expected Saturday. High\ntemperatures 101 to 106 expected Sunday. Overnight low\ntemperatures in the 70s.\n\n* WHERE...Arches/Grand Flat and Southeast Utah.\n\n* WHEN...For the first Heat Advisory, from 1 PM to 8 PM MDT\nSaturday. For the second Heat Advisory, from 1 PM to 8 PM MDT\nSunday.\n\n* IMPACTS...Hot temperatures and high humidity may cause heat\nillnesses.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.\n\nTo reduce risk during outdoor work, the Occupational Safety and\nHealth Administration recommends scheduling frequent rest breaks in\nshaded or air conditioned environments. Anyone overcome by heat\nshould be moved to a cool and shaded location. Heat stroke is an\nemergency! Call 9 1 1.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWGJT"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS75 KGJT 080352"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT FROM 1 PM TO 8 PM MDT SATURDAY... ...HEAT ADVISORY REMAINS IN EFFECT FROM 1 PM TO 8 PM MDT SUNDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KGJT.HT.Y.0006.260809T1900Z-260810T0200Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-09T20:00:00-06:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.13bbde41e09f34f2e27e8b4404334b660ab25427.001.1",
             "type": "Feature",
             "geometry": null,
@@ -10278,98 +10595,6 @@
                     ],
                     "expiredReferences": [
                         "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2f6d20ed10f2a7681e576f34a866fcac1839d93e.001.2,2026-08-06T20:44:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a1659b294c244a7f7524a2704158d2278d0e900d.001.1,2026-08-06T10:18:00-06:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.13bbde41e09f34f2e27e8b4404334b660ab25427.001.2",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.13bbde41e09f34f2e27e8b4404334b660ab25427.001.2",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.13bbde41e09f34f2e27e8b4404334b660ab25427.001.2",
-                "areaDesc": "Southeast Utah; Arches/Grand Flat",
-                "geocode": {
-                    "SAME": [
-                        "049037",
-                        "049019"
-                    ],
-                    "UGC": [
-                        "UTZ022",
-                        "UTZ027"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/UTZ022",
-                    "https://api.weather.gov/zones/forecast/UTZ027"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ad2f8377fb2ca2d7a28937ca6eea7e0169bc860c.001.3",
-                        "identifier": "urn:oid:2.49.0.1.840.0.ad2f8377fb2ca2d7a28937ca6eea7e0169bc860c.001.3",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-07T19:53:00-06:00"
-                    },
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.776f0b2b58de0d97ff8945e895a6a25297b13ec8.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.776f0b2b58de0d97ff8945e895a6a25297b13ec8.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-07T12:13:00-06:00"
-                    }
-                ],
-                "sent": "2026-08-07T21:52:00-06:00",
-                "effective": "2026-08-07T21:52:00-06:00",
-                "onset": "2026-08-09T13:00:00-06:00",
-                "expires": "2026-08-08T16:00:00-06:00",
-                "ends": "2026-08-09T20:00:00-06:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Grand Junction CO",
-                "headline": "Heat Advisory issued August 7 at 9:52PM MDT until August 9 at 8:00PM MDT by NWS Grand Junction CO",
-                "description": "* WHAT...High temperatures 103 to 108 expected Saturday. High\ntemperatures 101 to 106 expected Sunday. Overnight low\ntemperatures in the 70s.\n\n* WHERE...Arches/Grand Flat and Southeast Utah.\n\n* WHEN...For the first Heat Advisory, from 1 PM to 8 PM MDT\nSaturday. For the second Heat Advisory, from 1 PM to 8 PM MDT\nSunday.\n\n* IMPACTS...Hot temperatures and high humidity may cause heat\nillnesses.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.\n\nTo reduce risk during outdoor work, the Occupational Safety and\nHealth Administration recommends scheduling frequent rest breaks in\nshaded or air conditioned environments. Anyone overcome by heat\nshould be moved to a cool and shaded location. Heat stroke is an\nemergency! Call 9 1 1.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWGJT"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KGJT 080352"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT FROM 1 PM TO 8 PM MDT SATURDAY... ...HEAT ADVISORY REMAINS IN EFFECT FROM 1 PM TO 8 PM MDT SUNDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KGJT.HT.Y.0006.260809T1900Z-260810T0200Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T20:00:00-06:00"
                     ]
                 },
                 "scope": "Public",
@@ -12159,76 +12384,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.30c9bbc737aef5c648537deedc0c3c4a2d20b940.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.30c9bbc737aef5c648537deedc0c3c4a2d20b940.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.30c9bbc737aef5c648537deedc0c3c4a2d20b940.002.1",
-                "areaDesc": "Mineral, CO",
-                "geocode": {
-                    "SAME": [
-                        "008079"
-                    ],
-                    "UGC": [
-                        "COC079"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/COC079"
-                ],
-                "references": [],
-                "sent": "2026-08-07T16:11:00-06:00",
-                "effective": "2026-08-07T16:10:00-06:00",
-                "onset": "2026-08-07T16:10:00-06:00",
-                "expires": "2026-08-08T09:00:00-06:00",
-                "ends": null,
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Air Quality Alert",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Pueblo CO",
-                "headline": "Air Quality Alert issued August 7 at 4:10PM MDT by NWS Pueblo CO",
-                "description": "The Colorado Department of Public Health and Environment has\nissued the following...\n\nWHAT...Air Quality Health Advisory for Wildfire Smoke.\n\nWHERE...Montrose, Ouray, Hinsdale, Mineral, Archuleta and southern\nGunnison Counties. Locations include, but are not limited to\nMontrose, Nucla, Ouray, Lake City, Creede, Pagosa Springs and\nSapinero.\n\nWHEN...900 AM Friday August 07 to 900 AM Saturday August 08\n\nIMPACTS...Moderate to heavy smoke from fires in southwestern\nColorado will impact the advisory area through at least Saturday\nmorning. The heaviest smoke is expected for locations in close\nvicinity to the Elk fire located in northern Hinsdale County,\nespecially along Highway 149 north of Lake City during the morning\nhours.\n\nHEALTH INFORMATION...Public Health Recommendations: Increasing\nlikelihood of respiratory symptoms in sensitive individuals,\naggravation of heart or lung disease and premature mortality in\npeople with cardiopulmonary disease and older adults. People with\nheart or lung disease, older adults, and children should reduce\nprolonged or heavy exertion.",
-                "instruction": null,
-                "response": "Monitor",
-                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "AQAPUB"
-                    ],
-                    "WMOidentifier": [
-                        "AEUS75 KPUB 072211"
-                    ],
-                    "NWSheadline": [
-                        "AIR QUALITY HEALTH ADVISORY FOR WILDFIRE SMOKE FROM 900 AM FRIDAY UNTIL 900 AM SATURDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "AQA"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.30c9bbc737aef5c648537deedc0c3c4a2d20b940.001.1",
             "type": "Feature",
             "geometry": null,
@@ -12286,6 +12441,76 @@
                     ],
                     "NWSheadline": [
                         "AIR QUALITY HEALTH ADVISORY FOR OZONE FROM 1200 PM FRIDAY UNTIL 1000 PM FRIDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "AQA"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.30c9bbc737aef5c648537deedc0c3c4a2d20b940.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.30c9bbc737aef5c648537deedc0c3c4a2d20b940.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.30c9bbc737aef5c648537deedc0c3c4a2d20b940.002.1",
+                "areaDesc": "Mineral, CO",
+                "geocode": {
+                    "SAME": [
+                        "008079"
+                    ],
+                    "UGC": [
+                        "COC079"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/COC079"
+                ],
+                "references": [],
+                "sent": "2026-08-07T16:11:00-06:00",
+                "effective": "2026-08-07T16:10:00-06:00",
+                "onset": "2026-08-07T16:10:00-06:00",
+                "expires": "2026-08-08T09:00:00-06:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Air Quality Alert",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Pueblo CO",
+                "headline": "Air Quality Alert issued August 7 at 4:10PM MDT by NWS Pueblo CO",
+                "description": "The Colorado Department of Public Health and Environment has\nissued the following...\n\nWHAT...Air Quality Health Advisory for Wildfire Smoke.\n\nWHERE...Montrose, Ouray, Hinsdale, Mineral, Archuleta and southern\nGunnison Counties. Locations include, but are not limited to\nMontrose, Nucla, Ouray, Lake City, Creede, Pagosa Springs and\nSapinero.\n\nWHEN...900 AM Friday August 07 to 900 AM Saturday August 08\n\nIMPACTS...Moderate to heavy smoke from fires in southwestern\nColorado will impact the advisory area through at least Saturday\nmorning. The heaviest smoke is expected for locations in close\nvicinity to the Elk fire located in northern Hinsdale County,\nespecially along Highway 149 north of Lake City during the morning\nhours.\n\nHEALTH INFORMATION...Public Health Recommendations: Increasing\nlikelihood of respiratory symptoms in sensitive individuals,\naggravation of heart or lung disease and premature mortality in\npeople with cardiopulmonary disease and older adults. People with\nheart or lung disease, older adults, and children should reduce\nprolonged or heavy exertion.",
+                "instruction": null,
+                "response": "Monitor",
+                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "AQAPUB"
+                    ],
+                    "WMOidentifier": [
+                        "AEUS75 KPUB 072211"
+                    ],
+                    "NWSheadline": [
+                        "AIR QUALITY HEALTH ADVISORY FOR WILDFIRE SMOKE FROM 900 AM FRIDAY UNTIL 900 AM SATURDAY"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
@@ -15338,177 +15563,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.001.1",
-                "areaDesc": "Larimer County Below 6000 Feet/Northwest Weld County",
-                "geocode": {
-                    "SAME": [
-                        "008069",
-                        "008123"
-                    ],
-                    "UGC": [
-                        "COZ038"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/COZ038"
-                ],
-                "references": [],
-                "sent": "2026-08-07T12:09:00-06:00",
-                "effective": "2026-08-07T12:09:00-06:00",
-                "onset": "2026-08-08T11:00:00-06:00",
-                "expires": "2026-08-08T06:15:00-06:00",
-                "ends": "2026-08-09T20:00:00-06:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Denver CO",
-                "headline": "Heat Advisory issued August 7 at 12:09PM MDT until August 9 at 8:00PM MDT by NWS Denver CO",
-                "description": "* WHAT...Hot temperatures ranging from 98 to 102 degrees.\n\n* WHERE...The northern I-25 Corridor, including Fort Collins.\n\n* WHEN...From 11 AM Saturday to 8 PM MDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illness.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWBOU"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KBOU 071809"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY IN EFFECT FROM 11 AM SATURDAY TO 8 PM MDT SUNDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.EXB.KBOU.HT.Y.0006.260808T1700Z-260810T0200Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T20:00:00-06:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.3bb6009d95ed0b30f632e27d0ba252d16ecb29ed.002.1",
-                "areaDesc": "Boulder And Jefferson Counties Below 6000 Feet/West Broomfield County; North Douglas County Below 6000 Feet/Denver/West Adams and Arapahoe Counties/East Broomfield County",
-                "geocode": {
-                    "SAME": [
-                        "008013",
-                        "008014",
-                        "008059",
-                        "008001",
-                        "008005",
-                        "008031",
-                        "008035"
-                    ],
-                    "UGC": [
-                        "COZ039",
-                        "COZ040"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/COZ039",
-                    "https://api.weather.gov/zones/forecast/COZ040"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7989936facfed3310130df4da717f899e91aba14.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.7989936facfed3310130df4da717f899e91aba14.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-07T04:01:00-06:00"
-                    }
-                ],
-                "sent": "2026-08-07T12:09:00-06:00",
-                "effective": "2026-08-07T12:09:00-06:00",
-                "onset": "2026-08-08T11:00:00-06:00",
-                "expires": "2026-08-08T06:15:00-06:00",
-                "ends": "2026-08-09T20:00:00-06:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Denver CO",
-                "headline": "Heat Advisory issued August 7 at 12:09PM MDT until August 9 at 8:00PM MDT by NWS Denver CO",
-                "description": "* WHAT...Hot temperatures ranging from 98 to 102 degrees.\n\n* WHERE...Denver metro, western suburbs of Denver, and portions of\nthe Urban Corridor including Boulder.\n\n* WHEN...From 11 AM Saturday to 8 PM MDT Sunday.\n\n* IMPACTS...Hot temperatures may cause heat illness.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWBOU"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KBOU 071809"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY NOW IN EFFECT FROM 11 AM SATURDAY TO 8 PM MDT SUNDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.EXT.KBOU.HT.Y.0006.260808T1700Z-260810T0200Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T20:00:00-06:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.88de34f46c8ced87f4f3dfd54941a0d392d1fa77.001.1,2026-08-06T13:42:00-06:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.7eab1ea43a207bb825beb6b839085340057b9466.001.1,2026-08-06T12:07:00-06:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fb1e47760bf8698b0fb8a2d1ee78bca4370f5429.001.1",
             "type": "Feature",
             "geometry": null,
@@ -16437,76 +16491,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.607c42103416becca6c55013894cda1e0b7482b7.003.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.607c42103416becca6c55013894cda1e0b7482b7.003.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.607c42103416becca6c55013894cda1e0b7482b7.003.1",
-                "areaDesc": "Deschutes, OR",
-                "geocode": {
-                    "SAME": [
-                        "041017"
-                    ],
-                    "UGC": [
-                        "ORC017"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/ORC017"
-                ],
-                "references": [],
-                "sent": "2026-08-07T09:57:00-07:00",
-                "effective": "2026-08-07T09:57:00-07:00",
-                "onset": "2026-08-07T09:57:00-07:00",
-                "expires": "2026-08-08T12:00:00-07:00",
-                "ends": null,
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Air Quality Alert",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Pendleton OR",
-                "headline": "Air Quality Alert issued August 7 at 9:57AM PDT by NWS Pendleton OR",
-                "description": "Oregon Department of Environmental Quality has issued an Air Quality\nAdvisory until noon PDT Saturday.\n\nFor the Smoke Air Quality Advisory, wildfires burning in the region\ncombined with forecasted conditions will cause air quality to reach\nunhealthy levels.\n\nPollutants in smoke can cause burning eyes, runny nose, aggravate\nheart and lung diseases, and aggravate other serious health\nproblems.  Limit outdoor activities and keep children indoors if it\nis smoky. Please follow medical advice if you have a heart or lung\ncondition.\n\nFor additional information...please visit the Web site at\nhttp://www.oregon.gov/DEQ",
-                "instruction": null,
-                "response": "Monitor",
-                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "AQAPDT"
-                    ],
-                    "WMOidentifier": [
-                        "AEUS76 KPDT 071657"
-                    ],
-                    "NWSheadline": [
-                        "AIR QUALITY ADVISORY IN EFFECT UNTIL NOON PDT SATURDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "AQA"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.607c42103416becca6c55013894cda1e0b7482b7.001.1",
             "type": "Feature",
             "geometry": null,
@@ -16573,6 +16557,76 @@
                     ],
                     "NWSheadline": [
                         "AIR QUALITY ALERT IN EFFECT UNTIL 5 AM PDT TUESDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "AQA"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.607c42103416becca6c55013894cda1e0b7482b7.003.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.607c42103416becca6c55013894cda1e0b7482b7.003.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.607c42103416becca6c55013894cda1e0b7482b7.003.1",
+                "areaDesc": "Deschutes, OR",
+                "geocode": {
+                    "SAME": [
+                        "041017"
+                    ],
+                    "UGC": [
+                        "ORC017"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/ORC017"
+                ],
+                "references": [],
+                "sent": "2026-08-07T09:57:00-07:00",
+                "effective": "2026-08-07T09:57:00-07:00",
+                "onset": "2026-08-07T09:57:00-07:00",
+                "expires": "2026-08-08T12:00:00-07:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Air Quality Alert",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Pendleton OR",
+                "headline": "Air Quality Alert issued August 7 at 9:57AM PDT by NWS Pendleton OR",
+                "description": "Oregon Department of Environmental Quality has issued an Air Quality\nAdvisory until noon PDT Saturday.\n\nFor the Smoke Air Quality Advisory, wildfires burning in the region\ncombined with forecasted conditions will cause air quality to reach\nunhealthy levels.\n\nPollutants in smoke can cause burning eyes, runny nose, aggravate\nheart and lung diseases, and aggravate other serious health\nproblems.  Limit outdoor activities and keep children indoors if it\nis smoky. Please follow medical advice if you have a heart or lung\ncondition.\n\nFor additional information...please visit the Web site at\nhttp://www.oregon.gov/DEQ",
+                "instruction": null,
+                "response": "Monitor",
+                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "AQAPDT"
+                    ],
+                    "WMOidentifier": [
+                        "AEUS76 KPDT 071657"
+                    ],
+                    "NWSheadline": [
+                        "AIR QUALITY ADVISORY IN EFFECT UNTIL NOON PDT SATURDAY"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
@@ -19192,5 +19246,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-08-08T09:37:57+00:00"
+    "updated": "2026-08-08T09:51:36+00:00"
 }
