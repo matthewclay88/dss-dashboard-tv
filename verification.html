@@ -394,6 +394,12 @@
   .trend-range-btn.active { background: #2563eb !important; color: #fff !important; }
 
   /* ── RADAR CONTROLS ── */
+  .radar-step-btn {
+    background: none; border: 1px solid #26405c; color: #93a3b8; width: 20px; height: 20px;
+    border-radius: 5px; cursor: pointer; font-size: 9px; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .radar-step-btn:hover { background: #16233a; color: #fff; border-color: #3b82f6; }
 
   /* ── ACCESSIBILITY ── */
   .icon-btn:focus-visible, .mini-btn:focus-visible, .subtab-btn:focus-visible,
@@ -571,8 +577,11 @@
       <button class="subtab-btn" data-subtab="counties">COUNTIES</button>
       <div class="spacer"></div>
       <label class="lsr-toggle"><input type="checkbox" id="showLsrToggle" checked> Show LSRs on map</label>
+      <label class="lsr-toggle"><input type="checkbox" id="showMpingToggle"> Show mPING reports</label>
       <label class="lsr-toggle"><input type="checkbox" id="showRadarToggle"> Radar</label>
+      <button class="radar-step-btn" id="radarStepBackBtn" style="display:none;" title="Step radar back 5 min">&#9664;</button>
       <input type="range" id="radarTimeSlider" class="radar-slider" style="display:none;" min="0" max="1439" step="5" value="720" title="Radar time (local)">
+      <button class="radar-step-btn" id="radarStepFwdBtn" style="display:none;" title="Step radar forward 5 min">&#9654;</button>
       <span id="radarTimeLabel" style="display:none;font-size:10px;color:#93a3b8;"></span>
     </div>
     <div class="center-body">
@@ -659,13 +668,18 @@
         <div class="hint">Swaps the Verified / Pending / Needs Verification colors for a blue/orange/vermilion palette instead of green/yellow/red.</div>
       </div>
       <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
+        <label>mPING API key</label>
+        <input type="password" id="setMpingKey" autocomplete="off" placeholder="Paste your mPING API key…">
+        <div class="hint">Get a free key at <a href="https://mping.ou.edu" target="_blank" style="color:#60a5fa;">mping.ou.edu</a> (Research license covers reports older than 48 hours — needed for anything but the live day; Commercial covers everything). This key is kept only in this browser's local storage — it is never written into the page's source, never included in the CSV/PNG exports, and is deliberately left out of Settings Export so you don't accidentally hand it to someone else. Each person running this page needs their own key.</div>
+      </div>
+      <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
         <label>Preferences on another device</label>
         <div style="display:flex;gap:8px;">
           <button class="btn secondary" id="exportSettingsBtn" type="button">Export Settings…</button>
           <button class="btn secondary" id="importSettingsBtn" type="button">Import Settings…</button>
           <input type="file" id="importSettingsFile" accept="application/json" style="display:none;">
         </div>
-        <div class="hint">These settings, the colorblind toggle, and recent-office list live in this browser only — export a JSON file here to carry them to another machine.</div>
+        <div class="hint">These settings, the colorblind toggle, and recent-office list live in this browser only — export a JSON file here to carry them to another machine. Your mPING key is intentionally excluded — re-enter it by hand on the other device.</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -769,6 +783,7 @@
       <p><strong>Related warnings:</strong> the details panel lists other warnings sharing a county and issued within 30 minutes of the selected one. This is a timing/geography heuristic only — IEM Cow doesn't expose an authoritative "this warning replaced that one" link — so treat it as a lead, not a confirmed sequence.</p>
       <p><strong>Settings portability:</strong> Settings has Export/Import buttons for carrying your thresholds, timezone, colorblind preference, and recent-office list to another browser or machine — everything here is stored locally in this browser, there's no server-side account.</p>
       <p><strong>Forecaster coverage:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
+      <p><strong>mPING reports:</strong> "Show mPING reports" overlays crowd-sourced weather reports from the <a href="https://mping.ou.edu" target="_blank">mPING</a> project (OU CIMMS / NSSL) alongside the LSR markers — separate dots, separate legend, own on/off toggle. This needs a personal mPING API key (Settings) since mPING's API requires one per user; a Research-license key can't see the last 48 hours, so very recent/live days may show nothing even with a key entered. mPING reports are informal public submissions, not an official report source like LSRs — treat matches against warnings as a supplementary cross-check, not a verification input (IEM Cow's own verified/unverified status is unaffected by mPING data either way).</p>
     </div>
   </div>
 </div>
@@ -901,10 +916,38 @@ const FF_EMERGENCY_REGEX = /FLASH\s+FLOOD\s+EMERGENCY/i;
 const PDS_SCAN_MAX_EVENTS = 75;
 const PDS_SCAN_CONCURRENCY = 6;
 
+// mPING crowd-sourced reports. Requires a per-user API key (Settings) —
+// mPING's API is token-authenticated and license-tiered (General: last
+// 4hrs only; Research: everything except the last 48hrs; Commercial:
+// everything), so there is no single key this static page could ship
+// with that would work for both "today" and archived dates, and baking
+// any key into the page's own JS would publish it to anyone who views
+// source on a GitHub Pages site. Each visitor supplies their own.
+const MPING_API_URL = 'https://mping.ou.edu/mping/api/v2/reports';
+const MPING_MAX_PAGES = 20;       // safety cap on pagination follow-throughs
+const MPING_STORAGE_KEY = 'btv_mping_api_key';
+// Rough category → color mapping for the map markers/legend. mPING's
+// actual category text varies (e.g. "Rain/Snow", "Hail", "Wind Damage/
+// Non-Tstm Wind Damage", "Flood/Flash Flood", "Tornado"), so this is a
+// substring match rather than an exact key lookup.
+const MPING_CATEGORY_COLORS = [
+  { match: /tornado|funnel/i, color: '#b91c1c', label: 'Tornado / Funnel Cloud' },
+  { match: /flood/i,          color: '#065f46', label: 'Flood' },
+  { match: /hail/i,           color: '#22c55e', label: 'Hail' },
+  { match: /wind/i,           color: '#3b82f6', label: 'Wind Damage/Gust' },
+  { match: /rain|snow|sleet|ice|drizzle|winter/i, color: '#a855f7', label: 'Winter / Rain' }
+];
+const MPING_DEFAULT_COLOR = '#e879f9';
+function mpingColorFor(categoryText){
+  const hit = MPING_CATEGORY_COLORS.find(c => c.match.test(categoryText || ''));
+  return hit ? hit.color : MPING_DEFAULT_COLOR;
+}
+
 // ══════════════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════════════
 let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 58, lsrbuffer: 15, colorblindMode: false };
+let mpingApiKey = '';
 let selectedDateStr = null;   // 'YYYY-MM-DD' in settings.timezone
 let currentEvents = [];       // parsed + status-enriched event objects
 let currentReports = [];      // parsed report objects
@@ -917,7 +960,7 @@ let rangeLabel = '';
 let lastSingleDate = null;    // last single day viewed, so exiting a range returns somewhere sensible
 let lastZoneFitWfo = null;    // tracks which WFO the map was last auto-fit to
 let phenomenaFilter = null;   // 'TO'|'SV'|'FF'|'SQ'|null — set by clicking a queue card
-let map, zoneLayer, warningLayer, lsrLayer, radarLayer;
+let map, zoneLayer, warningLayer, lsrLayer, radarLayer, mpingLayer;
 let productTextCache = {};
 let wfoDropdownOpen = false;
 let wfoHighlightIdx = -1;
@@ -928,6 +971,10 @@ let currentRangeEnd = null;
 let compareWfos = [];   // additional WFO codes overlaid alongside settings.wfo
 let liveModeInterval = null;
 const LIVE_POLL_MS = 3 * 60 * 1000;
+let knownIds = new Set();   // warning IDs already shown, so live mode only toasts genuinely new ones
+let showMping = false;
+let currentMpingReports = [];
+let mpingLoadToken = 0;   // bumped on every load; a late response checks it's still current before rendering
 
 // ══════════════════════════════════════════════════════════════
 //  DATE / TIMEZONE HELPERS
@@ -968,6 +1015,13 @@ function localMidnightToUTC(dateStr, tz){
 }
 
 function isoZ(d){ return d.toISOString().replace(/\.\d+Z$/, 'Z'); }
+
+// mPING's obtime filters want 'YYYY-MM-DD HH:MM:SS' in UTC, not ISO —
+// no 'T'/'Z', space-separated (confirmed against the documented filter
+// examples).
+function mpingTimeParam(d){
+  return d.toISOString().slice(0,19).replace('T', ' ');
+}
 
 function fmtLocal(isoStr, tz){
   if(!isoStr) return '—';
@@ -1260,6 +1314,7 @@ async function loadDay(dateStr){
   renderAll();
   updateUrlState();
   scanForPdsEmergency();
+  refreshMpingIfEnabled();
   if(dateStr === todayInTZ(settings.timezone)) startLiveMode(); else stopLiveMode();
 }
 
@@ -1293,6 +1348,7 @@ async function loadRange(startStr, endStr){
   renderAll();
   updateUrlState();
   scanForPdsEmergency();
+  refreshMpingIfEnabled();
   stopLiveMode();
 }
 
@@ -1311,6 +1367,8 @@ function updateRangeBanner(){
     showRadar = false;
     document.getElementById('radarTimeSlider').style.display = 'none';
     document.getElementById('radarTimeLabel').style.display = 'none';
+    document.getElementById('radarStepBackBtn').style.display = 'none';
+    document.getElementById('radarStepFwdBtn').style.display = 'none';
     if(radarLayer){ map.removeLayer(radarLayer); radarLayer = null; }
   } else {
     banner.style.display = 'none';
@@ -1381,6 +1439,116 @@ async function scanForPdsEmergency(){
     const e = currentEvents.find(x => x.id === selectedEventId);
     if(e) renderDetails(e);
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  mPING — crowd-sourced report overlay (separate from LSRs)
+// ══════════════════════════════════════════════════════════════
+// Bounding box (minLon,minLat,maxLon,maxLat) covering whatever CWA
+// zone geometry is already loaded for the active WFO(s) — reuses the
+// zone fetch that drawZoneLayer() already did rather than issuing a
+// separate lookup. Keeps the mPING query from silently going national.
+function getActiveZoneBbox(){
+  const activeWfos = [settings.wfo, ...compareWfos];
+  const features = activeWfos.flatMap(wfo => zoneCacheByWfo[wfo] || []);
+  if(features.length === 0) return null;
+  try{
+    const b = L.geoJSON({ type:'FeatureCollection', features }).getBounds();
+    // Small padding so reports just outside the drawn zone lines (a
+    // storm that clips the edge of the CWA) aren't dropped.
+    const pad = 0.15;
+    return [b.getWest()-pad, b.getSouth()-pad, b.getEast()+pad, b.getNorth()+pad].join(',');
+  }catch(err){ return null; }
+}
+
+function currentWindowForMping(){
+  if(viewMode === 'range' && currentRangeStart && currentRangeEnd){
+    return {
+      start: localMidnightToUTC(currentRangeStart, settings.timezone),
+      end: localMidnightToUTC(addDaysToDateStr(currentRangeEnd, 1), settings.timezone)
+    };
+  }
+  if(!selectedDateStr) return null;
+  return {
+    start: localMidnightToUTC(selectedDateStr, settings.timezone),
+    end: localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone)
+  };
+}
+
+async function fetchMpingReports(windowStart, windowEnd){
+  const bbox = getActiveZoneBbox();
+  const results = [];
+  let url = MPING_API_URL + '?' +
+    new URLSearchParams({
+      obtime_gte: mpingTimeParam(windowStart),
+      obtime_lte: mpingTimeParam(windowEnd)
+    }).toString() +
+    (bbox ? '&in_bbox=' + bbox : '');
+  let pages = 0;
+  while(url && pages < MPING_MAX_PAGES){
+    const res = await fetch(url, { headers: { 'Authorization': 'Token ' + mpingApiKey, 'Accept': 'application/json' } });
+    if(!res.ok){
+      if(res.status === 401) throw new Error('mPING rejected the API key (401) — check it in Settings.');
+      if(res.status === 403) throw new Error('mPING denied this request (403) — your license tier may not cover this time window (e.g. a Research key can\'t see the last 48 hours).');
+      throw new Error('mPING API returned HTTP ' + res.status);
+    }
+    const data = await res.json();
+    results.push(...(data.results || []));
+    url = data.next || null;
+    pages++;
+  }
+  return results;
+}
+
+// Only runs when the toggle is on; safe to call after every load —
+// no-ops instantly if the toggle is off. A monotonically increasing
+// token guards against a slow request from an earlier day/WFO landing
+// after a newer one has already started, which would otherwise paint
+// stale reports over the current view.
+async function refreshMpingIfEnabled(){
+  if(!showMping) return;
+  const myToken = ++mpingLoadToken;
+  if(!mpingApiKey){
+    showToast('Add an mPING API key in Settings to see mPING reports.');
+    return;
+  }
+  const win = currentWindowForMping();
+  if(!win) return;
+  setStatus('Loading mPING reports…', false);
+  try{
+    const reports = await fetchMpingReports(win.start, win.end);
+    if(myToken !== mpingLoadToken) return; // superseded by a newer load
+    currentMpingReports = reports;
+    setStatus(null);
+  }catch(err){
+    if(myToken !== mpingLoadToken) return;
+    console.error(err);
+    currentMpingReports = [];
+    setStatus('Could not load mPING reports: ' + err.message, true);
+  }
+  drawMpingOnMap();
+  renderMapLegend();
+}
+
+function drawMpingOnMap(){
+  if(!mpingLayer) return;
+  mpingLayer.clearLayers();
+  if(!showMping) return;
+  currentMpingReports.forEach(r => {
+    if(!r.geom || !r.geom.coordinates) return;
+    const [lon, lat] = r.geom.coordinates;
+    const color = mpingColorFor(r.category);
+    const marker = L.circleMarker([lat, lon], {
+      radius: 4.5, color: '#0f1620', weight: 1, fillColor: color, fillOpacity: 0.9
+    });
+    marker.bindPopup(
+      `<div style="min-width:170px;"><b>${escapeHtml(r.description || r.category)}</b><br>` +
+      `<span style="color:#93a3b8;">${escapeHtml(r.category || '')}</span><br>` +
+      `<span style="color:#93a3b8;">${fmtLocal(r.obtime, settings.timezone)}</span><br>` +
+      `<span style="color:#5a6b82;font-size:10.5px;">mPING crowd-sourced report — not an official LSR</span></div>`
+    );
+    marker.addTo(mpingLayer);
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1739,6 +1907,7 @@ function initMap(){
   zoneLayer = L.layerGroup().addTo(map);
   warningLayer = L.layerGroup().addTo(map);
   lsrLayer = L.layerGroup().addTo(map);
+  mpingLayer = L.layerGroup().addTo(map);
   map.setView([44.3,-72.9], 7);
   drawZoneLayer();
 }
@@ -1858,6 +2027,13 @@ function renderMapLegend(){
     html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.F};border-radius:50%;"></span>Flooding</span>`;
     html += `<span class="lg-item"><span class="lg-dot" style="background:${LSR_TYPE_COLOR.q};border-radius:50%;"></span>Snow Squall</span>`;
     html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">White ring = warned · Red ring = unwarned</span>`;
+  }
+  if(showMping){
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">mPING:</span>`;
+    MPING_CATEGORY_COLORS.forEach(c => {
+      html += `<span class="lg-item"><span class="lg-dot" style="background:${c.color};border-radius:50%;"></span>${escapeHtml(c.label)}</span>`;
+    });
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${MPING_DEFAULT_COLOR};border-radius:50%;"></span>Other</span>`;
   }
   bar.innerHTML = html;
 }
@@ -2084,6 +2260,7 @@ function showToast(message){
 
 function startLiveMode(){
   stopLiveMode();
+  knownIds = new Set(currentEvents.map(e => e.id));
   document.getElementById('liveBadge').classList.add('on');
   liveModeInterval = setInterval(pollLiveUpdates, LIVE_POLL_MS);
 }
@@ -2100,6 +2277,7 @@ async function pollLiveUpdates(){
     const dayEnd = localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone);
     const { events, reports } = await fetchAndParseCow(dayStart, dayEnd, { wfoCodes: [settings.wfo, ...compareWfos] });
     const newOnes = events.filter(e => !knownIds.has(e.id));
+    knownIds = new Set(events.map(e => e.id));
     currentEvents = events;
     currentReports = reports;
     computeDayStats();
@@ -2284,6 +2462,18 @@ function radarTimeIsoFor(dateStr, minutesOfDay){
   return new Date(snappedMs).toISOString().replace(/\.\d+Z$/, 'Z');
 }
 
+// Nudges the radar slider by deltaMin (±5, matching the slider's own
+// step) without touching how the slider itself works — same clamp,
+// same downstream refresh calls the slider's own 'input' handler uses.
+function stepRadarTime(deltaMin){
+  const slider = document.getElementById('radarTimeSlider');
+  const next = Math.max(0, Math.min(1439, parseInt(slider.value, 10) + deltaMin));
+  slider.value = next;
+  refreshRadarTimeLabel();
+  updateRadarLayer();
+  renderMapLegend();
+}
+
 function refreshRadarTimeLabel(){
   const mins = parseInt(document.getElementById('radarTimeSlider').value, 10);
   const hh = String(Math.floor(mins/60)).padStart(2,'0');
@@ -2350,6 +2540,15 @@ function exportCsv(){
     lines.push([r.valid, r.typetext || r.lsrtype, r.magnitude, r.city, r.county, r.state, r.warned ? 'Y':'N', r.events
     ].map(csvEscape).join(','));
   });
+  if(showMping && currentMpingReports.length){
+    lines.push('');
+    lines.push('## mPING Reports (crowd-sourced, unofficial)');
+    lines.push(['Time (UTC)','Category','Description','Lat','Lon'].join(','));
+    currentMpingReports.slice().sort((a,b) => new Date(a.obtime) - new Date(b.obtime)).forEach(r => {
+      const coords = (r.geom && r.geom.coordinates) || [null,null];
+      lines.push([r.obtime, r.category, r.description, coords[1], coords[0]].map(csvEscape).join(','));
+    });
+  }
   if(dayStats){
     lines.push('');
     lines.push('## Stats');
@@ -2405,6 +2604,7 @@ function renderAll(){
   drawZoneLayer();
   drawWarningsOnMap();
   drawLsrsOnMap();
+  drawMpingOnMap();
   updateRadarLayer();
   renderMapLegend();
   if(selectedEventId){
@@ -2491,6 +2691,15 @@ document.getElementById('todayBtn').addEventListener('click', () => loadDay(toda
 document.getElementById('datePicker').addEventListener('change', (e) => loadDay(e.target.value));
 document.getElementById('filterOnlyUnverified').addEventListener('change', renderWarnTable);
 document.getElementById('showLsrToggle').addEventListener('change', (e) => { showLsrs = e.target.checked; drawLsrsOnMap(); renderMapLegend(); });
+document.getElementById('showMpingToggle').addEventListener('change', (e) => {
+  showMping = e.target.checked;
+  if(!showMping){
+    drawMpingOnMap();
+    renderMapLegend();
+    return;
+  }
+  refreshMpingIfEnabled();
+});
 // WFO searchable combobox
 const wfoInput = document.getElementById('wfoSearchInput');
 wfoInput.addEventListener('focus', () => { wfoInput.select(); openWfoDropdown(); });
@@ -2532,6 +2741,8 @@ document.getElementById('showRadarToggle').addEventListener('change', (e) => {
   showRadar = e.target.checked;
   document.getElementById('radarTimeSlider').style.display = showRadar ? 'inline-block' : 'none';
   document.getElementById('radarTimeLabel').style.display = showRadar ? 'inline' : 'none';
+  document.getElementById('radarStepBackBtn').style.display = showRadar ? 'inline-flex' : 'none';
+  document.getElementById('radarStepFwdBtn').style.display = showRadar ? 'inline-flex' : 'none';
   if(showRadar){
     let defaultMin = 720;
     if(currentEvents.length && selectedDateStr){
@@ -2546,6 +2757,8 @@ document.getElementById('showRadarToggle').addEventListener('change', (e) => {
   renderMapLegend();
 });
 document.getElementById('radarTimeSlider').addEventListener('input', () => { refreshRadarTimeLabel(); updateRadarLayer(); renderMapLegend(); });
+document.getElementById('radarStepBackBtn').addEventListener('click', () => stepRadarTime(-5));
+document.getElementById('radarStepFwdBtn').addEventListener('click', () => stepRadarTime(5));
 
 // Trends modal
 document.getElementById('trendsBtn').addEventListener('click', () => { openModal('trendsModal'); loadTrends(30); });
@@ -2648,6 +2861,7 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('setWind').value = settings.wind;
   document.getElementById('setBuffer').value = settings.lsrbuffer;
   document.getElementById('setColorblind').checked = settings.colorblindMode;
+  document.getElementById('setMpingKey').value = mpingApiKey;
   openModal('settingsModal');
 });
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
@@ -2658,11 +2872,19 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   settings.colorblindMode = document.getElementById('setColorblind').checked;
   applyColorblindPalette(settings.colorblindMode);
   try{ localStorage.setItem('btv_colorblind_mode', settings.colorblindMode ? '1' : '0'); }catch(err){}
+  mpingApiKey = document.getElementById('setMpingKey').value.trim();
+  try{
+    if(mpingApiKey) localStorage.setItem(MPING_STORAGE_KEY, mpingApiKey);
+    else localStorage.removeItem(MPING_STORAGE_KEY);
+  }catch(err){ /* localStorage unavailable — key just won't persist across reloads */ }
   closeModal('settingsModal');
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 });
 
 document.getElementById('exportSettingsBtn').addEventListener('click', () => {
+  // Deliberately omits mpingApiKey — this file is meant to be handed
+  // around or committed alongside notes, and a personal, licensed API
+  // token doesn't belong in something that could end up shared.
   const payload = {
     kind: 'warning-verification-settings',
     version: 1,
@@ -2701,7 +2923,7 @@ document.getElementById('importSettingsFile').addEventListener('change', async (
     if(Array.isArray(payload.recentWfos)){
       try{ localStorage.setItem('btv_wfo_recent', JSON.stringify(payload.recentWfos.slice(0,5))); }catch(err){}
     }
-    showToast('Settings imported — click "Save & Refresh" to apply.');
+    showToast('Settings imported — click "Save & Refresh" to apply. (Your mPING key is separate and unaffected.)');
   }catch(err){
     console.error(err);
     alert('Could not read that settings file: ' + err.message);
@@ -2730,6 +2952,9 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
       applyColorblindPalette(true);
     }
   }catch(err){ /* localStorage unavailable — falls back to default palette */ }
+  try{
+    mpingApiKey = localStorage.getItem(MPING_STORAGE_KEY) || '';
+  }catch(err){ mpingApiKey = ''; }
 
   const urlState = readUrlState();
   if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
