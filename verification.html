@@ -930,16 +930,29 @@ const MPING_STORAGE_KEY = 'btv_mping_api_key';
 // actual category text varies (e.g. "Rain/Snow", "Hail", "Wind Damage/
 // Non-Tstm Wind Damage", "Flood/Flash Flood", "Tornado"), so this is a
 // substring match rather than an exact key lookup.
+// Rough category/description → color mapping for the map markers/
+// legend. mPING's category field is coarse (e.g. everything from rain
+// to blowing snow is lumped under "Rain/Snow"), but the report's own
+// "description" text is specific (Rain, Freezing Rain, Sleet/Ice
+// Pellets, Snow, Drizzle, Graupel, Blowing Snow, ...), so matching
+// runs against category + description together. Order matters here —
+// entries are checked top to bottom and the first match wins, so more
+// specific wording (e.g. "Freezing Rain") has to come before broader
+// wording ("Rain") would otherwise catch it first.
 const MPING_CATEGORY_COLORS = [
-  { match: /tornado|funnel/i, color: '#b91c1c', label: 'Tornado / Funnel Cloud' },
-  { match: /flood/i,          color: '#065f46', label: 'Flood' },
-  { match: /hail/i,           color: '#22c55e', label: 'Hail' },
-  { match: /wind/i,           color: '#3b82f6', label: 'Wind Damage/Gust' },
-  { match: /rain|snow|sleet|ice|drizzle|winter/i, color: '#a855f7', label: 'Winter / Rain' }
+  { match: /tornado|funnel/i,                          color: '#b91c1c', label: 'Tornado / Funnel Cloud' },
+  { match: /flood/i,                                   color: '#0e7490', label: 'Flood' },
+  { match: /hail/i,                                    color: '#22c55e', label: 'Hail' },
+  { match: /wind/i,                                    color: '#3b82f6', label: 'Wind Damage/Gust' },
+  { match: /freezing rain|sleet|ice pellet|ice accum/i, color: '#a78bfa', label: 'Freezing Rain / Sleet / Ice' },
+  { match: /snow|graupel/i,                            color: '#67e8f9', label: 'Snow / Graupel' },
+  { match: /rain|drizzle/i,                             color: '#14b8a6', label: 'Rain / Drizzle' },
+  { match: /fog|visibility|haze/i,                      color: '#94a3b8', label: 'Fog / Visibility' }
 ];
 const MPING_DEFAULT_COLOR = '#e879f9';
-function mpingColorFor(categoryText){
-  const hit = MPING_CATEGORY_COLORS.find(c => c.match.test(categoryText || ''));
+function mpingColorFor(categoryText, descriptionText){
+  const combined = [categoryText, descriptionText].filter(Boolean).join(' ');
+  const hit = MPING_CATEGORY_COLORS.find(c => c.match.test(combined));
   return hit ? hit.color : MPING_DEFAULT_COLOR;
 }
 
@@ -1537,7 +1550,7 @@ function drawMpingOnMap(){
   currentMpingReports.forEach(r => {
     if(!r.geom || !r.geom.coordinates) return;
     const [lon, lat] = r.geom.coordinates;
-    const color = mpingColorFor(r.category);
+    const color = mpingColorFor(r.category, r.description);
     const marker = L.circleMarker([lat, lon], {
       radius: 4.5, color: '#0f1620', weight: 1, fillColor: color, fillOpacity: 0.9
     });
