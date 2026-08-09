@@ -668,18 +668,13 @@
         <div class="hint">Swaps the Verified / Pending / Needs Verification colors for a blue/orange/vermilion palette instead of green/yellow/red.</div>
       </div>
       <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
-        <label>mPING API key</label>
-        <input type="password" id="setMpingKey" autocomplete="off" placeholder="Paste your mPING API key…">
-        <div class="hint">Get a free key at <a href="https://mping.ou.edu" target="_blank" style="color:#60a5fa;">mping.ou.edu</a> (Research license covers reports older than 48 hours — needed for anything but the live day; Commercial covers everything). This key is kept only in this browser's local storage — it is never written into the page's source, never included in the CSV/PNG exports, and is deliberately left out of Settings Export so you don't accidentally hand it to someone else. Each person running this page needs their own key.</div>
-      </div>
-      <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
         <label>Preferences on another device</label>
         <div style="display:flex;gap:8px;">
           <button class="btn secondary" id="exportSettingsBtn" type="button">Export Settings…</button>
           <button class="btn secondary" id="importSettingsBtn" type="button">Import Settings…</button>
           <input type="file" id="importSettingsFile" accept="application/json" style="display:none;">
         </div>
-        <div class="hint">These settings, the colorblind toggle, and recent-office list live in this browser only — export a JSON file here to carry them to another machine. Your mPING key is intentionally excluded — re-enter it by hand on the other device.</div>
+        <div class="hint">These settings, the colorblind toggle, and recent-office list live in this browser only — export a JSON file here to carry them to another machine.</div>
       </div>
     </div>
     <div class="modal-footer">
@@ -783,7 +778,7 @@
       <p><strong>Related warnings:</strong> the details panel lists other warnings sharing a county and issued within 30 minutes of the selected one. This is a timing/geography heuristic only — IEM Cow doesn't expose an authoritative "this warning replaced that one" link — so treat it as a lead, not a confirmed sequence.</p>
       <p><strong>Settings portability:</strong> Settings has Export/Import buttons for carrying your thresholds, timezone, colorblind preference, and recent-office list to another browser or machine — everything here is stored locally in this browser, there's no server-side account.</p>
       <p><strong>Forecaster coverage:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
-      <p><strong>mPING reports:</strong> "Show mPING reports" overlays crowd-sourced weather reports from the <a href="https://mping.ou.edu" target="_blank">mPING</a> project (OU CIMMS / NSSL) alongside the LSR markers — separate dots, separate legend, own on/off toggle. This needs a personal mPING API key (Settings) since mPING's API requires one per user; a Research-license key can't see the last 48 hours, so very recent/live days may show nothing even with a key entered. mPING reports are informal public submissions, not an official report source like LSRs — treat matches against warnings as a supplementary cross-check, not a verification input (IEM Cow's own verified/unverified status is unaffected by mPING data either way).</p>
+      <p><strong>mPING reports:</strong> "Show mPING reports" overlays crowd-sourced weather reports from the <a href="https://mping.ou.edu" target="_blank">mPING</a> project (OU CIMMS / NSSL) alongside the LSR markers — separate dots, separate legend, own on/off toggle. Requests go through a small server-side proxy that holds the API key, so no visitor needs their own account; the key's license tier still applies, though, so if it's a Research-tier key, reports from the last 48 hours (including "today") won't show up. mPING reports are informal public submissions, not an official report source like LSRs — treat matches against warnings as a supplementary cross-check, not a verification input (IEM Cow's own verified/unverified status is unaffected by mPING data either way).</p>
     </div>
   </div>
 </div>
@@ -916,16 +911,18 @@ const FF_EMERGENCY_REGEX = /FLASH\s+FLOOD\s+EMERGENCY/i;
 const PDS_SCAN_MAX_EVENTS = 75;
 const PDS_SCAN_CONCURRENCY = 6;
 
-// mPING crowd-sourced reports. Requires a per-user API key (Settings) —
-// mPING's API is token-authenticated and license-tiered (General: last
-// 4hrs only; Research: everything except the last 48hrs; Commercial:
-// everything), so there is no single key this static page could ship
-// with that would work for both "today" and archived dates, and baking
-// any key into the page's own JS would publish it to anyone who views
-// source on a GitHub Pages site. Each visitor supplies their own.
-const MPING_API_URL = 'https://mping.ou.edu/mping/api/v2/reports';
+// mPING crowd-sourced reports, fetched through a small Cloudflare
+// Worker proxy rather than mping.ou.edu directly. mPING's API is
+// token-authenticated and license-tiered (General: last 4hrs only;
+// Research: everything except the last 48hrs; Commercial: everything),
+// and a purely static page has nowhere safe to keep that token — any
+// key baked into this file's JS would be visible to anyone who views
+// source on GitHub Pages. The proxy holds the real key server-side as
+// an encrypted secret; this page only ever talks to the proxy.
+// Replace this with your own deployed Worker URL (see the setup
+// walkthrough) — until then mPING reports won't load.
+const MPING_PROXY_URL = 'https://delicate-boat-33c9.jusmessinwityah1.workers.dev';
 const MPING_MAX_PAGES = 20;       // safety cap on pagination follow-throughs
-const MPING_STORAGE_KEY = 'btv_mping_api_key';
 // Rough category → color mapping for the map markers/legend. mPING's
 // actual category text varies (e.g. "Rain/Snow", "Hail", "Wind Damage/
 // Non-Tstm Wind Damage", "Flood/Flash Flood", "Tornado"), so this is a
@@ -960,7 +957,6 @@ function mpingColorFor(categoryText, descriptionText){
 //  STATE
 // ══════════════════════════════════════════════════════════════
 let settings = { wfo: 'BTV', timezone: 'America/New_York', hailsize: 1.0, wind: 58, lsrbuffer: 15, colorblindMode: false };
-let mpingApiKey = '';
 let selectedDateStr = null;   // 'YYYY-MM-DD' in settings.timezone
 let currentEvents = [];       // parsed + status-enriched event objects
 let currentReports = [];      // parsed report objects
@@ -1491,7 +1487,7 @@ function currentWindowForMping(){
 async function fetchMpingReports(windowStart, windowEnd){
   const bbox = getActiveZoneBbox();
   const results = [];
-  let url = MPING_API_URL + '?' +
+  let url = MPING_PROXY_URL + '?' +
     new URLSearchParams({
       obtime_gte: mpingTimeParam(windowStart),
       obtime_lte: mpingTimeParam(windowEnd)
@@ -1499,11 +1495,14 @@ async function fetchMpingReports(windowStart, windowEnd){
     (bbox ? '&in_bbox=' + bbox : '');
   let pages = 0;
   while(url && pages < MPING_MAX_PAGES){
-    const res = await fetch(url, { headers: { 'Authorization': 'Token ' + mpingApiKey, 'Accept': 'application/json' } });
+    // No Authorization header here — the proxy Worker attaches the
+    // real mPING key server-side. If this 401s/403s it means the
+    // proxy's own key (set as a Worker secret) is missing or invalid,
+    // not anything the visitor can fix.
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
     if(!res.ok){
-      if(res.status === 401) throw new Error('mPING rejected the API key (401) — check it in Settings.');
-      if(res.status === 403) throw new Error('mPING denied this request (403) — your license tier may not cover this time window (e.g. a Research key can\'t see the last 48 hours).');
-      throw new Error('mPING API returned HTTP ' + res.status);
+      if(res.status === 401 || res.status === 403) throw new Error('The mPING proxy rejected this request (' + res.status + ') — its server-side key may be missing, invalid, or not licensed for this time window.');
+      throw new Error('mPING proxy returned HTTP ' + res.status);
     }
     const data = await res.json();
     results.push(...(data.results || []));
@@ -1521,10 +1520,6 @@ async function fetchMpingReports(windowStart, windowEnd){
 async function refreshMpingIfEnabled(){
   if(!showMping) return;
   const myToken = ++mpingLoadToken;
-  if(!mpingApiKey){
-    showToast('Add an mPING API key in Settings to see mPING reports.');
-    return;
-  }
   const win = currentWindowForMping();
   if(!win) return;
   setStatus('Loading mPING reports…', false);
@@ -2874,7 +2869,6 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('setWind').value = settings.wind;
   document.getElementById('setBuffer').value = settings.lsrbuffer;
   document.getElementById('setColorblind').checked = settings.colorblindMode;
-  document.getElementById('setMpingKey').value = mpingApiKey;
   openModal('settingsModal');
 });
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
@@ -2885,19 +2879,11 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   settings.colorblindMode = document.getElementById('setColorblind').checked;
   applyColorblindPalette(settings.colorblindMode);
   try{ localStorage.setItem('btv_colorblind_mode', settings.colorblindMode ? '1' : '0'); }catch(err){}
-  mpingApiKey = document.getElementById('setMpingKey').value.trim();
-  try{
-    if(mpingApiKey) localStorage.setItem(MPING_STORAGE_KEY, mpingApiKey);
-    else localStorage.removeItem(MPING_STORAGE_KEY);
-  }catch(err){ /* localStorage unavailable — key just won't persist across reloads */ }
   closeModal('settingsModal');
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 });
 
 document.getElementById('exportSettingsBtn').addEventListener('click', () => {
-  // Deliberately omits mpingApiKey — this file is meant to be handed
-  // around or committed alongside notes, and a personal, licensed API
-  // token doesn't belong in something that could end up shared.
   const payload = {
     kind: 'warning-verification-settings',
     version: 1,
@@ -2936,7 +2922,7 @@ document.getElementById('importSettingsFile').addEventListener('change', async (
     if(Array.isArray(payload.recentWfos)){
       try{ localStorage.setItem('btv_wfo_recent', JSON.stringify(payload.recentWfos.slice(0,5))); }catch(err){}
     }
-    showToast('Settings imported — click "Save & Refresh" to apply. (Your mPING key is separate and unaffected.)');
+    showToast('Settings imported — click "Save & Refresh" to apply.');
   }catch(err){
     console.error(err);
     alert('Could not read that settings file: ' + err.message);
@@ -2965,9 +2951,6 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
       applyColorblindPalette(true);
     }
   }catch(err){ /* localStorage unavailable — falls back to default palette */ }
-  try{
-    mpingApiKey = localStorage.getItem(MPING_STORAGE_KEY) || '';
-  }catch(err){ mpingApiKey = ''; }
 
   const urlState = readUrlState();
   if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
