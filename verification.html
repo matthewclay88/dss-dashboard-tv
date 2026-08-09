@@ -777,7 +777,7 @@
       <p><strong>Compare Offices:</strong> overlay up to 3 additional WFOs on the same map/table/stats as the primary office — useful for outbreaks that cross office boundaries. Warnings show a small office tag when active. Large loads (a wide date range, several offices, or the 1-year heatmap) are split into chunks with progress shown in the status bar, rather than one silent request.</p>
       <p><strong>Related warnings:</strong> the details panel lists other warnings sharing a county and issued within 30 minutes of the selected one. This is a timing/geography heuristic only — IEM Cow doesn't expose an authoritative "this warning replaced that one" link — so treat it as a lead, not a confirmed sequence.</p>
       <p><strong>Settings portability:</strong> Settings has Export/Import buttons for carrying your thresholds, timezone, colorblind preference, and recent-office list to another browser or machine — everything here is stored locally in this browser, there's no server-side account.</p>
-      <p><strong>Forecaster coverage:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
+      <p><strong>Warning Meteorologists:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
       <p><strong>mPING reports:</strong> "Show mPING reports" overlays crowd-sourced weather reports from the <a href="https://mping.ou.edu" target="_blank">mPING</a> project (OU CIMMS / NSSL) alongside the LSR markers — separate dots, separate legend, own on/off toggle. Requests go through a small server-side proxy that holds the API key, so no visitor needs their own account; the key's license tier still applies, though, so if it's a Research-tier key, reports from the last 48 hours (including "today") won't show up. mPING reports are informal public submissions, not an official report source like LSRs — treat matches against warnings as a supplementary cross-check, not a verification input (IEM Cow's own verified/unverified status is unaffected by mPING data either way).</p>
     </div>
   </div>
@@ -1189,7 +1189,7 @@ function renderDayStats(){
     <div class="daystat-row"><div><div class="ds-name">Avg Lead Time, All Events</div></div><div class="ds-val">${fmtMin(dayStats.avgLeadAll)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Max Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.maxLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Min Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.minLead)}</div></div>
-    <div class="daystat-row"><div><div class="ds-name">Forecasters On Shift</div><span class="ds-formula">distinct codes, not individually broken out</span></div><div class="ds-val">${dayStats.distinctForecasters}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Warning Meteorologists</div><span class="ds-formula">distinct codes, not individually broken out</span></div><div class="ds-val">${dayStats.distinctForecasters}</div></div>
   `;
 }
 
