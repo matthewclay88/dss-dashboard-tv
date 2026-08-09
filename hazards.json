@@ -10,85 +10,18 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-34020",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-34020",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-34020",
-                "areaDesc": "Montgomery",
-                "geocode": {
-                    "SAME": [
-                        "024031"
-                    ],
-                    "UGC": [
-                        "MDC031"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/MDC031"
-                ],
-                "references": [],
-                "sent": "2026-08-09T15:36:19+00:00",
-                "effective": "2026-08-09T15:36:19+00:00",
-                "onset": null,
-                "expires": "2026-08-09T15:46:19+00:00",
-                "ends": null,
-                "status": "Test",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Test Message",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS",
-                "headline": null,
-                "description": "Monitoring message only. Please disregard.",
-                "instruction": "Monitoring message only. Please disregard.",
-                "response": "None",
-                "note": "This is only a test for monitoring of vital dissemination systems.",
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "KEPWBC"
-                    ],
-                    "WMOidentifier": [
-                        "NZUS91 KWBC 091536"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "CMAS",
-                        "EAS",
-                        "NWEM"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "TST"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ace55e88277fadfc18e334b963ca4599f8400542.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.bb9e999a06c67add286b817fa3eaac22d057a6c9.001.1",
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [
                     [
                         [
-                            -89.01,
+                            -88.83,
                             42.85
                         ],
                         [
-                            -89.01,
+                            -88.79,
                             43.07
                         ],
                         [
@@ -100,16 +33,16 @@
                             42.84
                         ],
                         [
-                            -89.01,
+                            -88.83,
                             42.85
                         ]
                     ]
                 ]
             },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ace55e88277fadfc18e334b963ca4599f8400542.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.bb9e999a06c67add286b817fa3eaac22d057a6c9.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.ace55e88277fadfc18e334b963ca4599f8400542.001.1",
+                "id": "urn:oid:2.49.0.1.840.0.bb9e999a06c67add286b817fa3eaac22d057a6c9.001.1",
                 "areaDesc": "Jefferson, WI",
                 "geocode": {
                     "SAME": [
@@ -122,14 +55,21 @@
                 "affectedZones": [
                     "https://api.weather.gov/zones/county/WIC055"
                 ],
-                "references": [],
-                "sent": "2026-08-09T10:35:00-05:00",
-                "effective": "2026-08-09T10:35:00-05:00",
-                "onset": "2026-08-09T10:35:00-05:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ace55e88277fadfc18e334b963ca4599f8400542.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.ace55e88277fadfc18e334b963ca4599f8400542.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-09T10:35:00-05:00"
+                    }
+                ],
+                "sent": "2026-08-09T10:53:00-05:00",
+                "effective": "2026-08-09T10:53:00-05:00",
+                "onset": "2026-08-09T10:53:00-05:00",
                 "expires": "2026-08-09T11:15:00-05:00",
                 "ends": "2026-08-09T11:15:00-05:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Observed",
@@ -137,20 +77,23 @@
                 "event": "Severe Thunderstorm Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Milwaukee/Sullivan WI",
-                "headline": "Severe Thunderstorm Warning issued August 9 at 10:35AM CDT until August 9 at 11:15AM CDT by NWS Milwaukee/Sullivan WI",
-                "description": "SVRMKX\n\nThe National Weather Service in Milwaukee/Sullivan has issued a\n\n* Severe Thunderstorm Warning for...\nJefferson County in southeastern Wisconsin...\n\n* Until 1115 AM CDT.\n\n* At 1034 AM CDT, a severe thunderstorm was located over Fort\nAtkinson, moving east at 50 mph.\n\nHAZARD...60 mph wind gusts and penny size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\n* Locations impacted include...\nWhitewater, Fort Atkinson, Jefferson, Lake Mills, Palmyra,\nCambridge, Lake Ripley, Lake Koshkonong, Rome, Hebron, Sullivan,\nBusseyville, Helenville, and Nws Milwaukee/sullivan.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.\n\nLarge hail, damaging wind, and continuous cloud to ground lightning\nare occurring with this storm. Move indoors immediately. Lightning is\none of nature's leading killers. Remember, if you can hear thunder,\nyou are close enough to be struck by lightning.\n\nTorrential rainfall is occurring with this storm, and may lead to\nflash flooding. Do not drive your vehicle through flooded roadways.",
+                "headline": "Severe Thunderstorm Warning issued August 9 at 10:53AM CDT until August 9 at 11:15AM CDT by NWS Milwaukee/Sullivan WI",
+                "description": "At 1052 AM CDT, a severe thunderstorm was located over Palmyra, or 8\nmiles northeast of Whitewater, moving east at 50 mph.\n\nHAZARD...60 mph wind gusts and penny size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\nLocations impacted include...\nWhitewater, Jefferson, Johnson Creek, Palmyra, Rome, Hebron,\nSullivan, Helenville, and Nws Milwaukee/sullivan.",
+                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.\n\nContinuous cloud to ground lightning is occurring with this storm.\nMove indoors immediately. Lightning is one of nature's leading\nkillers. Remember, if you can hear thunder, you are close enough to\nbe struck by lightning.\n\nTorrential rainfall is occurring with this storm, and may lead to\nflash flooding. Do not drive your vehicle through flooded roadways.",
                 "response": "Shelter",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SVRMKX"
+                        "SVSMKX"
                     ],
                     "WMOidentifier": [
-                        "WUUS53 KMKX 091535"
+                        "WWUS53 KMKX 091553"
+                    ],
+                    "NWSheadline": [
+                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 1115 AM CDT FOR SOUTHEASTERN JEFFERSON COUNTY"
                     ],
                     "eventMotionDescription": [
-                        "2026-08-09T15:34:00-00:00...storm...271DEG...42KT...42.92,-88.89"
+                        "2026-08-09T15:52:00-00:00...storm...271DEG...42KT...42.92,-88.59"
                     ],
                     "windThreat": [
                         "RADAR INDICATED"
@@ -173,7 +116,7 @@
                         "WXR"
                     ],
                     "VTEC": [
-                        "/O.NEW.KMKX.SV.W.0237.260809T1535Z-260809T1615Z/"
+                        "/O.CON.KMKX.SV.W.0237.000000T0000Z-260809T1615Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-09T11:15:00-05:00"
@@ -185,10 +128,315 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SVR"
+                        "SVS"
                     ],
                     "NationalWeatherService": [
                         "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.df2e2ed3074a76c61fb5c4fa7ad0cc57d5abdff7.002.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -88.8,
+                            43.07
+                        ],
+                        [
+                            -88.68,
+                            43.2
+                        ],
+                        [
+                            -88.54,
+                            43.2
+                        ],
+                        [
+                            -88.54,
+                            43.06
+                        ],
+                        [
+                            -88.8,
+                            43.07
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.df2e2ed3074a76c61fb5c4fa7ad0cc57d5abdff7.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.df2e2ed3074a76c61fb5c4fa7ad0cc57d5abdff7.002.1",
+                "areaDesc": "Jefferson, WI",
+                "geocode": {
+                    "SAME": [
+                        "055055"
+                    ],
+                    "UGC": [
+                        "WIC055"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/WIC055"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d93962474d515caaa73ca4b3bfd8fd61ca9c6f1d.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.d93962474d515caaa73ca4b3bfd8fd61ca9c6f1d.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-09T10:19:00-05:00"
+                    }
+                ],
+                "sent": "2026-08-09T10:51:00-05:00",
+                "effective": "2026-08-09T10:51:00-05:00",
+                "onset": "2026-08-09T10:51:00-05:00",
+                "expires": "2026-08-09T11:00:00-05:00",
+                "ends": "2026-08-09T11:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Milwaukee/Sullivan WI",
+                "headline": "Severe Thunderstorm Warning issued August 9 at 10:51AM CDT until August 9 at 11:00AM CDT by NWS Milwaukee/Sullivan WI",
+                "description": "At 1051 AM CDT, a severe thunderstorm was located near Merton, or\nnear Okauchee Lake, moving east at 45 mph.\n\nHAZARD...60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\nLocations impacted include...\nWatertown, Johnson Creek, Ixonia, Pipersville, and Lake Lac La Belle.",
+                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
+                "response": "Shelter",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SVSMKX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS53 KMKX 091551"
+                    ],
+                    "NWSheadline": [
+                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 1100 AM CDT FOR NORTHEASTERN JEFFERSON COUNTY"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-08-09T15:51:00-00:00...storm...283DEG...37KT...43.2,-88.39"
+                    ],
+                    "windThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxWindGust": [
+                        "60 MPH"
+                    ],
+                    "hailThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxHailSize": [
+                        "Up to .75"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KMKX.SV.W.0236.000000T0000Z-260809T1600Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-09T11:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVS"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-7995",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-7995",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-7995",
+                "areaDesc": "Montgomery",
+                "geocode": {
+                    "SAME": [
+                        "024031"
+                    ],
+                    "UGC": [
+                        "MDC031"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MDC031"
+                ],
+                "references": [],
+                "sent": "2026-08-09T15:46:19+00:00",
+                "effective": "2026-08-09T15:46:19+00:00",
+                "onset": null,
+                "expires": "2026-08-09T15:56:19+00:00",
+                "ends": null,
+                "status": "Test",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Test Message",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS",
+                "headline": null,
+                "description": "Monitoring message only. Please disregard.",
+                "instruction": "Monitoring message only. Please disregard.",
+                "response": "None",
+                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "KEPWBC"
+                    ],
+                    "WMOidentifier": [
+                        "NZUS91 KWBC 091546"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "CMAS",
+                        "EAS",
+                        "NWEM"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "TST"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d2ed3d356fc7c320520111d96a6ea8d86d919835.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -89.19,
+                            42.59
+                        ],
+                        [
+                            -89.14,
+                            42.85
+                        ],
+                        [
+                            -88.51,
+                            42.84
+                        ],
+                        [
+                            -88.62,
+                            42.52
+                        ],
+                        [
+                            -89.19,
+                            42.59
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d2ed3d356fc7c320520111d96a6ea8d86d919835.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.d2ed3d356fc7c320520111d96a6ea8d86d919835.001.1",
+                "areaDesc": "Rock; Walworth",
+                "geocode": {
+                    "SAME": [
+                        "055105",
+                        "055127"
+                    ],
+                    "UGC": [
+                        "WIZ069",
+                        "WIZ070"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/WIZ069",
+                    "https://api.weather.gov/zones/forecast/WIZ070"
+                ],
+                "references": [],
+                "sent": "2026-08-09T10:43:00-05:00",
+                "effective": "2026-08-09T10:43:00-05:00",
+                "onset": "2026-08-09T10:43:00-05:00",
+                "expires": "2026-08-09T11:15:00-05:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Milwaukee/Sullivan WI",
+                "headline": "Special Weather Statement issued August 9 at 10:43AM CDT by NWS Milwaukee/Sullivan WI",
+                "description": "At 1042 AM CDT, Doppler radar was tracking a cluster of strong\nthunderstorms near Milton, moving east at 40 mph.\n\nHAZARD...Wind gusts up to 50 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nJanesville, Whitewater, Elkhorn, Delavan, Milton, Edgerton, Clinton,\nDarien, Richmond, Fulton, La Grange, Tiffany, Hanover, Millard,\nAvalon, Delavan Lake, Lima Center, Allens Grove, Tibbets, and\nShopiere.\n\nThis includes the following highways...\nInterstate 39/90 between mile markers 162 and 182.\nWisconsin Highway 26 between mile markers 6 and 13.\nInterstate 43 between mile markers 4 and 23.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.\n\nA Severe Thunderstorm Watch remains in effect until 200 PM CDT for\nsouth central and southeastern Wisconsin.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSMKX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS83 KMKX 091543"
+                    ],
+                    "NWSheadline": [
+                        "STRONG THUNDERSTORMS WILL IMPACT WESTERN WALWORTH AND EASTERN ROCK COUNTIES THROUGH 1115 AM CDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-08-09T15:42:00-00:00...storm...284DEG...34KT...42.75,-89.01"
+                    ],
+                    "maxWindGust": [
+                        "50 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
                     ]
                 }
             }
@@ -922,273 +1170,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e41cd80106df910e12fd631db7f58dd00b4a5306.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -88.4,
-                            43.37
-                        ],
-                        [
-                            -88.42,
-                            43.37
-                        ],
-                        [
-                            -88.42,
-                            43.35
-                        ],
-                        [
-                            -88.89,
-                            43.39
-                        ],
-                        [
-                            -88.86,
-                            43.47
-                        ],
-                        [
-                            -88.4,
-                            43.52
-                        ],
-                        [
-                            -88.4,
-                            43.37
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e41cd80106df910e12fd631db7f58dd00b4a5306.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.e41cd80106df910e12fd631db7f58dd00b4a5306.001.1",
-                "areaDesc": "Dodge, WI",
-                "geocode": {
-                    "SAME": [
-                        "055027"
-                    ],
-                    "UGC": [
-                        "WIC027"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/WIC027"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.cea9ee1ca52199901022b4eb6cb95dccbaedca5f.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.cea9ee1ca52199901022b4eb6cb95dccbaedca5f.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-09T09:52:00-05:00"
-                    }
-                ],
-                "sent": "2026-08-09T10:21:00-05:00",
-                "effective": "2026-08-09T10:21:00-05:00",
-                "onset": "2026-08-09T10:21:00-05:00",
-                "expires": "2026-08-09T10:45:00-05:00",
-                "ends": "2026-08-09T10:45:00-05:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Severe Thunderstorm Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Milwaukee/Sullivan WI",
-                "headline": "Severe Thunderstorm Warning issued August 9 at 10:21AM CDT until August 9 at 10:45AM CDT by NWS Milwaukee/Sullivan WI",
-                "description": "At 1020 AM CDT, a severe thunderstorm was located near Beaver Dam,\nmoving east at 30 mph.\n\nHAZARD...60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\nLocations impacted include...\nBeaver Dam, Mayville, Horicon, Juneau, Theresa, Iron Ridge, Woodland,\nMinnesota Junction, and Leipsig.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.\n\nContinuous cloud to ground lightning is occurring with this storm.\nMove indoors immediately. Lightning is one of nature's leading\nkillers. Remember, if you can hear thunder, you are close enough to\nbe struck by lightning.\n\nTorrential rainfall is occurring with this storm, and may lead to\nflash flooding. Do not drive your vehicle through flooded roadways.",
-                "response": "Shelter",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SVSMKX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS53 KMKX 091521"
-                    ],
-                    "NWSheadline": [
-                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 1045 AM CDT FOR CENTRAL DODGE COUNTY"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-08-09T15:20:00-00:00...storm...285DEG...25KT...43.46,-88.76"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxHailSize": [
-                        "Up to .75"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KMKX.SV.W.0235.000000T0000Z-260809T1545Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T10:45:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SVS"
-                    ],
-                    "NationalWeatherService": [
-                        "SVW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d93962474d515caaa73ca4b3bfd8fd61ca9c6f1d.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -88.47,
-                            43.19
-                        ],
-                        [
-                            -88.54,
-                            43.2
-                        ],
-                        [
-                            -88.54,
-                            43.06
-                        ],
-                        [
-                            -89.01,
-                            43.07
-                        ],
-                        [
-                            -88.78,
-                            43.4
-                        ],
-                        [
-                            -88.42,
-                            43.37
-                        ],
-                        [
-                            -88.42,
-                            43.2
-                        ],
-                        [
-                            -88.47,
-                            43.19
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d93962474d515caaa73ca4b3bfd8fd61ca9c6f1d.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.d93962474d515caaa73ca4b3bfd8fd61ca9c6f1d.001.1",
-                "areaDesc": "Dodge, WI; Jefferson, WI",
-                "geocode": {
-                    "SAME": [
-                        "055027",
-                        "055055"
-                    ],
-                    "UGC": [
-                        "WIC027",
-                        "WIC055"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/WIC027",
-                    "https://api.weather.gov/zones/county/WIC055"
-                ],
-                "references": [],
-                "sent": "2026-08-09T10:19:00-05:00",
-                "effective": "2026-08-09T10:19:00-05:00",
-                "onset": "2026-08-09T10:19:00-05:00",
-                "expires": "2026-08-09T11:00:00-05:00",
-                "ends": "2026-08-09T11:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Severe Thunderstorm Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Milwaukee/Sullivan WI",
-                "headline": "Severe Thunderstorm Warning issued August 9 at 10:19AM CDT until August 9 at 11:00AM CDT by NWS Milwaukee/Sullivan WI",
-                "description": "SVRMKX\n\nThe National Weather Service in Milwaukee/Sullivan has issued a\n\n* Severe Thunderstorm Warning for...\nNorthern Jefferson County in southeastern Wisconsin...\nSoutheastern Dodge County in southeastern Wisconsin...\n\n* Until 1100 AM CDT.\n\n* At 1019 AM CDT, a severe thunderstorm was located near Juneau,\nmoving east at 50 mph.\n\nHAZARD...60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\n* Locations impacted include...\nWatertown, Hartford, Lake Mills, Juneau, Johnson Creek, Hustisford,\nIxonia, Ashippun, Rubicon, Lebanon, Milford, Woodland, Reeseville,\nNeosho, Richwood, Clyman, Lowell, Hubbleton, Pipersville, and Lake\nLac La Belle.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.\n\nLarge hail, damaging wind, and continuous cloud to ground lightning\nare occurring with this storm. Move indoors immediately. Lightning is\none of nature's leading killers. Remember, if you can hear thunder,\nyou are close enough to be struck by lightning.\n\nTorrential rainfall is occurring with this storm, and may lead to\nflash flooding. Do not drive your vehicle through flooded roadways.",
-                "response": "Shelter",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SVRMKX"
-                    ],
-                    "WMOidentifier": [
-                        "WUUS53 KMKX 091519"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-08-09T15:19:00-00:00...storm...272DEG...42KT...43.34,-88.78"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxHailSize": [
-                        "Up to .75"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KMKX.SV.W.0236.260809T1519Z-260809T1600Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T11:00:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SVR"
-                    ],
-                    "NationalWeatherService": [
-                        "SVW"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.101a2ed88c5fe5f1257b58144ea203f7e5ccede7.001.1",
             "type": "Feature",
             "geometry": {
@@ -1474,6 +1455,103 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0fad5f1330e6ba2d54499deae524dc7b6a173044.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0fad5f1330e6ba2d54499deae524dc7b6a173044.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.0fad5f1330e6ba2d54499deae524dc7b6a173044.002.1",
+                "areaDesc": "Sheboygan to Port Washington WI; Port Washington to North Point Light WI; North Point Light to Wind Point WI; Wind Point WI to Winthrop Harbor IL; Lake Michigan from Sheboygan to Port Washington WI 5NM offshore to Mid Lake; Lake Michigan from Port Washington to North Point Light WI 5NM offshore to Mid Lake; Lake Michigan from North Point Light to Wind Point WI 5NM offshore to Mid Lake; Lake Michigan from Wind Point WI to Winthrop Harbor IL 5NM offshore to Mid Lake",
+                "geocode": {
+                    "SAME": [
+                        "092643",
+                        "092644",
+                        "092645",
+                        "092646",
+                        "092669",
+                        "092671",
+                        "092673",
+                        "092675"
+                    ],
+                    "UGC": [
+                        "LMZ643",
+                        "LMZ644",
+                        "LMZ645",
+                        "LMZ646",
+                        "LMZ669",
+                        "LMZ671",
+                        "LMZ673",
+                        "LMZ675"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/LMZ643",
+                    "https://api.weather.gov/zones/forecast/LMZ644",
+                    "https://api.weather.gov/zones/forecast/LMZ645",
+                    "https://api.weather.gov/zones/forecast/LMZ646",
+                    "https://api.weather.gov/zones/forecast/LMZ669",
+                    "https://api.weather.gov/zones/forecast/LMZ671",
+                    "https://api.weather.gov/zones/forecast/LMZ673",
+                    "https://api.weather.gov/zones/forecast/LMZ675"
+                ],
+                "references": [],
+                "sent": "2026-08-09T09:48:00-05:00",
+                "effective": "2026-08-09T09:48:00-05:00",
+                "onset": "2026-08-09T09:48:00-05:00",
+                "expires": "2026-08-09T14:00:00-05:00",
+                "ends": "2026-08-09T14:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Possible",
+                "urgency": "Future",
+                "event": "Severe Thunderstorm Watch",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Milwaukee/Sullivan WI",
+                "headline": "Severe Thunderstorm Watch issued August 9 at 9:48AM CDT until August 9 at 2:00PM CDT by NWS Milwaukee/Sullivan WI",
+                "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED SEVERE THUNDERSTORM WATCH\n546 IN EFFECT UNTIL 2 PM CDT THIS AFTERNOON FOR THE FOLLOWING\nAREAS\n\nTHIS WATCH INCLUDES THE FOLLOWING ADJACENT COASTAL WATERS\n\nSHEBOYGAN TO PORT WASHINGTON WI\nPORT WASHINGTON TO NORTH POINT LIGHT WI\nNORTH POINT LIGHT TO WIND POINT WI\nWIND POINT WI TO WINTHROP HARBOR IL\nLAKE MICHIGAN FROM SHEBOYGAN TO PORT WASHINGTON WI 5NM OFFSHORE\nTO MID LAKE\nLAKE MICHIGAN FROM PORT WASHINGTON TO NORTH POINT LIGHT WI 5NM\nOFFSHORE TO MID LAKE\nLAKE MICHIGAN FROM NORTH POINT LIGHT TO WIND POINT WI 5NM\nOFFSHORE TO MID LAKE\nLAKE MICHIGAN FROM WIND POINT WI TO WINTHROP HARBOR IL 5NM\nOFFSHORE TO MID LAKE",
+                "instruction": null,
+                "response": "Monitor",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "WCNMKX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS63 KMKX 091448"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KMKX.SV.A.0546.260809T1448Z-260809T1900Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-09T14:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVA"
+                    ],
+                    "NationalWeatherService": [
+                        "SVA"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0fad5f1330e6ba2d54499deae524dc7b6a173044.001.1",
             "type": "Feature",
             "geometry": null,
@@ -1543,103 +1621,6 @@
                 "senderName": "NWS Milwaukee/Sullivan WI",
                 "headline": "Severe Thunderstorm Watch issued August 9 at 9:48AM CDT until August 9 at 2:00PM CDT by NWS Milwaukee/Sullivan WI",
                 "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED SEVERE THUNDERSTORM WATCH\n546 IN EFFECT UNTIL 2 PM CDT THIS AFTERNOON FOR THE FOLLOWING\nAREAS\n\nIN WISCONSIN THIS WATCH INCLUDES 12 COUNTIES\n\nIN EAST CENTRAL WISCONSIN\n\nFOND DU LAC           SHEBOYGAN\n\nIN SOUTH CENTRAL WISCONSIN\n\nROCK\n\nIN SOUTHEAST WISCONSIN\n\nDODGE                 JEFFERSON             KENOSHA\nMILWAUKEE             OZAUKEE               RACINE\nWALWORTH              WASHINGTON            WAUKESHA\n\nTHIS INCLUDES THE CITIES OF BEAVER DAM, BELOIT, BROOKFIELD,\nCEDARBURG, DELAVAN, EAST TROY, ELKHORN, FOND DU LAC,\nFORT ATKINSON, GERMANTOWN, GRAFTON, HARTFORD, HOWARDS GROVE,\nJANESVILLE, JEFFERSON, KENOSHA, LAKE GENEVA, MAYVILLE,\nMENOMONEE FALLS, MEQUON, MILWAUKEE, MUSKEGO, NEW BERLIN,\nOOSTBURG, PLYMOUTH, RACINE, SHEBOYGAN FALLS, WATERTOWN, WAUKESHA,\nWAUPUN, WEST BEND, AND WHITEWATER.",
-                "instruction": null,
-                "response": "Monitor",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "WCNMKX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS63 KMKX 091448"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KMKX.SV.A.0546.260809T1448Z-260809T1900Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-09T14:00:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SVA"
-                    ],
-                    "NationalWeatherService": [
-                        "SVA"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0fad5f1330e6ba2d54499deae524dc7b6a173044.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0fad5f1330e6ba2d54499deae524dc7b6a173044.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0fad5f1330e6ba2d54499deae524dc7b6a173044.002.1",
-                "areaDesc": "Sheboygan to Port Washington WI; Port Washington to North Point Light WI; North Point Light to Wind Point WI; Wind Point WI to Winthrop Harbor IL; Lake Michigan from Sheboygan to Port Washington WI 5NM offshore to Mid Lake; Lake Michigan from Port Washington to North Point Light WI 5NM offshore to Mid Lake; Lake Michigan from North Point Light to Wind Point WI 5NM offshore to Mid Lake; Lake Michigan from Wind Point WI to Winthrop Harbor IL 5NM offshore to Mid Lake",
-                "geocode": {
-                    "SAME": [
-                        "092643",
-                        "092644",
-                        "092645",
-                        "092646",
-                        "092669",
-                        "092671",
-                        "092673",
-                        "092675"
-                    ],
-                    "UGC": [
-                        "LMZ643",
-                        "LMZ644",
-                        "LMZ645",
-                        "LMZ646",
-                        "LMZ669",
-                        "LMZ671",
-                        "LMZ673",
-                        "LMZ675"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/LMZ643",
-                    "https://api.weather.gov/zones/forecast/LMZ644",
-                    "https://api.weather.gov/zones/forecast/LMZ645",
-                    "https://api.weather.gov/zones/forecast/LMZ646",
-                    "https://api.weather.gov/zones/forecast/LMZ669",
-                    "https://api.weather.gov/zones/forecast/LMZ671",
-                    "https://api.weather.gov/zones/forecast/LMZ673",
-                    "https://api.weather.gov/zones/forecast/LMZ675"
-                ],
-                "references": [],
-                "sent": "2026-08-09T09:48:00-05:00",
-                "effective": "2026-08-09T09:48:00-05:00",
-                "onset": "2026-08-09T09:48:00-05:00",
-                "expires": "2026-08-09T14:00:00-05:00",
-                "ends": "2026-08-09T14:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Possible",
-                "urgency": "Future",
-                "event": "Severe Thunderstorm Watch",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Milwaukee/Sullivan WI",
-                "headline": "Severe Thunderstorm Watch issued August 9 at 9:48AM CDT until August 9 at 2:00PM CDT by NWS Milwaukee/Sullivan WI",
-                "description": "THE NATIONAL WEATHER SERVICE HAS ISSUED SEVERE THUNDERSTORM WATCH\n546 IN EFFECT UNTIL 2 PM CDT THIS AFTERNOON FOR THE FOLLOWING\nAREAS\n\nTHIS WATCH INCLUDES THE FOLLOWING ADJACENT COASTAL WATERS\n\nSHEBOYGAN TO PORT WASHINGTON WI\nPORT WASHINGTON TO NORTH POINT LIGHT WI\nNORTH POINT LIGHT TO WIND POINT WI\nWIND POINT WI TO WINTHROP HARBOR IL\nLAKE MICHIGAN FROM SHEBOYGAN TO PORT WASHINGTON WI 5NM OFFSHORE\nTO MID LAKE\nLAKE MICHIGAN FROM PORT WASHINGTON TO NORTH POINT LIGHT WI 5NM\nOFFSHORE TO MID LAKE\nLAKE MICHIGAN FROM NORTH POINT LIGHT TO WIND POINT WI 5NM\nOFFSHORE TO MID LAKE\nLAKE MICHIGAN FROM WIND POINT WI TO WINTHROP HARBOR IL 5NM\nOFFSHORE TO MID LAKE",
                 "instruction": null,
                 "response": "Monitor",
                 "note": null,
@@ -13729,27 +13710,24 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.002.1",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.002.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.001.1",
-                "areaDesc": "Jackson, OR; Klamath, OR",
+                "id": "urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.002.1",
+                "areaDesc": "Douglas, OR",
                 "geocode": {
                     "SAME": [
-                        "041029",
-                        "041035"
+                        "041019"
                     ],
                     "UGC": [
-                        "ORC029",
-                        "ORC035"
+                        "ORC019"
                     ]
                 },
                 "affectedZones": [
-                    "https://api.weather.gov/zones/county/ORC029",
-                    "https://api.weather.gov/zones/county/ORC035"
+                    "https://api.weather.gov/zones/county/ORC019"
                 ],
                 "references": [],
                 "sent": "2026-08-07T10:17:00-07:00",
@@ -13802,24 +13780,27 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.002.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.001.1",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.002.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.002.1",
-                "areaDesc": "Douglas, OR",
+                "id": "urn:oid:2.49.0.1.840.0.0267483fa6e5224226e4a112b4e6852bf2e39df0.001.1",
+                "areaDesc": "Jackson, OR; Klamath, OR",
                 "geocode": {
                     "SAME": [
-                        "041019"
+                        "041029",
+                        "041035"
                     ],
                     "UGC": [
-                        "ORC019"
+                        "ORC029",
+                        "ORC035"
                     ]
                 },
                 "affectedZones": [
-                    "https://api.weather.gov/zones/county/ORC019"
+                    "https://api.weather.gov/zones/county/ORC029",
+                    "https://api.weather.gov/zones/county/ORC035"
                 ],
                 "references": [],
                 "sent": "2026-08-07T10:17:00-07:00",
@@ -15115,94 +15096,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a6e84d65a9674b92ad77b0f40cf8010412ef7cf5.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a6e84d65a9674b92ad77b0f40cf8010412ef7cf5.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.a6e84d65a9674b92ad77b0f40cf8010412ef7cf5.002.1",
-                "areaDesc": "Benton, WA; Columbia, WA; Franklin, WA; Kittitas, WA; Klickitat, WA; Walla Walla, WA; Yakima, WA",
-                "geocode": {
-                    "SAME": [
-                        "053005",
-                        "053013",
-                        "053021",
-                        "053037",
-                        "053039",
-                        "053071",
-                        "053077"
-                    ],
-                    "UGC": [
-                        "WAC005",
-                        "WAC013",
-                        "WAC021",
-                        "WAC037",
-                        "WAC039",
-                        "WAC071",
-                        "WAC077"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/WAC005",
-                    "https://api.weather.gov/zones/county/WAC013",
-                    "https://api.weather.gov/zones/county/WAC021",
-                    "https://api.weather.gov/zones/county/WAC037",
-                    "https://api.weather.gov/zones/county/WAC039",
-                    "https://api.weather.gov/zones/county/WAC071",
-                    "https://api.weather.gov/zones/county/WAC077"
-                ],
-                "references": [],
-                "sent": "2026-08-03T12:05:00-07:00",
-                "effective": "2026-08-03T12:05:00-07:00",
-                "onset": "2026-08-03T12:05:00-07:00",
-                "expires": "2026-08-10T12:15:00-07:00",
-                "ends": null,
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Air Quality Alert",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Pendleton OR",
-                "headline": "Air Quality Alert issued August 3 at 12:05PM PDT by NWS Pendleton OR",
-                "description": "The Washington State Department of Ecology, Benton Clean Air Agency,\nand the Yakima Regional Clean Air Agency have issued an Air Quality\nAlert until further notice.\n\nFor the Smoke Air Quality Alert, wildfires burning in the region\ncombined with forecasted conditions may cause air quality to reach\nunhealthy levels.\n\nPollutants in smoke can cause burning eyes, runny nose, aggravate\nheart and lung diseases, and aggravate other serious health problems.\nLimit outdoor activities and keep children indoors if it is smoky.\nPlease follow medical advice if you have a heart or lung condition.\n\nInformation from the Washington Department of Ecology web site is\navailable at http://www.ecy.wa.gov/air.html or call 360-407-6000.\nInformation from the Yakima Regional Clean Air Agency web site is\navailable at http://www.yakimacleanair.org or call 509-834-2050.\nInformation from the Benton County Clean Air Agency web site is\navailable at http://www.bentoncleanair.org or call 509-783-1304.",
-                "instruction": null,
-                "response": "Monitor",
-                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "AQAPDT"
-                    ],
-                    "WMOidentifier": [
-                        "AEUS76 KPDT 031905"
-                    ],
-                    "NWSheadline": [
-                        "AIR QUALITY ALERT IN EFFECT UNTIL FURTHER NOTICE"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "AQA"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a6e84d65a9674b92ad77b0f40cf8010412ef7cf5.001.1",
             "type": "Feature",
             "geometry": null,
@@ -15289,8 +15182,96 @@
                     ]
                 }
             }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a6e84d65a9674b92ad77b0f40cf8010412ef7cf5.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a6e84d65a9674b92ad77b0f40cf8010412ef7cf5.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.a6e84d65a9674b92ad77b0f40cf8010412ef7cf5.002.1",
+                "areaDesc": "Benton, WA; Columbia, WA; Franklin, WA; Kittitas, WA; Klickitat, WA; Walla Walla, WA; Yakima, WA",
+                "geocode": {
+                    "SAME": [
+                        "053005",
+                        "053013",
+                        "053021",
+                        "053037",
+                        "053039",
+                        "053071",
+                        "053077"
+                    ],
+                    "UGC": [
+                        "WAC005",
+                        "WAC013",
+                        "WAC021",
+                        "WAC037",
+                        "WAC039",
+                        "WAC071",
+                        "WAC077"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/WAC005",
+                    "https://api.weather.gov/zones/county/WAC013",
+                    "https://api.weather.gov/zones/county/WAC021",
+                    "https://api.weather.gov/zones/county/WAC037",
+                    "https://api.weather.gov/zones/county/WAC039",
+                    "https://api.weather.gov/zones/county/WAC071",
+                    "https://api.weather.gov/zones/county/WAC077"
+                ],
+                "references": [],
+                "sent": "2026-08-03T12:05:00-07:00",
+                "effective": "2026-08-03T12:05:00-07:00",
+                "onset": "2026-08-03T12:05:00-07:00",
+                "expires": "2026-08-10T12:15:00-07:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Air Quality Alert",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Pendleton OR",
+                "headline": "Air Quality Alert issued August 3 at 12:05PM PDT by NWS Pendleton OR",
+                "description": "The Washington State Department of Ecology, Benton Clean Air Agency,\nand the Yakima Regional Clean Air Agency have issued an Air Quality\nAlert until further notice.\n\nFor the Smoke Air Quality Alert, wildfires burning in the region\ncombined with forecasted conditions may cause air quality to reach\nunhealthy levels.\n\nPollutants in smoke can cause burning eyes, runny nose, aggravate\nheart and lung diseases, and aggravate other serious health problems.\nLimit outdoor activities and keep children indoors if it is smoky.\nPlease follow medical advice if you have a heart or lung condition.\n\nInformation from the Washington Department of Ecology web site is\navailable at http://www.ecy.wa.gov/air.html or call 360-407-6000.\nInformation from the Yakima Regional Clean Air Agency web site is\navailable at http://www.yakimacleanair.org or call 509-834-2050.\nInformation from the Benton County Clean Air Agency web site is\navailable at http://www.bentoncleanair.org or call 509-783-1304.",
+                "instruction": null,
+                "response": "Monitor",
+                "note": "Non-Weather Emergency Message. Not sent to IPAWS.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "AQAPDT"
+                    ],
+                    "WMOidentifier": [
+                        "AEUS76 KPDT 031905"
+                    ],
+                    "NWSheadline": [
+                        "AIR QUALITY ALERT IN EFFECT UNTIL FURTHER NOTICE"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "AQA"
+                    ]
+                }
+            }
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-08-09T15:43:22+00:00"
+    "updated": "2026-08-09T15:53:28+00:00"
 }
