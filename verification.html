@@ -923,26 +923,84 @@ const PDS_SCAN_CONCURRENCY = 6;
 // walkthrough) — until then mPING reports won't load.
 const MPING_PROXY_URL = 'https://delicate-boat-33c9.jusmessinwityah1.workers.dev';
 const MPING_MAX_PAGES = 20;       // safety cap on pagination follow-throughs
-// Rough category/description → icon+color mapping for the map markers/
-// legend. mPING's category field is coarse (e.g. everything from rain
-// to blowing snow is lumped under "Rain/Snow"), but the report's own
-// "description" text is specific (Rain, Freezing Rain, Sleet/Ice
-// Pellets, Snow, Drizzle, Graupel, Blowing Snow, ...), so matching
-// runs against category + description together. Order matters here —
-// entries are checked top to bottom and the first match wins, so more
-// specific wording (e.g. "Freezing Rain") has to come before broader
-// wording ("Rain") would otherwise catch it first. Anything that
-// matches nothing below (Test, None, Marine, or anything else mPING
-// adds later) falls through to the plain "X" marker.
+// Icon+color mapping for every mPING report type (matched against
+// category + description text together, since the specific wording
+// lives in "description" while "category" is the coarser grouping).
+// Order matters — entries are checked top to bottom and the first
+// match wins, so narrower phrases ("Blowing Snow", "3 inch limbs
+// broken") are listed before broader ones they'd otherwise be caught
+// by ("Snow", "limbs broken"). Anything that matches nothing here
+// (Marine, or anything mPING adds later) falls through to a plain "X"
+// marker rather than silently miscategorizing it.
 const MPING_CATEGORY_STYLES = [
-  { match: /tornado|funnel/i,                          color: '#b91c1c', icon: '🌪️', label: 'Tornado / Funnel Cloud' },
-  { match: /flood/i,                                   color: '#0e7490', icon: '🌊', label: 'Flood' },
-  { match: /hail/i,                                    color: '#22c55e', icon: '🧊', label: 'Hail' },
-  { match: /wind/i,                                    color: '#3b82f6', icon: '🌳', label: 'Wind Damage/Gust' },
-  { match: /freezing rain|sleet|ice pellet|ice accum/i, color: '#a78bfa', icon: '🌨️', label: 'Freezing Rain / Sleet / Ice' },
-  { match: /snow|graupel/i,                            color: '#67e8f9', icon: '❄️', label: 'Snow / Graupel' },
-  { match: /rain|drizzle/i,                             color: '#14b8a6', icon: '💧', label: 'Rain / Drizzle' },
-  { match: /fog|visibility|haze/i,                      color: '#94a3b8', icon: '🌫️', label: 'Fog / Visibility' }
+  // Test / None
+  { match: /\btest\b/i,                                         color: '#57534e', icon: '🏁', label: 'Test' },
+  { match: /\bnone\b/i,                                         color: '#78350f', icon: '—',  label: 'None' },
+  // Tornado / funnel — not in the app's current menu image, but kept
+  // since it's an important, unmistakable report type.
+  { match: /tornado|funnel/i,                                   color: '#b91c1c', icon: '🌪️', label: 'Tornado / Funnel Cloud' },
+  // Structural / roof damage (most severe wind-impact tier)
+  { match: /structural damage/i,                                color: '#ec4899', icon: '🏚️', label: 'Substantial structural damage' },
+  { match: /roof damage/i,                                      color: '#ef4444', icon: '🏠', label: 'Substantial roof damage' },
+  // Wind / tree damage impact scale (light → severe)
+  { match: /power pole.{0,10}(down|broken|leaning)/i,           color: '#ea580c', icon: '🌳', label: 'Power poles down/broken' },
+  { match: /power lines torn/i,                                 color: '#eab308', icon: '🌳', label: 'Power lines torn off poles' },
+  { match: /trees? uprooted/i,                                  color: '#ca8a04', icon: '🌳', label: 'Trees uprooted' },
+  { match: /3.{0,3}limbs broken/i,                               color: '#4ade80', icon: '🌳', label: '3" limbs broken' },
+  { match: /shingles/i,                                         color: '#3b82f6', icon: '🏠', label: 'Shingles blown off' },
+  { match: /1.{0,3}tree limbs/i,                                 color: '#2dd4bf', icon: '🌳', label: '1" Tree limbs broken' },
+  { match: /small branches/i,                                   color: '#c4b5fd', icon: '🌳', label: 'Small branches <1" broken/down' },
+  // School/business/power impact
+  { match: /closure/i,                                          color: '#dc2626', icon: '🚫', label: 'School or business closure' },
+  { match: /delay|early dismissal/i,                             color: '#f97316', icon: '🚩', label: 'School or business delay/dismissal' },
+  { match: /power.{0,10}outage|internet outage|power.{0,10}disruption/i, color: '#6b7280', icon: '🔌', label: 'Power or internet outage/disruption' },
+  // Hail
+  { match: /hail/i,                                             color: '#22c55e', icon: '🧊', label: 'Hail' },
+  // Flood impact scale (light → severe)
+  { match: /swept away/i,                                       color: '#312e81', icon: '🌊', label: 'Homes/buildings/vehicles swept away' },
+  { match: /filled with water/i,                                 color: '#6366f1', icon: '🌊', label: 'Homes or buildings filled with water' },
+  { match: /street.{0,15}flood|road.{0,15}flood|vehicles stranded/i, color: '#2563eb', icon: '🌊', label: 'Street/road flooding' },
+  { match: /river|creek|cropland|basement flooding|yard flooding/i, color: '#38bdf8', icon: '🌊', label: 'River/Creek overflowing' },
+  { match: /flood/i,                                            color: '#0e7490', icon: '🌊', label: 'Flood (other)' },
+  // Mudslide
+  { match: /mudslide|landslide|debris flow/i,                    color: '#78350f', icon: '🟤', label: 'Mudslide' },
+  // Winter / visibility
+  { match: /blowing snow/i,                                      color: '#7dd3fc', icon: '❄️', label: 'Blowing Snow' },
+  { match: /snow squall/i,                                       color: '#e2e8f0', icon: '❄️', label: 'Snow Squall' },
+  { match: /dense fog|\bfog\b/i,                                  color: '#eab308', icon: '🌫️', label: 'Dense Fog' },
+  { match: /blowing dust|dust.{0,3}sand|blowing sand/i,          color: '#f97316', icon: '💨', label: 'Blowing Dust/Sand' },
+  { match: /smoke|haze/i,                                        color: '#94a3b8', icon: '🌁', label: 'Smoke' },
+  // Winter precip types (not in the impact-report image, but part of
+  // mPING's original precip-type reporting)
+  { match: /freezing rain|sleet|ice pellet|ice accum/i,          color: '#a78bfa', icon: '🌨️', label: 'Freezing Rain / Sleet / Ice' },
+  { match: /graupel/i,                                          color: '#67e8f9', icon: '❄️', label: 'Graupel' },
+  { match: /snow/i,                                             color: '#67e8f9', icon: '❄️', label: 'Snow' },
+  { match: /drizzle/i,                                          color: '#22c55e', icon: '🟢', label: 'Drizzle' },
+  { match: /\brain\b/i,                                          color: '#16a34a', icon: '💧', label: 'Rain' }
+];
+// A shorter, hand-picked subset for the map legend bar — the full
+// list above has ~30 severity-tiered entries (nine shades of the same
+// tree icon, four shades of the same wave icon, etc.) which would be
+// unreadable as a legend; this shows one representative swatch per
+// distinct icon instead, using a representative color from that group.
+const MPING_LEGEND_ITEMS = [
+  { color: '#57534e', icon: '🏁', label: 'Test' },
+  { color: '#78350f', icon: '—',  label: 'None' },
+  { color: '#b91c1c', icon: '🌪️', label: 'Tornado/Funnel' },
+  { color: '#ea580c', icon: '🌳', label: 'Wind/tree damage' },
+  { color: '#ef4444', icon: '🏠', label: 'Roof/structural damage' },
+  { color: '#f97316', icon: '🚩', label: 'School/business delay/closure' },
+  { color: '#6b7280', icon: '🔌', label: 'Power/internet outage' },
+  { color: '#22c55e', icon: '🧊', label: 'Hail' },
+  { color: '#2563eb', icon: '🌊', label: 'Flood' },
+  { color: '#78350f', icon: '🟤', label: 'Mudslide' },
+  { color: '#eab308', icon: '🌫️', label: 'Fog' },
+  { color: '#f97316', icon: '💨', label: 'Blowing Dust/Sand' },
+  { color: '#94a3b8', icon: '🌁', label: 'Smoke' },
+  { color: '#a78bfa', icon: '🌨️', label: 'Freezing Rain/Sleet/Ice' },
+  { color: '#67e8f9', icon: '❄️', label: 'Snow/Graupel' },
+  { color: '#22c55e', icon: '🟢', label: 'Drizzle' },
+  { color: '#16a34a', icon: '💧', label: 'Rain' }
 ];
 const MPING_DEFAULT_STYLE = { color: '#e879f9', icon: 'X', label: 'Other / Unclassified' };
 function mpingStyleFor(categoryText, descriptionText){
@@ -2040,7 +2098,7 @@ function renderMapLegend(){
   }
   if(showMping){
     html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">mPING:</span>`;
-    MPING_CATEGORY_STYLES.forEach(c => {
+    MPING_LEGEND_ITEMS.forEach(c => {
       html += `<span class="lg-item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:${c.color};font-size:9px;">${c.icon}</span>${escapeHtml(c.label)}</span>`;
     });
     html += `<span class="lg-item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:${MPING_DEFAULT_STYLE.color};font-size:9px;">${MPING_DEFAULT_STYLE.icon}</span>${escapeHtml(MPING_DEFAULT_STYLE.label)}</span>`;
