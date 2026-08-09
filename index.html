@@ -3159,7 +3159,7 @@ function updateDidYouKnowBox(rows, calls, todayDssCount) {
 
   section.style.display = 'flex';
   if (!didYouKnowTimer) {
-    didYouKnowIndex = 0;
+    didYouKnowIndex = Math.floor(Math.random() * didYouKnowFacts.length);
     showDidYouKnowFact(didYouKnowIndex);
     didYouKnowTimer = setInterval(function() {
       didYouKnowIndex = (didYouKnowIndex + 1) % didYouKnowFacts.length;
