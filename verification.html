@@ -923,11 +923,7 @@ const PDS_SCAN_CONCURRENCY = 6;
 // walkthrough) — until then mPING reports won't load.
 const MPING_PROXY_URL = 'https://delicate-boat-33c9.jusmessinwityah1.workers.dev';
 const MPING_MAX_PAGES = 20;       // safety cap on pagination follow-throughs
-// Rough category → color mapping for the map markers/legend. mPING's
-// actual category text varies (e.g. "Rain/Snow", "Hail", "Wind Damage/
-// Non-Tstm Wind Damage", "Flood/Flash Flood", "Tornado"), so this is a
-// substring match rather than an exact key lookup.
-// Rough category/description → color mapping for the map markers/
+// Rough category/description → icon+color mapping for the map markers/
 // legend. mPING's category field is coarse (e.g. everything from rain
 // to blowing snow is lumped under "Rain/Snow"), but the report's own
 // "description" text is specific (Rain, Freezing Rain, Sleet/Ice
@@ -935,22 +931,23 @@ const MPING_MAX_PAGES = 20;       // safety cap on pagination follow-throughs
 // runs against category + description together. Order matters here —
 // entries are checked top to bottom and the first match wins, so more
 // specific wording (e.g. "Freezing Rain") has to come before broader
-// wording ("Rain") would otherwise catch it first.
-const MPING_CATEGORY_COLORS = [
-  { match: /tornado|funnel/i,                          color: '#b91c1c', label: 'Tornado / Funnel Cloud' },
-  { match: /flood/i,                                   color: '#0e7490', label: 'Flood' },
-  { match: /hail/i,                                    color: '#22c55e', label: 'Hail' },
-  { match: /wind/i,                                    color: '#3b82f6', label: 'Wind Damage/Gust' },
-  { match: /freezing rain|sleet|ice pellet|ice accum/i, color: '#a78bfa', label: 'Freezing Rain / Sleet / Ice' },
-  { match: /snow|graupel/i,                            color: '#67e8f9', label: 'Snow / Graupel' },
-  { match: /rain|drizzle/i,                             color: '#14b8a6', label: 'Rain / Drizzle' },
-  { match: /fog|visibility|haze/i,                      color: '#94a3b8', label: 'Fog / Visibility' }
+// wording ("Rain") would otherwise catch it first. Anything that
+// matches nothing below (Test, None, Marine, or anything else mPING
+// adds later) falls through to the plain "X" marker.
+const MPING_CATEGORY_STYLES = [
+  { match: /tornado|funnel/i,                          color: '#b91c1c', icon: '🌪️', label: 'Tornado / Funnel Cloud' },
+  { match: /flood/i,                                   color: '#0e7490', icon: '🌊', label: 'Flood' },
+  { match: /hail/i,                                    color: '#22c55e', icon: '🧊', label: 'Hail' },
+  { match: /wind/i,                                    color: '#3b82f6', icon: '🌳', label: 'Wind Damage/Gust' },
+  { match: /freezing rain|sleet|ice pellet|ice accum/i, color: '#a78bfa', icon: '🌨️', label: 'Freezing Rain / Sleet / Ice' },
+  { match: /snow|graupel/i,                            color: '#67e8f9', icon: '❄️', label: 'Snow / Graupel' },
+  { match: /rain|drizzle/i,                             color: '#14b8a6', icon: '💧', label: 'Rain / Drizzle' },
+  { match: /fog|visibility|haze/i,                      color: '#94a3b8', icon: '🌫️', label: 'Fog / Visibility' }
 ];
-const MPING_DEFAULT_COLOR = '#e879f9';
-function mpingColorFor(categoryText, descriptionText){
+const MPING_DEFAULT_STYLE = { color: '#e879f9', icon: 'X', label: 'Other / Unclassified' };
+function mpingStyleFor(categoryText, descriptionText){
   const combined = [categoryText, descriptionText].filter(Boolean).join(' ');
-  const hit = MPING_CATEGORY_COLORS.find(c => c.match.test(combined));
-  return hit ? hit.color : MPING_DEFAULT_COLOR;
+  return MPING_CATEGORY_STYLES.find(c => c.match.test(combined)) || MPING_DEFAULT_STYLE;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1545,9 +1542,14 @@ function drawMpingOnMap(){
   currentMpingReports.forEach(r => {
     if(!r.geom || !r.geom.coordinates) return;
     const [lon, lat] = r.geom.coordinates;
-    const color = mpingColorFor(r.category, r.description);
-    const marker = L.circleMarker([lat, lon], {
-      radius: 4.5, color: '#0f1620', weight: 1, fillColor: color, fillOpacity: 0.9
+    const style = mpingStyleFor(r.category, r.description);
+    const marker = L.marker([lat, lon], {
+      icon: L.divIcon({
+        className: 'mping-marker-icon',
+        html: `<div style="width:20px;height:20px;border-radius:50%;background:${style.color};border:1.5px solid #0f1620;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.5);">${style.icon}</div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      })
     });
     marker.bindPopup(
       `<div style="min-width:170px;"><b>${escapeHtml(r.description || r.category)}</b><br>` +
@@ -2038,10 +2040,10 @@ function renderMapLegend(){
   }
   if(showMping){
     html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">mPING:</span>`;
-    MPING_CATEGORY_COLORS.forEach(c => {
-      html += `<span class="lg-item"><span class="lg-dot" style="background:${c.color};border-radius:50%;"></span>${escapeHtml(c.label)}</span>`;
+    MPING_CATEGORY_STYLES.forEach(c => {
+      html += `<span class="lg-item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:${c.color};font-size:9px;">${c.icon}</span>${escapeHtml(c.label)}</span>`;
     });
-    html += `<span class="lg-item"><span class="lg-dot" style="background:${MPING_DEFAULT_COLOR};border-radius:50%;"></span>Other</span>`;
+    html += `<span class="lg-item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:${MPING_DEFAULT_STYLE.color};font-size:9px;">${MPING_DEFAULT_STYLE.icon}</span>${escapeHtml(MPING_DEFAULT_STYLE.label)}</span>`;
   }
   bar.innerHTML = html;
 }
