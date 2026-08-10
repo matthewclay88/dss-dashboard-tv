@@ -404,6 +404,8 @@
 
   /* ── TRENDS MODAL ── */
   .trend-range-btn.active { background: #2563eb !important; color: #fff !important; }
+  .trend-phen-btn.active { background: #2563eb !important; color: #fff !important; }
+  .trend-phen-btn { padding: 6px 12px !important; font-size: 11px !important; }
 
   /* ── RADAR CONTROLS ── */
   .radar-step-btn {
@@ -528,6 +530,7 @@
   <div class="header-right">
     <button class="icon-btn" id="trendsBtn" title="Verification trends over time">&#128200;</button>
     <button class="icon-btn" id="exportCsvBtn" title="Export CSV">&#128190;</button>
+    <button class="icon-btn" id="summaryReportBtn" title="Generate a formatted summary report">&#128196;</button>
     <button class="icon-btn" id="exportPngBtn" title="Export PNG snapshot (basemap imagery excluded — see About)">&#128247;</button>
     <button class="icon-btn" id="printBtn" title="Print report">&#128424;</button>
     <button class="icon-btn" id="archiveBtn" title="Archive / date range stats">&#128197;</button>
@@ -744,6 +747,13 @@
         <button class="btn secondary trend-range-btn" data-days="90">Last 90 Days</button>
         <button class="btn secondary trend-range-btn" data-days="365">1 Year (Heatmap)</button>
       </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="btn secondary trend-phen-btn active" data-phen="">All Phenomena</button>
+        <button class="btn secondary trend-phen-btn" data-phen="TO">TOR</button>
+        <button class="btn secondary trend-phen-btn" data-phen="SV">SVR</button>
+        <button class="btn secondary trend-phen-btn" data-phen="FF">FFW</button>
+        <button class="btn secondary trend-phen-btn" data-phen="SQ">SQW</button>
+      </div>
       <div id="trendsStatus" style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Loading…</div>
       <svg viewBox="0 0 640 220" id="trendsSvg" style="width:100%;height:220px;"></svg>
       <div id="trendsLineLegend" style="display:flex;gap:14px;margin-top:10px;font-size:11px;">
@@ -796,7 +806,12 @@
       <p><strong>Warning Meteorologists:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
       <p><strong>Tagged Threat:</strong> the warning details panel shows the forecaster's windtag/hailtag from the warning's IBW tags at issuance, alongside the peak magnitude actually seen in the matched LSRs below it — a quick "was the tag well-calibrated" comparison, not a pass/fail judgment.</p>
       <p><strong>Polygon quality metrics</strong> (bottom of the stats panel): <em>Avg Polygon Size</em> and <em>Polygon vs Avg County Size</em> are computed locally from the same calendar-day-corrected warning set as everything else here (the county comparison is against the CWA's average county size, not each warning's own specific county — a rough yardstick, not an exact ratio). <em>Area Verified</em>, <em>Shared Border</em>, and <em>TOR Reports Outside Co-located SVR</em> come directly from IEM Cow's own computation instead, since replicating its exact verification-area and border-matching logic isn't practical here — these three specifically reflect IEM's own queried window, which includes the ~6 hour boundary padding described above, so treat them as close-but-not-exact for the precise calendar day. A high Shared Border % is a rough proxy for "box warnings" that follow county lines rather than the storm.</p>
-      <p><strong>Lead Time Distribution:</strong> the histogram at the bottom of the stats panel buckets every matched report's lead time into 5-10 minute bins, so a wide or bimodal spread doesn't get hidden behind the single averages above it.</p>
+      <p><strong>Lead Time Distribution:</strong> the histogram at the bottom of the stats panel buckets every matched report's lead time into 5-10 minute bins, stacked by phenomena color (matching the queue cards/warning polygons) when more than one phenomena is present, so a wide or bimodal spread doesn't get hidden behind the single averages above it.</p>
+      <p><strong>Confidence score:</strong> shown in a verified warning's details panel — a simple, unofficial heuristic based on matched report count and lead time, meant for a quick visual read on how solid that particular verification looks. Not an NWS or IEM statistic.</p>
+      <p><strong>Linking to a specific warning:</strong> selecting a warning updates the address bar to point straight at it (in addition to the office and date/range it already tracked), and the "🔗 Copy Link" button in the details header copies that URL directly — useful for case reviews or training files where you want to point someone at one specific warning rather than a whole day.</p>
+      <p><strong>Tagged Threat Accuracy:</strong> below Warning Meteorologists in the Verification tab, this rolls up every wind/hail-tagged warning's tag against its peak verified magnitude for the day/range, averaged — surfacing a systematic bias (consistently over- or under-tagging) that's invisible when only looking at one warning's Tagged Threat line at a time.</p>
+      <p><strong>Trends phenomena filter:</strong> the Trends modal can be narrowed to a single phenomena (TOR/SVR/FFW/SQW) instead of always blending all four together — useful for checking whether, say, flash flood POD is trending differently than tornado POD. Misses are narrowed along with it, matched to that phenomena's own LSR types, so the POD/FAR/CSI shown stay internally consistent rather than mixing a filtered numerator with an unfiltered denominator.</p>
+      <p><strong>Summary Report</strong> (📄 icon): generates a standalone, formatted, printable report for whatever's currently loaded — a single day or a full Archive range — covering overview counts, verification stats, lead time, tag accuracy, polygon quality, and top counties. It downloads as a self-contained HTML file with no dependency on this page, so it opens and prints cleanly on its own. Running a full year through Archive and generating this is effectively an annual summary, rather than a separate reporting mode.</p>
       <p><strong>mPING reports:</strong> "Show mPING reports" overlays crowd-sourced weather reports from the <a href="https://mping.ou.edu" target="_blank">mPING</a> project (OU CIMMS / NSSL) alongside the LSR markers — separate dots, separate legend, own on/off toggle. Requests go through a small server-side proxy that holds the API key, so no visitor needs their own account; the key's license tier still applies, though, so if it's a Research-tier key, reports from the last 48 hours (including "today") won't show up. mPING reports are informal public submissions, not an official report source like LSRs — treat matches against warnings as a supplementary cross-check, not a verification input (IEM Cow's own verified/unverified status is unaffected by mPING data either way).</p>
     </div>
   </div>
@@ -1166,15 +1181,38 @@ function computeDayStats(){
     ? 1 / ((1/pod) + (1/(1-far)) - 1)
     : null;
 
+  // Each lead-time sample carries which phenomena it came from, so the
+  // histogram can show whether e.g. flash flood lead time systematically
+  // lags tornado lead time instead of blending everything into one bar.
   const matchedReportsAll = [];
   const lead0s = [];
+  // Tag-accuracy rollup: for every warning with a windtag/hailtag, pair
+  // it with the peak magnitude actually seen in its matched reports —
+  // averaged across the day/range, this surfaces a systematic bias
+  // (consistently over- or under-tagging) that's invisible when only
+  // looking at one warning's Tagged Threat line at a time.
+  const windPairs = [], hailPairs = [];
   currentEvents.forEach(e => {
     if(e.lead0 !== null && e.lead0 !== undefined) lead0s.push(e.lead0);
-    e.stormreports.forEach(rid => {
-      const r = currentReports.find(x => String(x.id) === rid);
-      if(r && r.leadtime !== null && r.leadtime !== undefined) matchedReportsAll.push(r.leadtime);
+    const matched = e.stormreports.map(rid => currentReports.find(x => String(x.id) === rid)).filter(Boolean);
+    matched.forEach(r => {
+      if(r.leadtime !== null && r.leadtime !== undefined) matchedReportsAll.push({ lead: r.leadtime, phen: e.phenomena });
     });
+    if(e.windtag){
+      const mags = matched.filter(r => r.type === 'G' || r.type === 'D').map(r => r.magnitude).filter(m => m !== null && m !== undefined);
+      if(mags.length) windPairs.push({ tagged: Number(e.windtag), verified: Math.max(...mags) });
+    }
+    if(e.hailtag){
+      const mags = matched.filter(r => r.type === 'H').map(r => r.magnitude).filter(m => m !== null && m !== undefined);
+      if(mags.length) hailPairs.push({ tagged: Number(e.hailtag), verified: Math.max(...mags) });
+    }
   });
+  function summarizeTagPairs(pairs){
+    if(pairs.length === 0) return null;
+    const avgTagged = pairs.reduce((a,p)=>a+p.tagged,0) / pairs.length;
+    const avgVerified = pairs.reduce((a,p)=>a+p.verified,0) / pairs.length;
+    return { n: pairs.length, avgTagged, avgVerified, bias: avgVerified - avgTagged };
+  }
 
   // Office-level aggregate only — a count of distinct forecaster codes
   // active in this window, not a per-person breakdown. Individual
@@ -1183,15 +1221,18 @@ function computeDayStats(){
   // in a controlled internal process, not a shareable-URL dashboard.
   const distinctForecasters = new Set(currentEvents.map(e => e.fcster).filter(Boolean)).size;
 
+  const leadValues = matchedReportsAll.map(s => s.lead);
+
   dayStats = {
     hits, falseAlarms, misses,
     pod, far, csi,
     avgLead1st: lead0s.length ? lead0s.reduce((a,b)=>a+b,0)/lead0s.length : null,
-    avgLeadAll: matchedReportsAll.length ? matchedReportsAll.reduce((a,b)=>a+b,0)/matchedReportsAll.length : null,
-    maxLead: matchedReportsAll.length ? Math.max(...matchedReportsAll) : null,
-    minLead: matchedReportsAll.length ? Math.min(...matchedReportsAll) : null,
+    avgLeadAll: leadValues.length ? leadValues.reduce((a,b)=>a+b,0)/leadValues.length : null,
+    maxLead: leadValues.length ? Math.max(...leadValues) : null,
+    minLead: leadValues.length ? Math.min(...leadValues) : null,
     distinctForecasters,
-    leadTimeSamples: matchedReportsAll
+    leadTimeSamples: matchedReportsAll,
+    tagAccuracy: { wind: summarizeTagPairs(windPairs), hail: summarizeTagPairs(hailPairs) }
   };
 }
 
@@ -1230,25 +1271,48 @@ const LEAD_TIME_BUCKETS = [
 // Small inline SVG bar chart — deliberately not a full modal/artifact,
 // since it's meant to be a quick "is our lead time consistent or all
 // over the place" glance to sit right in the stats panel next to the
-// averages it's expanding on.
+// averages it's expanding on. Stacked by phenomena (using the same
+// colors as the queue cards/warning polygons) whenever more than one
+// phenomena is present in the current view, so a blended average
+// doesn't hide e.g. flash flood lead time trailing tornado lead time.
 function renderLeadTimeHistogram(samples){
   if(!samples || samples.length === 0) return '';
-  const counts = LEAD_TIME_BUCKETS.map(b => samples.filter(b.test).length);
-  const maxCount = Math.max(...counts, 1);
-  const W = 400, H = 92, padL = 4, padR = 4, padT = 14, padB = 16;
+  const order = ['TO','SV','FF','SQ'].filter(p => samples.some(s => s.phen === p));
+  const counts = LEAD_TIME_BUCKETS.map(b => {
+    const inBucket = samples.filter(s => b.test(s.lead));
+    const byPhen = {};
+    order.forEach(p => { byPhen[p] = inBucket.filter(s => s.phen === p).length; });
+    return { total: inBucket.length, byPhen };
+  });
+  const maxCount = Math.max(...counts.map(c => c.total), 1);
+  const W = 400, H = 100, padL = 4, padR = 4, padT = 14, padB = 16;
   const barW = (W - padL - padR) / counts.length;
   let bars = '';
   counts.forEach((c, i) => {
-    const h = (c / maxCount) * (H - padT - padB);
     const x = padL + i * barW;
-    const y = H - padB - h;
-    bars += `<rect x="${(x+3).toFixed(1)}" y="${y.toFixed(1)}" width="${(barW-6).toFixed(1)}" height="${h.toFixed(1)}" fill="#60a5fa" rx="2"/>`;
+    let yCursor = H - padB;
+    order.forEach(p => {
+      const n = c.byPhen[p];
+      if(n <= 0) return;
+      const h = (n / maxCount) * (H - padT - padB);
+      const y = yCursor - h;
+      const color = (PHEN_META[p] || {}).color || '#60a5fa';
+      bars += `<rect x="${(x+3).toFixed(1)}" y="${y.toFixed(1)}" width="${(barW-6).toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" rx="1.5"/>`;
+      yCursor = y;
+    });
     bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="8" fill="#7a8ba3">${LEAD_TIME_BUCKETS[i].label}</text>`;
-    if(c > 0) bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#cbd5e1">${c}</text>`;
+    if(c.total > 0){
+      const topY = H - padB - (c.total / maxCount) * (H - padT - padB);
+      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(topY-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#cbd5e1">${c.total}</text>`;
+    }
   });
+  const legend = order.length > 1
+    ? `<div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">${order.map(p => `<span style="font-size:9px;color:#93a3b8;display:inline-flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:${PHEN_META[p].color};display:inline-block;"></span>${PHEN_META[p].code}</span>`).join('')}</div>`
+    : '';
   return `<div style="margin-top:10px;">
     <div class="kv-k" style="margin-bottom:4px;">Lead Time Distribution (min)</div>
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;" role="img" aria-label="Lead time distribution histogram, ${samples.length} matched reports">${bars}</svg>
+    ${legend}
   </div>`;
 }
 
@@ -1276,6 +1340,10 @@ function renderDayStats(){
     return;
   }
 
+  const fmtSigned = v => v === null || v === undefined ? '' : (v >= 0 ? '+' : '') + v.toFixed(0);
+  const tagRow = (label, unit, t) => t ? `<div class="daystat-row"><div><div class="ds-name">${label} Tag Accuracy</div><span class="ds-formula">n=${t.n}, tagged ${t.avgTagged.toFixed(0)} vs verified ${t.avgVerified.toFixed(0)} ${unit}</span></div><div class="ds-val">${fmtSigned(t.bias)}</div></div>` : '';
+  const tagRows = dayStats.tagAccuracy ? (tagRow('Wind', 'MPH', dayStats.tagAccuracy.wind) + tagRow('Hail', 'in', dayStats.tagAccuracy.hail)) : '';
+
   body.innerHTML = `
     <div class="daystat-row"><div><div class="ds-name">FAR</div><span class="ds-formula">C / (Aw + C)</span></div><div class="ds-val">${fmtPct(dayStats.far)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">POD</div><span class="ds-formula">Ae / (Ae + B)</span></div><div class="ds-val">${fmtPct(dayStats.pod)}</div></div>
@@ -1285,6 +1353,7 @@ function renderDayStats(){
     <div class="daystat-row"><div><div class="ds-name">Max Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.maxLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Min Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.minLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Warning Meteorologists</div><span class="ds-formula">distinct codes, not individually broken out</span></div><div class="ds-val">${dayStats.distinctForecasters}</div></div>
+    ${tagRows}
     ${renderLeadTimeHistogram(dayStats.leadTimeSamples)}
   `;
 }
@@ -1489,20 +1558,29 @@ async function fetchAndParseCow(windowStart, windowEnd, options){
   wfoCodes.forEach(wfo => dateChunks.forEach(([cs, ce]) => tasks.push({ wfo, cs, ce })));
 
   const seenEventIds = new Set(), seenReportIds = new Set();
-  const rawEventFeatures = [], rawReportFeatures = [], rawStatsList = [];
+  const rawEventFeatures = [], rawReportFeatures = [], rawStatsList = [], failedChunks = [];
   let completed = 0;
   let taskIdx = 0;
   async function worker(){
     while(taskIdx < tasks.length){
       const t = tasks[taskIdx++];
-      const data = await fetchCowRaw(t.wfo, t.cs, t.ce);
-      (data.events.features || []).forEach(f => {
-        if(!seenEventIds.has(f.id)){ seenEventIds.add(f.id); rawEventFeatures.push(f); }
-      });
-      (data.stormreports.features || []).forEach(f => {
-        if(!seenReportIds.has(f.id)){ seenReportIds.add(f.id); rawReportFeatures.push(f); }
-      });
-      rawStatsList.push(data.stats || null);
+      try{
+        const data = await fetchCowRaw(t.wfo, t.cs, t.ce);
+        (data.events.features || []).forEach(f => {
+          if(!seenEventIds.has(f.id)){ seenEventIds.add(f.id); rawEventFeatures.push(f); }
+        });
+        (data.stormreports.features || []).forEach(f => {
+          if(!seenReportIds.has(f.id)){ seenReportIds.add(f.id); rawReportFeatures.push(f); }
+        });
+        rawStatsList.push(data.stats || null);
+      }catch(err){
+        // One bad chunk (a transient IEM timeout, say, on request 4 of
+        // 6 for a wide Archive range) used to fail the ENTIRE load and
+        // discard every chunk that had already succeeded. Recording
+        // the failure and moving on keeps whatever data did load,
+        // rather than an all-or-nothing result.
+        failedChunks.push({ wfo: t.wfo, start: t.cs, end: t.ce, error: err.message });
+      }
       completed++;
       if(onProgress) onProgress(completed, tasks.length);
     }
@@ -1525,7 +1603,7 @@ async function fetchAndParseCow(windowStart, windowEnd, options){
   // that displays "reports in view" specifically.
   const reports = rawReportFeatures.map(f => mapRawReportFeature(f, windowStartMs, windowEndMs));
 
-  return { events, reports, iemStats: combineIemStats(rawStatsList) };
+  return { events, reports, iemStats: combineIemStats(rawStatsList), failedChunks };
 }
 
 async function loadDay(dateStr){
@@ -1541,7 +1619,7 @@ async function loadDay(dateStr){
     const dayStart = localMidnightToUTC(dateStr, settings.timezone);
     const dayEnd = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
     const wfoCodes = [settings.wfo, ...compareWfos];
-    const { events, reports, iemStats } = await fetchAndParseCow(dayStart, dayEnd, {
+    const { events, reports, iemStats, failedChunks } = await fetchAndParseCow(dayStart, dayEnd, {
       wfoCodes,
       onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${dateStr} — request ${done} of ${total}…`, false); }
     });
@@ -1550,7 +1628,11 @@ async function loadDay(dateStr){
     currentIemStats = iemStats;
     computeDayStats();
     await computePolygonQualityStats();
-    setStatus(null);
+    if(failedChunks && failedChunks.length){
+      setStatus(`Loaded, but ${failedChunks.length} request(s) to IEM failed — some data for this view may be incomplete. Try Refresh.`, true);
+    } else {
+      setStatus(null);
+    }
   } catch(err){
     console.error(err);
     currentEvents = [];
@@ -1579,7 +1661,7 @@ async function loadRange(startStr, endStr){
     const rangeStart = localMidnightToUTC(startStr, settings.timezone);
     const rangeEnd = localMidnightToUTC(addDaysToDateStr(endStr, 1), settings.timezone);
     const wfoCodes = [settings.wfo, ...compareWfos];
-    const { events, reports, iemStats } = await fetchAndParseCow(rangeStart, rangeEnd, {
+    const { events, reports, iemStats, failedChunks } = await fetchAndParseCow(rangeStart, rangeEnd, {
       wfoCodes,
       onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${rangeLabel} — request ${done} of ${total}…`, false); }
     });
@@ -1588,7 +1670,11 @@ async function loadRange(startStr, endStr){
     currentIemStats = iemStats;
     computeDayStats();
     await computePolygonQualityStats();
-    setStatus(null);
+    if(failedChunks && failedChunks.length){
+      setStatus(`Loaded, but ${failedChunks.length} request(s) to IEM failed — some data for this range may be incomplete. Try Refresh.`, true);
+    } else {
+      setStatus(null);
+    }
   } catch(err){
     console.error(err);
     currentEvents = [];
@@ -1641,7 +1727,9 @@ function readUrlState(){
     date: params.get('date'),
     start: params.get('start'),
     end: params.get('end'),
-    compare: params.get('compare')
+    compare: params.get('compare'),
+    etn: params.get('etn'),
+    phen: params.get('phen')
   };
 }
 function updateUrlState(){
@@ -1653,6 +1741,15 @@ function updateUrlState(){
     params.set('end', currentRangeEnd);
   } else if(selectedDateStr){
     params.set('date', selectedDateStr);
+  }
+  // Deep-link straight to whichever warning is currently selected, so
+  // sharing the address bar link takes someone to that specific
+  // warning's details, not just the day it's on. ETN alone isn't a
+  // unique key (a TOR and an SVR can share the same ETN in the same
+  // year), so phenomena rides along with it.
+  if(selectedEventId){
+    const sel = currentEvents.find(x => x.id === selectedEventId);
+    if(sel){ params.set('etn', sel.etn); params.set('phen', sel.phenomena); }
   }
   const newUrl = window.location.pathname + '?' + params.toString();
   history.replaceState(null, '', newUrl);
@@ -2311,6 +2408,7 @@ function selectEvent(id){
     try{ map.fitBounds(e._mapLayer.getBounds(), { padding: [50,50], maxZoom: 10 }); }catch(err){}
   }
   renderDetails(e);
+  updateUrlState();
 }
 
 async function getProductText(e){
@@ -2341,6 +2439,45 @@ function extractWarningBody(text){
     if(/^(BULLETIN|URGENT|Severe|Flash|Tornado|Snow Squall)/i.test(lines[i].trim())){ startIdx = i; break; }
   }
   return lines.slice(startIdx).join('\n').trim();
+}
+
+// Simple, unofficial "how solid does this verification look" heuristic
+// — NOT an NWS or IEM statistic, just a quick visual gut-check built
+// from two things Cow already gives us: how many independent reports
+// matched, and how much lead time the first one gave. Only computed
+// for warnings that actually verified — a "confidence" figure for an
+// unverified or still-pending warning wouldn't mean anything.
+function computeConfidenceScore(e, matchedReports){
+  const reportPts = Math.min(matchedReports.length / 3, 1) * 50;
+  const lead = e.lead0;
+  const leadPts = (lead === null || lead === undefined) ? 0 : Math.min(Math.max(lead, 0) / 20, 1) * 50;
+  const pct = Math.round(reportPts + leadPts);
+  const color = pct >= 70 ? '#4ade80' : (pct >= 40 ? '#f0c419' : '#ef4444');
+  return {
+    pct, color,
+    checks: [
+      { label: '3+ matching reports', yes: matchedReports.length >= 3 },
+      { label: 'Positive lead time', yes: lead !== null && lead !== undefined && lead > 0 },
+      { label: 'Lead time ≥ 10 min', yes: lead !== null && lead !== undefined && lead >= 10 }
+    ]
+  };
+}
+
+function renderConfidenceSection(e, matchedReports){
+  if(e.status !== 'verified') return '';
+  const conf = computeConfidenceScore(e, matchedReports);
+  const ring = `conic-gradient(${conf.color} ${(conf.pct * 3.6).toFixed(1)}deg, #1e2a3a 0deg)`;
+  const checksHtml = conf.checks.map(c => `<div class="mi ${c.yes ? 'yes' : 'no'}"><span class="mi-icon">${c.yes ? '✓' : '✕'}</span>${escapeHtml(c.label)}</div>`).join('');
+  return `
+    <div class="details-section">
+      <div class="ds-title">Confidence</div>
+      <div class="confidence-row">
+        <div class="conf-ring" style="background:${ring};"><span class="conf-val">${conf.pct}%</span></div>
+        <div class="match-list">${checksHtml}</div>
+      </div>
+      <div class="conf-note">Unofficial heuristic based on lead time and matching report count — not an NWS or IEM statistic.</div>
+    </div>
+  `;
 }
 
 async function renderDetails(e){
@@ -2381,6 +2518,7 @@ async function renderDetails(e){
       <span class="etn-badge">${wfoTag}ETN ${e.etn}</span>
       <span class="dh-title">${meta.name}</span>${flagBadge}
       <span class="status-pill" style="color:${st.color};margin-left:auto;"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span>
+      <button class="mini-btn" id="copyDetailsLinkBtn" title="Copy a link straight to this warning">🔗 Copy Link</button>
     </div>
     <div class="details-section">
       <div class="kv-grid">
@@ -2418,6 +2556,7 @@ async function renderDetails(e){
         </tbody>
       </table>`}
     </div>
+    ${renderConfidenceSection(e, matchedReports)}
     ${renderRelatedEvents(e)}
   `;
 
@@ -2436,6 +2575,15 @@ async function renderDetails(e){
   });
   scroll.querySelectorAll('[data-related-id]').forEach(tr => {
     tr.addEventListener('click', () => { switchSubtab('map'); selectEvent(tr.dataset.relatedId); });
+  });
+  const copyLinkBtn = document.getElementById('copyDetailsLinkBtn');
+  if(copyLinkBtn) copyLinkBtn.addEventListener('click', async () => {
+    try{
+      await navigator.clipboard.writeText(window.location.href);
+      showToast('Link copied — takes you straight to this warning.');
+    }catch(err){
+      showToast('Could not copy link: ' + err.message);
+    }
   });
 }
 
@@ -2580,7 +2728,16 @@ async function pollLiveUpdates(){
 // ══════════════════════════════════════════════════════════════
 //  TRENDS — POD/FAR/CSI over the last N days
 // ══════════════════════════════════════════════════════════════
+let trendsPhenFilter = '';   // '' = all phenomena, else 'TO'|'SV'|'FF'|'SQ'
+let trendsDays = 30;
+// For the phenomena-filtered trend, "misses" (unwarned LSRs) need to be
+// narrowed to reports that plausibly belong to the selected phenomena
+// too — otherwise filtering events to just TOR while still counting
+// EVERY unwarned report as a miss would understate TOR's real POD.
+const PHEN_TO_LSR_TYPES = { TO: ['T'], SV: ['G','D','H'], FF: ['F'], SQ: ['q'] };
+
 async function loadTrends(days){
+  trendsDays = days;
   const statusEl = document.getElementById('trendsStatus');
   document.getElementById('trendsWfoLabel').textContent = settings.wfo;
   statusEl.textContent = `Loading ${days}-day trend for ${settings.wfo}…`;
@@ -2589,9 +2746,12 @@ async function loadTrends(days){
     const startDateStr = addDaysToDateStr(endDateStr, -(days - 1));
     const rangeStart = localMidnightToUTC(startDateStr, settings.timezone);
     const rangeEnd = localMidnightToUTC(addDaysToDateStr(endDateStr, 1), settings.timezone);
-    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd, {
+    const { events: allEvents, reports: allReports } = await fetchAndParseCow(rangeStart, rangeEnd, {
       onProgress: (done, total) => { if(total > 1) statusEl.textContent = `Loading ${days}-day trend for ${settings.wfo} — request ${done} of ${total}…`; }
     });
+    const events = trendsPhenFilter ? allEvents.filter(e => e.phenomena === trendsPhenFilter) : allEvents;
+    const allowedLsrTypes = trendsPhenFilter ? PHEN_TO_LSR_TYPES[trendsPhenFilter] : null;
+    const reports = allowedLsrTypes ? allReports.filter(r => allowedLsrTypes.includes(r.type)) : allReports;
 
     const buckets = [];
     for(let i = 0; i < days; i++){
@@ -2627,7 +2787,8 @@ async function loadTrends(days){
       document.getElementById('heatmapWrap').style.display = 'none';
       renderTrendsChart(buckets);
     }
-    statusEl.textContent = `${days} days ending ${endDateStr} — ${withData} day${withData===1?'':'s'} with warnings.`;
+    const phenSuffix = trendsPhenFilter ? ` — ${PHEN_META[trendsPhenFilter].code} only` : '';
+    statusEl.textContent = `${days} days ending ${endDateStr}${phenSuffix} — ${withData} day${withData===1?'':'s'} with warnings.`;
   }catch(err){
     console.error(err);
     statusEl.textContent = 'Could not load trend data: ' + err.message;
@@ -2857,6 +3018,134 @@ function exportCsv(){
   downloadBlob(`${settings.wfo}_warnings_${label}.csv`, lines.join('\n'), 'text/csv');
 }
 
+// A formatted, standalone, printable report — the kind of thing that
+// ends up in an end-of-year review — as opposed to the raw CSV above
+// or the dashboard-styled PNG snapshot below. Self-contained (its own
+// inline <style>, no external assets) so it opens and prints cleanly
+// on its own, independent of this page. Reuses whatever's currently
+// loaded (a single day or an Archive range), rather than a separate
+// "annual" code path — running Archive over a full year and clicking
+// this IS the annual summary.
+function generateSummaryReport(){
+  if(!dayStats || currentEvents.length === 0){
+    alert('No warnings loaded for this view — nothing to summarize.');
+    return;
+  }
+  const wfoName = (WFO_LIST.find(o => o.id === settings.wfo) || {}).name || settings.wfo;
+  const scopeLabel = viewMode === 'range' ? rangeLabel : selectedDateStr;
+  const generated = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+  const phenCounts = { TO:0, SV:0, FF:0, SQ:0 };
+  let pdsCount = 0, emergencyCount = 0;
+  currentEvents.forEach(e => {
+    if(phenCounts[e.phenomena] !== undefined) phenCounts[e.phenomena]++;
+    if(e.pdsFlag) pdsCount++;
+    if(e.emergencyFlag) emergencyCount++;
+  });
+
+  const fmtPct = v => v === null || v === undefined ? '—' : (v*100).toFixed(0) + '%';
+  const fmtNum = v => v === null || v === undefined ? '—' : v.toFixed(2);
+  const fmtMin = v => v === null || v === undefined ? '—' : v.toFixed(1) + ' min';
+  const fmtKm2 = v => v === null || v === undefined ? '—' : v.toFixed(0) + ' km²';
+  const fmtPctRaw = v => v === null || v === undefined ? '—' : v.toFixed(0) + '%';
+
+  const countyRows = computeCountyBreakdown().slice(0, 10).map(c => `
+    <tr><td>${escapeHtml(c.name)}</td><td>${c.total}</td><td>${c.verified}</td><td>${c.far === null ? '—' : Math.round(c.far*100)+'%'}</td></tr>
+  `).join('') || '<tr><td colspan="4" style="color:#94a3b8;">No county data.</td></tr>';
+
+  const tagRow = (label, unit, t) => t ? `<tr><td>${label}</td><td>${t.n}</td><td>${t.avgTagged.toFixed(0)} ${unit}</td><td>${t.avgVerified.toFixed(0)} ${unit}</td><td>${t.bias>=0?'+':''}${t.bias.toFixed(0)} ${unit}</td></tr>` : '';
+  const tagAccRows = tagRow('Wind', 'MPH', dayStats.tagAccuracy && dayStats.tagAccuracy.wind) + tagRow('Hail', 'in', dayStats.tagAccuracy && dayStats.tagAccuracy.hail);
+  const tagRowsHtml = tagAccRows || '<tr><td colspan="5" style="color:#94a3b8;">No tagged warnings in this window.</td></tr>';
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(settings.wfo)} Verification Summary — ${escapeHtml(scopeLabel)}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1a1a1a; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.5; }
+  h1 { font-size: 22px; margin-bottom: 2px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 15px; margin-top: 32px; margin-bottom: 10px; border-bottom: 2px solid #1d4ed8; padding-bottom: 4px; color: #1d4ed8; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 13px; }
+  th { text-align: left; background: #f1f5f9; padding: 6px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: #475569; border-bottom: 2px solid #cbd5e1; }
+  td { padding: 6px 10px; border-bottom: 1px solid #e2e8f0; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px; }
+  .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center; }
+  .stat-box .val { font-size: 22px; font-weight: 800; color: #1d4ed8; }
+  .stat-box .lbl { font-size: 10.5px; color: #64748b; text-transform: uppercase; letter-spacing: .03em; margin-top: 2px; }
+  .note { font-size: 11.5px; color: #64748b; margin-top: 6px; }
+  .footer { margin-top: 40px; padding-top: 14px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; }
+  @media print { body { margin: 0; max-width: none; } }
+</style>
+</head>
+<body>
+  <h1>${escapeHtml(wfoName)} (${escapeHtml(settings.wfo)}) — Warning Verification Summary</h1>
+  <div class="sub">${escapeHtml(scopeLabel)} &nbsp;·&nbsp; Generated ${escapeHtml(generated)}</div>
+
+  <h2>Overview</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="val">${phenCounts.TO}</div><div class="lbl">Tornado</div></div>
+    <div class="stat-box"><div class="val">${phenCounts.SV}</div><div class="lbl">Severe Tstm</div></div>
+    <div class="stat-box"><div class="val">${phenCounts.FF}</div><div class="lbl">Flash Flood</div></div>
+    <div class="stat-box"><div class="val">${phenCounts.SQ}</div><div class="lbl">Snow Squall</div></div>
+  </div>
+  <div class="note">${pdsCount} PDS-tagged, ${emergencyCount} Tornado/Flash Flood Emergency-tagged.</div>
+
+  <h2>Verification</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="val">${fmtPct(dayStats.far)}</div><div class="lbl">FAR</div></div>
+    <div class="stat-box"><div class="val">${fmtPct(dayStats.pod)}</div><div class="lbl">POD</div></div>
+    <div class="stat-box"><div class="val">${fmtNum(dayStats.csi)}</div><div class="lbl">CSI</div></div>
+    <div class="stat-box"><div class="val">${dayStats.distinctForecasters}</div><div class="lbl">Warning Meteorologists</div></div>
+  </div>
+  <table>
+    <tr><th>Hits</th><th>False Alarms</th><th>Misses</th></tr>
+    <tr><td>${dayStats.hits}</td><td>${dayStats.falseAlarms}</td><td>${dayStats.misses}</td></tr>
+  </table>
+
+  <h2>Lead Time</h2>
+  <table>
+    <tr><th>Avg, 1st Event</th><th>Avg, All Events</th><th>Max</th><th>Min</th></tr>
+    <tr><td>${fmtMin(dayStats.avgLead1st)}</td><td>${fmtMin(dayStats.avgLeadAll)}</td><td>${fmtMin(dayStats.maxLead)}</td><td>${fmtMin(dayStats.minLead)}</td></tr>
+  </table>
+
+  <h2>Tagged Threat Accuracy</h2>
+  <table>
+    <tr><th>Type</th><th>n</th><th>Avg Tagged</th><th>Avg Verified</th><th>Bias</th></tr>
+    ${tagRowsHtml}
+  </table>
+  <div class="note">Positive bias = actual conditions exceeded the tag; negative = over-tagged. Unofficial, derived from matched LSR magnitudes.</div>
+
+  <h2>Polygon Quality</h2>
+  <table>
+    <tr><th>Avg Polygon Size</th><th>vs Avg County Size</th><th>Area Verified</th><th>Shared Border</th><th>TOR Reports Outside SVR</th></tr>
+    <tr>
+      <td>${polygonStats ? fmtKm2(polygonStats.avgPolygonAreaKm2) : '—'}</td>
+      <td>${polygonStats ? fmtPctRaw(polygonStats.sizeVsCountyPct) : '—'}</td>
+      <td>${polygonStats ? fmtPctRaw(polygonStats.areaVerifyPct) : '—'}</td>
+      <td>${polygonStats ? fmtPctRaw(polygonStats.sharedBorderPct) : '—'}</td>
+      <td>${polygonStats && polygonStats.tdqStormReports !== null && polygonStats.tdqStormReports !== undefined ? polygonStats.tdqStormReports : '—'}</td>
+    </tr>
+  </table>
+  <div class="note">Area Verified, Shared Border, and TOR-outside-SVR are computed by IEM Cow directly and include ~6hr boundary padding around the exact window.</div>
+
+  <h2>Top Counties / Zones by Warning Count</h2>
+  <table>
+    <tr><th>County / Zone</th><th>Warnings</th><th>Verified</th><th>FAR</th></tr>
+    ${countyRows}
+  </table>
+
+  <div class="footer">
+    Generated by the ${escapeHtml(settings.wfo)} Warning Verification tool, built on the Iowa Environmental Mesonet's IEM Cow service. Unofficial — not an NWS or IEM statistical product.
+  </div>
+</body>
+</html>`;
+
+  const label = (viewMode === 'range' ? (currentRangeStart+'_to_'+currentRangeEnd) : selectedDateStr) || 'summary';
+  downloadBlob(`${settings.wfo}_verification_summary_${label}.html`, html, 'text/html');
+}
+
 async function exportPng(){
   const btn = document.getElementById('exportPngBtn');
   if(typeof html2canvas === 'undefined'){ alert('PNG export library failed to load — check your connection and try again.'); return; }
@@ -3055,15 +3344,22 @@ document.getElementById('radarStepBackBtn').addEventListener('click', () => step
 document.getElementById('radarStepFwdBtn').addEventListener('click', () => stepRadarTime(5));
 
 // Trends modal
-document.getElementById('trendsBtn').addEventListener('click', () => { openModal('trendsModal'); loadTrends(30); });
+document.getElementById('trendsBtn').addEventListener('click', () => { openModal('trendsModal'); loadTrends(trendsDays); });
 document.querySelectorAll('.trend-range-btn').forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.trend-range-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadTrends(parseInt(btn.dataset.days, 10));
 }));
+document.querySelectorAll('.trend-phen-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.trend-phen-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  trendsPhenFilter = btn.dataset.phen;
+  loadTrends(trendsDays);
+}));
 
 // Exports + print
 document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
+document.getElementById('summaryReportBtn').addEventListener('click', generateSummaryReport);
 document.getElementById('exportPngBtn').addEventListener('click', exportPng);
 document.getElementById('printBtn').addEventListener('click', () => window.print());
 
@@ -3254,11 +3550,18 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
   initWfoCombo();
   applyAriaLabels();
   initMap();
+  let loadPromise;
   if(urlState.start && urlState.end){
     switchSubtab('map');
-    loadRange(urlState.start, urlState.end);
+    loadPromise = loadRange(urlState.start, urlState.end);
   } else {
-    loadDay(urlState.date || todayInTZ(settings.timezone));
+    loadPromise = loadDay(urlState.date || todayInTZ(settings.timezone));
+  }
+  if(urlState.etn && urlState.phen){
+    loadPromise.then(() => {
+      const match = currentEvents.find(e => String(e.etn) === urlState.etn && e.phenomena === urlState.phen);
+      if(match){ switchSubtab('map'); selectEvent(match.id); }
+    });
   }
 })();
 </script>
