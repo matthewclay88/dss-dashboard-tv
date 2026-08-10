@@ -319,6 +319,12 @@
   }
   .daystat-tab-btn:hover { color: #cbd5e1; background: #16233a; }
   .daystat-tab-btn.active { color: #fff; background: #1d4ed8; }
+  .analytics-tab-btn {
+    background: none; border: none; color: #7a8ba3; font-size: 10.5px; font-weight: 700; padding: 5px 10px;
+    border-radius: 6px; cursor: pointer; font-family: inherit; letter-spacing: 0.02em;
+  }
+  .analytics-tab-btn:hover { color: #cbd5e1; background: #16233a; }
+  .analytics-tab-btn.active { color: #fff; background: #1d4ed8; }
   /* Capped and internally scrollable so a growing stats panel can't
      push the Warning Details panel below it out of usable space —
      that's the whole reason this became tabbed in the first place. */
@@ -590,6 +596,7 @@
       <button class="subtab-btn active" data-subtab="map">MAP</button>
       <button class="subtab-btn" data-subtab="reports">REPORTS</button>
       <button class="subtab-btn" data-subtab="counties">COUNTIES</button>
+      <button class="subtab-btn" data-subtab="analytics">ANALYTICS</button>
       <div class="spacer"></div>
       <label class="lsr-toggle"><input type="checkbox" id="showLsrToggle" checked> Show LSRs on map</label>
       <label class="lsr-toggle"><input type="checkbox" id="showMpingToggle"> Show mPING reports</label>
@@ -624,6 +631,18 @@
           </table>
           <div class="warn-empty" id="countiesEmpty" style="display:none;">No warnings for this view yet.</div>
         </div>
+      </div>
+      <div id="analyticsView" style="display:none; flex:1; min-height:0; flex-direction:column;">
+        <div class="daystat-tabs" style="padding:10px 10px 0;flex-wrap:wrap;">
+          <button class="analytics-tab-btn active" data-analytics="timeline">Timeline</button>
+          <button class="analytics-tab-btn" data-analytics="diurnal">Diurnal</button>
+          <button class="analytics-tab-btn" data-analytics="duration">Duration</button>
+          <button class="analytics-tab-btn" data-analytics="source">LSR Source</button>
+          <button class="analytics-tab-btn" data-analytics="tagacc">Tag vs. Verified</button>
+          <button class="analytics-tab-btn" data-analytics="polysize">Polygon Size</button>
+          <button class="analytics-tab-btn" data-analytics="todskill">Time-of-Day Skill</button>
+        </div>
+        <div id="analyticsBody" style="flex:1; min-height:0; overflow-y:auto; padding:14px;"></div>
       </div>
     </div>
   </div>
@@ -798,6 +817,7 @@
       <p><strong>PNG export:</strong> captures the queue, table, summary, stats, and warning-details panels, plus the warning polygons/zone lines/LSR markers on the map — but not the basemap street imagery itself, since CartoDB's tile server doesn't allow that imagery to be read back into an exported image. Use "Print" instead for a version with full basemap tiles included.</p>
       <p><strong>Year heatmap:</strong> the Trends modal's "1 Year" option shows a GitHub-style calendar grid colored by that day's CSI — click any cell to jump straight into that day.</p>
       <p><strong>Counties tab:</strong> a ranked breakdown of which counties/zones see the most warnings and their false-alarm rate for the current day or range.</p>
+      <p><strong>Analytics tab:</strong> seven charts built entirely from whatever's already loaded for the current day or Archive range — no extra IEM requests beyond the ones already made. <em>Timeline</em> is a Gantt-style view of every warning's issue→expire span, click a bar to open it. <em>Diurnal</em> and <em>Duration</em> show issuance-by-hour and warning-length distributions, stacked by phenomena. <em>LSR Source</em> breaks down who submitted the verifying reports (spotter, public, law enforcement, etc. — per IEM's own field). <em>Tag vs. Verified</em> and <em>Polygon Size</em> bucket warnings by their tagged threat value or polygon size and show verification rate per bucket, with sample size labeled since a rate from a couple of warnings reads very differently than one from dozens. <em>Time-of-Day Skill</em> splits POD/FAR/CSI into four-hour local blocks — small samples on a single day, more meaningful loaded over a wide Archive range.</p>
       <p><strong>Live mode:</strong> while viewing today, the app quietly re-polls IEM every few minutes and toasts new warnings as they're issued — a red "LIVE" badge next to the date shows it's active. It turns off automatically for any other day or a date range.</p>
       <p><strong>Accessibility:</strong> modals trap focus and return it on close, icon-only controls carry aria-labels, and Settings has a colorblind-safe palette toggle for the status colors. The summary donut, warning timeline, and year heatmap all carry text equivalents for screen readers, and the heatmap is keyboard-operable. The layout also reflows to a single column below ~900px wide for phones and tablets.</p>
       <p><strong>Compare Offices:</strong> overlay up to 3 additional WFOs on the same map/table/stats as the primary office — useful for outbreaks that cross office boundaries. Warnings show a small office tag when active. Large loads (a wide date range, several offices, or the 1-year heatmap) are split into chunks with progress shown in the status bar, rather than one silent request.</p>
@@ -3184,6 +3204,7 @@ function renderAll(){
   renderReportsTable();
   renderCountiesTable();
   renderDayStats();
+  renderAnalytics();
   drawZoneLayer();
   drawWarningsOnMap();
   drawLsrsOnMap();
@@ -3208,8 +3229,10 @@ function switchSubtab(name){
   document.getElementById('mapView').style.display = name === 'map' ? 'flex' : 'none';
   document.getElementById('reportsView').style.display = name === 'reports' ? 'flex' : 'none';
   document.getElementById('countiesView').style.display = name === 'counties' ? 'flex' : 'none';
+  document.getElementById('analyticsView').style.display = name === 'analytics' ? 'flex' : 'none';
   if(name === 'map' && map) setTimeout(()=>map.invalidateSize(), 50);
   if(name === 'counties') renderCountiesTable();
+  if(name === 'analytics') renderAnalytics();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3249,6 +3272,306 @@ function renderCountiesTable(){
       <td>${farText}</td>
     </tr>`;
   }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ANALYTICS — a set of charts built entirely from whatever's
+//  already loaded (currentEvents/currentReports for the current day
+//  or Archive range) — no extra IEM requests beyond what loadDay/
+//  loadRange already made. Monthly Climatology is the one exception
+//  and lives in the Trends modal instead, since it needs its own wide
+//  multi-year query the same way the existing Trends charts do.
+// ══════════════════════════════════════════════════════════════
+let analyticsTab = 'timeline';
+
+function switchAnalyticsTab(name){
+  analyticsTab = name;
+  document.querySelectorAll('.analytics-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.analytics === name));
+  renderAnalytics();
+}
+
+function analyticsEmptyState(msg){
+  return `<div style="color:#7a8ba3;font-size:12px;padding:20px;text-align:center;">${escapeHtml(msg)}</div>`;
+}
+
+// Generic stacked-bar chart (counts per bucket, stacked by phenomena
+// color) — shared by the Diurnal and Duration charts. Mirrors the
+// stacking approach already used for the Lead Time Distribution
+// histogram in the stats panel.
+function renderGenericStackedBarChart(bucketLabels, bucketPhenCounts, order, opts){
+  opts = opts || {};
+  const W = opts.width || 760, H = opts.height || 220, padL = 28, padR = 8, padT = 14, padB = 30;
+  const totals = bucketPhenCounts.map(b => order.reduce((s,p) => s + (b[p]||0), 0));
+  const maxCount = Math.max(...totals, 1);
+  const barW = (W - padL - padR) / bucketLabels.length;
+  let bars = '';
+  let gridLines = '';
+  const gridSteps = 4;
+  for(let g = 0; g <= gridSteps; g++){
+    const v = Math.round((maxCount / gridSteps) * g);
+    const y = padT + (1 - g/gridSteps) * (H - padT - padB);
+    gridLines += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#1e2a3a" stroke-width="1"/>`;
+    gridLines += `<text x="${padL-5}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#5a6b82">${v}</text>`;
+  }
+  bucketPhenCounts.forEach((b, i) => {
+    const x = padL + i * barW;
+    let yCursor = H - padB;
+    order.forEach(p => {
+      const n = b[p] || 0;
+      if(n <= 0) return;
+      const h = (n / maxCount) * (H - padT - padB);
+      const y = yCursor - h;
+      const color = (PHEN_META[p] || {}).color || '#60a5fa';
+      bars += `<rect x="${(x+2).toFixed(1)}" y="${y.toFixed(1)}" width="${(barW-4).toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" rx="1.5"/>`;
+      yCursor = y;
+    });
+    const labelStep = bucketLabels.length > 16 ? 2 : 1;
+    if(i % labelStep === 0) bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-14}" text-anchor="middle" font-size="8" fill="#7a8ba3">${escapeHtml(bucketLabels[i])}</text>`;
+  });
+  const legend = order.length > 1
+    ? `<div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">${order.map(p => `<span style="font-size:10px;color:#93a3b8;display:inline-flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:${PHEN_META[p].color};display:inline-block;"></span>${PHEN_META[p].code}</span>`).join('')}</div>`
+    : '';
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">${gridLines}${bars}</svg>${legend}`;
+}
+
+// Generic "rate per bucket" bar chart (0-100%), used by Tag vs.
+// Verified and Polygon Size vs. Outcome — each bucket shows a
+// verification-rate bar plus its sample size, since a rate from n=1
+// reads very differently than one from n=40.
+function renderRateBarChart(buckets){
+  const W = 760, H = 220, padL = 34, padR = 8, padT = 14, padB = 34;
+  const barW = (W - padL - padR) / buckets.length;
+  let gridLines = '';
+  [0,25,50,75,100].forEach(pct => {
+    const y = padT + (1 - pct/100) * (H - padT - padB);
+    gridLines += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#1e2a3a" stroke-width="1"/>`;
+    gridLines += `<text x="${padL-5}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#5a6b82">${pct}%</text>`;
+  });
+  let bars = '';
+  buckets.forEach((b, i) => {
+    const x = padL + i * barW;
+    if(b.n === 0){
+      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-padB-6}" text-anchor="middle" font-size="8.5" fill="#5a6b82">n/a</text>`;
+    } else {
+      const h = (b.pct/100) * (H - padT - padB);
+      const y = H - padB - h;
+      const color = b.pct >= 70 ? '#4ade80' : (b.pct >= 40 ? '#f0c419' : '#ef4444');
+      bars += `<rect x="${(x+4).toFixed(1)}" y="${y.toFixed(1)}" width="${(barW-8).toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" rx="2"/>`;
+      bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#cbd5e1">${b.pct.toFixed(0)}%</text>`;
+    }
+    bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-16}" text-anchor="middle" font-size="8" fill="#7a8ba3">${escapeHtml(b.label)}</text>`;
+    bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="7.5" fill="#5a6b82">n=${b.n}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">${gridLines}${bars}</svg>`;
+}
+
+// Horizontal bar chart for LSR source breakdown — category labels are
+// variable-length strings ("Trained Spotter", "Law Enforcement", ...)
+// which read better as horizontal bars than squeezed under vertical ones.
+function renderHorizontalBarChart(items){
+  if(items.length === 0) return analyticsEmptyState('No reports with a source in this view.');
+  const maxCount = Math.max(...items.map(i => i.count), 1);
+  const rowH = 26;
+  const W = 760, H = items.length * rowH + 10;
+  let rows = '';
+  items.forEach((item, i) => {
+    const y = 6 + i * rowH;
+    const barMaxW = W - 190;
+    const w = (item.count / maxCount) * barMaxW;
+    rows += `<text x="0" y="${y+14}" font-size="11" fill="#cbd5e1">${escapeHtml(item.label)}</text>`;
+    rows += `<rect x="170" y="${y+2}" width="${w.toFixed(1)}" height="16" fill="#3b82f6" rx="3"/>`;
+    rows += `<text x="${(170+w+6).toFixed(1)}" y="${y+14}" font-size="10.5" fill="#93a3b8">${item.count}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">${rows}</svg>`;
+}
+
+function renderAnalyticsTimeline(){
+  if(currentEvents.length === 0) return analyticsEmptyState('No warnings in this view.');
+  const sorted = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue));
+  const windowStartMs = viewMode === 'range'
+    ? localMidnightToUTC(currentRangeStart, settings.timezone).getTime()
+    : localMidnightToUTC(selectedDateStr, settings.timezone).getTime();
+  const windowEndMs = viewMode === 'range'
+    ? localMidnightToUTC(addDaysToDateStr(currentRangeEnd, 1), settings.timezone).getTime()
+    : localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone).getTime();
+  const span = Math.max(1, windowEndMs - windowStartMs);
+  const rowH = 22, padL = 6, padR = 6, padT = 6, labelW = 70;
+  const W = 900, plotW = W - labelW - padL - padR;
+  const H = sorted.length * rowH + padT + 24;
+  const xFor = ms => labelW + padL + (Math.max(windowStartMs, Math.min(windowEndMs, ms)) - windowStartMs) / span * plotW;
+  let bars = '';
+  sorted.forEach((e, i) => {
+    const y = padT + i * rowH;
+    const x1 = xFor(new Date(e.issue).getTime());
+    const x2 = xFor(new Date(e.expire).getTime());
+    const meta = PHEN_META[e.phenomena] || { color: '#94a3b8', code: e.phenomena };
+    const st = STATUS_META[e.status];
+    bars += `<text x="0" y="${y+13}" font-size="9.5" fill="#93a3b8">${escapeHtml(meta.code)} #${escapeHtml(String(e.etn))}</text>`;
+    bars += `<rect x="${x1.toFixed(1)}" y="${(y+3).toFixed(1)}" width="${Math.max(2,(x2-x1)).toFixed(1)}" height="14" fill="${meta.color}" fill-opacity="0.85" stroke="${st.color}" stroke-width="1.5" rx="2" data-eid="${escapeHtml(e.id)}" style="cursor:pointer;"><title>${escapeHtml(meta.code)} #${escapeHtml(String(e.etn))} — ${escapeHtml(st.label)}</title></rect>`;
+  });
+  // A few evenly-spaced time gridlines across the window for orientation.
+  let gridLines = '';
+  const gridCount = 6;
+  for(let g = 0; g <= gridCount; g++){
+    const ms = windowStartMs + (span * g / gridCount);
+    const x = xFor(ms);
+    gridLines += `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${H-20}" stroke="#1e2a3a" stroke-width="1"/>`;
+    gridLines += `<text x="${x.toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="8" fill="#7a8ba3">${fmtLocal(new Date(ms).toISOString(), settings.timezone)}</text>`;
+  }
+  return `<div style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">${sorted.length} warning${sorted.length===1?'':'s'} — bar color is phenomena, outline color is verification status. Click a bar to open that warning.</div>
+    <svg id="analyticsTimelineSvg" viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">${gridLines}${bars}</svg>`;
+}
+
+function renderAnalyticsDiurnal(){
+  if(currentEvents.length === 0) return analyticsEmptyState('No warnings in this view.');
+  const order = ['TO','SV','FF','SQ'].filter(p => currentEvents.some(e => e.phenomena === p));
+  const buckets = Array.from({length:24}, () => ({}));
+  currentEvents.forEach(e => {
+    const hour = new Date(e.issue).toLocaleString('en-US', { timeZone: settings.timezone, hour: 'numeric', hour12: false });
+    const h = parseInt(hour, 10) % 24;
+    buckets[h][e.phenomena] = (buckets[h][e.phenomena] || 0) + 1;
+  });
+  const labels = Array.from({length:24}, (_,h) => String(h).padStart(2,'0'));
+  return `<div style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Warning issuance by local hour of day.</div>
+    ${renderGenericStackedBarChart(labels, buckets, order)}`;
+}
+
+function renderAnalyticsDuration(){
+  if(currentEvents.length === 0) return analyticsEmptyState('No warnings in this view.');
+  const order = ['TO','SV','FF','SQ'].filter(p => currentEvents.some(e => e.phenomena === p));
+  const durationBuckets = [
+    { label: '<15m', test: m => m < 15 },
+    { label: '15-30', test: m => m >= 15 && m < 30 },
+    { label: '30-45', test: m => m >= 30 && m < 45 },
+    { label: '45-60', test: m => m >= 45 && m < 60 },
+    { label: '60-90', test: m => m >= 60 && m < 90 },
+    { label: '90+', test: m => m >= 90 }
+  ];
+  const buckets = durationBuckets.map(() => ({}));
+  const durations = [];
+  currentEvents.forEach(e => {
+    const mins = (new Date(e.expire).getTime() - new Date(e.issue).getTime()) / 60000;
+    durations.push(mins);
+    const idx = durationBuckets.findIndex(b => b.test(mins));
+    if(idx >= 0) buckets[idx][e.phenomena] = (buckets[idx][e.phenomena] || 0) + 1;
+  });
+  const avgMin = durations.length ? durations.reduce((a,b)=>a+b,0)/durations.length : null;
+  return `<div style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Warning duration (issue → expire). Avg: ${avgMin !== null ? avgMin.toFixed(0)+' min' : '—'}.</div>
+    ${renderGenericStackedBarChart(durationBuckets.map(b=>b.label), buckets, order)}`;
+}
+
+function renderAnalyticsSource(){
+  const reports = currentReports.filter(r => r.inRange);
+  if(reports.length === 0) return analyticsEmptyState('No reports in this view.');
+  const tally = {};
+  reports.forEach(r => {
+    const key = (r.source || '').trim() || 'Unknown';
+    tally[key] = (tally[key] || 0) + 1;
+  });
+  const items = Object.keys(tally).map(label => ({ label, count: tally[label] })).sort((a,b) => b.count - a.count);
+  return `<div style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Who submitted the ${reports.length} report${reports.length===1?'':'s'} in this view, per IEM's own "source" field.</div>
+    ${renderHorizontalBarChart(items)}`;
+}
+
+function renderAnalyticsTagAccuracy(){
+  const withWind = currentEvents.filter(e => e.windtag);
+  const withHail = currentEvents.filter(e => e.hailtag);
+  if(withWind.length === 0 && withHail.length === 0) return analyticsEmptyState('No wind/hail-tagged warnings in this view.');
+
+  function bucketize(events, tagField, edges, unit){
+    const buckets = edges.map((e,i) => {
+      const lo = e, hi = edges[i+1];
+      const label = hi === undefined ? `${lo}+` : `${lo}-${hi}`;
+      const inBucket = events.filter(ev => { const v = Number(ev[tagField]); return v >= lo && (hi === undefined || v < hi); });
+      const decided = inBucket.filter(ev => ev.status !== 'pending');
+      const verified = decided.filter(ev => ev.status === 'verified').length;
+      return { label: label + ' ' + unit, n: decided.length, pct: decided.length ? (verified/decided.length)*100 : 0 };
+    });
+    return buckets;
+  }
+  const windBuckets = bucketize(withWind, 'windtag', [50,60,70,80], 'MPH');
+  const hailBuckets = bucketize(withHail, 'hailtag', [0,1,1.5,2], 'in');
+
+  let html = `<div style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Verification rate by tagged threat value — checks whether higher-tagged warnings actually verify more often in this view.</div>`;
+  if(withWind.length){
+    html += `<div class="kv-k" style="margin-bottom:4px;">Wind Tag</div>${renderRateBarChart(windBuckets)}`;
+  }
+  if(withHail.length){
+    html += `<div class="kv-k" style="margin:14px 0 4px;">Hail Tag</div>${renderRateBarChart(hailBuckets)}`;
+  }
+  return html;
+}
+
+function renderAnalyticsPolygonSize(){
+  const withArea = currentEvents.map(e => ({ e, area: estimatePolygonAreaKm2(e.geometry) })).filter(x => x.area !== null && x.area > 0);
+  if(withArea.length === 0) return analyticsEmptyState('No polygon geometry available in this view.');
+  const edges = [0, 100, 300, 600, 1000];
+  const buckets = edges.map((lo, i) => {
+    const hi = edges[i+1];
+    const label = hi === undefined ? `${lo}+` : `${lo}-${hi}`;
+    const inBucket = withArea.filter(x => x.area >= lo && (hi === undefined || x.area < hi));
+    const decided = inBucket.filter(x => x.e.status !== 'pending');
+    const verified = decided.filter(x => x.e.status === 'verified').length;
+    return { label: label + ' km²', n: decided.length, pct: decided.length ? (verified/decided.length)*100 : 0 };
+  });
+  return `<div style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Verification rate by polygon size — a rough check on whether smaller/tighter polygons trade off against outcome in this view.</div>
+    ${renderRateBarChart(buckets)}`;
+}
+
+function renderAnalyticsTodSkill(){
+  const decided = currentEvents.filter(e => e.status !== 'pending');
+  if(decided.length === 0) return analyticsEmptyState('No decided warnings in this view.');
+  const tzBuckets = [
+    { label: 'Overnight (00-06)', lo: 0, hi: 6 },
+    { label: 'Morning (06-12)', lo: 6, hi: 12 },
+    { label: 'Afternoon (12-18)', lo: 12, hi: 18 },
+    { label: 'Evening (18-24)', lo: 18, hi: 24 }
+  ];
+  function localHour(iso){
+    return parseInt(new Date(iso).toLocaleString('en-US', { timeZone: settings.timezone, hour: 'numeric', hour12: false }), 10) % 24;
+  }
+  const rows = tzBuckets.map(tb => {
+    const bucketEvents = decided.filter(e => { const h = localHour(e.issue); return h >= tb.lo && h < tb.hi; });
+    const hits = bucketEvents.filter(e => e.status === 'verified').length;
+    const falseAlarms = bucketEvents.filter(e => e.status === 'needs_verification').length;
+    const misses = currentReports.filter(r => { if(!r.inRange || r.warned) return false; const h = localHour(r.valid); return h >= tb.lo && h < tb.hi; }).length;
+    const pod = (hits+misses) > 0 ? hits/(hits+misses) : null;
+    const far = (hits+falseAlarms) > 0 ? falseAlarms/(hits+falseAlarms) : null;
+    const csi = (pod !== null && far !== null && pod > 0 && (1-far) > 0) ? 1/((1/pod)+(1/(1-far))-1) : null;
+    return { label: tb.label, n: bucketEvents.length, pod, far, csi };
+  });
+  const fmtPct = v => v === null ? '—' : (v*100).toFixed(0)+'%';
+  const fmtNum = v => v === null ? '—' : v.toFixed(2);
+  const tableRows = rows.map(r => `<tr>
+    <td>${escapeHtml(r.label)}</td><td>${r.n}</td><td>${fmtPct(r.pod)}</td><td>${fmtPct(r.far)}</td><td>${fmtNum(r.csi)}</td>
+  </tr>`).join('');
+  return `<div style="font-size:11px;color:#7a8ba3;margin-bottom:10px;">POD/FAR/CSI split by local time-of-day at issuance — small n per bucket on a single day, more meaningful over an Archive range.</div>
+    <table class="lsr-mini-table">
+      <thead><tr><th>Time of Day</th><th>Warnings</th><th>POD</th><th>FAR</th><th>CSI</th></tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>`;
+}
+
+function renderAnalytics(){
+  const body = document.getElementById('analyticsBody');
+  if(!body) return;
+  const renderers = {
+    timeline: renderAnalyticsTimeline,
+    diurnal: renderAnalyticsDiurnal,
+    duration: renderAnalyticsDuration,
+    source: renderAnalyticsSource,
+    tagacc: renderAnalyticsTagAccuracy,
+    polysize: renderAnalyticsPolygonSize,
+    todskill: renderAnalyticsTodSkill
+  };
+  const fn = renderers[analyticsTab] || renderAnalyticsTimeline;
+  body.innerHTML = fn();
+  const svg = document.getElementById('analyticsTimelineSvg');
+  if(svg){
+    svg.querySelectorAll('[data-eid]').forEach(el => {
+      el.addEventListener('click', () => { switchSubtab('map'); selectEvent(el.dataset.eid); });
+    });
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3384,6 +3707,7 @@ document.addEventListener('keydown', (e) => {
 
 document.querySelectorAll('.subtab-btn').forEach(btn => btn.addEventListener('click', () => switchSubtab(btn.dataset.subtab)));
 document.querySelectorAll('.daystat-tab-btn').forEach(btn => btn.addEventListener('click', () => switchDayStatsTab(btn.dataset.stattab)));
+document.querySelectorAll('.analytics-tab-btn').forEach(btn => btn.addEventListener('click', () => switchAnalyticsTab(btn.dataset.analytics)));
 
 document.getElementById('refreshBtn').addEventListener('click', () => {
   document.getElementById('refreshIcon').parentElement.classList.add('spinning');
