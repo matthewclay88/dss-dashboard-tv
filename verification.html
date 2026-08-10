@@ -114,9 +114,13 @@
 
   /* ── MAIN 3-COLUMN LAYOUT ── */
   .main { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
-  .col-left { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
-  .col-center { flex: 1.6; min-width: 0; display: flex; flex-direction: column; gap: 0; min-height: 0; }
-  .col-right { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; gap: 10px; }
+  /* clamp(min, preferred, max): full size on wide monitors, shrinks
+     smoothly as the window narrows instead of staying pinned at a
+     fixed pixel width. min-width still floors how far they'll shrink
+     before the layout switches to fully stacked (see @media below). */
+  .col-left { width: clamp(300px, 26vw, 420px); flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+  .col-center { flex: 1.6; min-width: 280px; display: flex; flex-direction: column; gap: 0; min-height: 0; }
+  .col-right { width: clamp(320px, 28vw, 460px); flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; gap: 10px; }
 
   .panel { background: #0f1620; border: 1px solid #1e2a3a; border-radius: 10px; overflow: hidden; }
   .panel-title {
@@ -483,7 +487,7 @@
   .counties-pane .cty-bar-fill { height: 100%; background: #3b82f6; border-radius: 3px; }
 
   /* ── RESPONSIVE / MOBILE ── */
-  @media (max-width: 900px) {
+  @media (max-width: 1000px) {
     html, body { height: auto; overflow: auto; }
     .header { flex-wrap: wrap; row-gap: 8px; }
     .header-center { order: 3; width: 100%; flex-wrap: wrap; }
@@ -829,7 +833,7 @@
       <p><strong>Counties tab:</strong> a ranked breakdown of which counties/zones see the most warnings and their false-alarm rate for the current day or range.</p>
       <p><strong>Analytics tab:</strong> eleven charts built entirely from whatever's already loaded for the current day or Archive range — no extra IEM requests beyond the ones already made. <em>Timeline</em> is a Gantt-style view of every warning's issue→expire span, click a bar to open it. <em>Diurnal</em> and <em>Duration</em> show issuance-by-hour and warning-length distributions, stacked by phenomena. <em>LSR Source</em> breaks down who submitted the verifying reports (spotter, public, law enforcement, etc. — per IEM's own field). <em>Tag vs. Verified</em> and <em>Polygon Size</em> bucket warnings by their tagged threat value or polygon size and show verification rate per bucket, with sample size labeled since a rate from a couple of warnings reads very differently than one from dozens. <em>Time-of-Day Skill</em> splits POD/FAR/CSI into four-hour local blocks — small samples on a single day, more meaningful loaded over a wide Archive range. <em>PDS/Emergency Impact</em> compares verification rate for PDS/Emergency-tagged Tornado and Flash Flood warnings against non-tagged ones. <em>mPING Categories</em> breaks down loaded mPING reports by type (only available when the mPING toggle is on). <em>Continuation Chains</em> reuses the same "Possibly Related Warnings" heuristic from the details panel to tally how much of the view was isolated one-shot warnings vs. clustered sequences. <em>Office Comparison</em> shows a per-office verification rate side by side — only meaningful with Compare Offices active, since unwarned LSRs aren't individually attributed to a specific office in this data.</p>
       <p><strong>Live mode:</strong> while viewing today, the app quietly re-polls IEM every few minutes and toasts new warnings as they're issued — a red "LIVE" badge next to the date shows it's active. It turns off automatically for any other day or a date range.</p>
-      <p><strong>Accessibility:</strong> modals trap focus and return it on close, icon-only controls carry aria-labels, and Settings has a colorblind-safe palette toggle for the status colors. The summary donut, warning timeline, and year heatmap all carry text equivalents for screen readers, and the heatmap is keyboard-operable. The layout also reflows to a single column below ~900px wide for phones and tablets.</p>
+      <p><strong>Accessibility:</strong> modals trap focus and return it on close, icon-only controls carry aria-labels, and Settings has a colorblind-safe palette toggle for the status colors. The summary donut, warning timeline, and year heatmap all carry text equivalents for screen readers, and the heatmap is keyboard-operable. Above ~1000px wide, the left/right panels resize fluidly with the window instead of staying a fixed pixel width; below that, the layout reflows to a single stacked column for laptops, tablets, and phones.</p>
       <p><strong>Compare Offices:</strong> overlay up to 3 additional WFOs on the same map/table/stats as the primary office — useful for outbreaks that cross office boundaries. Warnings show a small office tag when active. Large loads (a wide date range, several offices, or the 1-year heatmap) are split into chunks with progress shown in the status bar, rather than one silent request.</p>
       <p><strong>Related warnings:</strong> the details panel lists other warnings sharing a county and issued within 30 minutes of the selected one. This is a timing/geography heuristic only — IEM Cow doesn't expose an authoritative "this warning replaced that one" link — so treat it as a lead, not a confirmed sequence.</p>
       <p><strong>Settings portability:</strong> Settings has Export/Import buttons for carrying your thresholds, timezone, colorblind preference, and recent-office list to another browser or machine — everything here is stored locally in this browser, there's no server-side account.</p>
