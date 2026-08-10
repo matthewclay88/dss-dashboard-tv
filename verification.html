@@ -144,6 +144,8 @@
   .queue-card.sqw .qc-count, .queue-card.sqw .qc-label { color: #c4b5fd; }
   .queue-card.mar { background: #042f2e; border-color: #0e7490; color: #67e8f9; }
   .queue-card.mar .qc-count, .queue-card.mar .qc-label { color: #67e8f9; }
+  .queue-card.dst { background: #2a1206; border-color: #9a3412; color: #fb923c; }
+  .queue-card.dst .qc-count, .queue-card.dst .qc-label { color: #fb923c; }
   .queue-review { padding: 0 12px 12px; font-size: 11px; color: #7a8ba3; display: flex; align-items: center; gap: 6px; }
 
   /* Warnings table */
@@ -726,6 +728,7 @@
         </div>
         <div class="hint">These settings, the colorblind toggle, and recent-office list live in this browser only — export a JSON file here to carry them to another machine.</div>
       </div>
+      <div id="visitCounterDisplay" style="text-align:center;font-size:9.5px;color:#3a4f6c;padding-top:10px;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn secondary" data-close="settingsModal">Cancel</button>
@@ -809,8 +812,8 @@
   <div class="modal-box wide">
     <div class="modal-header"><h2>About This Tool</h2><button class="modal-close" data-close="aboutModal">&times;</button></div>
     <div class="modal-body about-body">
-      <p><strong>What this is:</strong> a warning verification browser for storm-based warnings — Tornado (TOR), Severe Thunderstorm (SVR), Flash Flood (FFW), Snow Squall (SQW), and Special Marine Warning (SMW) — built on top of the Iowa Environmental Mesonet's <a href="https://mesonet.agron.iastate.edu/cow/" target="_blank">IEM Cow</a> service. IEM Cow automatically checks each storm-based warning polygon against Local Storm Reports (LSRs) to determine whether it verified.</p>
-      <p><strong>Warning types to track:</strong> Settings has a picker for which of the 5 phenomena above are actually queried and shown, capped at 4 so the queue-card grid always stays a clean 2×2 — not every office deals with both Snow Squalls and Special Marine Warnings. Special Marine Warning's "misses" filtering in the Trends phenomena filter uses a best-effort LSR type guess (wind gust/damage codes) rather than a confirmed one — flagged in the code if it needs correcting later.</p>
+      <p><strong>What this is:</strong> a warning verification browser for storm-based warnings — Tornado (TOR), Severe Thunderstorm (SVR), Flash Flood (FFW), Snow Squall (SQW), Special Marine Warning (SMW), and Dust Storm Warning (DSW) — built on top of the Iowa Environmental Mesonet's <a href="https://mesonet.agron.iastate.edu/cow/" target="_blank">IEM Cow</a> service. IEM Cow automatically checks each storm-based warning polygon against Local Storm Reports (LSRs) to determine whether it verified.</p>
+      <p><strong>Warning types to track:</strong> Settings has a picker for which of the 6 phenomena above are actually queried and shown, capped at 4 so the queue-card grid always stays a clean 2×2 — not every office deals with Snow Squalls, Special Marine Warnings, or Dust Storm Warnings. Special Marine Warning's and Dust Storm Warning's "misses" filtering in the Trends phenomena filter both use a best-effort LSR type guess (wind gust/damage codes) rather than a confirmed one — flagged in the code if either needs correcting later.</p>
       <p><strong>Verification status</strong> shown here is computed as: <strong>Verified</strong> if IEM found a matching LSR of the right type, within the time window, inside the buffered warning polygon. <strong>Needs Verification</strong> if the warning has fully expired with no matching LSR found. <strong>Pending</strong> if the warning is still active (verification isn't final until it expires or a report comes in).</p>
       <p><strong>Calendar day:</strong> dates here are bounded by local midnight in the configured timezone (Settings), not 00Z UTC — so an overnight event isn't split across two different "days" the way a strict UTC day would.</p>
       <p><strong>Confidence score:</strong> the percentage shown per-warning is a simple, unofficial heuristic (based on lead time and number of matching reports) meant to give a quick visual sense of how solid the verification is — it is <em>not</em> an NWS or IEM statistic.</p>
@@ -855,13 +858,15 @@ const PHEN_META = {
   SV: { code: 'SVR', name: 'Severe Thunderstorm Warning', queueClass: 'svr', color: '#facc15' },
   FF: { code: 'FFW', name: 'Flash Flood Warning',         queueClass: 'ffw', color: '#22c55e' },
   SQ: { code: 'SQW', name: 'Snow Squall Warning',         queueClass: 'sqw', color: '#a855f7' },
-  MA: { code: 'SMW', name: 'Special Marine Warning',      queueClass: 'mar', color: '#22d3ee' }
+  MA: { code: 'SMW', name: 'Special Marine Warning',      queueClass: 'mar', color: '#22d3ee' },
+  DS: { code: 'DSW', name: 'Dust Storm Warning',          queueClass: 'dst', color: '#c2410c' }
 };
-// Which of the 5 phenomena above are actually queried from IEM and
+// Which of the 6 phenomena above are actually queried from IEM and
 // shown in the queue cards — capped at 4 so the queue grid (a fixed
 // 2-column layout) never has to reflow, and configurable in Settings
-// since not every office deals with both Snow Squalls and Special
-// Marine Warnings. Persisted per-browser like the other display prefs.
+// since not every office deals with Snow Squalls, Special Marine
+// Warnings, or Dust Storm Warnings. Persisted per-browser like the
+// other display prefs.
 const PHENOMENA_STORAGE_KEY = 'btv_active_phenomena';
 const MAX_ACTIVE_PHENOMENA = 4;
 const DEFAULT_ACTIVE_PHENOMENA = ['TO','SV','FF','SQ'];
@@ -1113,6 +1118,7 @@ let mpingLoadToken = 0;   // bumped on every load; a late response checks it's s
 let currentIemStats = null;   // combined area_verify%/shared_border%/tdq_stormreports from IEM Cow's own response
 let polygonStats = null;      // currentIemStats merged with our own calendar-day-correct size metrics
 let dayStatsTab = 'verification';   // 'verification' | 'polygon' — which Day Stats sub-view is showing
+let visitCount = null;   // raw page-load count from the Worker's KV counter, shown unlabeled in Settings
 
 // ══════════════════════════════════════════════════════════════
 //  DATE / TIMEZONE HELPERS
@@ -1314,7 +1320,7 @@ const LEAD_TIME_BUCKETS = [
 // doesn't hide e.g. flash flood lead time trailing tornado lead time.
 function renderLeadTimeHistogram(samples){
   if(!samples || samples.length === 0) return '';
-  const order = ['TO','SV','FF','SQ','MA'].filter(p => samples.some(s => s.phen === p));
+  const order = ['TO','SV','FF','SQ','MA','DS'].filter(p => samples.some(s => s.phen === p));
   const counts = LEAD_TIME_BUCKETS.map(b => {
     const inBucket = samples.filter(s => b.test(s.lead));
     const byPhen = {};
@@ -2784,12 +2790,12 @@ let trendsDays = 30;
 // narrowed to reports that plausibly belong to the selected phenomena
 // too — otherwise filtering events to just TOR while still counting
 // EVERY unwarned report as a miss would understate TOR's real POD.
-// MA's mapping (wind gust/damage codes) is a best-effort guess, not a
-// confirmed IEM type code the way the other four are — marine reports
-// are uncommon enough in this app's testing that it wasn't possible to
-// verify against a real one; if MA's POD/FAR look off, this is the
-// first place to check.
-const PHEN_TO_LSR_TYPES = { TO: ['T'], SV: ['G','D','H'], FF: ['F'], SQ: ['q'], MA: ['G','D'] };
+// MA's and DS's mappings are best-effort guesses, not confirmed IEM
+// type codes the way the original four are — marine and dust storm
+// reports are uncommon enough in this app's testing that it wasn't
+// possible to verify either against a real one; if either's POD/FAR
+// look off, this is the first place to check.
+const PHEN_TO_LSR_TYPES = { TO: ['T'], SV: ['G','D','H'], FF: ['F'], SQ: ['q'], MA: ['G','D'], DS: ['G','D'] };
 
 async function loadTrends(days){
   trendsDays = days;
@@ -3459,7 +3465,7 @@ function renderAnalyticsTimeline(){
 
 function renderAnalyticsDiurnal(){
   if(currentEvents.length === 0) return analyticsEmptyState('No warnings in this view.');
-  const order = ['TO','SV','FF','SQ','MA'].filter(p => currentEvents.some(e => e.phenomena === p));
+  const order = ['TO','SV','FF','SQ','MA','DS'].filter(p => currentEvents.some(e => e.phenomena === p));
   const buckets = Array.from({length:24}, () => ({}));
   currentEvents.forEach(e => {
     const hour = new Date(e.issue).toLocaleString('en-US', { timeZone: settings.timezone, hour: 'numeric', hour12: false });
@@ -3473,7 +3479,7 @@ function renderAnalyticsDiurnal(){
 
 function renderAnalyticsDuration(){
   if(currentEvents.length === 0) return analyticsEmptyState('No warnings in this view.');
-  const order = ['TO','SV','FF','SQ','MA'].filter(p => currentEvents.some(e => e.phenomena === p));
+  const order = ['TO','SV','FF','SQ','MA','DS'].filter(p => currentEvents.some(e => e.phenomena === p));
   const durationBuckets = [
     { label: '<15m', test: m => m < 15 },
     { label: '15-30', test: m => m >= 15 && m < 30 },
@@ -3895,6 +3901,14 @@ function applyAriaLabels(){
 document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
 document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) closeModal(ov.id); }));
 
+// Deliberately bare — no label, no title, just whatever number came
+// back last. Blends into the bottom of the Settings modal rather than
+// announcing itself.
+function renderVisitCounter(){
+  const el = document.getElementById('visitCounterDisplay');
+  if(el && visitCount !== null) el.textContent = visitCount;
+}
+
 function renderPhenCheckboxes(selected){
   const container = document.getElementById('phenCheckboxes');
   container.innerHTML = Object.keys(PHEN_META).map(k => {
@@ -3930,6 +3944,7 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('setBuffer').value = settings.lsrbuffer;
   document.getElementById('setColorblind').checked = settings.colorblindMode;
   renderPhenCheckboxes(activePhenomena);
+  renderVisitCounter();
   openModal('settingsModal');
 });
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
@@ -4023,6 +4038,17 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
       if(valid.length) activePhenomena = valid;
     }
   }catch(err){ /* localStorage unavailable or corrupt value — falls back to default four */ }
+
+  // Bumps a Cloudflare KV counter on every load and shows the raw
+  // number, unlabeled, at the bottom of the Settings modal — see
+  // renderVisitCounter(). Failure is swallowed so a Worker hiccup
+  // never affects the page loading.
+  try{
+    fetch(MPING_PROXY_URL + '/visits', { method: 'POST' })
+      .then(res => res.json())
+      .then(data => { visitCount = data.count; renderVisitCounter(); })
+      .catch(() => {});
+  }catch(err){ /* ignore — visit counting is never allowed to break the page */ }
 
   const urlState = readUrlState();
   if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
