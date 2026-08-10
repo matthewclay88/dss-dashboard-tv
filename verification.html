@@ -142,6 +142,8 @@
   .queue-card.ffw .qc-count, .queue-card.ffw .qc-label { color: #4ade80; }
   .queue-card.sqw { background: #190f2e; border-color: #6d28d9; color: #c4b5fd; }
   .queue-card.sqw .qc-count, .queue-card.sqw .qc-label { color: #c4b5fd; }
+  .queue-card.mar { background: #042f2e; border-color: #0e7490; color: #67e8f9; }
+  .queue-card.mar .qc-count, .queue-card.mar .qc-label { color: #67e8f9; }
   .queue-review { padding: 0 12px 12px; font-size: 11px; color: #7a8ba3; display: flex; align-items: center; gap: 6px; }
 
   /* Warnings table */
@@ -710,6 +712,11 @@
         <div class="hint">Swaps the Verified / Pending / Needs Verification colors for a blue/orange/vermilion palette instead of green/yellow/red.</div>
       </div>
       <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
+        <label>Warning types to track (up to 4)</label>
+        <div id="phenCheckboxes" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <div class="hint">Which warning types get queried from IEM and shown as queue cards — capped at 4 so the grid stays a clean 2×2 regardless of which ones you pick. Not every office deals with Snow Squalls or Special Marine Warnings, so pick whichever 4 (or fewer) matter here. Takes effect after Save &amp; Refresh.</div>
+      </div>
+      <div class="field-row" style="border-top:1px solid #1e2a3a;padding-top:12px;">
         <label>Preferences on another device</label>
         <div style="display:flex;gap:8px;">
           <button class="btn secondary" id="exportSettingsBtn" type="button">Export Settings…</button>
@@ -770,13 +777,7 @@
         <button class="btn secondary trend-range-btn" data-days="90">Last 90 Days</button>
         <button class="btn secondary trend-range-btn" data-days="365">1 Year (Heatmap)</button>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="btn secondary trend-phen-btn active" data-phen="">All Phenomena</button>
-        <button class="btn secondary trend-phen-btn" data-phen="TO">TOR</button>
-        <button class="btn secondary trend-phen-btn" data-phen="SV">SVR</button>
-        <button class="btn secondary trend-phen-btn" data-phen="FF">FFW</button>
-        <button class="btn secondary trend-phen-btn" data-phen="SQ">SQW</button>
-      </div>
+      <div id="trendsPhenRow" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;"></div>
       <div id="trendsStatus" style="font-size:11px;color:#7a8ba3;margin-bottom:8px;">Loading…</div>
       <svg viewBox="0 0 640 220" id="trendsSvg" style="width:100%;height:220px;"></svg>
       <div id="trendsLineLegend" style="display:flex;gap:14px;margin-top:10px;font-size:11px;">
@@ -807,7 +808,8 @@
   <div class="modal-box wide">
     <div class="modal-header"><h2>About This Tool</h2><button class="modal-close" data-close="aboutModal">&times;</button></div>
     <div class="modal-body about-body">
-      <p><strong>What this is:</strong> a warning verification browser for Tornado (TOR), Severe Thunderstorm (SVR), Flash Flood (FFW), and Snow Squall (SQW) warnings, built on top of the Iowa Environmental Mesonet's <a href="https://mesonet.agron.iastate.edu/cow/" target="_blank">IEM Cow</a> service. IEM Cow automatically checks each storm-based warning polygon against Local Storm Reports (LSRs) to determine whether it verified.</p>
+      <p><strong>What this is:</strong> a warning verification browser for storm-based warnings — Tornado (TOR), Severe Thunderstorm (SVR), Flash Flood (FFW), Snow Squall (SQW), and Special Marine Warning (SMW) — built on top of the Iowa Environmental Mesonet's <a href="https://mesonet.agron.iastate.edu/cow/" target="_blank">IEM Cow</a> service. IEM Cow automatically checks each storm-based warning polygon against Local Storm Reports (LSRs) to determine whether it verified.</p>
+      <p><strong>Warning types to track:</strong> Settings has a picker for which of the 5 phenomena above are actually queried and shown, capped at 4 so the queue-card grid always stays a clean 2×2 — not every office deals with both Snow Squalls and Special Marine Warnings. Special Marine Warning's "misses" filtering in the Trends phenomena filter uses a best-effort LSR type guess (wind gust/damage codes) rather than a confirmed one — flagged in the code if it needs correcting later.</p>
       <p><strong>Verification status</strong> shown here is computed as: <strong>Verified</strong> if IEM found a matching LSR of the right type, within the time window, inside the buffered warning polygon. <strong>Needs Verification</strong> if the warning has fully expired with no matching LSR found. <strong>Pending</strong> if the warning is still active (verification isn't final until it expires or a report comes in).</p>
       <p><strong>Calendar day:</strong> dates here are bounded by local midnight in the configured timezone (Settings), not 00Z UTC — so an overnight event isn't split across two different "days" the way a strict UTC day would.</p>
       <p><strong>Confidence score:</strong> the percentage shown per-warning is a simple, unofficial heuristic (based on lead time and number of matching reports) meant to give a quick visual sense of how solid the verification is — it is <em>not</em> an NWS or IEM statistic.</p>
@@ -851,8 +853,18 @@ const PHEN_META = {
   TO: { code: 'TOR', name: 'Tornado Warning',            queueClass: 'tor', color: '#ef4444' },
   SV: { code: 'SVR', name: 'Severe Thunderstorm Warning', queueClass: 'svr', color: '#facc15' },
   FF: { code: 'FFW', name: 'Flash Flood Warning',         queueClass: 'ffw', color: '#22c55e' },
-  SQ: { code: 'SQW', name: 'Snow Squall Warning',         queueClass: 'sqw', color: '#a855f7' }
+  SQ: { code: 'SQW', name: 'Snow Squall Warning',         queueClass: 'sqw', color: '#a855f7' },
+  MA: { code: 'SMW', name: 'Special Marine Warning',      queueClass: 'mar', color: '#22d3ee' }
 };
+// Which of the 5 phenomena above are actually queried from IEM and
+// shown in the queue cards — capped at 4 so the queue grid (a fixed
+// 2-column layout) never has to reflow, and configurable in Settings
+// since not every office deals with both Snow Squalls and Special
+// Marine Warnings. Persisted per-browser like the other display prefs.
+const PHENOMENA_STORAGE_KEY = 'btv_active_phenomena';
+const MAX_ACTIVE_PHENOMENA = 4;
+const DEFAULT_ACTIVE_PHENOMENA = ['TO','SV','FF','SQ'];
+let activePhenomena = DEFAULT_ACTIVE_PHENOMENA.slice();
 // LSR marker colors, keyed by IEM's single-character LSR type code:
 // G/D = wind (gust/damage), H = hail, F = flash flood, q = snow squall,
 // T = tornado. Confirmed these exact codes via live API samples.
@@ -1301,7 +1313,7 @@ const LEAD_TIME_BUCKETS = [
 // doesn't hide e.g. flash flood lead time trailing tornado lead time.
 function renderLeadTimeHistogram(samples){
   if(!samples || samples.length === 0) return '';
-  const order = ['TO','SV','FF','SQ'].filter(p => samples.some(s => s.phen === p));
+  const order = ['TO','SV','FF','SQ','MA'].filter(p => samples.some(s => s.phen === p));
   const counts = LEAD_TIME_BUCKETS.map(b => {
     const inBucket = samples.filter(s => b.test(s.lead));
     const byPhen = {};
@@ -1419,7 +1431,7 @@ const COW_CHUNK_CONCURRENCY = 3;
 async function fetchCowRaw(wfoCode, queryStart, queryEnd){
   const params = new URLSearchParams();
   params.set('wfo', wfoCode);
-  ['TO','SV','FF','SQ'].forEach(p => params.append('phenomena', p));
+  activePhenomena.forEach(p => params.append('phenomena', p));
   params.set('begints', isoZ(queryStart));
   params.set('endts', isoZ(queryEnd));
   params.set('hailsize', settings.hailsize);
@@ -2077,13 +2089,14 @@ function renderCompareList(query){
 // ══════════════════════════════════════════════════════════════
 function renderQueue(){
   const grid = document.getElementById('queueGrid');
-  const counts = { TO:0, SV:0, FF:0, SQ:0 };
+  const counts = {};
+  activePhenomena.forEach(p => { counts[p] = 0; });
   let needsCount = 0;
   currentEvents.forEach(e => {
     if(counts[e.phenomena] !== undefined) counts[e.phenomena]++;
     if(e.status === 'needs_verification') needsCount++;
   });
-  grid.innerHTML = Object.keys(PHEN_META).map(k => {
+  grid.innerHTML = activePhenomena.map(k => {
     const meta = PHEN_META[k];
     const active = phenomenaFilter === k;
     return `<div class="queue-card ${meta.queueClass}${active ? ' active' : ''}" data-phen="${k}" title="Click to ${active ? 'clear filter' : 'filter for ' + meta.name + ' only'}">
@@ -2392,7 +2405,7 @@ function drawLsrsOnMap(){
 
 function renderMapLegend(){
   const bar = document.getElementById('mapLegendBar');
-  let html = Object.keys(PHEN_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${PHEN_META[k].color};"></span>${PHEN_META[k].code}</span>`).join('');
+  let html = activePhenomena.map(k => `<span class="lg-item"><span class="lg-dot" style="background:${PHEN_META[k].color};"></span>${PHEN_META[k].code}</span>`).join('');
   if(showRadar && viewMode === 'day'){
     const mins = parseInt(document.getElementById('radarTimeSlider').value, 10);
     const hh = String(Math.floor(mins/60)).padStart(2,'0');
@@ -2752,13 +2765,18 @@ async function pollLiveUpdates(){
 // ══════════════════════════════════════════════════════════════
 //  TRENDS — POD/FAR/CSI over the last N days
 // ══════════════════════════════════════════════════════════════
-let trendsPhenFilter = '';   // '' = all phenomena, else 'TO'|'SV'|'FF'|'SQ'
+let trendsPhenFilter = '';   // '' = all phenomena, else 'TO'|'SV'|'FF'|'SQ'|'MA'
 let trendsDays = 30;
 // For the phenomena-filtered trend, "misses" (unwarned LSRs) need to be
 // narrowed to reports that plausibly belong to the selected phenomena
 // too — otherwise filtering events to just TOR while still counting
 // EVERY unwarned report as a miss would understate TOR's real POD.
-const PHEN_TO_LSR_TYPES = { TO: ['T'], SV: ['G','D','H'], FF: ['F'], SQ: ['q'] };
+// MA's mapping (wind gust/damage codes) is a best-effort guess, not a
+// confirmed IEM type code the way the other four are — marine reports
+// are uncommon enough in this app's testing that it wasn't possible to
+// verify against a real one; if MA's POD/FAR look off, this is the
+// first place to check.
+const PHEN_TO_LSR_TYPES = { TO: ['T'], SV: ['G','D','H'], FF: ['F'], SQ: ['q'], MA: ['G','D'] };
 
 async function loadTrends(days){
   trendsDays = days;
@@ -3428,7 +3446,7 @@ function renderAnalyticsTimeline(){
 
 function renderAnalyticsDiurnal(){
   if(currentEvents.length === 0) return analyticsEmptyState('No warnings in this view.');
-  const order = ['TO','SV','FF','SQ'].filter(p => currentEvents.some(e => e.phenomena === p));
+  const order = ['TO','SV','FF','SQ','MA'].filter(p => currentEvents.some(e => e.phenomena === p));
   const buckets = Array.from({length:24}, () => ({}));
   currentEvents.forEach(e => {
     const hour = new Date(e.issue).toLocaleString('en-US', { timeZone: settings.timezone, hour: 'numeric', hour12: false });
@@ -3442,7 +3460,7 @@ function renderAnalyticsDiurnal(){
 
 function renderAnalyticsDuration(){
   if(currentEvents.length === 0) return analyticsEmptyState('No warnings in this view.');
-  const order = ['TO','SV','FF','SQ'].filter(p => currentEvents.some(e => e.phenomena === p));
+  const order = ['TO','SV','FF','SQ','MA'].filter(p => currentEvents.some(e => e.phenomena === p));
   const durationBuckets = [
     { label: '<15m', test: m => m < 15 },
     { label: '15-30', test: m => m >= 15 && m < 30 },
@@ -3756,17 +3774,23 @@ document.getElementById('radarStepBackBtn').addEventListener('click', () => step
 document.getElementById('radarStepFwdBtn').addEventListener('click', () => stepRadarTime(5));
 
 // Trends modal
-document.getElementById('trendsBtn').addEventListener('click', () => { openModal('trendsModal'); loadTrends(trendsDays); });
+function renderTrendsPhenButtons(){
+  const row = document.getElementById('trendsPhenRow');
+  if(!activePhenomena.includes(trendsPhenFilter)) trendsPhenFilter = '';
+  const items = [{ code: '', label: 'All Phenomena' }, ...activePhenomena.map(p => ({ code: p, label: PHEN_META[p].code }))];
+  row.innerHTML = items.map(it => `<button class="btn secondary trend-phen-btn${it.code === trendsPhenFilter ? ' active' : ''}" data-phen="${it.code}">${escapeHtml(it.label)}</button>`).join('');
+  row.querySelectorAll('.trend-phen-btn').forEach(btn => btn.addEventListener('click', () => {
+    row.querySelectorAll('.trend-phen-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    trendsPhenFilter = btn.dataset.phen;
+    loadTrends(trendsDays);
+  }));
+}
+document.getElementById('trendsBtn').addEventListener('click', () => { renderTrendsPhenButtons(); openModal('trendsModal'); loadTrends(trendsDays); });
 document.querySelectorAll('.trend-range-btn').forEach(btn => btn.addEventListener('click', () => {
   document.querySelectorAll('.trend-range-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadTrends(parseInt(btn.dataset.days, 10));
-}));
-document.querySelectorAll('.trend-phen-btn').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.trend-phen-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  trendsPhenFilter = btn.dataset.phen;
-  loadTrends(trendsDays);
 }));
 
 // Exports + print
@@ -3858,6 +3882,33 @@ function applyAriaLabels(){
 document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
 document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) closeModal(ov.id); }));
 
+function renderPhenCheckboxes(selected){
+  const container = document.getElementById('phenCheckboxes');
+  container.innerHTML = Object.keys(PHEN_META).map(k => {
+    const checked = selected.includes(k);
+    return `<label style="display:flex;align-items:center;gap:7px;text-transform:none;font-size:12px;color:#cbd5e1;cursor:pointer;">
+      <input type="checkbox" class="phen-check" value="${k}" ${checked?'checked':''} style="width:auto;">
+      ${escapeHtml(PHEN_META[k].name)}
+    </label>`;
+  }).join('');
+  updatePhenCheckboxLimits();
+  container.querySelectorAll('.phen-check').forEach(cb => cb.addEventListener('change', updatePhenCheckboxLimits));
+}
+function getSelectedPhenomena(){
+  return Array.from(document.querySelectorAll('.phen-check:checked')).map(cb => cb.value);
+}
+// Disables any unchecked box once MAX_ACTIVE_PHENOMENA are already
+// checked, rather than allowing a 5th check and silently truncating it
+// on save — the box being visibly greyed out is clearer than a
+// surprise drop.
+function updatePhenCheckboxLimits(){
+  const container = document.getElementById('phenCheckboxes');
+  const checkedCount = getSelectedPhenomena().length;
+  container.querySelectorAll('.phen-check').forEach(cb => {
+    cb.disabled = !cb.checked && checkedCount >= MAX_ACTIVE_PHENOMENA;
+  });
+}
+
 document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('setWfo').value = settings.wfo;
   document.getElementById('setTimezone').value = settings.timezone;
@@ -3865,6 +3916,7 @@ document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('setWind').value = settings.wind;
   document.getElementById('setBuffer').value = settings.lsrbuffer;
   document.getElementById('setColorblind').checked = settings.colorblindMode;
+  renderPhenCheckboxes(activePhenomena);
   openModal('settingsModal');
 });
 document.getElementById('saveSettingsBtn').addEventListener('click', () => {
@@ -3875,6 +3927,10 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   settings.colorblindMode = document.getElementById('setColorblind').checked;
   applyColorblindPalette(settings.colorblindMode);
   try{ localStorage.setItem('btv_colorblind_mode', settings.colorblindMode ? '1' : '0'); }catch(err){}
+  const selectedPhen = getSelectedPhenomena();
+  activePhenomena = selectedPhen.length ? selectedPhen.slice(0, MAX_ACTIVE_PHENOMENA) : DEFAULT_ACTIVE_PHENOMENA.slice();
+  phenomenaFilter = null; // clear any filter pointing at a type that may no longer be active
+  try{ localStorage.setItem(PHENOMENA_STORAGE_KEY, JSON.stringify(activePhenomena)); }catch(err){}
   closeModal('settingsModal');
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 });
@@ -3947,6 +4003,13 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
       applyColorblindPalette(true);
     }
   }catch(err){ /* localStorage unavailable — falls back to default palette */ }
+  try{
+    const stored = JSON.parse(localStorage.getItem(PHENOMENA_STORAGE_KEY) || 'null');
+    if(Array.isArray(stored) && stored.length){
+      const valid = stored.filter(p => PHEN_META[p]).slice(0, MAX_ACTIVE_PHENOMENA);
+      if(valid.length) activePhenomena = valid;
+    }
+  }catch(err){ /* localStorage unavailable or corrupt value — falls back to default four */ }
 
   const urlState = readUrlState();
   if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
