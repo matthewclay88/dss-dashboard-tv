@@ -605,7 +605,7 @@
         <div class="reports-pane">
           <table>
             <thead><tr>
-              <th>Time (Local)</th><th>Type</th><th>Magnitude</th><th>Location</th><th>Warned?</th><th>Assoc. ETN</th>
+              <th>Time (Local)</th><th>Type</th><th>Magnitude</th><th>Location</th><th>Remarks</th><th>Warned?</th><th>Assoc. ETN</th>
             </tr></thead>
             <tbody id="reportsTableBody"></tbody>
           </table>
@@ -2135,6 +2135,7 @@ function renderReportsTable(){
       <td>${escapeHtml(r.typetext || r.lsrtype)}</td>
       <td>${r.magnitude !== null && r.magnitude !== undefined ? r.magnitude : '—'}</td>
       <td>${escapeHtml(loc || '—')}</td>
+      <td style="max-width:260px;white-space:normal;color:#b9c4d4;">${escapeHtml(r.remark || '—')}</td>
       <td><span class="warned-chip ${r.warned ? 'yes':'no'}">${r.warned ? 'Warned':'Unwarned'}</span></td>
       <td>${assoc.map(a=>{
         const ev = currentEvents.find(e=>e.id===a);
@@ -2818,9 +2819,9 @@ function exportCsv(){
   });
   lines.push('');
   lines.push('## Local Storm Reports');
-  lines.push(['Time (UTC)','Type','Magnitude','City','County','State','Warned','Assoc. ETNs'].join(','));
+  lines.push(['Time (UTC)','Type','Magnitude','City','County','State','Remarks','Warned','Assoc. ETNs'].join(','));
   currentReports.filter(r => r.inRange).sort((a,b) => new Date(a.valid) - new Date(b.valid)).forEach(r => {
-    lines.push([r.valid, r.typetext || r.lsrtype, r.magnitude, r.city, r.county, r.state, r.warned ? 'Y':'N', r.events
+    lines.push([r.valid, r.typetext || r.lsrtype, r.magnitude, r.city, r.county, r.state, r.remark, r.warned ? 'Y':'N', r.events
     ].map(csvEscape).join(','));
   });
   if(showMping && currentMpingReports.length){
