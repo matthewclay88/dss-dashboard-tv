@@ -1,3 +1,144 @@
+
+Claude finished the response
+
+Evaluated existing features and synthesized actionable dashboard improvements
+Evaluated existing features and synthesized actionable dashboard improvements
+Nothing broken or unfinished that I can see — no loose TODOs, CSV export already covers mPING, everything's wired consistently. A few things I'd call optional improvements, not urgent, in case any grab you before you go — otherwise they can just sit until next time:
+
+This is general information, not medical advice. If your symptoms are severe, sudden, or don’t improve, talk to a healthcare professional.
+mPING pagination cap on big ranges
+If you archive a wide date range on an active severe weather stretch, mPING pagination could theoretically hit its 20-page safety cap and silently truncate. Could raise the cap or add a "showing partial results" note.
+Currently caps at 20 pages of mPING results per load
+Fine for a single busy day, could clip a very active multi-day Archive range
+Low priority — you'd only notice on a huge outbreak + wide date range
+
+None of these are urgent enough to hold up your shift ending — they're all "whenever it's convenient" items. If nothing there catches your eye, you're good to log off as-is.
+
+Taking a look at the verification html and IEM cow website, is there anything veriifcation wise that we are missing or can add?
+
+
+Identified underutilized polygon-quality metrics and verification gaps
+Identified underutilized polygon-quality metrics and verification gaps
+Yes — a couple of real gaps, one of which is a bit surprising since the data's already sitting in the code, just never shown.
+
+1. Tagged threat vs. verified magnitude (already fetched, never displayed)
+
+Every warning IEM Cow returns includes windtag and hailtag — the forecaster's tagged threat magnitude at issuance (e.g. "60 MPH wind" / "1.25 in hail" from the IBW tags). Your code already pulls these into every event object (e.windtag, e.hailtag) but nothing in the UI ever shows them. That's a genuinely useful verification data point sitting unused — comparing what was tagged at issuance against what the matched LSR actually reported (which you already show) tells you whether the tagged threat was well-calibrated, not just whether the warning verified at all.
+
+2. Polygon-quality metrics IEM computes but you're not pulling in
+
+IEM Cow's own stats object includes several "how well-drawn was the polygon" metrics that go beyond POD/FAR/CSI:
+
+shared_border% — how much of the polygon's edge follows county/political boundaries rather than being a true storm-based shape. High values are a proxy for "box warnings" (following county lines) vs. tight storm-following polygons.
+size_poly_vs_county% — polygon size relative to the county it's in, another box-warning indicator.
+area_verify% — percent of the polygon's area that verified, a spatial precision metric distinct from just "did it verify yes/no."
+avg_size[sq km] — average polygon size, useful to track trending toward tighter/looser polygons over time.
+None of that's in the dashboard right now. It's a meaningfully different axis from what you're already tracking — less "did we warn correctly" and more "how precisely did we draw the warning."
+
+3. A smaller one: tdq_stormreports
+
+IEM tracks reports that met tornado criteria but fell outside a co-located SVR polygon (i.e., landed in the TOR only) — a specific "near-miss on polygon shape" diagnostic that's not in your table anywhere.
+
+4. Lead time is currently just avg/min/max — no distribution
+
+You show average/min/max lead time, but that hides the spread. A quick histogram (e.g., bucketed 0-5min, 5-10min, 10-15min, 15min+) would show whether lead times cluster tightly around the average or you've got a bimodal mix of "great lead time" and "basically no lead time" days getting averaged together.
+
+Want me to add any of these? #1 (tagged vs. verified) is a quick add since the data's already there — the rest would need new IEM fields wired in.
+
+Yeah, let's add all of these please. I can see how they would be useful in an event review
+
+
+Architected comprehensive feature expansion across data pipeline, rendering, and export layers
+Architected comprehensive feature expansion across data pipeline, rendering, and export layers
+This is a bigger addition — let me build it in pieces: polygon-quality metrics (mixing IEM's own numbers with a couple I can compute more precisely myself), the tagged-threat comparison, and a lead-time histogram.
+
+
+Capture IEM's own per-chunk stats object during fetch, add a weighted combiner, and add polygon-area helpers
+Capture IEM's own per-chunk stats object during fetch, add a weighted combiner, and add polygon-area helpers
+Now update fetchAndParseCow to collect and return the combined IEM stats:
+
+
+Edited 2 files
+Edited 2 files
+Now let's add the state variables and the computePolygonQualityStats function:
+
+
+Ran a command, edited a file
+Ran a command, edited a file
+Now let's add computePolygonQualityStats() right after computeDayStats(), and update computeDayStats() to store lead-time samples for the histogram:
+
+
+Viewed a file, edited a file
+Viewed a file, edited a file
+Now let's update renderDayStats() to show the new rows and the histogram:
+
+
+Append polygon-quality metrics and the lead-time histogram to the Day Stats panel
+Append polygon-quality metrics and the lead-time histogram to the Day Stats panel
+Now let's wire computePolygonQualityStats() into loadDay/loadRange, capturing currentIemStats from the fetch:
+
+
+Viewed 2 files, edited a file
+Viewed 2 files, edited a file
+Now the same for loadRange:
+
+
+Viewed a file, edited a file
+Viewed a file, edited a file
+Let's also update pollLiveUpdates (live mode) to keep these stats fresh, and check runArchive:
+
+
+Ran a command, viewed a file, edited a file
+Ran a command, viewed a file, edited a file
+Good — runArchive() just calls loadRange(), so it's already covered. Now let's add the Tagged Threat display to the warning details panel:
+
+
+Architected threat comparison logic and decoded magnitude data structures
+Architected threat comparison logic and decoded magnitude data structures
+Now let's add these new fields to the CSV export, and update the About modal with an honest explanation of what's computed locally vs. borrowed from IEM:
+
+
+Edited 2 files, ran a command, viewed a file
+Edited 2 files, ran a command, viewed a file
+Now let's add an About modal paragraph documenting all of this honestly, including the IEM-vs-local-computation split:
+
+
+Ran a command, edited a file
+Ran a command, edited a file
+Now let's do a full syntax check and export:
+
+
+Ran a command
+Ran a command
+Clean. Let's export:
+
+
+Ran a command, read a file
+Ran a command, read a file
+All four are in. Quick summary of what changed and — importantly — where each number actually comes from, since I split these between "computed the same way as everything else here" and "borrowed from IEM directly":
+
+1. Tagged Threat vs. verified magnitude (Warning Details panel) — shows the forecaster's windtag/hailtag from the warning's IBW tags at issuance, with the peak matched-LSR magnitude right next to it in parentheses for comparison.
+
+2. Polygon quality metrics (bottom of the stats panel) — two flavors:
+
+Avg Polygon Size and Polygon vs Avg County Size are computed locally, from the same calendar-day-corrected data as everything else — no padding caveat needed. The county comparison is against the CWA's average county size, not each warning's own specific county (matching exact UGCs to zone geometry got complicated fast — this is a rough yardstick, not a precise ratio).
+Area Verified, Shared Border, and TOR Reports Outside Co-located SVR come straight from IEM Cow's own computation — replicating their exact polygon-area-intersection and border-matching logic wasn't practical here. These three do carry the ~6hr boundary-padding caveat the rest of the app already documents, so I labeled them accordingly in both the UI and the About modal.
+3. Lead Time Distribution — a small histogram under the existing avg/min/max lead time rows, bucketed into 5-10 minute bins, so a wide or bimodal spread doesn't hide behind a single average.
+
+One honesty note: I couldn't get a live test response back from IEM Cow's API in this session (kept getting a 422 I couldn't diagnose without your access), so the area_verify% and shared_border% field names are based on IEM's own published documentation rather than something I confirmed against a real response. If those two rows come back blank once you're looking at real data, ping me — it'd mean IEM's actual JSON key names differ slightly from what's documented, and I can adjust.
+
+
+Warning verification
+Code · HTML 
+
+
+
+
+
+Claude is AI and can make mistakes. Please double-check cited sources.
+
+
+Warning verification · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +164,7 @@
     flex-direction: column;
     overflow: hidden;
   }
-
+ 
   /* ── HEADER ── */
   .header {
     background: #0d1420;
@@ -46,7 +187,7 @@
   .header-titles { line-height: 1.25; min-width: 0; }
   .header-titles h1 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.02em; white-space: nowrap; }
   .header-titles .sub { font-size: 11px; color: #7a8ba3; white-space: nowrap; }
-
+ 
   .header-center { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
   .wfo-badge {
     background: #101d30; border: 1px solid #26405c; color: #93c5fd;
@@ -81,7 +222,7 @@
     cursor: pointer; white-space: nowrap;
   }
   .date-nav .today-btn:hover { background: #16233a; }
-
+ 
   .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .icon-btn {
     background: #101d30; border: 1px solid #26405c; color: #93a3b8;
@@ -92,7 +233,7 @@
   .icon-btn:hover { color: #fff; border-color: #3b82f6; background: #16233a; }
   .icon-btn.spinning svg { animation: spin 0.8s linear; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
+ 
   /* ── STATUS BANNER (loading / error) ── */
   .status-banner {
     padding: 6px 20px; font-size: 11px; font-weight: 600; text-align: center;
@@ -100,30 +241,30 @@
   }
   .status-banner.error { background: #2a0f0f; color: #fca5a5; }
   .status-banner.hidden { display: none; }
-
+ 
   .range-banner {
     padding: 7px 20px; font-size: 11.5px; font-weight: 700; display: flex; align-items: center;
     justify-content: center; gap: 14px;
     background: #1e2205; color: #facc15; border-bottom: 1px solid #a16207; flex-shrink: 0;
   }
-
+ 
   .footer {
     flex-shrink: 0; text-align: center; padding: 6px 0; font-size: 11px; color: #4a5b72;
     letter-spacing: 0.03em;
   }
-
+ 
   /* ── MAIN 3-COLUMN LAYOUT ── */
   .main { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 10px; overflow: hidden; }
   .col-left { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
   .col-center { flex: 1.6; min-width: 0; display: flex; flex-direction: column; gap: 0; min-height: 0; }
   .col-right { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0; gap: 10px; }
-
+ 
   .panel { background: #0f1620; border: 1px solid #1e2a3a; border-radius: 10px; overflow: hidden; }
   .panel-title {
     font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
     color: #93a3b8; padding: 10px 14px; border-bottom: 1px solid #1e2a3a; flex-shrink: 0;
   }
-
+ 
   /* Queue cards */
   .queue-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; flex-shrink: 0; }
   .queue-card {
@@ -143,7 +284,7 @@
   .queue-card.sqw { background: #190f2e; border-color: #6d28d9; color: #c4b5fd; }
   .queue-card.sqw .qc-count, .queue-card.sqw .qc-label { color: #c4b5fd; }
   .queue-review { padding: 0 12px 12px; font-size: 11px; color: #7a8ba3; display: flex; align-items: center; gap: 6px; }
-
+ 
   /* Warnings table */
   .warn-table-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .warn-filters { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid #1e2a3a; font-size: 11px; color: #93a3b8; flex-shrink: 0; }
@@ -165,7 +306,7 @@
   .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
   .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   .warn-empty { padding: 30px 14px; text-align: center; color: #7a8ba3; font-size: 12px; }
-
+ 
   /* Summary donut */
   .summary-body { display: flex; align-items: center; gap: 14px; padding: 14px; }
   .donut-wrap { flex-shrink: 0; position: relative; width: 108px; height: 108px; }
@@ -177,7 +318,7 @@
   .summary-legend .leg-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
   .summary-legend .leg-label { color: #cbd5e1; flex: 1; }
   .summary-legend .leg-val { color: #93a3b8; font-weight: 700; }
-
+ 
   /* Center: map / reports sub-tabs */
   .subtabs {
     display: flex; gap: 4px; padding: 8px 10px; background: #0f1620; border: 1px solid #1e2a3a; border-bottom: none;
@@ -191,7 +332,7 @@
   .subtab-btn.active { color: #fff; background: #1d4ed8; }
   .subtabs .spacer { flex: 1; }
   .lsr-toggle { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #93a3b8; padding: 0 6px; }
-
+ 
   .center-body {
     flex: 1; min-height: 0; background: #0f1620; border: 1px solid #1e2a3a; border-top: none;
     border-radius: 0 0 10px 10px; overflow: hidden; display: flex; flex-direction: column; position: relative;
@@ -203,7 +344,7 @@
   }
   .map-legend-bar .lg-item { display: flex; align-items: center; gap: 5px; color: #93a3b8; font-weight: 600; }
   .map-legend-bar .lg-dot { width: 9px; height: 9px; border-radius: 3px; }
-
+ 
   .reports-pane { flex: 1; min-height: 0; overflow-y: auto; }
   .reports-pane table { width: 100%; }
   .reports-pane thead th {
@@ -215,7 +356,7 @@
   .warned-chip { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
   .warned-chip.yes { background: #052e16; color: #4ade80; border: 1px solid #166534; }
   .warned-chip.no { background: #2a0f0f; color: #f87171; border: 1px solid #7f1d1d; }
-
+ 
   /* Right panel: details */
   .details-empty {
     flex: 1; display: flex; align-items: center; justify-content: center; text-align: center;
@@ -241,12 +382,12 @@
   }
   .view-full-link { display: inline-block; margin-top: 6px; font-size: 11px; color: #60a5fa; text-decoration: none; font-weight: 600; }
   .view-full-link:hover { text-decoration: underline; }
-
+ 
   .lsr-mini-table { width: 100%; font-size: 11px; border-collapse: collapse; }
   .lsr-mini-table th { text-align: left; color: #7a8ba3; font-weight: 700; font-size: 9.5px; text-transform: uppercase; padding: 5px 6px; border-bottom: 1px solid #1e2a3a; }
   .lsr-mini-table td { padding: 6px 6px; border-bottom: 1px solid #16202e; }
   .lsr-mini-table tr:hover td { background: #131c2b; cursor: pointer; }
-
+ 
   .confidence-row { display: flex; align-items: center; gap: 14px; }
   .conf-ring { width: 74px; height: 74px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .conf-ring::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: #0f1620; }
@@ -259,7 +400,7 @@
   .match-list .mi.yes .mi-icon { color: #4ade80; }
   .match-list .mi.no .mi-icon { color: #64748b; }
   .conf-note { font-size: 9.5px; color: #5a6b82; margin-top: 8px; line-height: 1.4; }
-
+ 
   /* ── MODALS ── */
   .modal-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 9999;
@@ -280,7 +421,7 @@
   .modal-close:hover { color: #fff; }
   .modal-body { padding: 16px 18px; overflow-y: auto; }
   .modal-footer { padding: 12px 18px; border-top: 1px solid #1e2a3a; display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
-
+ 
   .field-row { margin-bottom: 12px; }
   .field-row label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #7a8ba3; margin-bottom: 5px; }
   .field-row input, .field-row select {
@@ -297,12 +438,12 @@
   .btn:hover { filter: brightness(1.15); }
   .btn.primary { background: #2563eb; color: #fff; }
   .btn.secondary { background: #1e293b; color: #cbd5e1; }
-
+ 
   .archive-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
   .archive-stat { background: #0d1622; border: 1px solid #1e2a3a; border-radius: 8px; padding: 10px; text-align: center; }
   .archive-stat .as-val { font-size: 19px; font-weight: 800; color: #fff; }
   .archive-stat .as-label { font-size: 9.5px; color: #7a8ba3; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 3px; }
-
+ 
   .daystat-row {
     display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
     padding: 6px 0; border-bottom: 1px solid #16202e;
@@ -311,18 +452,18 @@
   .daystat-row .ds-name { font-size: 11px; color: #cbd5e1; font-weight: 700; }
   .daystat-row .ds-formula { font-size: 9.5px; color: #5a6b82; font-family: "SFMono-Regular", Consolas, monospace; display: block; margin-top: 1px; }
   .daystat-row .ds-val { font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0; }
-
+ 
   .about-body p { margin-bottom: 10px; line-height: 1.55; color: #cbd5e1; font-size: 12.5px; }
   .about-body a { color: #60a5fa; }
   .about-body code { background: #0d1622; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
-
+ 
   /* misc */
   .leaflet-popup-content-wrapper { background: #101a28 !important; color: #e2e8f0 !important; border: 1px solid #26405c !important; }
   .leaflet-popup-tip { background: #101a28 !important; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #2a3b52; border-radius: 4px; }
-
+ 
   /* ── WFO SEARCHABLE COMBOBOX ── */
   .wfo-combo { position: relative; }
   .wfo-search-input {
@@ -346,14 +487,14 @@
   .wfo-opt-code { font-weight: 800; color: #93c5fd; flex-shrink: 0; width: 32px; }
   .wfo-opt-name { color: #cbd5e1; }
   .wfo-opt-empty { padding: 10px; font-size: 11.5px; color: #7a8ba3; }
-
+ 
   /* ── MINI BUTTON (Next Unverified) ── */
   .mini-btn {
     background: none; border: none; color: #60a5fa; font-size: 11px; font-weight: 700;
     cursor: pointer; padding: 0; font-family: inherit; text-decoration: none;
   }
   .mini-btn:hover { text-decoration: underline; }
-
+ 
   /* ── TIMELINE BAR (warning duration + LSR marks) ── */
   .timeline-bar { position: relative; height: 20px; margin: 6px 0 2px; }
   .tl-track { position: absolute; top: 9px; left: 0; right: 0; height: 3px; background: #1e2a3a; border-radius: 2px; }
@@ -362,7 +503,7 @@
     border: 2px solid #0f1620; transform: translateX(-50%); cursor: default;
   }
   .timeline-labels { display: flex; justify-content: space-between; font-size: 9.5px; color: #7a8ba3; }
-
+ 
   /* ── PDS / EMERGENCY BADGES ── */
   .pds-badge, .emg-badge {
     display: inline-block; font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
@@ -370,7 +511,7 @@
   }
   .pds-badge { background: #3b0764; color: #e9d5ff; border: 1px solid #6d28d9; }
   .emg-badge { background: #450a0a; color: #fecaca; border: 1px solid #b91c1c; }
-
+ 
   /* ── COMPARE OFFICES ── */
   .compare-chip-btn {
     background: #101d30; border: 1px solid #26405c; color: #93c5fd; font-size: 10.5px; font-weight: 800;
@@ -388,11 +529,11 @@
     display: inline-block; font-size: 8.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
     margin-right: 5px; letter-spacing: .03em; background: #1e293b; color: #93c5fd; border: 1px solid #334155;
   }
-
-
+ 
+ 
   /* ── TRENDS MODAL ── */
   .trend-range-btn.active { background: #2563eb !important; color: #fff !important; }
-
+ 
   /* ── RADAR CONTROLS ── */
   .radar-step-btn {
     background: none; border: 1px solid #26405c; color: #93a3b8; width: 20px; height: 20px;
@@ -400,7 +541,7 @@
     display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .radar-step-btn:hover { background: #16233a; color: #fff; border-color: #3b82f6; }
-
+ 
   /* ── ACCESSIBILITY ── */
   .icon-btn:focus-visible, .mini-btn:focus-visible, .subtab-btn:focus-visible,
   .wfo-search-input:focus-visible, .btn:focus-visible, .queue-card:focus-visible,
@@ -411,7 +552,7 @@
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
   }
-
+ 
   /* ── LIVE MODE ── */
   .live-badge {
     display: none; align-items: center; gap: 5px; font-size: 10px; font-weight: 800;
@@ -421,7 +562,7 @@
   .live-badge.on { display: inline-flex; }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: livePulse 1.6s ease-in-out infinite; }
   @keyframes livePulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-
+ 
   .toast-stack {
     position: fixed; top: 64px; right: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px;
     max-width: 320px;
@@ -432,7 +573,7 @@
     animation: toastIn .2s ease-out;
   }
   @keyframes toastIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
-
+ 
   /* ── HEATMAP (Trends modal, 1-year view) ── */
   .heatmap-wrap { overflow-x: auto; padding-bottom: 6px; }
   .heatmap-grid { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 12px); gap: 3px; }
@@ -444,7 +585,7 @@
   .heatmap-legend { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #7a8ba3; margin-top: 8px; }
   .heatmap-legend .heatmap-cell { cursor: default; }
   .heatmap-legend .heatmap-cell:hover { outline: none; }
-
+ 
   /* ── COUNTY/ZONE BREAKDOWN ── */
   .counties-pane { flex: 1; min-height: 0; overflow-y: auto; }
   .counties-pane table { width: 100%; }
@@ -456,7 +597,7 @@
   .counties-pane .cty-bar-wrap { display: flex; align-items: center; gap: 8px; }
   .counties-pane .cty-bar-track { flex: 1; height: 6px; background: #1e2a3a; border-radius: 3px; overflow: hidden; }
   .counties-pane .cty-bar-fill { height: 100%; background: #3b82f6; border-radius: 3px; }
-
+ 
   /* ── RESPONSIVE / MOBILE ── */
   @media (max-width: 900px) {
     html, body { height: auto; overflow: auto; }
@@ -474,7 +615,7 @@
     .modal-box, .modal-box.wide { width: 94vw; }
     .kv-grid { grid-template-columns: 1fr; }
   }
-
+ 
   /* ── PRINT ── */
   @media print {
     * { color: #111 !important; background: transparent !important; border-color: #ccc !important; box-shadow: none !important; }
@@ -490,7 +631,7 @@
 </style>
 </head>
 <body>
-
+ 
 <div class="header">
   <div class="header-left">
     <div class="logo">NWS</div>
@@ -524,16 +665,16 @@
     <button class="icon-btn" id="refreshBtn" title="Refresh"><span id="refreshIcon">&#8635;</span></button>
   </div>
 </div>
-
+ 
 <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 <div class="status-banner hidden" id="statusBanner">Loading…</div>
 <div class="range-banner" id="rangeBanner" style="display:none;">
   <span id="rangeBannerText">Viewing range</span>
   <button class="btn secondary" id="exitRangeBtn" style="padding:4px 12px;font-size:11px;">Back to single day</button>
 </div>
-
+ 
 <div class="main">
-
+ 
   <!-- LEFT COLUMN -->
   <div class="col-left">
     <div class="panel">
@@ -541,7 +682,7 @@
       <div class="queue-grid" id="queueGrid"></div>
       <div class="queue-review" id="queueReview"></div>
     </div>
-
+ 
     <div class="panel warn-table-wrap">
       <div class="warn-filters">
         <label><input type="checkbox" id="filterOnlyUnverified"> Only unverified</label>
@@ -556,7 +697,7 @@
         <div class="warn-empty" id="warnEmpty" style="display:none;">No Tornado, Severe, Flash Flood, or Snow Squall warnings for this day.</div>
       </div>
     </div>
-
+ 
     <div class="panel">
       <div class="panel-title">Verification Summary</div>
       <div class="summary-body">
@@ -568,7 +709,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- CENTER COLUMN -->
   <div class="col-center">
     <div class="subtabs">
@@ -612,7 +753,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- RIGHT COLUMN -->
   <div class="col-right">
     <div class="panel" id="dayStatsPanel">
@@ -625,11 +766,11 @@
       <div class="details-scroll" id="detailsScroll" style="display:none;"></div>
     </div>
   </div>
-
+ 
 </div>
-
+ 
 <div class="footer">Created by Matthew Clay — NWS Burlington</div>
-
+ 
 <!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal-box">
@@ -683,7 +824,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ARCHIVE MODAL -->
 <div class="modal-overlay" id="archiveModal">
   <div class="modal-box">
@@ -701,7 +842,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- COMPARE OFFICES MODAL -->
 <div class="modal-overlay" id="compareModal">
   <div class="modal-box">
@@ -717,7 +858,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- TRENDS MODAL -->
 <div class="modal-overlay" id="trendsModal">
   <div class="modal-box wide">
@@ -752,7 +893,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ABOUT MODAL -->
 <div class="modal-overlay" id="aboutModal">
   <div class="modal-box wide">
@@ -778,11 +919,14 @@
       <p><strong>Related warnings:</strong> the details panel lists other warnings sharing a county and issued within 30 minutes of the selected one. This is a timing/geography heuristic only — IEM Cow doesn't expose an authoritative "this warning replaced that one" link — so treat it as a lead, not a confirmed sequence.</p>
       <p><strong>Settings portability:</strong> Settings has Export/Import buttons for carrying your thresholds, timezone, colorblind preference, and recent-office list to another browser or machine — everything here is stored locally in this browser, there's no server-side account.</p>
       <p><strong>Warning Meteorologists:</strong> the stats panel shows a count of distinct forecaster codes active in the window — intentionally an aggregate, not a per-person breakdown, since named scorecards aren't something this tool is meant to produce.</p>
+      <p><strong>Tagged Threat:</strong> the warning details panel shows the forecaster's windtag/hailtag from the warning's IBW tags at issuance, alongside the peak magnitude actually seen in the matched LSRs below it — a quick "was the tag well-calibrated" comparison, not a pass/fail judgment.</p>
+      <p><strong>Polygon quality metrics</strong> (bottom of the stats panel): <em>Avg Polygon Size</em> and <em>Polygon vs Avg County Size</em> are computed locally from the same calendar-day-corrected warning set as everything else here (the county comparison is against the CWA's average county size, not each warning's own specific county — a rough yardstick, not an exact ratio). <em>Area Verified</em>, <em>Shared Border</em>, and <em>TOR Reports Outside Co-located SVR</em> come directly from IEM Cow's own computation instead, since replicating its exact verification-area and border-matching logic isn't practical here — these three specifically reflect IEM's own queried window, which includes the ~6 hour boundary padding described above, so treat them as close-but-not-exact for the precise calendar day. A high Shared Border % is a rough proxy for "box warnings" that follow county lines rather than the storm.</p>
+      <p><strong>Lead Time Distribution:</strong> the histogram at the bottom of the stats panel buckets every matched report's lead time into 5-10 minute bins, so a wide or bimodal spread doesn't get hidden behind the single averages above it.</p>
       <p><strong>mPING reports:</strong> "Show mPING reports" overlays crowd-sourced weather reports from the <a href="https://mping.ou.edu" target="_blank">mPING</a> project (OU CIMMS / NSSL) alongside the LSR markers — separate dots, separate legend, own on/off toggle. Requests go through a small server-side proxy that holds the API key, so no visitor needs their own account; the key's license tier still applies, though, so if it's a Research-tier key, reports from the last 48 hours (including "today") won't show up. mPING reports are informal public submissions, not an official report source like LSRs — treat matches against warnings as a supplementary cross-check, not a verification input (IEM Cow's own verified/unverified status is unaffected by mPING data either way).</p>
     </div>
   </div>
 </div>
-
+ 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -910,7 +1054,7 @@ const TOR_EMERGENCY_REGEX = /TORNADO\s+EMERGENCY/i;
 const FF_EMERGENCY_REGEX = /FLASH\s+FLOOD\s+EMERGENCY/i;
 const PDS_SCAN_MAX_EVENTS = 75;
 const PDS_SCAN_CONCURRENCY = 6;
-
+ 
 // mPING crowd-sourced reports, fetched through a small Cloudflare
 // Worker proxy rather than mping.ou.edu directly. mPING's API is
 // token-authenticated and license-tiered (General: last 4hrs only;
@@ -1007,7 +1151,7 @@ function mpingStyleFor(categoryText, descriptionText){
   const combined = [categoryText, descriptionText].filter(Boolean).join(' ');
   return MPING_CATEGORY_STYLES.find(c => c.match.test(combined)) || MPING_DEFAULT_STYLE;
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════════════
@@ -1039,18 +1183,20 @@ let knownIds = new Set();   // warning IDs already shown, so live mode only toas
 let showMping = false;
 let currentMpingReports = [];
 let mpingLoadToken = 0;   // bumped on every load; a late response checks it's still current before rendering
-
+let currentIemStats = null;   // combined area_verify%/shared_border%/tdq_stormreports from IEM Cow's own response
+let polygonStats = null;      // currentIemStats merged with our own calendar-day-correct size metrics
+ 
 // ══════════════════════════════════════════════════════════════
 //  DATE / TIMEZONE HELPERS
 // ══════════════════════════════════════════════════════════════
 function pad2(n){ return String(n).padStart(2,'0'); }
-
+ 
 function todayInTZ(tz){
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(new Date());
   const o = {}; parts.forEach(p=>{ if(p.type!=='literal') o[p.type]=p.value; });
   return `${o.year}-${o.month}-${o.day}`;
 }
-
+ 
 // Pure calendar-day arithmetic (no timezone involved) — treats the
 // Y-M-D string as a date-only value.
 function addDaysToDateStr(dateStr, n){
@@ -1059,7 +1205,7 @@ function addDaysToDateStr(dateStr, n){
   dt.setUTCDate(dt.getUTCDate() + n);
   return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth()+1)}-${pad2(dt.getUTCDate())}`;
 }
-
+ 
 // Finds the UTC instant that reads as local midnight (00:00:00) of the
 // given Y-M-D date in the given IANA timezone. Iterates twice to settle
 // on DST-transition edge cases.
@@ -1077,16 +1223,16 @@ function localMidnightToUTC(dateStr, tz){
   }
   return guess;
 }
-
+ 
 function isoZ(d){ return d.toISOString().replace(/\.\d+Z$/, 'Z'); }
-
+ 
 // mPING's obtime filters want 'YYYY-MM-DD HH:MM:SS' in UTC, not ISO —
 // no 'T'/'Z', space-separated (confirmed against the documented filter
 // examples).
 function mpingTimeParam(d){
   return d.toISOString().slice(0,19).replace('T', ' ');
 }
-
+ 
 function fmtLocal(isoStr, tz){
   if(!isoStr) return '—';
   const d = new Date(isoStr);
@@ -1098,7 +1244,7 @@ function fmtLocalFull(isoStr, tz){
   return d.toLocaleString('en-US', { timeZone: tz, month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit', second:'2-digit' }) + ' ' +
     new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName:'short' }).formatToParts(d).find(p=>p.type==='timeZoneName').value;
 }
-
+ 
 function haversineMiles(lat1, lon1, lat2, lon2){
   const R = 3958.8;
   const toRad = x => x * Math.PI / 180;
@@ -1106,12 +1252,12 @@ function haversineMiles(lat1, lon1, lat2, lon2){
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
-
+ 
 function escapeHtml(str){
   if(str === null || str === undefined) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  STATUS COMPUTATION
 // ══════════════════════════════════════════════════════════════
@@ -1121,7 +1267,7 @@ function computeStatus(props){
   if(Date.now() < expireMs) return 'pending';
   return 'needs_verification';
 }
-
+ 
 // Computed client-side from OUR calendar-day-corrected event/report set
 // (rather than trusting IEM's own 'stats' object, which reflects
 // whatever padded query window we actually sent it, not the true day).
@@ -1137,13 +1283,13 @@ function computeDayStats(){
   const hits = decided.filter(e => e.status === 'verified').length;
   const falseAlarms = decided.filter(e => e.status === 'needs_verification').length;
   const misses = currentReports.filter(r => r.inRange && !r.warned).length;
-
+ 
   const pod = (hits + misses) > 0 ? hits / (hits + misses) : null;
   const far = (hits + falseAlarms) > 0 ? falseAlarms / (hits + falseAlarms) : null;
   const csi = (pod !== null && far !== null && pod > 0 && (1-far) > 0)
     ? 1 / ((1/pod) + (1/(1-far)) - 1)
     : null;
-
+ 
   const matchedReportsAll = [];
   const lead0s = [];
   currentEvents.forEach(e => {
@@ -1153,14 +1299,14 @@ function computeDayStats(){
       if(r && r.leadtime !== null && r.leadtime !== undefined) matchedReportsAll.push(r.leadtime);
     });
   });
-
+ 
   // Office-level aggregate only — a count of distinct forecaster codes
   // active in this window, not a per-person breakdown. Individual
   // scorecards read as surveillance and aren't something this tool
   // does; if per-forecaster review is genuinely needed, that belongs
   // in a controlled internal process, not a shareable-URL dashboard.
   const distinctForecasters = new Set(currentEvents.map(e => e.fcster).filter(Boolean)).size;
-
+ 
   dayStats = {
     hits, falseAlarms, misses,
     pod, far, csi,
@@ -1168,10 +1314,68 @@ function computeDayStats(){
     avgLeadAll: matchedReportsAll.length ? matchedReportsAll.reduce((a,b)=>a+b,0)/matchedReportsAll.length : null,
     maxLead: matchedReportsAll.length ? Math.max(...matchedReportsAll) : null,
     minLead: matchedReportsAll.length ? Math.min(...matchedReportsAll) : null,
-    distinctForecasters
+    distinctForecasters,
+    leadTimeSamples: matchedReportsAll
   };
 }
-
+ 
+// Combines what IEM Cow itself computed (area_verify%, shared_border%,
+// tdq_stormreports — captured during fetchAndParseCow as currentIemStats)
+// with two size metrics computed here instead of trusting IEM's, for
+// the same calendar-day-boundary reason the rest of this app computes
+// its own POD/FAR/CSI: IEM's numbers reflect its own padded query
+// window, not the exact day/range being viewed. Awaits drawZoneLayer()
+// first since the county-size comparison needs zone geometry that may
+// not have loaded yet for a WFO switched to moments ago.
+async function computePolygonQualityStats(){
+  await drawZoneLayer();
+  const areas = currentEvents.map(e => estimatePolygonAreaKm2(e.geometry)).filter(a => a !== null && a > 0);
+  const avgPolygonAreaKm2 = areas.length ? areas.reduce((a,b)=>a+b,0)/areas.length : null;
+  const avgCountyAreaKm2 = estimateAvgCountyAreaKm2();
+  const sizeVsCountyPct = (avgPolygonAreaKm2 !== null && avgCountyAreaKm2) ? (avgPolygonAreaKm2 / avgCountyAreaKm2) * 100 : null;
+  polygonStats = {
+    avgPolygonAreaKm2,
+    sizeVsCountyPct,
+    areaVerifyPct: currentIemStats ? currentIemStats.areaVerifyPct : null,
+    sharedBorderPct: currentIemStats ? currentIemStats.sharedBorderPct : null,
+    tdqStormReports: currentIemStats ? currentIemStats.tdqStormReports : null
+  };
+}
+ 
+const LEAD_TIME_BUCKETS = [
+  { label: '<0',   test: v => v < 0 },
+  { label: '0-5',  test: v => v >= 0 && v < 5 },
+  { label: '5-10', test: v => v >= 5 && v < 10 },
+  { label: '10-15',test: v => v >= 10 && v < 15 },
+  { label: '15-20',test: v => v >= 15 && v < 20 },
+  { label: '20-30',test: v => v >= 20 && v < 30 },
+  { label: '30+',  test: v => v >= 30 }
+];
+// Small inline SVG bar chart — deliberately not a full modal/artifact,
+// since it's meant to be a quick "is our lead time consistent or all
+// over the place" glance to sit right in the stats panel next to the
+// averages it's expanding on.
+function renderLeadTimeHistogram(samples){
+  if(!samples || samples.length === 0) return '';
+  const counts = LEAD_TIME_BUCKETS.map(b => samples.filter(b.test).length);
+  const maxCount = Math.max(...counts, 1);
+  const W = 400, H = 92, padL = 4, padR = 4, padT = 14, padB = 16;
+  const barW = (W - padL - padR) / counts.length;
+  let bars = '';
+  counts.forEach((c, i) => {
+    const h = (c / maxCount) * (H - padT - padB);
+    const x = padL + i * barW;
+    const y = H - padB - h;
+    bars += `<rect x="${(x+3).toFixed(1)}" y="${y.toFixed(1)}" width="${(barW-6).toFixed(1)}" height="${h.toFixed(1)}" fill="#60a5fa" rx="2"/>`;
+    bars += `<text x="${(x+barW/2).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="8" fill="#7a8ba3">${LEAD_TIME_BUCKETS[i].label}</text>`;
+    if(c > 0) bars += `<text x="${(x+barW/2).toFixed(1)}" y="${(y-3).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#cbd5e1">${c}</text>`;
+  });
+  return `<div style="margin-top:10px;">
+    <div class="kv-k" style="margin-bottom:4px;">Lead Time Distribution (min)</div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;" role="img" aria-label="Lead time distribution histogram, ${samples.length} matched reports">${bars}</svg>
+  </div>`;
+}
+ 
 function renderDayStats(){
   const body = document.getElementById('dayStatsBody');
   if(!dayStats || currentEvents.length === 0){
@@ -1181,6 +1385,16 @@ function renderDayStats(){
   const fmtPct = v => v === null ? '—' : (v*100).toFixed(0) + '%';
   const fmtNum = v => v === null ? '—' : v.toFixed(2);
   const fmtMin = v => v === null ? '—' : v.toFixed(1) + ' min';
+  const fmtKm2 = v => v === null || v === undefined ? '—' : v.toFixed(0) + ' km²';
+  const fmtPctRaw = v => v === null || v === undefined ? '—' : v.toFixed(0) + '%';
+  const fmtCount = v => v === null || v === undefined ? '—' : v;
+  const polygonRows = polygonStats ? `
+    <div class="daystat-row" style="margin-top:6px;border-top:1px solid #1e2a3a;padding-top:8px;"><div><div class="ds-name">Avg Polygon Size</div></div><div class="ds-val">${fmtKm2(polygonStats.avgPolygonAreaKm2)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Polygon vs Avg County Size</div><span class="ds-formula">approx., vs CWA-average county</span></div><div class="ds-val">${fmtPctRaw(polygonStats.sizeVsCountyPct)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Area Verified</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtPctRaw(polygonStats.areaVerifyPct)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">Shared Border</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtPctRaw(polygonStats.sharedBorderPct)}</div></div>
+    <div class="daystat-row"><div><div class="ds-name">TOR Reports Outside Co-located SVR</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtCount(polygonStats.tdqStormReports)}</div></div>
+  ` : '';
   body.innerHTML = `
     <div class="daystat-row"><div><div class="ds-name">FAR</div><span class="ds-formula">C / (Aw + C)</span></div><div class="ds-val">${fmtPct(dayStats.far)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">POD</div><span class="ds-formula">Ae / (Ae + B)</span></div><div class="ds-val">${fmtPct(dayStats.pod)}</div></div>
@@ -1190,9 +1404,11 @@ function renderDayStats(){
     <div class="daystat-row"><div><div class="ds-name">Max Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.maxLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Min Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.minLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Warning Meteorologists</div><span class="ds-formula">distinct codes, not individually broken out</span></div><div class="ds-val">${dayStats.distinctForecasters}</div></div>
+    ${polygonRows}
+    ${renderLeadTimeHistogram(dayStats.leadTimeSamples)}
   `;
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  FETCHING
 // ══════════════════════════════════════════════════════════════
@@ -1203,7 +1419,7 @@ function setStatus(msg, isError){
   el.classList.remove('hidden');
   el.classList.toggle('error', !!isError);
 }
-
+ 
 // Warnings can start just before local midnight and still be active
 // (or verify) into the selected window. IEM's own query only includes an
 // event if it was ISSUED after begints — so a warning issued at 11:41pm
@@ -1220,7 +1436,7 @@ const BOUNDARY_PAD_HOURS = 6;
 // server (see the "review our practices" line on their site).
 const COW_CHUNK_MS = 31 * 24 * 3600 * 1000;
 const COW_CHUNK_CONCURRENCY = 3;
-
+ 
 async function fetchCowRaw(wfoCode, queryStart, queryEnd){
   const params = new URLSearchParams();
   params.set('wfo', wfoCode);
@@ -1234,7 +1450,86 @@ async function fetchCowRaw(wfoCode, queryStart, queryEnd){
   if(!res.ok) throw new Error('IEM Cow API returned HTTP ' + res.status + ' for ' + wfoCode);
   return res.json();
 }
-
+ 
+// IEM Cow's own response includes a "stats" object per query with a
+// few polygon-quality metrics this app doesn't (and mostly can't
+// cleanly) recompute itself — area_verify% (what fraction of the
+// polygon's AREA verified, not just count-based POD), shared_border%
+// (how much of the polygon's edge follows county lines rather than
+// being a true storm-based shape — a proxy for "box warnings"), and
+// tdq_stormreports (tornado-criteria reports that fell outside a
+// co-located SVR polygon). Each query chunk/WFO returns its own
+// "stats", so this combines them weighted by that chunk's
+// events_total rather than a flat average across chunks.
+function combineIemStats(statsList){
+  const valid = statsList.filter(Boolean);
+  if(valid.length === 0) return null;
+  let totalEvents = 0, areaVerifySum = 0, sharedBorderSum = 0, tdqSum = 0, haveArea = false, haveBorder = false, haveTdq = false;
+  valid.forEach(s => {
+    const n = Number(s['events_total']) || 0;
+    totalEvents += n;
+    const av = Number(s['area_verify%']);
+    if(!Number.isNaN(av)){ areaVerifySum += av * n; haveArea = true; }
+    const sb = Number(s['shared_border%']);
+    if(!Number.isNaN(sb)){ sharedBorderSum += sb * n; haveBorder = true; }
+    const tdq = Number(s['tdq_stormreports']);
+    if(!Number.isNaN(tdq)){ tdqSum += tdq; haveTdq = true; }
+  });
+  return {
+    areaVerifyPct: (haveArea && totalEvents > 0) ? areaVerifySum / totalEvents : null,
+    sharedBorderPct: (haveBorder && totalEvents > 0) ? sharedBorderSum / totalEvents : null,
+    tdqStormReports: haveTdq ? tdqSum : null
+  };
+}
+ 
+// Rough polygon area in km² via an equirectangular projection centered
+// on the polygon's own latitude. Warning polygons rarely span more
+// than ~150km, so this stays accurate to within a percent or two —
+// plenty for a relative "how big is this polygon" comparison, not a
+// survey-grade calculation. Handles Polygon/MultiPolygon and subtracts
+// hole rings (any ring after the first) from the outer ring's area.
+function estimatePolygonAreaKm2(geometry){
+  if(!geometry) return null;
+  const polygons = geometry.type === 'MultiPolygon' ? geometry.coordinates
+    : (geometry.type === 'Polygon' ? [geometry.coordinates] : null);
+  if(!polygons) return null;
+  let totalKm2 = 0;
+  polygons.forEach(rings => {
+    rings.forEach((ring, ringIdx) => {
+      if(!ring || ring.length < 3) return;
+      const lats = ring.map(c => c[1]);
+      const lat0 = lats.reduce((a,b)=>a+b,0) / lats.length;
+      const kmPerDegLat = 110.574;
+      const kmPerDegLon = 111.320 * Math.cos(lat0 * Math.PI/180);
+      const pts = ring.map(c => [c[0]*kmPerDegLon, c[1]*kmPerDegLat]);
+      let area = 0;
+      for(let i=0;i<pts.length;i++){
+        const [x1,y1] = pts[i];
+        const [x2,y2] = pts[(i+1)%pts.length];
+        area += x1*y2 - x2*y1;
+      }
+      area = Math.abs(area) / 2;
+      totalKm2 += (ringIdx === 0 ? area : -area);
+    });
+  });
+  return totalKm2;
+}
+ 
+// Average county/zone size across the currently-active CWA(s), used as
+// a rough yardstick for "is this polygon bigger or smaller than a
+// typical county here" — compared against the CWA average rather than
+// each warning's own specific county, since matching UGC codes back to
+// exact zone geometry per-warning added a lot of complexity for a
+// number that's meant to be a rough gut-check, not a precise ratio.
+function estimateAvgCountyAreaKm2(){
+  const activeWfos = [settings.wfo, ...compareWfos];
+  const features = activeWfos.flatMap(wfo => zoneCacheByWfo[wfo] || []);
+  if(features.length === 0) return null;
+  const areas = features.map(f => estimatePolygonAreaKm2(f.geometry)).filter(a => a !== null && a > 0);
+  if(areas.length === 0) return null;
+  return areas.reduce((a,b)=>a+b,0) / areas.length;
+}
+ 
 function mapRawEventFeature(f){
   const p = f.properties;
   return {
@@ -1262,7 +1557,7 @@ function mapRawEventFeature(f){
     status: computeStatus(p)
   };
 }
-
+ 
 function mapRawReportFeature(f, windowStartMs, windowEndMs){
   const p = f.properties;
   const validMs = new Date(p.valid).getTime();
@@ -1277,7 +1572,7 @@ function mapRawReportFeature(f, windowStartMs, windowEndMs){
     inRange: validMs >= windowStartMs && validMs < windowEndMs
   };
 }
-
+ 
 // Fetches a padded window from IEM, then filters back down to whatever
 // the true window (windowStart/windowEnd, both real Date objects)
 // actually is. Splits into date chunks and/or multiple WFOs as needed,
@@ -1287,10 +1582,10 @@ async function fetchAndParseCow(windowStart, windowEnd, options){
   options = options || {};
   const wfoCodes = options.wfoCodes && options.wfoCodes.length ? options.wfoCodes : [settings.wfo];
   const onProgress = options.onProgress || null;
-
+ 
   const queryStart = new Date(windowStart.getTime() - BOUNDARY_PAD_HOURS*3600*1000);
   const queryEnd = new Date(windowEnd.getTime() + BOUNDARY_PAD_HOURS*3600*1000);
-
+ 
   const dateChunks = [];
   let cursor = queryStart.getTime();
   const queryEndMs = queryEnd.getTime();
@@ -1303,12 +1598,12 @@ async function fetchAndParseCow(windowStart, windowEnd, options){
       cursor = chunkEndMs;
     }
   }
-
+ 
   const tasks = [];
   wfoCodes.forEach(wfo => dateChunks.forEach(([cs, ce]) => tasks.push({ wfo, cs, ce })));
-
+ 
   const seenEventIds = new Set(), seenReportIds = new Set();
-  const rawEventFeatures = [], rawReportFeatures = [];
+  const rawEventFeatures = [], rawReportFeatures = [], rawStatsList = [];
   let completed = 0;
   let taskIdx = 0;
   async function worker(){
@@ -1321,13 +1616,14 @@ async function fetchAndParseCow(windowStart, windowEnd, options){
       (data.stormreports.features || []).forEach(f => {
         if(!seenReportIds.has(f.id)){ seenReportIds.add(f.id); rawReportFeatures.push(f); }
       });
+      rawStatsList.push(data.stats || null);
       completed++;
       if(onProgress) onProgress(completed, tasks.length);
     }
   }
   const workerCount = Math.min(COW_CHUNK_CONCURRENCY, tasks.length);
   await Promise.all(Array.from({ length: workerCount }, worker));
-
+ 
   const windowStartMs = windowStart.getTime(), windowEndMs = windowEnd.getTime();
   const allEvents = rawEventFeatures.map(mapRawEventFeature);
   // Keep any warning whose active window overlaps the true window at
@@ -1342,10 +1638,10 @@ async function fetchAndParseCow(windowStart, windowEnd, options){
   // window), but flag which ones actually fall inside it, for anything
   // that displays "reports in view" specifically.
   const reports = rawReportFeatures.map(f => mapRawReportFeature(f, windowStartMs, windowEndMs));
-
-  return { events, reports };
+ 
+  return { events, reports, iemStats: combineIemStats(rawStatsList) };
 }
-
+ 
 async function loadDay(dateStr){
   viewMode = 'day';
   currentRangeStart = null;
@@ -1359,19 +1655,23 @@ async function loadDay(dateStr){
     const dayStart = localMidnightToUTC(dateStr, settings.timezone);
     const dayEnd = localMidnightToUTC(addDaysToDateStr(dateStr, 1), settings.timezone);
     const wfoCodes = [settings.wfo, ...compareWfos];
-    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd, {
+    const { events, reports, iemStats } = await fetchAndParseCow(dayStart, dayEnd, {
       wfoCodes,
       onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${dateStr} — request ${done} of ${total}…`, false); }
     });
     currentEvents = events;
     currentReports = reports;
+    currentIemStats = iemStats;
     computeDayStats();
+    await computePolygonQualityStats();
     setStatus(null);
   } catch(err){
     console.error(err);
     currentEvents = [];
     currentReports = [];
     dayStats = null;
+    currentIemStats = null;
+    polygonStats = null;
     setStatus('Could not load data from IEM: ' + err.message, true);
   }
   updateRangeBanner();
@@ -1381,7 +1681,7 @@ async function loadDay(dateStr){
   refreshMpingIfEnabled();
   if(dateStr === todayInTZ(settings.timezone)) startLiveMode(); else stopLiveMode();
 }
-
+ 
 async function loadRange(startStr, endStr){
   viewMode = 'range';
   rangeLabel = startStr + '  →  ' + endStr;
@@ -1393,19 +1693,23 @@ async function loadRange(startStr, endStr){
     const rangeStart = localMidnightToUTC(startStr, settings.timezone);
     const rangeEnd = localMidnightToUTC(addDaysToDateStr(endStr, 1), settings.timezone);
     const wfoCodes = [settings.wfo, ...compareWfos];
-    const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd, {
+    const { events, reports, iemStats } = await fetchAndParseCow(rangeStart, rangeEnd, {
       wfoCodes,
       onProgress: (done, total) => { if(total > 1) setStatus(`Loading warnings for ${rangeLabel} — request ${done} of ${total}…`, false); }
     });
     currentEvents = events;
     currentReports = reports;
+    currentIemStats = iemStats;
     computeDayStats();
+    await computePolygonQualityStats();
     setStatus(null);
   } catch(err){
     console.error(err);
     currentEvents = [];
     currentReports = [];
     dayStats = null;
+    currentIemStats = null;
+    polygonStats = null;
     setStatus('Could not load range data from IEM: ' + err.message, true);
   }
   updateRangeBanner();
@@ -1415,7 +1719,7 @@ async function loadRange(startStr, endStr){
   refreshMpingIfEnabled();
   stopLiveMode();
 }
-
+ 
 function updateRangeBanner(){
   const banner = document.getElementById('rangeBanner');
   const statsTitle = document.getElementById('dayStatsTitle');
@@ -1440,7 +1744,7 @@ function updateRangeBanner(){
     if(radarToggle) radarToggle.disabled = false;
   }
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  URL STATE — makes the current view shareable via the address bar
 // ══════════════════════════════════════════════════════════════
@@ -1467,7 +1771,7 @@ function updateUrlState(){
   const newUrl = window.location.pathname + '?' + params.toString();
   history.replaceState(null, '', newUrl);
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  PDS / EMERGENCY SCAN
 // ══════════════════════════════════════════════════════════════
@@ -1504,7 +1808,7 @@ async function scanForPdsEmergency(){
     if(e) renderDetails(e);
   }
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  mPING — crowd-sourced report overlay (separate from LSRs)
 // ══════════════════════════════════════════════════════════════
@@ -1524,7 +1828,7 @@ function getActiveZoneBbox(){
     return [b.getWest()-pad, b.getSouth()-pad, b.getEast()+pad, b.getNorth()+pad].join(',');
   }catch(err){ return null; }
 }
-
+ 
 function currentWindowForMping(){
   if(viewMode === 'range' && currentRangeStart && currentRangeEnd){
     return {
@@ -1538,7 +1842,7 @@ function currentWindowForMping(){
     end: localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone)
   };
 }
-
+ 
 async function fetchMpingReports(windowStart, windowEnd){
   const bbox = getActiveZoneBbox();
   const results = [];
@@ -1566,7 +1870,7 @@ async function fetchMpingReports(windowStart, windowEnd){
   }
   return results;
 }
-
+ 
 // Only runs when the toggle is on; safe to call after every load —
 // no-ops instantly if the toggle is off. A monotonically increasing
 // token guards against a slow request from an earlier day/WFO landing
@@ -1592,7 +1896,7 @@ async function refreshMpingIfEnabled(){
   drawMpingOnMap();
   renderMapLegend();
 }
-
+ 
 function drawMpingOnMap(){
   if(!mpingLayer) return;
   mpingLayer.clearLayers();
@@ -1618,12 +1922,12 @@ function drawMpingOnMap(){
     marker.addTo(mpingLayer);
   });
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  WFO SEARCHABLE COMBOBOX
 // ══════════════════════════════════════════════════════════════
 function wfoLabel(o){ return o ? `${o.id} — ${o.name}` : ''; }
-
+ 
 function getRecentWfos(){
   try{
     const raw = localStorage.getItem('btv_wfo_recent');
@@ -1637,11 +1941,11 @@ function addRecentWfo(code){
     localStorage.setItem('btv_wfo_recent', JSON.stringify(recents.slice(0,5)));
   }catch(err){ /* localStorage unavailable — recents just won't persist */ }
 }
-
+ 
 function initWfoCombo(){
   document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === settings.wfo));
 }
-
+ 
 function renderWfoDropdown(query){
   const dd = document.getElementById('wfoDropdown');
   const q = (query || '').trim().toUpperCase();
@@ -1657,7 +1961,7 @@ function renderWfoDropdown(query){
   }
   wfoFilteredList = list;
   wfoHighlightIdx = list.length ? 0 : -1;
-
+ 
   if(list.length === 0){
     dd.innerHTML = `<div class="wfo-opt-empty">No matching office</div>`;
   } else {
@@ -1677,14 +1981,14 @@ function renderWfoDropdown(query){
     el.addEventListener('mouseenter', () => { wfoHighlightIdx = parseInt(el.dataset.idx, 10); updateWfoHighlight(); });
   });
 }
-
+ 
 function updateWfoHighlight(){
   const opts = document.querySelectorAll('.wfo-opt');
   opts.forEach((el, i) => el.classList.toggle('highlighted', i === wfoHighlightIdx));
   const active = document.querySelector('.wfo-opt.highlighted');
   if(active) active.scrollIntoView({ block: 'nearest' });
 }
-
+ 
 function openWfoDropdown(){
   wfoDropdownOpen = true;
   document.getElementById('wfoDropdown').classList.add('open');
@@ -1700,7 +2004,7 @@ function chooseWfoOption(code){
   closeWfoDropdown();
   switchWfo(code);
 }
-
+ 
 function switchWfo(newWfo){
   if(!newWfo) return;
   document.getElementById('wfoSearchInput').value = wfoLabel(WFO_LIST.find(o => o.id === newWfo));
@@ -1713,13 +2017,13 @@ function switchWfo(newWfo){
   phenomenaFilter = null;
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  COMPARE OFFICES — overlay up to 3 additional WFOs
 // ══════════════════════════════════════════════════════════════
 const COMPARE_MAX = 3;
 let pendingCompareWfos = [];
-
+ 
 function updateCompareBtnLabel(){
   const btn = document.getElementById('compareBtn');
   if(compareWfos.length){
@@ -1730,7 +2034,7 @@ function updateCompareBtnLabel(){
     btn.classList.remove('active');
   }
 }
-
+ 
 function renderCompareList(query){
   const list = document.getElementById('compareList');
   const q = (query || '').trim().toUpperCase();
@@ -1760,7 +2064,7 @@ function renderCompareList(query){
     });
   });
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  RENDER: QUEUE CARDS
 // ══════════════════════════════════════════════════════════════
@@ -1807,7 +2111,7 @@ function renderQueue(){
   const nextUnverifiedBtn = document.getElementById('nextUnverifiedBtn');
   if(nextUnverifiedBtn) nextUnverifiedBtn.addEventListener('click', jumpToNextUnverified);
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  ROW NAVIGATION (keyboard: j/k, n)
 // ══════════════════════════════════════════════════════════════
@@ -1818,7 +2122,7 @@ function getVisibleRows(){
   if(phenomenaFilter) rows = rows.filter(e => e.phenomena === phenomenaFilter);
   return rows;
 }
-
+ 
 function stepSelectedEvent(direction){
   const rows = getVisibleRows();
   if(rows.length === 0) return;
@@ -1828,7 +2132,7 @@ function stepSelectedEvent(direction){
   const tr = document.querySelector(`tr[data-id="${CSS.escape(rows[idx].id)}"]`);
   if(tr) tr.scrollIntoView({ block: 'nearest' });
 }
-
+ 
 function jumpToNextUnverified(){
   let pool = currentEvents.filter(e => e.status === 'needs_verification');
   if(phenomenaFilter) pool = pool.filter(e => e.phenomena === phenomenaFilter);
@@ -1841,7 +2145,7 @@ function jumpToNextUnverified(){
   const tr = document.querySelector(`tr[data-id="${CSS.escape(pool[idx].id)}"]`);
   if(tr) tr.scrollIntoView({ block: 'nearest' });
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  RENDER: WARNINGS TABLE
 // ══════════════════════════════════════════════════════════════
@@ -1850,16 +2154,16 @@ function countyLabel(counties){
   if(counties.length === 1) return counties[0];
   return counties[0] + ' +' + (counties.length-1);
 }
-
+ 
 function renderWarnTable(){
   const tbody = document.getElementById('warnTableBody');
   const onlyUnverified = document.getElementById('filterOnlyUnverified').checked;
   let rows = currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue));
   if(onlyUnverified) rows = rows.filter(e => e.status !== 'verified');
   if(phenomenaFilter) rows = rows.filter(e => e.phenomena === phenomenaFilter);
-
+ 
   document.getElementById('warnEmpty').style.display = rows.length === 0 ? 'block' : 'none';
-
+ 
   tbody.innerHTML = rows.map(e => {
     const meta = PHEN_META[e.phenomena] || { code: e.phenomena, name: e.phenomena, color:'#94a3b8' };
     const st = STATUS_META[e.status];
@@ -1874,12 +2178,12 @@ function renderWarnTable(){
       <td><span class="status-pill" style="color:${st.color};"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span></td>
     </tr>`;
   }).join('');
-
+ 
   tbody.querySelectorAll('tr').forEach(tr => {
     tr.addEventListener('click', () => selectEvent(tr.dataset.id));
   });
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  RENDER: SUMMARY DONUT
 // ══════════════════════════════════════════════════════════════
@@ -1889,13 +2193,13 @@ function renderSummary(){
   scoped.forEach(e => counts[e.status]++);
   const total = scoped.length;
   document.getElementById('donutTotal').textContent = total;
-
+ 
   const svg = document.getElementById('donutSvg');
   const order = ['verified','needs_verification','pending'];
   let cumulative = 0;
   const R = 40, CX = 50, CY = 50, STROKE = 14;
   const circumference = 2 * Math.PI * R;
-
+ 
   let arcs = '';
   if(total === 0){
     arcs = `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#1e2a3a" stroke-width="${STROKE}"/>`;
@@ -1919,7 +2223,7 @@ function renderSummary(){
     return `${STATUS_META[key].label} ${counts[key]} of ${total} (${pct}%)`;
   });
   svg.setAttribute('aria-label', total === 0 ? 'No warnings for this view.' : 'Verification summary: ' + summaryParts.join(', ') + '.');
-
+ 
   const legend = document.getElementById('summaryLegend');
   legend.innerHTML = order.map(key => {
     const pct = total ? Math.round((counts[key]/total)*100) : 0;
@@ -1930,7 +2234,7 @@ function renderSummary(){
     </div>`;
   }).join('');
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  RENDER: REPORTS TABLE
 // ══════════════════════════════════════════════════════════════
@@ -1952,7 +2256,7 @@ function renderReportsTable(){
       }).join(' ') || '—'}</td>
     </tr>`;
   }).join('');
-
+ 
   tbody.querySelectorAll('[data-jump-etn]').forEach(el => {
     el.addEventListener('click', (ev) => { ev.stopPropagation(); switchSubtab('map'); selectEvent(el.dataset.jumpEtn); });
   });
@@ -1963,7 +2267,7 @@ function renderReportsTable(){
     });
   });
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  MAP
 // ══════════════════════════════════════════════════════════════
@@ -1979,11 +2283,11 @@ function initMap(){
   map.setView([44.3,-72.9], 7);
   drawZoneLayer();
 }
-
+ 
 async function drawZoneLayer(){
   const activeWfos = [settings.wfo, ...compareWfos];
   const fetchKey = activeWfos.slice().sort().join(',');
-
+ 
   await Promise.all(activeWfos.map(async wfo => {
     if(zoneCacheByWfo[wfo]) return;
     try{
@@ -2000,17 +2304,17 @@ async function drawZoneLayer(){
       zoneCacheByWfo[wfo] = [];
     }
   }));
-
+ 
   // If the active WFO set changed again while these fetches were in
   // flight, don't clobber the current (newer) view with stale results.
   if(fetchKey !== activeWfos.slice().sort().join(',')) return;
-
+ 
   const allFeatures = activeWfos.flatMap(wfo => zoneCacheByWfo[wfo] || []);
   zoneLayer.clearLayers();
   const gj = L.geoJSON({ type:'FeatureCollection', features: allFeatures }, {
     style: { color:'#3a4f6c', weight:1, opacity:0.5, fillOpacity:0 }
   }).addTo(zoneLayer);
-
+ 
   // Only auto-fit when the active WFO set actually changed — otherwise
   // this would fight the user's own panning/zooming every time the
   // same set is reloaded for a different date or range.
@@ -2023,7 +2327,7 @@ async function drawZoneLayer(){
     }
   }
 }
-
+ 
 function drawWarningsOnMap(){
   warningLayer.clearLayers();
   const bounds = [];
@@ -2049,7 +2353,7 @@ function drawWarningsOnMap(){
     map.fitBounds(combined, { padding: [30,30], maxZoom: 10 });
   }
 }
-
+ 
 function drawLsrsOnMap(){
   lsrLayer.clearLayers();
   if(!showLsrs) return;
@@ -2077,7 +2381,7 @@ function drawLsrsOnMap(){
     marker.addTo(lsrLayer);
   });
 }
-
+ 
 function renderMapLegend(){
   const bar = document.getElementById('mapLegendBar');
   let html = Object.keys(PHEN_META).map(k => `<span class="lg-item"><span class="lg-dot" style="background:${PHEN_META[k].color};"></span>${PHEN_META[k].code}</span>`).join('');
@@ -2105,7 +2409,7 @@ function renderMapLegend(){
   }
   bar.innerHTML = html;
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  SELECT EVENT + RENDER DETAILS
 // ══════════════════════════════════════════════════════════════
@@ -2121,7 +2425,7 @@ function selectEvent(id){
   }
   renderDetails(e);
 }
-
+ 
 async function getProductText(e){
   if(productTextCache[e.product_id]) return productTextCache[e.product_id];
   try{
@@ -2133,13 +2437,13 @@ async function getProductText(e){
     return null;
   }
 }
-
+ 
 function extractVtecLine(text){
   if(!text) return null;
   const m = text.match(/\/[OT]\.[A-Z]{3}\.[A-Z]{4}\.[A-Z]{2}\.[A-Z]\.\d{4}\.\d{6}T\d{4}Z-\d{6}T\d{4}Z\//);
   return m ? m[0] : null;
 }
-
+ 
 function extractWarningBody(text){
   if(!text) return null;
   // Strip the WMO/AFOS header lines and leading UGC/VTEC lines, keep the
@@ -2151,19 +2455,40 @@ function extractWarningBody(text){
   }
   return lines.slice(startIdx).join('\n').trim();
 }
-
+ 
 async function renderDetails(e){
   document.getElementById('detailsEmpty').style.display = 'none';
   const scroll = document.getElementById('detailsScroll');
   scroll.style.display = 'block';
-
+ 
   const meta = PHEN_META[e.phenomena] || { code: e.phenomena, name: e.phenomena, color:'#94a3b8' };
   const st = STATUS_META[e.status];
   const matchedReports = e.stormreports.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
   const allNearbyReports = e.stormreports_all.map(rid => currentReports.find(r => String(r.id) === rid)).filter(Boolean);
   const flagBadge = e.emergencyFlag ? '<span class="emg-badge">EMERGENCY</span>' : (e.pdsFlag ? '<span class="pds-badge">PDS</span>' : '');
   const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(e.wfo)}</span>` : '';
-
+ 
+  // Tagged Threat: the forecaster's windtag/hailtag from the warning's
+  // IBW tags at issuance, alongside the peak magnitude actually seen in
+  // the matched reports below — a quick "was the tag well-calibrated"
+  // comparison. Wind reports use LSR type codes G (gust) and D (damage);
+  // hail is H — both already share units with the tags (MPH, inches).
+  const taggedBits = [];
+  if(e.windtag !== null && e.windtag !== undefined && String(e.windtag).trim() !== '') taggedBits.push(`${e.windtag} MPH wind`);
+  if(e.hailtag !== null && e.hailtag !== undefined && String(e.hailtag).trim() !== '') taggedBits.push(`${e.hailtag} in hail`);
+  let taggedVsActual = '';
+  if(taggedBits.length){
+    const windMags = matchedReports.filter(r => r.type === 'G' || r.type === 'D').map(r => r.magnitude).filter(m => m !== null && m !== undefined);
+    const hailMags = matchedReports.filter(r => r.type === 'H').map(r => r.magnitude).filter(m => m !== null && m !== undefined);
+    const bits = [];
+    if(e.windtag && windMags.length) bits.push(`peak reported ${Math.max(...windMags)} MPH`);
+    if(e.hailtag && hailMags.length) bits.push(`peak reported ${Math.max(...hailMags)} in`);
+    if(bits.length) taggedVsActual = ` (${bits.join(', ')})`;
+  }
+  const taggedThreatHtml = taggedBits.length
+    ? `<div><div class="kv-k">Tagged Threat</div><div class="kv-v">${escapeHtml(taggedBits.join(' / '))}${escapeHtml(taggedVsActual)}</div></div>`
+    : '';
+ 
   scroll.innerHTML = `
     <div class="details-header">
       <span class="etn-badge">${wfoTag}ETN ${e.etn}</span>
@@ -2176,6 +2501,7 @@ async function renderDetails(e){
         <div><div class="kv-k">Expires</div><div class="kv-v">${fmtLocalFull(e.expire, settings.timezone)}</div></div>
         <div><div class="kv-k">County/Zone</div><div class="kv-v">${escapeHtml((e.counties||[]).join(', ') || '—')}</div></div>
         <div><div class="kv-k">Forecaster</div><div class="kv-v">${escapeHtml(e.fcster || '—')}</div></div>
+        ${taggedThreatHtml}
       </div>
       <div class="kv-k" style="margin-top:10px;">Timeline</div>
       ${renderTimelineBar(e, matchedReports)}
@@ -2207,14 +2533,14 @@ async function renderDetails(e){
     </div>
     ${renderRelatedEvents(e)}
   `;
-
+ 
   // Async: VTEC + warning text
   const text = await getProductText(e);
   const vtecEl = document.getElementById('vtecLine-'+e.id);
   const textEl = document.getElementById('warnText-'+e.id);
   if(vtecEl) vtecEl.textContent = extractVtecLine(text) || '(unavailable)';
   if(textEl) textEl.textContent = extractWarningBody(text) || '(could not load warning text)';
-
+ 
   scroll.querySelectorAll('[data-report-id]').forEach(tr => {
     tr.addEventListener('click', () => {
       const r = currentReports.find(x => String(x.id) === tr.dataset.reportId);
@@ -2225,7 +2551,7 @@ async function renderDetails(e){
     tr.addEventListener('click', () => { switchSubtab('map'); selectEvent(tr.dataset.relatedId); });
   });
 }
-
+ 
 function renderTimelineBar(e, matchedReports){
   const issueMs = new Date(e.issue).getTime();
   const expireMs = new Date(e.expire).getTime();
@@ -2252,7 +2578,7 @@ function renderTimelineBar(e, matchedReports){
     </div>
   `;
 }
-
+ 
 // Not derived from any authoritative IEM linkage field — IEM Cow
 // doesn't expose "this warning replaced/upgraded that one" directly.
 // This is a timing + geography heuristic only: other warnings sharing
@@ -2273,7 +2599,7 @@ function computeRelatedEvents(e){
     return oIssueMs >= (eIssueMs - RELATED_WINDOW_MS) && oIssueMs <= (eExpireMs + RELATED_WINDOW_MS);
   }).sort((a,b) => new Date(a.issue) - new Date(b.issue)).slice(0, 6);
 }
-
+ 
 function renderRelatedEvents(e){
   const related = computeRelatedEvents(e);
   if(related.length === 0) return '';
@@ -2301,7 +2627,7 @@ function renderRelatedEvents(e){
     </div>
   `;
 }
-
+ 
 function distToEventMi(e, r){
   // Use polygon centroid via Leaflet bounds if available.
   try{
@@ -2309,10 +2635,10 @@ function distToEventMi(e, r){
     return haversineMiles(b.lat, b.lng, r.lat, r.lon);
   }catch(err){ return 0; }
 }
-
-
-
-
+ 
+ 
+ 
+ 
 // ══════════════════════════════════════════════════════════════
 //  LIVE MODE — auto-poll IEM while viewing today, toast new warnings
 // ══════════════════════════════════════════════════════════════
@@ -2325,7 +2651,7 @@ function showToast(message){
   stack.appendChild(t);
   setTimeout(() => { t.style.transition = 'opacity .4s ease'; t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 8000);
 }
-
+ 
 function startLiveMode(){
   stopLiveMode();
   knownIds = new Set(currentEvents.map(e => e.id));
@@ -2336,19 +2662,21 @@ function stopLiveMode(){
   if(liveModeInterval){ clearInterval(liveModeInterval); liveModeInterval = null; }
   document.getElementById('liveBadge').classList.remove('on');
 }
-
+ 
 async function pollLiveUpdates(){
   // Guard against a stray timer firing after the view moved on.
   if(viewMode !== 'day' || selectedDateStr !== todayInTZ(settings.timezone)) { stopLiveMode(); return; }
   try{
     const dayStart = localMidnightToUTC(selectedDateStr, settings.timezone);
     const dayEnd = localMidnightToUTC(addDaysToDateStr(selectedDateStr, 1), settings.timezone);
-    const { events, reports } = await fetchAndParseCow(dayStart, dayEnd, { wfoCodes: [settings.wfo, ...compareWfos] });
+    const { events, reports, iemStats } = await fetchAndParseCow(dayStart, dayEnd, { wfoCodes: [settings.wfo, ...compareWfos] });
     const newOnes = events.filter(e => !knownIds.has(e.id));
     knownIds = new Set(events.map(e => e.id));
     currentEvents = events;
     currentReports = reports;
+    currentIemStats = iemStats;
     computeDayStats();
+    await computePolygonQualityStats();
     renderAll();
     scanForPdsEmergency();
     newOnes.forEach(e => {
@@ -2361,7 +2689,7 @@ async function pollLiveUpdates(){
     // scheduled tick will just try again.
   }
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  TRENDS — POD/FAR/CSI over the last N days
 // ══════════════════════════════════════════════════════════════
@@ -2377,7 +2705,7 @@ async function loadTrends(days){
     const { events, reports } = await fetchAndParseCow(rangeStart, rangeEnd, {
       onProgress: (done, total) => { if(total > 1) statusEl.textContent = `Loading ${days}-day trend for ${settings.wfo} — request ${done} of ${total}…`; }
     });
-
+ 
     const buckets = [];
     for(let i = 0; i < days; i++){
       const ds = addDaysToDateStr(startDateStr, i);
@@ -2418,7 +2746,7 @@ async function loadTrends(days){
     statusEl.textContent = 'Could not load trend data: ' + err.message;
   }
 }
-
+ 
 function renderTrendsHeatmap(buckets){
   const grid = document.getElementById('heatmapGrid');
   // Pad the front so the grid starts on a Sunday, GitHub-contributions
@@ -2427,14 +2755,14 @@ function renderTrendsHeatmap(buckets){
   const cells = [];
   for(let i = 0; i < firstDow; i++) cells.push(null);
   cells.push(...buckets);
-
+ 
   function csiColor(csi){
     if(csi === null || csi === undefined) return '#1a2536';
     const stops = ['#0e3a2f', '#0f6b4f', '#16a866', '#4ade80'];
     const idx = Math.min(stops.length - 1, Math.floor(csi * stops.length));
     return stops[idx];
   }
-
+ 
   grid.setAttribute('role', 'group');
   grid.setAttribute('aria-label', `Warning verification heatmap, ${buckets.length} days ending ${buckets[buckets.length-1].date}. Activate a day to open it.`);
   grid.innerHTML = cells.map(b => {
@@ -2445,7 +2773,7 @@ function renderTrendsHeatmap(buckets){
       : `${b.date} — ${b.total} warning${b.total===1?'':'s'}${b.csi!==null ? ', CSI ' + b.csi.toFixed(2) : ''}`;
     return `<div class="heatmap-cell" style="background:${color};" data-date="${b.date}" title="${escapeHtml(title)}" role="button" tabindex="0" aria-label="${escapeHtml(title)}"></div>`;
   }).join('');
-
+ 
   grid.querySelectorAll('.heatmap-cell[data-date]').forEach(el => {
     el.addEventListener('click', () => {
       closeModal('trendsModal');
@@ -2462,7 +2790,7 @@ function renderTrendsHeatmap(buckets){
     });
   });
 }
-
+ 
 function renderTrendsChart(buckets){
   const svg = document.getElementById('trendsSvg');
   const W = 640, H = 220, padL = 34, padR = 10, padT = 10, padB = 24;
@@ -2470,7 +2798,7 @@ function renderTrendsChart(buckets){
   const n = buckets.length;
   const xFor = i => padL + (n <= 1 ? 0 : (i / (n - 1)) * plotW);
   const yFor = v => padT + (1 - Math.max(0, Math.min(1, v))) * plotH;
-
+ 
   function pathFor(key){
     let d = '', started = false;
     buckets.forEach((b, i) => {
@@ -2482,14 +2810,14 @@ function renderTrendsChart(buckets){
     });
     return d.trim();
   }
-
+ 
   let gridLines = '';
   [0, 0.25, 0.5, 0.75, 1].forEach(f => {
     const y = padT + (1 - f) * plotH;
     gridLines += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#1e2a3a" stroke-width="1"/>`;
     gridLines += `<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="8.5" fill="#5a6b82">${Math.round(f*100)}%</text>`;
   });
-
+ 
   let xLabels = '';
   const labelStep = Math.max(1, Math.ceil(n / 8));
   buckets.forEach((b, i) => {
@@ -2497,7 +2825,7 @@ function renderTrendsChart(buckets){
       xLabels += `<text x="${xFor(i)}" y="${H-6}" text-anchor="middle" font-size="8" fill="#5a6b82">${b.date.slice(5)}</text>`;
     }
   });
-
+ 
   svg.innerHTML = `
     ${gridLines}
     ${xLabels}
@@ -2506,7 +2834,7 @@ function renderTrendsChart(buckets){
     <path d="${pathFor('pod')}" fill="none" stroke="#4ade80" stroke-width="2.5"/>
   `;
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  RADAR OVERLAY — IEM's time-enabled NEXRAD composite WMS
 // ══════════════════════════════════════════════════════════════
@@ -2522,14 +2850,14 @@ function renderTrendsChart(buckets){
 // exactly that.
 const RADAR_WMS_URL = 'https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q-t.cgi?';
 const RADAR_ARCHIVE_START = '2011-02-16';
-
+ 
 function radarTimeIsoFor(dateStr, minutesOfDay){
   const localDt = localMidnightToUTC(dateStr, settings.timezone);
   const targetMs = localDt.getTime() + minutesOfDay * 60000;
   const snappedMs = Math.floor(targetMs / (5*60000)) * (5*60000);
   return new Date(snappedMs).toISOString().replace(/\.\d+Z$/, 'Z');
 }
-
+ 
 // Nudges the radar slider by deltaMin (±5, matching the slider's own
 // step) without touching how the slider itself works — same clamp,
 // same downstream refresh calls the slider's own 'input' handler uses.
@@ -2541,14 +2869,14 @@ function stepRadarTime(deltaMin){
   updateRadarLayer();
   renderMapLegend();
 }
-
+ 
 function refreshRadarTimeLabel(){
   const mins = parseInt(document.getElementById('radarTimeSlider').value, 10);
   const hh = String(Math.floor(mins/60)).padStart(2,'0');
   const mm = String(mins%60).padStart(2,'0');
   document.getElementById('radarTimeLabel').textContent = hh + ':' + mm + ' local';
 }
-
+ 
 function updateRadarLayer(){
   if(radarLayer){ map.removeLayer(radarLayer); radarLayer = null; }
   if(!showRadar || viewMode !== 'day') return;
@@ -2570,8 +2898,8 @@ function updateRadarLayer(){
   });
   radarLayer.addTo(map);
 }
-
-
+ 
+ 
 // ══════════════════════════════════════════════════════════════
 //  EXPORTS — CSV data dump, PNG snapshot
 // ══════════════════════════════════════════════════════════════
@@ -2594,11 +2922,12 @@ function exportCsv(){
   lines.push(`# Warning Verification export — WFO ${settings.wfo} — ${viewMode==='range' ? ('Range '+rangeLabel) : ('Date '+selectedDateStr)}`);
   lines.push('');
   lines.push('## Warnings');
-  lines.push(['ETN','Product','Phenomena','County/Zone','Issued (UTC)','Expires (UTC)','Status','PDS','Emergency','Matched LSR Count'].join(','));
+  lines.push(['ETN','Product','Phenomena','County/Zone','Issued (UTC)','Expires (UTC)','Status','PDS','Emergency','Matched LSR Count','Tagged Wind (MPH)','Tagged Hail (in)'].join(','));
   currentEvents.slice().sort((a,b) => new Date(a.issue) - new Date(b.issue)).forEach(e => {
     const meta = PHEN_META[e.phenomena] || { code: e.phenomena };
     lines.push([e.etn, meta.code, e.phenomena, (e.counties||[]).join('; '), e.issue, e.expire,
-      STATUS_META[e.status].label, e.pdsFlag ? 'Y' : '', e.emergencyFlag ? 'Y' : '', e.stormreports.length
+      STATUS_META[e.status].label, e.pdsFlag ? 'Y' : '', e.emergencyFlag ? 'Y' : '', e.stormreports.length,
+      e.windtag !== null && e.windtag !== undefined ? e.windtag : '', e.hailtag !== null && e.hailtag !== undefined ? e.hailtag : ''
     ].map(csvEscape).join(','));
   });
   lines.push('');
@@ -2628,9 +2957,19 @@ function exportCsv(){
     lines.push(['FAR', dayStats.far !== null ? dayStats.far.toFixed(3) : ''].join(','));
     lines.push(['CSI', dayStats.csi !== null ? dayStats.csi.toFixed(3) : ''].join(','));
   }
+  if(polygonStats){
+    lines.push('');
+    lines.push('## Polygon Quality');
+    lines.push(['Metric','Value','Source'].join(','));
+    lines.push(['Avg Polygon Size (km2)', polygonStats.avgPolygonAreaKm2 !== null ? polygonStats.avgPolygonAreaKm2.toFixed(1) : '', 'computed locally'].map(csvEscape).join(','));
+    lines.push(['Polygon vs Avg County Size (%)', polygonStats.sizeVsCountyPct !== null ? polygonStats.sizeVsCountyPct.toFixed(0) : '', 'computed locally, vs CWA-average county'].map(csvEscape).join(','));
+    lines.push(['Area Verified (%)', polygonStats.areaVerifyPct !== null ? polygonStats.areaVerifyPct.toFixed(0) : '', 'IEM Cow, includes ~6hr boundary padding'].map(csvEscape).join(','));
+    lines.push(['Shared Border (%)', polygonStats.sharedBorderPct !== null ? polygonStats.sharedBorderPct.toFixed(0) : '', 'IEM Cow, includes ~6hr boundary padding'].map(csvEscape).join(','));
+    lines.push(['TOR Reports Outside Co-located SVR', polygonStats.tdqStormReports !== null && polygonStats.tdqStormReports !== undefined ? polygonStats.tdqStormReports : '', 'IEM Cow, includes ~6hr boundary padding'].map(csvEscape).join(','));
+  }
   downloadBlob(`${settings.wfo}_warnings_${label}.csv`, lines.join('\n'), 'text/csv');
 }
-
+ 
 async function exportPng(){
   const btn = document.getElementById('exportPngBtn');
   if(typeof html2canvas === 'undefined'){ alert('PNG export library failed to load — check your connection and try again.'); return; }
@@ -2658,7 +2997,7 @@ async function exportPng(){
     btn.classList.remove('spinning');
   }
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  RENDER ALL
 // ══════════════════════════════════════════════════════════════
@@ -2684,7 +3023,7 @@ function renderAll(){
     document.getElementById('detailsScroll').style.display='none';
   }
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  SUBTABS
 // ══════════════════════════════════════════════════════════════
@@ -2696,7 +3035,7 @@ function switchSubtab(name){
   if(name === 'map' && map) setTimeout(()=>map.invalidateSize(), 50);
   if(name === 'counties') renderCountiesTable();
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  COUNTY / ZONE BREAKDOWN
 // ══════════════════════════════════════════════════════════════
@@ -2718,7 +3057,7 @@ function computeCountyBreakdown(){
     return { name, total: t.total, verified: t.verified, far };
   }).sort((a,b) => b.total - a.total);
 }
-
+ 
 function renderCountiesTable(){
   const tbody = document.getElementById('countiesTableBody');
   const rows = computeCountyBreakdown();
@@ -2735,7 +3074,7 @@ function renderCountiesTable(){
     </tr>`;
   }).join('');
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  ARCHIVE — loads the whole range onto the main map/table/stats,
 //  rather than just showing a summary inside the modal.
@@ -2749,7 +3088,7 @@ async function runArchive(){
   switchSubtab('map');
   await loadRange(startStr, endStr);
 }
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  EVENT WIRING
 // ══════════════════════════════════════════════════════════════
@@ -2781,7 +3120,7 @@ wfoInput.addEventListener('keydown', (e) => {
   else if(e.key === 'Escape'){ closeWfoDropdown(); wfoInput.value = wfoLabel(WFO_LIST.find(o=>o.id===settings.wfo)); wfoInput.blur(); }
 });
 document.addEventListener('click', (e) => { if(!document.getElementById('wfoCombo').contains(e.target)) closeWfoDropdown(); });
-
+ 
 // Compare Offices
 document.getElementById('compareBtn').addEventListener('click', () => {
   pendingCompareWfos = compareWfos.slice();
@@ -2803,7 +3142,7 @@ document.getElementById('compareApplyBtn').addEventListener('click', () => {
     loadDay(selectedDateStr || todayInTZ(settings.timezone));
   }
 });
-
+ 
 // Radar overlay
 document.getElementById('showRadarToggle').addEventListener('change', (e) => {
   showRadar = e.target.checked;
@@ -2827,7 +3166,7 @@ document.getElementById('showRadarToggle').addEventListener('change', (e) => {
 document.getElementById('radarTimeSlider').addEventListener('input', () => { refreshRadarTimeLabel(); updateRadarLayer(); renderMapLegend(); });
 document.getElementById('radarStepBackBtn').addEventListener('click', () => stepRadarTime(-5));
 document.getElementById('radarStepFwdBtn').addEventListener('click', () => stepRadarTime(5));
-
+ 
 // Trends modal
 document.getElementById('trendsBtn').addEventListener('click', () => { openModal('trendsModal'); loadTrends(30); });
 document.querySelectorAll('.trend-range-btn').forEach(btn => btn.addEventListener('click', () => {
@@ -2835,12 +3174,12 @@ document.querySelectorAll('.trend-range-btn').forEach(btn => btn.addEventListene
   btn.classList.add('active');
   loadTrends(parseInt(btn.dataset.days, 10));
 }));
-
+ 
 // Exports + print
 document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
 document.getElementById('exportPngBtn').addEventListener('click', exportPng);
 document.getElementById('printBtn').addEventListener('click', () => window.print());
-
+ 
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   if(e.key === 'Escape'){
@@ -2859,20 +3198,20 @@ document.addEventListener('keydown', (e) => {
   else if(e.key === 'k'){ e.preventDefault(); stepSelectedEvent(-1); }
   else if(e.key === 'n'){ e.preventDefault(); jumpToNextUnverified(); }
 });
-
+ 
 document.querySelectorAll('.subtab-btn').forEach(btn => btn.addEventListener('click', () => switchSubtab(btn.dataset.subtab)));
-
+ 
 document.getElementById('refreshBtn').addEventListener('click', () => {
   document.getElementById('refreshIcon').parentElement.classList.add('spinning');
   loadDay(selectedDateStr).finally(() => {
     setTimeout(()=>document.getElementById('refreshBtn').classList.remove('spinning'), 500);
   });
 });
-
+ 
 // Modals
 let lastFocusedBeforeModal = null;
 const FOCUSABLE_SEL = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
+ 
 function openModal(id){
   const el = document.getElementById(id);
   el.classList.add('open');
@@ -2905,7 +3244,7 @@ function closeModal(id){
   if(lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') lastFocusedBeforeModal.focus();
   lastFocusedBeforeModal = null;
 }
-
+ 
 // One-time pass: give every icon-only / label-less control an
 // aria-label sourced from its existing title tooltip, so screen
 // readers announce something more useful than nothing.
@@ -2921,7 +3260,7 @@ function applyAriaLabels(){
 }
 document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
 document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', (e) => { if(e.target === ov) closeModal(ov.id); }));
-
+ 
 document.getElementById('settingsBtn').addEventListener('click', () => {
   document.getElementById('setWfo').value = settings.wfo;
   document.getElementById('setTimezone').value = settings.timezone;
@@ -2942,7 +3281,7 @@ document.getElementById('saveSettingsBtn').addEventListener('click', () => {
   closeModal('settingsModal');
   loadDay(selectedDateStr || todayInTZ(settings.timezone));
 });
-
+ 
 document.getElementById('exportSettingsBtn').addEventListener('click', () => {
   const payload = {
     kind: 'warning-verification-settings',
@@ -2958,7 +3297,7 @@ document.getElementById('exportSettingsBtn').addEventListener('click', () => {
   };
   downloadBlob('warning-verification-settings.json', JSON.stringify(payload, null, 2), 'application/json');
 });
-
+ 
 document.getElementById('importSettingsBtn').addEventListener('click', () => {
   document.getElementById('importSettingsFile').click();
 });
@@ -2988,7 +3327,7 @@ document.getElementById('importSettingsFile').addEventListener('change', async (
     alert('Could not read that settings file: ' + err.message);
   }
 });
-
+ 
 document.getElementById('archiveBtn').addEventListener('click', () => {
   const anchor = selectedDateStr || lastSingleDate || todayInTZ(settings.timezone);
   document.getElementById('archiveEnd').value = anchor;
@@ -2998,9 +3337,9 @@ document.getElementById('archiveBtn').addEventListener('click', () => {
 document.getElementById('runArchiveBtn').addEventListener('click', runArchive);
 document.getElementById('aboutBtn').addEventListener('click', () => openModal('aboutModal'));
 document.getElementById('exitRangeBtn').addEventListener('click', () => loadDay(lastSingleDate || todayInTZ(settings.timezone)));
-
+ 
 window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
-
+ 
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
@@ -3011,7 +3350,7 @@ window.addEventListener('resize', () => { if(map) map.invalidateSize(); });
       applyColorblindPalette(true);
     }
   }catch(err){ /* localStorage unavailable — falls back to default palette */ }
-
+ 
   const urlState = readUrlState();
   if(urlState.wfo && WFO_LIST.some(o => o.id === urlState.wfo.toUpperCase())){
     settings.wfo = urlState.wfo.toUpperCase();
