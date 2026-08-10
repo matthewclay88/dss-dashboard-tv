@@ -157,6 +157,7 @@
     letter-spacing: 0.05em; text-transform: uppercase; color: #7a8ba3; padding: 7px 8px; border-bottom: 1px solid #1e2a3a;
   }
   .warn-scroll tbody td { padding: 8px; font-size: 11.5px; border-bottom: 1px solid #16202e; white-space: nowrap; }
+  .warn-scroll tbody td:nth-child(3) { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
   .warn-scroll tbody tr { cursor: pointer; border-left: 3px solid transparent; }
   .warn-scroll tbody tr:hover { background: #131c2b; }
   .warn-scroll tbody tr.selected { background: #16223a; border-left-color: #3b82f6; }
@@ -2169,10 +2170,21 @@ function jumpToNextUnverified(){
 // ══════════════════════════════════════════════════════════════
 //  RENDER: WARNINGS TABLE
 // ══════════════════════════════════════════════════════════════
+// Marine zone names ("Lake Champlain south of Diamond Island NY-VT")
+// run much longer than typical county names, and used to blow past
+// the table's width even as a single entry — forcing a horizontal
+// scroll just to see the Status column. Character-length truncation
+// (not just the existing "+N" for multiple counties) keeps every row
+// a consistent width; the full name is still available via the title
+// tooltip and in full in the Warning Details panel.
+function truncateLabel(str, maxLen){
+  if(!str) return str;
+  return str.length > maxLen ? str.slice(0, maxLen - 1) + '…' : str;
+}
 function countyLabel(counties){
   if(!counties || counties.length === 0) return '—';
-  if(counties.length === 1) return counties[0];
-  return counties[0] + ' +' + (counties.length-1);
+  if(counties.length === 1) return truncateLabel(counties[0], 22);
+  return truncateLabel(counties[0], 16) + ' +' + (counties.length-1);
 }
 
 function renderWarnTable(){
@@ -2190,10 +2202,11 @@ function renderWarnTable(){
     const flagBadge = e.emergencyFlag ? '<span class="emg-badge" title="Tornado/Flash Flood Emergency">EMER</span>'
       : (e.pdsFlag ? '<span class="pds-badge" title="Particularly Dangerous Situation">PDS</span>' : '');
     const wfoTag = compareWfos.length ? `<span class="wfo-tag">${escapeHtml(e.wfo)}</span>` : '';
+    const fullCountyText = (e.counties || []).join(', ') || '—';
     return `<tr data-id="${escapeHtml(e.id)}" class="${e.id === selectedEventId ? 'selected' : ''}">
       <td class="etn-cell">${wfoTag}${e.etn}</td>
       <td><span class="prod-badge" style="background:${meta.color}22;color:${meta.color};border:1px solid ${meta.color}55;">${meta.code}</span>${flagBadge}</td>
-      <td>${escapeHtml(countyLabel(e.counties))}</td>
+      <td title="${escapeHtml(fullCountyText)}">${escapeHtml(countyLabel(e.counties))}</td>
       <td>${fmtLocal(e.expire, settings.timezone)}</td>
       <td><span class="status-pill" style="color:${st.color};"><span class="status-dot" style="background:${st.color};"></span>${st.label}</span></td>
     </tr>`;
