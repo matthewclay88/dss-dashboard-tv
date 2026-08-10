@@ -312,6 +312,18 @@
   .daystat-row .ds-formula { font-size: 9.5px; color: #5a6b82; font-family: "SFMono-Regular", Consolas, monospace; display: block; margin-top: 1px; }
   .daystat-row .ds-val { font-size: 15px; font-weight: 800; color: #fff; flex-shrink: 0; }
 
+  .daystat-tabs { display: flex; gap: 4px; padding: 8px 10px 0; }
+  .daystat-tab-btn {
+    background: none; border: none; color: #7a8ba3; font-size: 10.5px; font-weight: 700; padding: 5px 10px;
+    border-radius: 6px; cursor: pointer; font-family: inherit; letter-spacing: 0.02em;
+  }
+  .daystat-tab-btn:hover { color: #cbd5e1; background: #16233a; }
+  .daystat-tab-btn.active { color: #fff; background: #1d4ed8; }
+  /* Capped and internally scrollable so a growing stats panel can't
+     push the Warning Details panel below it out of usable space —
+     that's the whole reason this became tabbed in the first place. */
+  #dayStatsBody { max-height: 280px; overflow-y: auto; }
+
   .about-body p { margin-bottom: 10px; line-height: 1.55; color: #cbd5e1; font-size: 12.5px; }
   .about-body a { color: #60a5fa; }
   .about-body code { background: #0d1622; padding: 1px 5px; border-radius: 4px; font-size: 11px; }
@@ -617,6 +629,10 @@
   <div class="col-right">
     <div class="panel" id="dayStatsPanel">
       <div class="panel-title" id="dayStatsTitle">Day Verification Stats</div>
+      <div class="daystat-tabs">
+        <button class="daystat-tab-btn active" data-stattab="verification">Verification</button>
+        <button class="daystat-tab-btn" data-stattab="polygon">Polygon / Area</button>
+      </div>
       <div id="dayStatsBody" style="padding:12px 14px;"></div>
     </div>
     <div class="panel" style="flex:1; min-height:0; display:flex; flex-direction:column;">
@@ -1044,6 +1060,7 @@ let currentMpingReports = [];
 let mpingLoadToken = 0;   // bumped on every load; a late response checks it's still current before rendering
 let currentIemStats = null;   // combined area_verify%/shared_border%/tdq_stormreports from IEM Cow's own response
 let polygonStats = null;      // currentIemStats merged with our own calendar-day-correct size metrics
+let dayStatsTab = 'verification';   // 'verification' | 'polygon' — which Day Stats sub-view is showing
 
 // ══════════════════════════════════════════════════════════════
 //  DATE / TIMEZONE HELPERS
@@ -1247,13 +1264,18 @@ function renderDayStats(){
   const fmtKm2 = v => v === null || v === undefined ? '—' : v.toFixed(0) + ' km²';
   const fmtPctRaw = v => v === null || v === undefined ? '—' : v.toFixed(0) + '%';
   const fmtCount = v => v === null || v === undefined ? '—' : v;
-  const polygonRows = polygonStats ? `
-    <div class="daystat-row" style="margin-top:6px;border-top:1px solid #1e2a3a;padding-top:8px;"><div><div class="ds-name">Avg Polygon Size</div></div><div class="ds-val">${fmtKm2(polygonStats.avgPolygonAreaKm2)}</div></div>
-    <div class="daystat-row"><div><div class="ds-name">Polygon vs Avg County Size</div><span class="ds-formula">approx., vs CWA-average county</span></div><div class="ds-val">${fmtPctRaw(polygonStats.sizeVsCountyPct)}</div></div>
-    <div class="daystat-row"><div><div class="ds-name">Area Verified</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtPctRaw(polygonStats.areaVerifyPct)}</div></div>
-    <div class="daystat-row"><div><div class="ds-name">Shared Border</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtPctRaw(polygonStats.sharedBorderPct)}</div></div>
-    <div class="daystat-row"><div><div class="ds-name">TOR Reports Outside Co-located SVR</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtCount(polygonStats.tdqStormReports)}</div></div>
-  ` : '';
+
+  if(dayStatsTab === 'polygon'){
+    body.innerHTML = polygonStats ? `
+      <div class="daystat-row"><div><div class="ds-name">Avg Polygon Size</div></div><div class="ds-val">${fmtKm2(polygonStats.avgPolygonAreaKm2)}</div></div>
+      <div class="daystat-row"><div><div class="ds-name">Polygon vs Avg County Size</div><span class="ds-formula">approx., vs CWA-average county</span></div><div class="ds-val">${fmtPctRaw(polygonStats.sizeVsCountyPct)}</div></div>
+      <div class="daystat-row"><div><div class="ds-name">Area Verified</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtPctRaw(polygonStats.areaVerifyPct)}</div></div>
+      <div class="daystat-row"><div><div class="ds-name">Shared Border</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtPctRaw(polygonStats.sharedBorderPct)}</div></div>
+      <div class="daystat-row"><div><div class="ds-name">TOR Reports Outside Co-located SVR</div><span class="ds-formula">per IEM Cow, includes ~6hr boundary padding</span></div><div class="ds-val">${fmtCount(polygonStats.tdqStormReports)}</div></div>
+    ` : `<div style="color:#5a6b82;font-size:11.5px;">No polygon-quality data for this view yet.</div>`;
+    return;
+  }
+
   body.innerHTML = `
     <div class="daystat-row"><div><div class="ds-name">FAR</div><span class="ds-formula">C / (Aw + C)</span></div><div class="ds-val">${fmtPct(dayStats.far)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">POD</div><span class="ds-formula">Ae / (Ae + B)</span></div><div class="ds-val">${fmtPct(dayStats.pod)}</div></div>
@@ -1263,9 +1285,14 @@ function renderDayStats(){
     <div class="daystat-row"><div><div class="ds-name">Max Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.maxLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Min Lead Time</div></div><div class="ds-val">${fmtMin(dayStats.minLead)}</div></div>
     <div class="daystat-row"><div><div class="ds-name">Warning Meteorologists</div><span class="ds-formula">distinct codes, not individually broken out</span></div><div class="ds-val">${dayStats.distinctForecasters}</div></div>
-    ${polygonRows}
     ${renderLeadTimeHistogram(dayStats.leadTimeSamples)}
   `;
+}
+
+function switchDayStatsTab(name){
+  dayStatsTab = name;
+  document.querySelectorAll('.daystat-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.stattab === name));
+  renderDayStats();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3059,6 +3086,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.querySelectorAll('.subtab-btn').forEach(btn => btn.addEventListener('click', () => switchSubtab(btn.dataset.subtab)));
+document.querySelectorAll('.daystat-tab-btn').forEach(btn => btn.addEventListener('click', () => switchDayStatsTab(btn.dataset.stattab)));
 
 document.getElementById('refreshBtn').addEventListener('click', () => {
   document.getElementById('refreshIcon').parentElement.classList.add('spinning');
