@@ -609,6 +609,7 @@
       <div class="spacer"></div>
       <label class="lsr-toggle"><input type="checkbox" id="showLsrToggle" checked> Show LSRs on map</label>
       <label class="lsr-toggle"><input type="checkbox" id="showMpingToggle"> Show mPING reports</label>
+      <label class="lsr-toggle"><input type="checkbox" id="showOfficialToggle"> Official Storm Data</label>
       <label class="lsr-toggle"><input type="checkbox" id="showRadarToggle"> Radar</label>
       <button class="radar-step-btn" id="radarStepBackBtn" style="display:none;" title="Step radar back 5 min">&#9664;</button>
       <input type="range" id="radarTimeSlider" class="radar-slider" style="display:none;" min="0" max="1439" step="5" value="720" title="Radar time (local)">
@@ -847,6 +848,7 @@
       <p><strong>Trends phenomena filter:</strong> the Trends modal can be narrowed to a single phenomena (TOR/SVR/FFW/SQW) instead of always blending all four together — useful for checking whether, say, flash flood POD is trending differently than tornado POD. Misses are narrowed along with it, matched to that phenomena's own LSR types, so the POD/FAR/CSI shown stay internally consistent rather than mixing a filtered numerator with an unfiltered denominator.</p>
       <p><strong>Summary Report</strong> (📄 icon): generates a standalone, formatted, printable report for whatever's currently loaded — a single day or a full Archive range — covering overview counts, verification stats, lead time, tag accuracy, polygon quality, and top counties. It downloads as a self-contained HTML file with no dependency on this page, so it opens and prints cleanly on its own. Running a full year through Archive and generating this is effectively an annual summary, rather than a separate reporting mode.</p>
       <p><strong>mPING reports:</strong> "Show mPING reports" overlays crowd-sourced weather reports from the <a href="https://mping.ou.edu" target="_blank">mPING</a> project (OU CIMMS / NSSL) alongside the LSR markers — separate dots, separate legend, own on/off toggle. Requests go through a small server-side proxy that holds the API key, so no visitor needs their own account; the key's license tier still applies, though, so if it's a Research-tier key, reports from the last 48 hours (including "today") won't show up. mPING reports are informal public submissions, not an official report source like LSRs — treat matches against warnings as a supplementary cross-check, not a verification input (IEM Cow's own verified/unverified status is unaffected by mPING data either way).</p>
+      <p><strong>Official Storm Data:</strong> overlays the certified NCEI Storm Events record — EF-scale, damage estimates, injuries/fatalities — as its own toggle, distinguished from LSR/mPING markers by a dashed white ring. This is <em>not</em> fetched live: NCEI's official data has no lightweight per-day API, so it's pre-processed offline into one JSON file per office (see <code>build_storm_events_by_wfo.py</code> in the repo) and committed to <code>data/storm-events/&lt;WFO&gt;.json</code>, regenerated periodically rather than live. Matching to the currently viewed day/range is by calendar date only, not exact time — NCEI's local-time fields don't clearly document whether they shift for daylight saving, so exact-time matching would be more precise than the underlying data actually supports. Coverage starts in 2008, since storm-based (polygon) warnings — the kind this dashboard verifies — didn't exist before October 2007, so there's nothing to cross-reference further back. If a WFO's file hasn't been generated yet, the toggle simply shows nothing for that office rather than erroring.</p>
     </div>
   </div>
 </div>
@@ -1144,7 +1146,7 @@ let rangeLabel = '';
 let lastSingleDate = null;    // last single day viewed, so exiting a range returns somewhere sensible
 let lastZoneFitWfo = null;    // tracks which WFO the map was last auto-fit to
 let phenomenaFilter = null;   // 'TO'|'SV'|'FF'|'SQ'|null — set by clicking a queue card
-let map, zoneLayer, warningLayer, lsrLayer, radarLayer, mpingLayer;
+let map, zoneLayer, warningLayer, lsrLayer, radarLayer, mpingLayer, officialLayer;
 let productTextCache = {};
 let wfoDropdownOpen = false;
 let wfoHighlightIdx = -1;
@@ -1163,6 +1165,15 @@ let currentIemStats = null;   // combined area_verify%/shared_border%/tdq_stormr
 let polygonStats = null;      // currentIemStats merged with our own calendar-day-correct size metrics
 let dayStatsTab = 'verification';   // 'verification' | 'polygon' — which Day Stats sub-view is showing
 let visitCount = null;   // raw page-load count from the Worker's KV counter, shown unlabeled in Settings
+
+// Official NCEI Storm Events (see build_storm_events_by_wfo.py) — a
+// static per-WFO JSON file committed to this repo's data/storm-events/
+// folder, regenerated periodically offline rather than fetched live
+// (NCEI's certified data has no lightweight per-day query API).
+const STORM_EVENTS_PATH = 'data/storm-events/';
+let showOfficialEvents = false;
+let officialEventsCache = {};      // wfo -> full parsed {wfo, years_covered, events} object, or null if unavailable
+let officialEventsLoadToken = 0;
 
 // ══════════════════════════════════════════════════════════════
 //  DATE / TIMEZONE HELPERS
@@ -1734,6 +1745,7 @@ async function loadDay(dateStr){
   updateUrlState();
   scanForPdsEmergency();
   refreshMpingIfEnabled();
+  refreshOfficialEventsIfEnabled();
   if(dateStr === todayInTZ(settings.timezone)) startLiveMode(); else stopLiveMode();
 }
 
@@ -1776,6 +1788,7 @@ async function loadRange(startStr, endStr){
   updateUrlState();
   scanForPdsEmergency();
   refreshMpingIfEnabled();
+  refreshOfficialEventsIfEnabled();
   stopLiveMode();
 }
 
@@ -2012,6 +2025,101 @@ function drawMpingOnMap(){
       `<span style="color:#5a6b82;font-size:10.5px;">mPING crowd-sourced report — not an official LSR</span></div>`
     );
     marker.addTo(mpingLayer);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  OFFICIAL NCEI STORM EVENTS — static per-WFO file, see
+//  build_storm_events_by_wfo.py. Regenerated offline periodically and
+//  committed to this repo's data/storm-events/ folder, since NCEI's
+//  certified data has no lightweight per-day query API to hit live.
+// ══════════════════════════════════════════════════════════════
+const MONTH_ABBR = { JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11 };
+// NCEI's begin_date_time/end_date_time are local time per cz_timezone,
+// and whether that shifts for daylight saving isn't clearly documented
+// (see the build script's own docstring) — so instead of trying to
+// convert to an exact UTC instant, this only extracts the calendar
+// DATE portion and matches on date-range overlap with the currently
+// selected day/range. Good enough for "does this event belong to the
+// window being viewed"; not precise enough for exact-time matching.
+function stormEventDateStr(dtStr){
+  if(!dtStr) return null;
+  const m = dtStr.match(/^(\d{2})-([A-Z]{3})-(\d{2})\s/i);
+  if(!m) return null;
+  const mon = MONTH_ABBR[m[2].toUpperCase()];
+  if(mon === undefined) return null;
+  let yr = parseInt(m[3], 10);
+  yr += (yr < 50) ? 2000 : 1900; // this dataset only goes back to 2008 anyway, so always resolves to 2000s
+  return `${yr}-${pad2(mon+1)}-${pad2(parseInt(m[1],10))}`;
+}
+
+async function loadOfficialEvents(wfo){
+  if(officialEventsCache[wfo] !== undefined) return officialEventsCache[wfo];
+  try{
+    const res = await fetch(STORM_EVENTS_PATH + wfo + '.json');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    officialEventsCache[wfo] = data;
+  }catch(err){
+    console.warn(`No official Storm Events file for ${wfo} at ${STORM_EVENTS_PATH}${wfo}.json — has it been generated and committed yet?`, err);
+    officialEventsCache[wfo] = null;
+  }
+  return officialEventsCache[wfo];
+}
+
+function officialEventsInView(){
+  const cache = officialEventsCache[settings.wfo];
+  if(!cache || !cache.events) return [];
+  const startStr = viewMode === 'range' ? currentRangeStart : selectedDateStr;
+  const endStr = viewMode === 'range' ? currentRangeEnd : selectedDateStr;
+  if(!startStr || !endStr) return [];
+  return cache.events.filter(e => {
+    const bd = stormEventDateStr(e.begin_date_time);
+    if(!bd) return false;
+    const ed = stormEventDateStr(e.end_date_time) || bd;
+    return bd <= endStr && ed >= startStr;
+  });
+}
+
+async function refreshOfficialEventsIfEnabled(){
+  if(!showOfficialEvents) return;
+  const myToken = ++officialEventsLoadToken;
+  await loadOfficialEvents(settings.wfo);
+  if(myToken !== officialEventsLoadToken) return; // superseded by a newer load
+  drawOfficialEventsOnMap();
+  renderMapLegend();
+}
+
+// Colors match the NWS Damage Assessment Toolkit's own EF-scale
+// palette, so anyone used to reading DAT maps sees the same colors
+// here. Non-tornado official events (hail, wind, flood, etc.) get a
+// neutral color instead, distinguished by a dashed white ring rather
+// than a solid one — visually separate from both LSR and mPING markers.
+const TOR_EF_COLORS = { EF0:'#00ffc5', EF1:'#55ff00', EF2:'#ffff00', EF3:'#e69800', 'EF3+':'#e69800', EF4:'#e60000', EF5:'#a80084' };
+const OFFICIAL_DEFAULT_COLOR = '#94a3b8';
+
+function drawOfficialEventsOnMap(){
+  if(!officialLayer) return;
+  officialLayer.clearLayers();
+  if(!showOfficialEvents) return;
+  officialEventsInView().forEach(e => {
+    if(e.begin_lat === null || e.begin_lat === undefined || e.begin_lon === null || e.begin_lon === undefined) return;
+    const color = e.tor_f_scale ? (TOR_EF_COLORS[e.tor_f_scale] || OFFICIAL_DEFAULT_COLOR) : OFFICIAL_DEFAULT_COLOR;
+    const marker = L.circleMarker([e.begin_lat, e.begin_lon], {
+      radius: 6, color: '#ffffff', weight: 2, dashArray: '2,2', fillColor: color, fillOpacity: 0.9
+    });
+    const damage = (e.damage_property_usd || 0) + (e.damage_crops_usd || 0);
+    const injuries = (e.injuries_direct || 0) + (e.injuries_indirect || 0);
+    const deaths = (e.deaths_direct || 0) + (e.deaths_indirect || 0);
+    let html = `<div style="min-width:200px;"><b>${escapeHtml(e.event_type || '')}${e.tor_f_scale ? ' (' + escapeHtml(e.tor_f_scale) + ')' : ''}</b><br>`;
+    html += `<span style="color:#93a3b8;">${escapeHtml(e.cz_name || '')}, ${escapeHtml(e.state || '')}</span><br>`;
+    html += `<span style="color:#93a3b8;">${escapeHtml(e.begin_date_time || '')} local</span><br>`;
+    if(damage > 0) html += `Damage: $${damage.toLocaleString()}<br>`;
+    if(injuries > 0) html += `Injuries: ${injuries}<br>`;
+    if(deaths > 0) html += `Deaths: ${deaths}<br>`;
+    html += `<span style="color:#5a6b82;font-size:10.5px;">Official NCEI Storm Data record — not from IEM Cow.</span></div>`;
+    marker.bindPopup(html);
+    marker.addTo(officialLayer);
   });
 }
 
@@ -2386,6 +2494,7 @@ function initMap(){
   warningLayer = L.layerGroup().addTo(map);
   lsrLayer = L.layerGroup().addTo(map);
   mpingLayer = L.layerGroup().addTo(map);
+  officialLayer = L.layerGroup().addTo(map);
   map.setView([44.3,-72.9], 7);
   drawZoneLayer();
 }
@@ -2512,6 +2621,14 @@ function renderMapLegend(){
       html += `<span class="lg-item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:${c.color};font-size:9px;">${c.icon}</span>${escapeHtml(c.label)}</span>`;
     });
     html += `<span class="lg-item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:${MPING_DEFAULT_STYLE.color};font-size:9px;">${MPING_DEFAULT_STYLE.icon}</span>${escapeHtml(MPING_DEFAULT_STYLE.label)}</span>`;
+  }
+  if(showOfficialEvents){
+    html += `<span class="lg-item" style="margin-left:6px;padding-left:10px;border-left:1px solid #26405c;">Official (NCEI):</span>`;
+    Object.keys(TOR_EF_COLORS).forEach(scale => {
+      if(scale === 'EF3+') return; // same color/meaning as EF3, skip the duplicate in the legend
+      html += `<span class="lg-item"><span class="lg-dot" style="background:${TOR_EF_COLORS[scale]};border-radius:50%;"></span>${scale}</span>`;
+    });
+    html += `<span class="lg-item"><span class="lg-dot" style="background:${OFFICIAL_DEFAULT_COLOR};border-radius:50%;"></span>Non-tornado</span>`;
   }
   bar.innerHTML = html;
 }
@@ -3316,6 +3433,7 @@ function renderAll(){
   drawWarningsOnMap();
   drawLsrsOnMap();
   drawMpingOnMap();
+  drawOfficialEventsOnMap();
   updateRadarLayer();
   renderMapLegend();
   if(selectedEventId){
@@ -3797,6 +3915,15 @@ document.getElementById('showMpingToggle').addEventListener('change', (e) => {
     return;
   }
   refreshMpingIfEnabled();
+});
+document.getElementById('showOfficialToggle').addEventListener('change', (e) => {
+  showOfficialEvents = e.target.checked;
+  if(!showOfficialEvents){
+    drawOfficialEventsOnMap();
+    renderMapLegend();
+    return;
+  }
+  refreshOfficialEventsIfEnabled();
 });
 // WFO searchable combobox
 const wfoInput = document.getElementById('wfoSearchInput');
