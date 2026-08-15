@@ -1,0 +1,42 @@
+name: Update Official Storm Events Data
+
+# Two ways this runs:
+#   1. Manually — go to the "Actions" tab on GitHub, click this workflow's
+#      name, then click the "Run workflow" button. No terminal needed.
+#   2. Automatically — once a month (Storm Data gets revised monthly, with
+#      up to a 120-day certification lag), so the data stays reasonably
+#      fresh without you having to remember to trigger it.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 1 * *'   # 6:00 AM UTC on the 1st of every month
+
+# Needed so the workflow is allowed to push the updated JSON files back
+# to this repo. If the push step fails with a permissions error, go to
+# Settings > Actions > General > Workflow permissions on GitHub and
+# switch it to "Read and write permissions".
+permissions:
+  contents: write
+
+jobs:
+  build-storm-events:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run the Storm Events classifier (all offices, lean output)
+        run: python3 build_storm_events_by_wfo.py --start-year 2008 --lean --out-dir data/storm-events
+
+      - name: Commit and push the updated data (only if something changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/storm-events
+          git diff --staged --quiet || git commit -m "Update official Storm Events data ($(date -u +%Y-%m-%d))"
+          git push
