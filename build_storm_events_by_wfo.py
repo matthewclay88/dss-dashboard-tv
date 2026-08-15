@@ -219,10 +219,10 @@ def main():
     ap.add_argument("--out-dir", type=str, default="./storm_events",
                      help="Where to write per-WFO JSON output")
     ap.add_argument("--lean", action="store_true",
-                     help="Drop episode/event narrative text (~50%% of file size) — keeps all structured "
-                          "fields (dates, magnitude, EF-scale, damage, injuries/deaths, lat/lon) for fast "
-                          "cross-referencing. Narratives are nice for human reading but not needed for "
-                          "automated matching against warnings.")
+                     help="Drop episode_narrative (the broader synoptic/weather-pattern text, often repeated "
+                          "across many events in the same episode) to trim file size. event_narrative — the "
+                          "specific per-event ground-truth description (e.g. \"trees snapped/uprooted\") — is "
+                          "always kept regardless of this flag, since that's the part worth showing per-event.")
     args = ap.parse_args()
 
     wfo_filter = set(w.strip().upper() for w in args.wfo.split(",") if w.strip()) or None
@@ -251,7 +251,6 @@ def main():
         if args.lean:
             for e in events:
                 e.pop("episode_narrative", None)
-                e.pop("event_narrative", None)
         out = {
             "wfo": wfo,
             "generated_at": generated_at,
