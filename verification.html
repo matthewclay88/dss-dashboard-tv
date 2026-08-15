@@ -825,7 +825,7 @@
       <p><strong>Switching offices:</strong> the office dropdown in the header lists every NWS Weather Forecast Office nationwide (sourced live from IEM's own WFO network table) — pick one and the app re-queries live NWS zone boundaries for that office and re-centers the map.</p>
       <p><strong>Date ranges:</strong> the Archive picker loads every matching warning and LSR for the whole range directly onto the map, table, and stats (using the same boundary-safe padding logic as single-day view), rather than just showing a summary.</p>
       <p>Basemap: CartoDB Voyager. Zone boundaries: official NWS zone reference service (mapservices.weather.noaa.gov). Office list: IEM WFO network table. Radar: IEM's time-enabled NEXRAD composite reflectivity WMS, snapped to the nearest 5-minute composite (archive available back to Feb 16, 2011). Map library: Leaflet.</p>
-      <p><strong>PDS / Emergency badges:</strong> shown when a Tornado or Flash Flood warning's product text contains "PARTICULARLY DANGEROUS SITUATION" or "TORNADO/FLASH FLOOD EMERGENCY" wording. This is a plain-text scan, not a structured IEM field, so it's skipped for very large date ranges to avoid hammering IEM with requests — it still works normally for a single day or a short range.</p>
+      <p><strong>PDS / Emergency badges:</strong> the two are detected differently. <strong>Emergency</strong> (Tornado/Flash Flood) comes from IEM's own structured registry of every Emergency on record since 1999 — a direct lookup, not limited by view size, so it works correctly even across a full-year Archive range. <strong>PDS</strong> has no equivalent structured IEM field, so it's still detected by scanning each warning's product text for "PARTICULARLY DANGEROUS SITUATION" wording, which is why it's skipped for very large date ranges (75+ warnings) to avoid a burst of full-text fetches — it still works normally for a single day or a short range, and selecting an individual warning always loads its own text regardless. If the Emergency registry ever fails to load, Emergency detection quietly falls back to the same text-scan PDS uses, within that same size limit.</p>
       <p><strong>Keyboard shortcuts:</strong> <code>←</code> / <code>→</code> previous/next day, <code>j</code> / <code>k</code> step through the warnings table, <code>n</code> jump to the next unverified warning, <code>Esc</code> close dialogs.</p>
       <p><strong>Sharing a view:</strong> the URL updates automatically with the current office and date (or range), so copying the address bar link takes someone straight to the same view.</p>
       <p><strong>PNG export:</strong> captures the queue, table, summary, stats, and warning-details panels, plus the warning polygons/zone lines/LSR markers on the map — but not the basemap street imagery itself, since CartoDB's tile server doesn't allow that imagery to be read back into an exported image. Use "Print" instead for a version with full basemap tiles included.</p>
@@ -990,6 +990,46 @@ const TOR_EMERGENCY_REGEX = /TORNADO\s+EMERGENCY/i;
 const FF_EMERGENCY_REGEX = /FLASH\s+FLOOD\s+EMERGENCY/i;
 const PDS_SCAN_MAX_EVENTS = 75;
 const PDS_SCAN_CONCURRENCY = 6;
+
+// IEM maintains a purpose-built registry of every Tornado and Flash
+// Flood Emergency on record since 1999, keyed by WFO/year/phenomena/
+// ETN — far more reliable than scanning product text for the phrase,
+// and NOT limited by PDS_SCAN_MAX_EVENTS the way the PDS text-scan
+// below still is (no equivalent structured source exists for PDS
+// specifically, so that half still needs the text scan). This
+// endpoint's exact response shape wasn't confirmed against a live
+// request during development — field names are inferred from IEM's
+// own cow.json conventions (wfo/year/eventid/phenomena), and parsing
+// here is defensive: if the shape doesn't match, Emergency detection
+// quietly falls back to the old text-scan behavior (still capped)
+// rather than breaking anything.
+const EMERGENCIES_URL = 'https://mesonet.agron.iastate.edu/api/1/nws/emergencies.json';
+let emergenciesRegistry = null;
+let emergenciesRegistryPromise = null;
+function loadEmergenciesRegistry(){
+  if(emergenciesRegistryPromise) return emergenciesRegistryPromise;
+  emergenciesRegistryPromise = (async () => {
+    try{
+      const res = await fetch(EMERGENCIES_URL);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      const list = Array.isArray(json) ? json : (json.data || json.emergencies || json.events || json.results || []);
+      const set = new Set();
+      list.forEach(rec => {
+        const wfo = rec.wfo || rec.WFO;
+        const year = rec.year || rec.YEAR;
+        const etn = rec.eventid || rec.etn || rec.ETN;
+        const phenomena = rec.phenomena || rec.PHENOMENA;
+        if(wfo && year && etn && phenomena) set.add(`${wfo}-${year}-${phenomena}-${etn}`);
+      });
+      emergenciesRegistry = set;
+    }catch(err){
+      console.warn('Could not load IEM emergencies registry — Emergency badges will fall back to text-scan only:', err);
+      emergenciesRegistry = null;
+    }
+  })();
+  return emergenciesRegistryPromise;
+}
 
 // mPING crowd-sourced reports, fetched through a small Cloudflare
 // Worker proxy rather than mping.ou.edu directly. mPING's API is
@@ -1808,11 +1848,30 @@ function updateUrlState(){
 async function scanForPdsEmergency(){
   const candidates = currentEvents.filter(e => e.phenomena === 'TO' || e.phenomena === 'FF');
   if(candidates.length === 0) return;
+
+  // Emergency flag: structured registry lookup — applies to every
+  // TO/FF warning in the current view, however large, since it's just
+  // a Set lookup rather than a per-event network fetch.
+  await loadEmergenciesRegistry();
+  if(emergenciesRegistry){
+    candidates.forEach(e => {
+      e.emergencyFlag = emergenciesRegistry.has(`${e.wfo}-${e.year}-${e.phenomena}-${e.etn}`);
+    });
+  }
+
   if(currentEvents.length > PDS_SCAN_MAX_EVENTS){
     // Too many warnings in view (e.g. a wide archive range) to safely
-    // bulk-fetch full product text for each without hammering IEM with
-    // a burst of requests — skip the scan for this view. Selecting an
-    // individual warning still loads its own text normally.
+    // bulk-fetch full product text for PDS detection without
+    // hammering IEM with a burst of requests — skip that half for
+    // this view. Emergency flags above still applied regardless.
+    // Selecting an individual warning still loads its own text
+    // normally, which also fills in that one warning's pdsFlag.
+    renderWarnTable();
+    drawWarningsOnMap();
+    if(selectedEventId){
+      const e = currentEvents.find(x => x.id === selectedEventId);
+      if(e) renderDetails(e);
+    }
     return;
   }
   let idx = 0;
@@ -1822,10 +1881,13 @@ async function scanForPdsEmergency(){
       const text = await getProductText(e);
       if(text){
         e.pdsFlag = PDS_REGEX.test(text);
-        e.emergencyFlag = TOR_EMERGENCY_REGEX.test(text) || FF_EMERGENCY_REGEX.test(text);
+        if(!emergenciesRegistry){
+          // Registry unavailable — fall back to the old text-scan
+          // Emergency detection so nothing regresses for this view.
+          e.emergencyFlag = TOR_EMERGENCY_REGEX.test(text) || FF_EMERGENCY_REGEX.test(text);
+        }
       } else {
         e.pdsFlag = false;
-        e.emergencyFlag = false;
       }
     }
   }
