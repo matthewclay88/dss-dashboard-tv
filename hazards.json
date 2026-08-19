@@ -10,7 +10,7 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7d6bb12659e8dabd312d91db23189af96a70f28c.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4fab881c582ee2ff9dc3ae8a03991998bf12abd6.001.1",
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
@@ -40,9 +40,9 @@
                 ]
             },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7d6bb12659e8dabd312d91db23189af96a70f28c.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.4fab881c582ee2ff9dc3ae8a03991998bf12abd6.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.7d6bb12659e8dabd312d91db23189af96a70f28c.001.1",
+                "id": "urn:oid:2.49.0.1.840.0.4fab881c582ee2ff9dc3ae8a03991998bf12abd6.001.1",
                 "areaDesc": "Garfield, NE; Holt, NE; Wheeler, NE",
                 "geocode": {
                     "SAME": [
@@ -61,14 +61,21 @@
                     "https://api.weather.gov/zones/county/NEC089",
                     "https://api.weather.gov/zones/county/NEC183"
                 ],
-                "references": [],
-                "sent": "2026-08-19T09:21:00-05:00",
-                "effective": "2026-08-19T09:21:00-05:00",
-                "onset": "2026-08-19T09:21:00-05:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7d6bb12659e8dabd312d91db23189af96a70f28c.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.7d6bb12659e8dabd312d91db23189af96a70f28c.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-19T09:21:00-05:00"
+                    }
+                ],
+                "sent": "2026-08-19T09:32:00-05:00",
+                "effective": "2026-08-19T09:32:00-05:00",
+                "onset": "2026-08-19T09:32:00-05:00",
                 "expires": "2026-08-19T10:00:00-05:00",
                 "ends": "2026-08-19T10:00:00-05:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Observed",
@@ -76,32 +83,35 @@
                 "event": "Severe Thunderstorm Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS North Platte NE",
-                "headline": "Severe Thunderstorm Warning issued August 19 at 9:21AM CDT until August 19 at 10:00AM CDT by NWS North Platte NE",
-                "description": "SVRLBF\n\nThe National Weather Service in North Platte has issued a\n\n* Severe Thunderstorm Warning for...\nNortheastern Garfield County in north central Nebraska...\nSouthern Holt County in north central Nebraska...\nNorthwestern Wheeler County in north central Nebraska...\n\n* Until 1000 AM CDT.\n\n* At 920 AM CDT, a severe thunderstorm was located near Amelia, or 18\nmiles southwest of O'Neill, moving southeast at 30 mph.\n\nHAZARD...Golf ball size hail and 60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...People and animals outdoors will be injured. Expect hail\ndamage to roofs, siding, windows, and vehicles. Expect\nwind damage to roofs, siding, and trees.\n\n* Locations impacted include...\nChambers and Amelia.\n\nThis includes Highway 281 between mile markers 159 and 173.",
+                "headline": "Severe Thunderstorm Warning issued August 19 at 9:32AM CDT until August 19 at 10:00AM CDT by NWS North Platte NE",
+                "description": "At 931 AM CDT, a severe thunderstorm was located near Amelia, or 17\nmiles southwest of O'Neill, moving southeast at 30 mph.\n\nHAZARD...Two inch hail and 70 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...People and animals outdoors will be injured. Expect hail\ndamage to roofs, siding, windows, and vehicles. Expect\nconsiderable tree damage. Wind damage is also likely to\nmobile homes, roofs, and outbuildings.\n\nThis severe storm will be near...\nChambers around 935 AM CDT.\n\nThis includes Highway 281 between mile markers 159 and 173.",
                 "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
                 "response": "Shelter",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SVRLBF"
+                        "SVSLBF"
                     ],
                     "WMOidentifier": [
-                        "WUUS53 KLBF 191421"
+                        "WWUS53 KLBF 191432"
+                    ],
+                    "NWSheadline": [
+                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 1000 AM CDT FOR NORTHEASTERN GARFIELD...SOUTHERN HOLT AND NORTHWESTERN WHEELER COUNTIES"
                     ],
                     "eventMotionDescription": [
-                        "2026-08-19T14:20:00-00:00...storm...310DEG...26KT...42.32,-98.95"
+                        "2026-08-19T14:31:00-00:00...storm...309DEG...27KT...42.26,-98.85"
                     ],
                     "windThreat": [
                         "RADAR INDICATED"
                     ],
                     "maxWindGust": [
-                        "60 MPH"
+                        "70 MPH"
                     ],
                     "hailThreat": [
                         "RADAR INDICATED"
                     ],
                     "maxHailSize": [
-                        "1.75"
+                        "2.00"
                     ],
                     "thunderstormDamageThreat": [
                         "CONSIDERABLE"
@@ -115,7 +125,7 @@
                         "WXR"
                     ],
                     "VTEC": [
-                        "/O.NEW.KLBF.SV.W.0361.260819T1421Z-260819T1500Z/"
+                        "/O.CON.KLBF.SV.W.0361.000000T0000Z-260819T1500Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-19T10:00:00-05:00"
@@ -127,7 +137,7 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SVR"
+                        "SVS"
                     ],
                     "NationalWeatherService": [
                         "SVW"
@@ -136,13 +146,13 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-59710",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-53947",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-59710",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-53947",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-59710",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-53947",
                 "areaDesc": "Montgomery",
                 "geocode": {
                     "SAME": [
@@ -156,10 +166,10 @@
                     "https://api.weather.gov/zones/county/MDC031"
                 ],
                 "references": [],
-                "sent": "2026-08-19T14:17:16+00:00",
-                "effective": "2026-08-19T14:17:16+00:00",
+                "sent": "2026-08-19T14:27:16+00:00",
+                "effective": "2026-08-19T14:27:16+00:00",
                 "onset": null,
-                "expires": "2026-08-19T14:27:16+00:00",
+                "expires": "2026-08-19T14:37:16+00:00",
                 "ends": null,
                 "status": "Test",
                 "messageType": "Alert",
@@ -180,7 +190,7 @@
                         "KEPWBC"
                     ],
                     "WMOidentifier": [
-                        "NZUS91 KWBC 191417"
+                        "NZUS91 KWBC 191427"
                     ],
                     "BLOCKCHANNEL": [
                         "CMAS",
@@ -198,142 +208,6 @@
                     ],
                     "NationalWeatherService": [
                         "TST"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.c63a2e34796a2e92e35cfc9d7cbcf8f4928f7e3e.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -99.36,
-                            42.53
-                        ],
-                        [
-                            -99.16,
-                            42.55
-                        ],
-                        [
-                            -98.72,
-                            42.43
-                        ],
-                        [
-                            -99.04,
-                            42.18
-                        ],
-                        [
-                            -99.36,
-                            42.53
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.c63a2e34796a2e92e35cfc9d7cbcf8f4928f7e3e.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.c63a2e34796a2e92e35cfc9d7cbcf8f4928f7e3e.001.1",
-                "areaDesc": "Holt, NE; Rock, NE",
-                "geocode": {
-                    "SAME": [
-                        "031089",
-                        "031149"
-                    ],
-                    "UGC": [
-                        "NEC089",
-                        "NEC149"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/NEC089",
-                    "https://api.weather.gov/zones/county/NEC149"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.342600f36f447d094ff0f98380331032f0992e36.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.342600f36f447d094ff0f98380331032f0992e36.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-19T08:29:00-05:00"
-                    },
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ba6200974e137ad99b86eaa62905a26af0cf6bd3.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.ba6200974e137ad99b86eaa62905a26af0cf6bd3.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-19T08:44:00-05:00"
-                    }
-                ],
-                "sent": "2026-08-19T09:12:00-05:00",
-                "effective": "2026-08-19T09:12:00-05:00",
-                "onset": "2026-08-19T09:12:00-05:00",
-                "expires": "2026-08-19T09:30:00-05:00",
-                "ends": "2026-08-19T09:30:00-05:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Severe Thunderstorm Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS North Platte NE",
-                "headline": "Severe Thunderstorm Warning issued August 19 at 9:12AM CDT until August 19 at 9:30AM CDT by NWS North Platte NE",
-                "description": "At 912 AM CDT, a severe thunderstorm was located 8 miles north of\nAmelia, or 20 miles west of O'Neill, moving southeast at 30 mph.\n\nHAZARD...Ping pong ball size hail and 60 mph wind gusts.\n\nSOURCE...Radar indicated.\n\nIMPACT...People and animals outdoors will be injured. Expect hail\ndamage to roofs, siding, windows, and vehicles. Expect wind\ndamage to roofs, siding, and trees.\n\nThis severe thunderstorm will remain over mainly rural areas of east\ncentral Rock and southwestern Holt Counties.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
-                "response": "Shelter",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SVSLBF"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS53 KLBF 191412"
-                    ],
-                    "NWSheadline": [
-                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 930 AM CDT FOR EAST CENTRAL ROCK AND SOUTHWESTERN HOLT COUNTIES"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-08-19T14:12:00-00:00...storm...314DEG...24KT...42.35,-99.01"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "OBSERVED"
-                    ],
-                    "maxHailSize": [
-                        "1.50"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KLBF.SV.W.0360.000000T0000Z-260819T1430Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-19T09:30:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SVS"
-                    ],
-                    "NationalWeatherService": [
-                        "SVW"
                     ]
                 }
             }
@@ -678,142 +552,6 @@
                     ],
                     "NationalWeatherService": [
                         "FLW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7a5b7c8b43badddb904268c1f5c6a212a747c9f2.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -98.25,
-                            40.72
-                        ],
-                        [
-                            -98.28,
-                            40.76
-                        ],
-                        [
-                            -98.28,
-                            40.87
-                        ],
-                        [
-                            -98.13,
-                            41
-                        ],
-                        [
-                            -98.11,
-                            41
-                        ],
-                        [
-                            -98.08,
-                            41.02
-                        ],
-                        [
-                            -97.98,
-                            41.09
-                        ],
-                        [
-                            -97.96,
-                            41.09
-                        ],
-                        [
-                            -97.89,
-                            41.11
-                        ],
-                        [
-                            -97.83,
-                            41.17
-                        ],
-                        [
-                            -97.82,
-                            40.83
-                        ],
-                        [
-                            -98.25,
-                            40.72
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7a5b7c8b43badddb904268c1f5c6a212a747c9f2.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.7a5b7c8b43badddb904268c1f5c6a212a747c9f2.001.1",
-                "areaDesc": "Hamilton",
-                "geocode": {
-                    "SAME": [
-                        "031081"
-                    ],
-                    "UGC": [
-                        "NEZ063"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/NEZ063"
-                ],
-                "references": [],
-                "sent": "2026-08-19T08:48:00-05:00",
-                "effective": "2026-08-19T08:48:00-05:00",
-                "onset": "2026-08-19T08:48:00-05:00",
-                "expires": "2026-08-19T09:30:00-05:00",
-                "ends": null,
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Observed",
-                "urgency": "Expected",
-                "event": "Special Weather Statement",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Hastings NE",
-                "headline": "Special Weather Statement issued August 19 at 8:48AM CDT by NWS Hastings NE",
-                "description": "At 848 AM CDT, Doppler radar was tracking a strong thunderstorm near\nPhillips, or 9 miles southeast of Grand Island, moving northeast at\n25 mph.\n\nHAZARD...Wind gusts up to 40 mph and pea size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects. Minor hail damage to vegetation is\npossible.\n\nThis strong thunderstorm will be near...\nPhillips around 855 AM CDT.\nAurora around 905 AM CDT.\n\nThis includes Interstate 80 between mile markers 318 and 339.",
-                "instruction": "If outdoors, consider seeking shelter inside a building.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SPSGID"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS83 KGID 191348"
-                    ],
-                    "NWSheadline": [
-                        "A STRONG THUNDERSTORM WILL IMPACT HAMILTON COUNTY THROUGH 930 AM CDT"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-08-19T13:48:00-00:00...storm...244DEG...21KT...40.83,-98.21"
-                    ],
-                    "maxWindGust": [
-                        "40 MPH"
-                    ],
-                    "maxHailSize": [
-                        "0.25"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SPS"
-                    ],
-                    "NationalWeatherService": [
-                        "SPS"
                     ]
                 }
             }
@@ -1706,82 +1444,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.760da5a7cb04dc9ff88afbf59cbab1fecd486183.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.760da5a7cb04dc9ff88afbf59cbab1fecd486183.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.760da5a7cb04dc9ff88afbf59cbab1fecd486183.001.1",
-                "areaDesc": "Cape Spencer to Cape Fairweather out to 15 NM",
-                "geocode": {
-                    "SAME": [
-                        "058644"
-                    ],
-                    "UGC": [
-                        "PKZ644"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ644"
-                ],
-                "references": [],
-                "sent": "2026-08-19T02:56:00-08:00",
-                "effective": "2026-08-19T02:56:00-08:00",
-                "onset": "2026-08-19T13:00:00-08:00",
-                "expires": "2026-08-19T11:00:00-08:00",
-                "ends": "2026-08-19T19:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Juneau AK",
-                "headline": "Small Craft Advisory issued August 19 at 2:56AM AKDT until August 19 at 7:00PM AKDT by NWS Juneau AK",
-                "description": "* WHAT...For the first Small Craft Advisory, seas up to 8 ft\nexpected. For the second Small Craft Advisory, east winds up to\n25 kt expected.\n\n* WHERE...Cape Spencer to Cape Fairweather out to 15 NM.\n\n* WHEN...For the first Small Craft Advisory, from 1 PM this\nafternoon to 7 PM AKDT this evening. For the second Small\nCraft Advisory, from 7 AM to 4 PM AKDT Thursday.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
-                "instruction": "Inexperienced mariners, especially those operating smaller\nvessels, should avoid navigating in hazardous conditions.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "MWWAJK"
-                    ],
-                    "WMOidentifier": [
-                        "WHAK77 PAJK 191056"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY IN EFFECT FROM 1 PM THIS AFTERNOON TO 7 PM AKDT THIS EVENING... ...SMALL CRAFT ADVISORY IN EFFECT FROM 7 AM TO 4 PM AKDT THURSDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.EXB.PAJK.SC.Y.0267.260819T2100Z-260820T0300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-19T19:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.760da5a7cb04dc9ff88afbf59cbab1fecd486183.003.1",
             "type": "Feature",
             "geometry": null,
@@ -1841,6 +1503,82 @@
                     ],
                     "eventEndingTime": [
                         "2026-08-20T16:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.760da5a7cb04dc9ff88afbf59cbab1fecd486183.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.760da5a7cb04dc9ff88afbf59cbab1fecd486183.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.760da5a7cb04dc9ff88afbf59cbab1fecd486183.001.1",
+                "areaDesc": "Cape Spencer to Cape Fairweather out to 15 NM",
+                "geocode": {
+                    "SAME": [
+                        "058644"
+                    ],
+                    "UGC": [
+                        "PKZ644"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ644"
+                ],
+                "references": [],
+                "sent": "2026-08-19T02:56:00-08:00",
+                "effective": "2026-08-19T02:56:00-08:00",
+                "onset": "2026-08-19T13:00:00-08:00",
+                "expires": "2026-08-19T11:00:00-08:00",
+                "ends": "2026-08-19T19:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Juneau AK",
+                "headline": "Small Craft Advisory issued August 19 at 2:56AM AKDT until August 19 at 7:00PM AKDT by NWS Juneau AK",
+                "description": "* WHAT...For the first Small Craft Advisory, seas up to 8 ft\nexpected. For the second Small Craft Advisory, east winds up to\n25 kt expected.\n\n* WHERE...Cape Spencer to Cape Fairweather out to 15 NM.\n\n* WHEN...For the first Small Craft Advisory, from 1 PM this\nafternoon to 7 PM AKDT this evening. For the second Small\nCraft Advisory, from 7 AM to 4 PM AKDT Thursday.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
+                "instruction": "Inexperienced mariners, especially those operating smaller\nvessels, should avoid navigating in hazardous conditions.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWWAJK"
+                    ],
+                    "WMOidentifier": [
+                        "WHAK77 PAJK 191056"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY IN EFFECT FROM 1 PM THIS AFTERNOON TO 7 PM AKDT THIS EVENING... ...SMALL CRAFT ADVISORY IN EFFECT FROM 7 AM TO 4 PM AKDT THURSDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.EXB.PAJK.SC.Y.0267.260819T2100Z-260820T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-19T19:00:00-08:00"
                     ]
                 },
                 "scope": "Public",
@@ -2106,82 +1844,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.71b3402a22bcdc88578e9fc52a5ca815da15a641.013.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.71b3402a22bcdc88578e9fc52a5ca815da15a641.013.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.71b3402a22bcdc88578e9fc52a5ca815da15a641.013.1",
-                "areaDesc": "Icy Cape to Cape Suckling from 15 to 80 NM",
-                "geocode": {
-                    "SAME": [
-                        "058672"
-                    ],
-                    "UGC": [
-                        "PKZ672"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ672"
-                ],
-                "references": [],
-                "sent": "2026-08-19T02:52:00-08:00",
-                "effective": "2026-08-19T02:52:00-08:00",
-                "onset": "2026-08-19T02:00:00-08:00",
-                "expires": "2026-08-19T21:00:00-08:00",
-                "ends": "2026-08-20T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Juneau AK",
-                "headline": "Small Craft Advisory issued August 19 at 2:52AM AKDT until August 20 at 5:00AM AKDT by NWS Juneau AK",
-                "description": "Southeast Alaska Coastal Waters from Dixon Entrance to\nCape Suckling out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Seas forecasts represent the average of the highest\none-third of the combined windwave and swell height.\n\n.TODAY...E wind 15 kt. Seas 6 ft.\n.TONIGHT...SE wind 25 kt. Seas 8 ft. Rain.\n.THU...SE wind 20 kt becoming SW in the afternoon. Seas\n7 ft. Rain.\n.THU NIGHT...SW wind 10 kt. Seas 5 ft. Rain.\n.FRI...SW wind 10 kt. Seas 4 ft.\n.SAT...S wind 10 kt. Seas 6 ft.\n.SUN...E wind 15 kt. Seas 7 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFAEG"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAJK 191052"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY THIS EVENING THROUGH LATE TONIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAJK.SC.Y.8396.260819T1000Z-260820T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-20T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.71b3402a22bcdc88578e9fc52a5ca815da15a641.012.1",
             "type": "Feature",
             "geometry": null,
@@ -2238,6 +1900,82 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAJK.SC.Y.8395.260819T1000Z-260820T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-20T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.71b3402a22bcdc88578e9fc52a5ca815da15a641.013.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.71b3402a22bcdc88578e9fc52a5ca815da15a641.013.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.71b3402a22bcdc88578e9fc52a5ca815da15a641.013.1",
+                "areaDesc": "Icy Cape to Cape Suckling from 15 to 80 NM",
+                "geocode": {
+                    "SAME": [
+                        "058672"
+                    ],
+                    "UGC": [
+                        "PKZ672"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ672"
+                ],
+                "references": [],
+                "sent": "2026-08-19T02:52:00-08:00",
+                "effective": "2026-08-19T02:52:00-08:00",
+                "onset": "2026-08-19T02:00:00-08:00",
+                "expires": "2026-08-19T21:00:00-08:00",
+                "ends": "2026-08-20T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Juneau AK",
+                "headline": "Small Craft Advisory issued August 19 at 2:52AM AKDT until August 20 at 5:00AM AKDT by NWS Juneau AK",
+                "description": "Southeast Alaska Coastal Waters from Dixon Entrance to\nCape Suckling out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Seas forecasts represent the average of the highest\none-third of the combined windwave and swell height.\n\n.TODAY...E wind 15 kt. Seas 6 ft.\n.TONIGHT...SE wind 25 kt. Seas 8 ft. Rain.\n.THU...SE wind 20 kt becoming SW in the afternoon. Seas\n7 ft. Rain.\n.THU NIGHT...SW wind 10 kt. Seas 5 ft. Rain.\n.FRI...SW wind 10 kt. Seas 4 ft.\n.SAT...S wind 10 kt. Seas 6 ft.\n.SUN...E wind 15 kt. Seas 7 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFAEG"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAJK 191052"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY THIS EVENING THROUGH LATE TONIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAJK.SC.Y.8396.260819T1000Z-260820T1300Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-20T05:00:00-08:00"
@@ -4153,99 +3891,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0665e61bddb36913b4be3ef038c66cd95b7ec843.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0665e61bddb36913b4be3ef038c66cd95b7ec843.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0665e61bddb36913b4be3ef038c66cd95b7ec843.001.1",
-                "areaDesc": "Shoshone/Lava Beds; Lower Snake River Plain; Eastern Magic Valley; Southern Hills/Albion Mountains; Raft River Region; Wood River Foothills",
-                "geocode": {
-                    "SAME": [
-                        "016013",
-                        "016063",
-                        "016067",
-                        "016005",
-                        "016011",
-                        "016077",
-                        "016031",
-                        "016071"
-                    ],
-                    "UGC": [
-                        "IDZ051",
-                        "IDZ054",
-                        "IDZ055",
-                        "IDZ056",
-                        "IDZ057",
-                        "IDZ075"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/IDZ051",
-                    "https://api.weather.gov/zones/forecast/IDZ054",
-                    "https://api.weather.gov/zones/forecast/IDZ055",
-                    "https://api.weather.gov/zones/forecast/IDZ056",
-                    "https://api.weather.gov/zones/forecast/IDZ057",
-                    "https://api.weather.gov/zones/forecast/IDZ075"
-                ],
-                "references": [],
-                "sent": "2026-08-19T02:44:00-06:00",
-                "effective": "2026-08-19T02:44:00-06:00",
-                "onset": "2026-08-20T12:00:00-06:00",
-                "expires": "2026-08-19T15:00:00-06:00",
-                "ends": "2026-08-20T22:00:00-06:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Pocatello ID",
-                "headline": "Heat Advisory issued August 19 at 2:44AM MDT until August 20 at 10:00PM MDT by NWS Pocatello ID",
-                "description": "...HEAT ADVISORY IN EFFECT FROM NOON FRIDAY TO 10 PM MDT\nFRIDAY...\n\n* WHAT...Widespread temperatures ranging from 94 to 100 degrees\nacross the advised areas.\n\n* WHERE...Eastern Magic Valley, Shoshone/Lava Beds, Wood River\nFoothills, Southern Hills/Albion Mountains, Raft River Region,\nand Lower Snake River Plain.\n\n* WHEN...From Noon MDT Thursday to Thursday 10 pm MDT and From Noon\nMDT Friday to Friday 10 pm MDT\n\n* IMPACTS...Hot temperature may cause heat illnesses.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out\nof the sun, and check up on relatives and neighbors.\n\nMonitor the latest forecasts and warnings for updates.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWPIH"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS75 KPIH 190844"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY IN EFFECT FROM NOON THURSDAY TO 10 PM MDT THURSDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KPIH.HT.Y.0006.260820T1800Z-260821T0400Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-20T22:00:00-06:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0665e61bddb36913b4be3ef038c66cd95b7ec843.001.2",
             "type": "Feature",
             "geometry": null,
@@ -4322,6 +3967,99 @@
                     ],
                     "eventEndingTime": [
                         "2026-08-21T22:00:00-06:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0665e61bddb36913b4be3ef038c66cd95b7ec843.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0665e61bddb36913b4be3ef038c66cd95b7ec843.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.0665e61bddb36913b4be3ef038c66cd95b7ec843.001.1",
+                "areaDesc": "Shoshone/Lava Beds; Lower Snake River Plain; Eastern Magic Valley; Southern Hills/Albion Mountains; Raft River Region; Wood River Foothills",
+                "geocode": {
+                    "SAME": [
+                        "016013",
+                        "016063",
+                        "016067",
+                        "016005",
+                        "016011",
+                        "016077",
+                        "016031",
+                        "016071"
+                    ],
+                    "UGC": [
+                        "IDZ051",
+                        "IDZ054",
+                        "IDZ055",
+                        "IDZ056",
+                        "IDZ057",
+                        "IDZ075"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/IDZ051",
+                    "https://api.weather.gov/zones/forecast/IDZ054",
+                    "https://api.weather.gov/zones/forecast/IDZ055",
+                    "https://api.weather.gov/zones/forecast/IDZ056",
+                    "https://api.weather.gov/zones/forecast/IDZ057",
+                    "https://api.weather.gov/zones/forecast/IDZ075"
+                ],
+                "references": [],
+                "sent": "2026-08-19T02:44:00-06:00",
+                "effective": "2026-08-19T02:44:00-06:00",
+                "onset": "2026-08-20T12:00:00-06:00",
+                "expires": "2026-08-19T15:00:00-06:00",
+                "ends": "2026-08-20T22:00:00-06:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Pocatello ID",
+                "headline": "Heat Advisory issued August 19 at 2:44AM MDT until August 20 at 10:00PM MDT by NWS Pocatello ID",
+                "description": "...HEAT ADVISORY IN EFFECT FROM NOON FRIDAY TO 10 PM MDT\nFRIDAY...\n\n* WHAT...Widespread temperatures ranging from 94 to 100 degrees\nacross the advised areas.\n\n* WHERE...Eastern Magic Valley, Shoshone/Lava Beds, Wood River\nFoothills, Southern Hills/Albion Mountains, Raft River Region,\nand Lower Snake River Plain.\n\n* WHEN...From Noon MDT Thursday to Thursday 10 pm MDT and From Noon\nMDT Friday to Friday 10 pm MDT\n\n* IMPACTS...Hot temperature may cause heat illnesses.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out\nof the sun, and check up on relatives and neighbors.\n\nMonitor the latest forecasts and warnings for updates.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWPIH"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS75 KPIH 190844"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY IN EFFECT FROM NOON THURSDAY TO 10 PM MDT THURSDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KPIH.HT.Y.0006.260820T1800Z-260821T0400Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-20T22:00:00-06:00"
                     ]
                 },
                 "scope": "Public",
@@ -10975,89 +10713,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1d3d744c101c825169b59f58996d59857b1e86c7.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1d3d744c101c825169b59f58996d59857b1e86c7.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.1d3d744c101c825169b59f58996d59857b1e86c7.002.1",
-                "areaDesc": "Upper Plaquemines",
-                "geocode": {
-                    "SAME": [
-                        "022075"
-                    ],
-                    "UGC": [
-                        "LAZ089"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/LAZ089"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7a7a1cb16ba5ccc3f9431c9afd511ae7992c71cd.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.7a7a1cb16ba5ccc3f9431c9afd511ae7992c71cd.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-18T16:05:00-05:00"
-                    }
-                ],
-                "sent": "2026-08-18T20:39:00-05:00",
-                "effective": "2026-08-18T20:39:00-05:00",
-                "onset": "2026-08-19T11:00:00-05:00",
-                "expires": "2026-08-19T13:00:00-05:00",
-                "ends": "2026-08-19T20:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS New Orleans LA",
-                "headline": "Heat Advisory issued August 18 at 8:39PM CDT until August 19 at 8:00PM CDT by NWS New Orleans LA",
-                "description": "* WHAT...Heat index values up to 110 expected.\n\n* WHERE...Upper Plaquemines Parish.\n\n* WHEN...From 11 AM to 8 PM CDT Wednesday.\n\n* IMPACTS...Hot temperatures and high humidity may cause heat\nillnesses.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWLIX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS74 KLIX 190139"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT FROM 11 AM TO 8 PM CDT WEDNESDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KLIX.HT.Y.0021.260819T1600Z-260820T0100Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-19T20:00:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1d3d744c101c825169b59f58996d59857b1e86c7.001.1",
             "type": "Feature",
             "geometry": null,
@@ -11243,6 +10898,89 @@
                 "headline": "Heat Advisory issued August 18 at 8:39PM CDT until August 19 at 8:00PM CDT by NWS New Orleans LA",
                 "description": "* WHAT...Heat index values up to 110 expected.\n\n* WHERE...Portions of southeast Louisiana and southern Mississippi.\n\n* WHEN...From 11 AM to 8 PM CDT Wednesday.\n\n* IMPACTS...Hot temperatures and high humidity may cause heat\nillnesses.",
                 "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nTake extra precautions when outside. Wear lightweight and loose\nfitting clothing. Try to limit strenuous activities to early morning\nor evening. Take action when you see symptoms of heat exhaustion and\nheat stroke.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWLIX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS74 KLIX 190139"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT FROM 11 AM TO 8 PM CDT WEDNESDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KLIX.HT.Y.0021.260819T1600Z-260820T0100Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-19T20:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1d3d744c101c825169b59f58996d59857b1e86c7.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1d3d744c101c825169b59f58996d59857b1e86c7.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.1d3d744c101c825169b59f58996d59857b1e86c7.002.1",
+                "areaDesc": "Upper Plaquemines",
+                "geocode": {
+                    "SAME": [
+                        "022075"
+                    ],
+                    "UGC": [
+                        "LAZ089"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/LAZ089"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7a7a1cb16ba5ccc3f9431c9afd511ae7992c71cd.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.7a7a1cb16ba5ccc3f9431c9afd511ae7992c71cd.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-18T16:05:00-05:00"
+                    }
+                ],
+                "sent": "2026-08-18T20:39:00-05:00",
+                "effective": "2026-08-18T20:39:00-05:00",
+                "onset": "2026-08-19T11:00:00-05:00",
+                "expires": "2026-08-19T13:00:00-05:00",
+                "ends": "2026-08-19T20:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS New Orleans LA",
+                "headline": "Heat Advisory issued August 18 at 8:39PM CDT until August 19 at 8:00PM CDT by NWS New Orleans LA",
+                "description": "* WHAT...Heat index values up to 110 expected.\n\n* WHERE...Upper Plaquemines Parish.\n\n* WHEN...From 11 AM to 8 PM CDT Wednesday.\n\n* IMPACTS...Hot temperatures and high humidity may cause heat\nillnesses.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
                 "response": "Execute",
                 "note": null,
                 "parameters": {
@@ -12816,6 +12554,132 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.326b597a5c9283a9dded098f6e877a5df14a9a48.003.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -87.44,
+                            38.51
+                        ],
+                        [
+                            -87.6,
+                            38.44
+                        ],
+                        [
+                            -87.73,
+                            38.41
+                        ],
+                        [
+                            -87.73,
+                            38.43
+                        ],
+                        [
+                            -87.55,
+                            38.52
+                        ],
+                        [
+                            -87.44,
+                            38.54
+                        ],
+                        [
+                            -87.44,
+                            38.51
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.326b597a5c9283a9dded098f6e877a5df14a9a48.003.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.326b597a5c9283a9dded098f6e877a5df14a9a48.003.1",
+                "areaDesc": "Gibson, IN; Knox, IN",
+                "geocode": {
+                    "SAME": [
+                        "018051",
+                        "018083"
+                    ],
+                    "UGC": [
+                        "INC051",
+                        "INC083"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/INC051",
+                    "https://api.weather.gov/zones/county/INC083"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7726b79c7444416d75ba6b98834ca01e4aae351b.011.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.7726b79c7444416d75ba6b98834ca01e4aae351b.011.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-18T12:43:00-04:00"
+                    }
+                ],
+                "sent": "2026-08-18T19:42:00-04:00",
+                "effective": "2026-08-18T19:42:00-04:00",
+                "onset": "2026-08-19T19:00:00-04:00",
+                "expires": "2026-08-19T14:00:00-04:00",
+                "ends": "2026-08-27T11:52:00-04:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Indianapolis IN",
+                "headline": "Flood Warning issued August 18 at 7:42PM EDT until August 27 at 11:52AM EDT by NWS Indianapolis IN",
+                "description": "...The Flood Warning continues for the following rivers in Indiana...\n\nWhite River at Elliston down to Edwardsport.\n\n...The Flood Warning is extended for the following rivers in\nIndiana...\n\nWhite River at Petersburg down to Hazleton.\n\n.The White River continues in minor flood from Marion County down to\nEdwardsport...with minor flooding to start at Petersburg pre-dawn\nWednesday...and at Hazleton late Wednesday.  While moderate flooding\nwill begin at Spencer tonight...no downstream points are expected to\nreach moderate flood levels.  The crest is forecast to reach\nElliston Thursday evening.\n\n* WHAT...Minor flooding is forecast.\n\n* WHERE...White River at Hazleton.\n\n* WHEN...From Wednesday evening to Thursday, August 27.\n\n* IMPACTS...At 22.0 feet, In agricultural season, extensive flooding\nof bottomlands and some of the higher bottomlands is in progress.\nHigh water surrounds residents in river cabins.  Oil fields and\nlocal roads flood.\n\n* ADDITIONAL DETAILS...\n- There is no current observed data.\n- Forecast...The river is expected to rise above flood stage\ntomorrow evening to a crest of 21.2 feet Monday evening. It\nwill then fall below flood stage Wednesday, August 26.\n- Flood stage is 16.0 feet.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nMotorists should not attempt to drive around barricades or drive\ncars through flooded areas.\n\nAdditional information is available at www.weather.gov/ind.\n\nThe next statement should be issued Wednesday afternoon by around\n200 PM EDT /100 PM CDT/.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSIND"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS83 KIND 182342"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD WARNING NOW IN EFFECT FROM WEDNESDAY EVENING TO THURSDAY, AUGUST 27"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KIND.FL.W.0175.260819T2300Z-260827T1552Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-27T11:52:00-04:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.47ecb9a0dc02685750481f942b5d309036f0cfc2.005.1,2026-08-17T23:25:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.252321710d87aeff7e92a948558e319a00f11c23.001.1,2026-08-17T12:07:00-04:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FLS"
+                    ],
+                    "NationalWeatherService": [
+                        "FLW"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.326b597a5c9283a9dded098f6e877a5df14a9a48.004.1",
             "type": "Feature",
             "geometry": {
@@ -12931,132 +12795,6 @@
                     ],
                     "expiredReferences": [
                         "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.47ecb9a0dc02685750481f942b5d309036f0cfc2.001.1,2026-08-17T23:25:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3fab2cf236f2f3848c940cfd109bf7976503698b.001.1,2026-08-17T12:07:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2dd7236710678d21796470ea546268c9e26315a8.001.1,2026-08-16T21:32:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.26914f2e509c6d8a13fb04ec434c50763ae25111.001.1,2026-08-16T12:00:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cd9e3654093ad0b4d9d5acf471e24e540175a91d.002.1,2026-08-15T23:24:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8c9e2c7243fa89c5772bdac13a5189897f292a22.001.1,2026-08-15T19:14:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.eafa7da4955976a5822d40461ef364f4db88666b.008.1,2026-08-15T10:47:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.c0d438ac1e232492d62d376d8486369f3b5f72f2.014.1,2026-08-15T01:07:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9cb1b3a8041174cf48f4ee2975c6093f349c8b1a.003.1,2026-08-14T17:04:00-04:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "FLS"
-                    ],
-                    "NationalWeatherService": [
-                        "FLW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.326b597a5c9283a9dded098f6e877a5df14a9a48.003.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -87.44,
-                            38.51
-                        ],
-                        [
-                            -87.6,
-                            38.44
-                        ],
-                        [
-                            -87.73,
-                            38.41
-                        ],
-                        [
-                            -87.73,
-                            38.43
-                        ],
-                        [
-                            -87.55,
-                            38.52
-                        ],
-                        [
-                            -87.44,
-                            38.54
-                        ],
-                        [
-                            -87.44,
-                            38.51
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.326b597a5c9283a9dded098f6e877a5df14a9a48.003.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.326b597a5c9283a9dded098f6e877a5df14a9a48.003.1",
-                "areaDesc": "Gibson, IN; Knox, IN",
-                "geocode": {
-                    "SAME": [
-                        "018051",
-                        "018083"
-                    ],
-                    "UGC": [
-                        "INC051",
-                        "INC083"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/INC051",
-                    "https://api.weather.gov/zones/county/INC083"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7726b79c7444416d75ba6b98834ca01e4aae351b.011.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.7726b79c7444416d75ba6b98834ca01e4aae351b.011.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-18T12:43:00-04:00"
-                    }
-                ],
-                "sent": "2026-08-18T19:42:00-04:00",
-                "effective": "2026-08-18T19:42:00-04:00",
-                "onset": "2026-08-19T19:00:00-04:00",
-                "expires": "2026-08-19T14:00:00-04:00",
-                "ends": "2026-08-27T11:52:00-04:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Flood Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Indianapolis IN",
-                "headline": "Flood Warning issued August 18 at 7:42PM EDT until August 27 at 11:52AM EDT by NWS Indianapolis IN",
-                "description": "...The Flood Warning continues for the following rivers in Indiana...\n\nWhite River at Elliston down to Edwardsport.\n\n...The Flood Warning is extended for the following rivers in\nIndiana...\n\nWhite River at Petersburg down to Hazleton.\n\n.The White River continues in minor flood from Marion County down to\nEdwardsport...with minor flooding to start at Petersburg pre-dawn\nWednesday...and at Hazleton late Wednesday.  While moderate flooding\nwill begin at Spencer tonight...no downstream points are expected to\nreach moderate flood levels.  The crest is forecast to reach\nElliston Thursday evening.\n\n* WHAT...Minor flooding is forecast.\n\n* WHERE...White River at Hazleton.\n\n* WHEN...From Wednesday evening to Thursday, August 27.\n\n* IMPACTS...At 22.0 feet, In agricultural season, extensive flooding\nof bottomlands and some of the higher bottomlands is in progress.\nHigh water surrounds residents in river cabins.  Oil fields and\nlocal roads flood.\n\n* ADDITIONAL DETAILS...\n- There is no current observed data.\n- Forecast...The river is expected to rise above flood stage\ntomorrow evening to a crest of 21.2 feet Monday evening. It\nwill then fall below flood stage Wednesday, August 26.\n- Flood stage is 16.0 feet.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nMotorists should not attempt to drive around barricades or drive\ncars through flooded areas.\n\nAdditional information is available at www.weather.gov/ind.\n\nThe next statement should be issued Wednesday afternoon by around\n200 PM EDT /100 PM CDT/.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSIND"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS83 KIND 182342"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD WARNING NOW IN EFFECT FROM WEDNESDAY EVENING TO THURSDAY, AUGUST 27"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.EXT.KIND.FL.W.0175.260819T2300Z-260827T1552Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-27T11:52:00-04:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.47ecb9a0dc02685750481f942b5d309036f0cfc2.005.1,2026-08-17T23:25:00-04:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.252321710d87aeff7e92a948558e319a00f11c23.001.1,2026-08-17T12:07:00-04:00"
                     ]
                 },
                 "scope": "Public",
@@ -14567,5 +14305,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-08-19T14:21:11+00:00"
+    "updated": "2026-08-19T14:32:12+00:00"
 }
