@@ -10,74 +10,7 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-50601",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-50601",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-50601",
-                "areaDesc": "Montgomery",
-                "geocode": {
-                    "SAME": [
-                        "024031"
-                    ],
-                    "UGC": [
-                        "MDC031"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/MDC031"
-                ],
-                "references": [],
-                "sent": "2026-08-24T16:47:16+00:00",
-                "effective": "2026-08-24T16:47:16+00:00",
-                "onset": null,
-                "expires": "2026-08-24T16:57:16+00:00",
-                "ends": null,
-                "status": "Test",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Test Message",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS",
-                "headline": null,
-                "description": "Monitoring message only. Please disregard.",
-                "instruction": "Monitoring message only. Please disregard.",
-                "response": "None",
-                "note": "This is only a test for monitoring of vital dissemination systems.",
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "KEPWBC"
-                    ],
-                    "WMOidentifier": [
-                        "NZUS91 KWBC 241647"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "CMAS",
-                        "EAS",
-                        "NWEM"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "TST"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5f547e214462b79857c445746280bcf31995cbb5.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.46ae8a4f2fb0f629421230d88272dd642974a3b9.001.1",
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
@@ -135,9 +68,9 @@
                 ]
             },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5f547e214462b79857c445746280bcf31995cbb5.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.46ae8a4f2fb0f629421230d88272dd642974a3b9.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.5f547e214462b79857c445746280bcf31995cbb5.001.1",
+                "id": "urn:oid:2.49.0.1.840.0.46ae8a4f2fb0f629421230d88272dd642974a3b9.001.1",
                 "areaDesc": "Wilcox, AL",
                 "geocode": {
                     "SAME": [
@@ -150,14 +83,21 @@
                 "affectedZones": [
                     "https://api.weather.gov/zones/county/ALC131"
                 ],
-                "references": [],
-                "sent": "2026-08-24T11:43:00-05:00",
-                "effective": "2026-08-24T11:43:00-05:00",
-                "onset": "2026-08-24T11:43:00-05:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5f547e214462b79857c445746280bcf31995cbb5.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.5f547e214462b79857c445746280bcf31995cbb5.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T11:43:00-05:00"
+                    }
+                ],
+                "sent": "2026-08-24T12:02:00-05:00",
+                "effective": "2026-08-24T12:02:00-05:00",
+                "onset": "2026-08-24T12:02:00-05:00",
                 "expires": "2026-08-24T12:30:00-05:00",
                 "ends": "2026-08-24T12:30:00-05:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Observed",
@@ -165,20 +105,23 @@
                 "event": "Severe Thunderstorm Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Mobile AL",
-                "headline": "Severe Thunderstorm Warning issued August 24 at 11:43AM CDT until August 24 at 12:30PM CDT by NWS Mobile AL",
-                "description": "SVRMOB\n\nThe National Weather Service in Mobile has issued a\n\n* Severe Thunderstorm Warning for...\nSoutheastern Wilcox County in south central Alabama...\n\n* Until 1230 PM CDT.\n\n* At 1142 AM CDT, a severe thunderstorm was located 9 miles southeast\nof Dannelly Reservoir, or 9 miles east of Camden, moving east at 15\nmph.\n\nHAZARD...60 mph wind gusts and quarter size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage\nto roofs, siding, and trees.\n\n* Locations impacted include...\nPine Apple.",
+                "headline": "Severe Thunderstorm Warning issued August 24 at 12:02PM CDT until August 24 at 12:30PM CDT by NWS Mobile AL",
+                "description": "At 1201 PM CDT, a severe thunderstorm was located 7 miles northwest\nof Pine Apple, or 14 miles east of Camden, moving southeast at 20\nmph.\n\nHAZARD...60 mph wind gusts and penny size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\nLocations impacted include...\nPine Apple.",
                 "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
                 "response": "Shelter",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SVRMOB"
+                        "SVSMOB"
                     ],
                     "WMOidentifier": [
-                        "WUUS54 KMOB 241643"
+                        "WWUS54 KMOB 241702"
+                    ],
+                    "NWSheadline": [
+                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 1230 PM CDT FOR SOUTHEASTERN WILCOX COUNTY"
                     ],
                     "eventMotionDescription": [
-                        "2026-08-24T16:42:00-00:00...storm...285DEG...13KT...32.03,-87.13"
+                        "2026-08-24T17:01:00-00:00...storm...296DEG...19KT...31.97,-87.04"
                     ],
                     "windThreat": [
                         "RADAR INDICATED"
@@ -190,7 +133,7 @@
                         "RADAR INDICATED"
                     ],
                     "maxHailSize": [
-                        "1.00"
+                        "0.75"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
@@ -201,7 +144,7 @@
                         "WXR"
                     ],
                     "VTEC": [
-                        "/O.NEW.KMOB.SV.W.0157.260824T1643Z-260824T1730Z/"
+                        "/O.CON.KMOB.SV.W.0157.000000T0000Z-260824T1730Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-24T12:30:00-05:00"
@@ -213,7 +156,383 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SVR"
+                        "SVS"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.79aefeb3548cba1f83bbf1a319c63c9b76b7c822.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -87.19,
+                            32.08
+                        ],
+                        [
+                            -87.26,
+                            32.12
+                        ],
+                        [
+                            -87.25,
+                            32.14
+                        ],
+                        [
+                            -87.28,
+                            32.15
+                        ],
+                        [
+                            -87.29,
+                            32.17
+                        ],
+                        [
+                            -87.3,
+                            32.16
+                        ],
+                        [
+                            -87.32,
+                            32.2
+                        ],
+                        [
+                            -87.36,
+                            32.2
+                        ],
+                        [
+                            -87.39,
+                            32.24
+                        ],
+                        [
+                            -87.42,
+                            32.24
+                        ],
+                        [
+                            -87.45,
+                            32.31
+                        ],
+                        [
+                            -87.42,
+                            32.31
+                        ],
+                        [
+                            -87.42,
+                            32.39
+                        ],
+                        [
+                            -87.33,
+                            32.44
+                        ],
+                        [
+                            -86.9,
+                            32.24
+                        ],
+                        [
+                            -86.89,
+                            32.23
+                        ],
+                        [
+                            -86.91,
+                            32.22
+                        ],
+                        [
+                            -86.91,
+                            32.05
+                        ],
+                        [
+                            -87.18,
+                            32.05
+                        ],
+                        [
+                            -87.19,
+                            32.08
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.79aefeb3548cba1f83bbf1a319c63c9b76b7c822.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.79aefeb3548cba1f83bbf1a319c63c9b76b7c822.001.1",
+                "areaDesc": "Dallas",
+                "geocode": {
+                    "SAME": [
+                        "001047"
+                    ],
+                    "UGC": [
+                        "ALZ040"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/ALZ040"
+                ],
+                "references": [],
+                "sent": "2026-08-24T12:02:00-05:00",
+                "effective": "2026-08-24T12:02:00-05:00",
+                "onset": "2026-08-24T12:02:00-05:00",
+                "expires": "2026-08-24T12:45:00-05:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Birmingham AL",
+                "headline": "Special Weather Statement issued August 24 at 12:02PM CDT by NWS Birmingham AL",
+                "description": "At 1201 PM CDT, Doppler radar was tracking a cluster of strong\nthunderstorms near Orrville, or 16 miles southeast of Uniontown.\nStorms are also developing along the Dallas and Wilcox County line.\nThese storms were moving slowly southeast.\n\nHAZARD...Wind gusts up to 40 mph and pea size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects. Minor hail damage to vegetation is\npossible.\n\nLocations impacted include...\nOrrville, Belknap, Bogue Chitto, Dallas Lake, Old Cahaba Park,\nDannelly Reservoir, Central Mills, Tilden, Whites Bluff, Carlowville,\nSafford, Hazen, Minter, and Crumptonia.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.\n\nTorrential rainfall is also occurring with this storm and may lead to\nlocalized flooding. Do not drive your vehicle through flooded\nroadways.\n\nFrequent cloud to ground lightning is occurring with this storm.\nLightning can strike 10 miles away from a thunderstorm. Seek a safe\nshelter inside a building or vehicle.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSBMX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS84 KBMX 241702"
+                    ],
+                    "NWSheadline": [
+                        "STRONG THUNDERSTORMS WILL IMPACT SOUTHERN DALLAS COUNTY THROUGH 1245 PM CDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-08-24T17:01:00-00:00...storm...325DEG...3KT...32.28,-87.3"
+                    ],
+                    "maxWindGust": [
+                        "40 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.25"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-37614",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-37614",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-37614",
+                "areaDesc": "Montgomery",
+                "geocode": {
+                    "SAME": [
+                        "024031"
+                    ],
+                    "UGC": [
+                        "MDC031"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MDC031"
+                ],
+                "references": [],
+                "sent": "2026-08-24T16:57:16+00:00",
+                "effective": "2026-08-24T16:57:16+00:00",
+                "onset": null,
+                "expires": "2026-08-24T17:07:16+00:00",
+                "ends": null,
+                "status": "Test",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Test Message",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS",
+                "headline": null,
+                "description": "Monitoring message only. Please disregard.",
+                "instruction": "Monitoring message only. Please disregard.",
+                "response": "None",
+                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "KEPWBC"
+                    ],
+                    "WMOidentifier": [
+                        "NZUS91 KWBC 241657"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "CMAS",
+                        "EAS",
+                        "NWEM"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "TST"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.70cdd63cb48b9bfa41acc925e1d0f3799ab98ec7.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -86.91,
+                            31.82
+                        ],
+                        [
+                            -86.91,
+                            31.81
+                        ],
+                        [
+                            -87.07,
+                            31.55
+                        ],
+                        [
+                            -87.52,
+                            31.75
+                        ],
+                        [
+                            -87.52,
+                            31.77
+                        ],
+                        [
+                            -87.36,
+                            31.96
+                        ],
+                        [
+                            -86.91,
+                            31.82
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.70cdd63cb48b9bfa41acc925e1d0f3799ab98ec7.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.70cdd63cb48b9bfa41acc925e1d0f3799ab98ec7.001.1",
+                "areaDesc": "Conecuh, AL; Monroe, AL; Wilcox, AL",
+                "geocode": {
+                    "SAME": [
+                        "001035",
+                        "001099",
+                        "001131"
+                    ],
+                    "UGC": [
+                        "ALC035",
+                        "ALC099",
+                        "ALC131"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/ALC035",
+                    "https://api.weather.gov/zones/county/ALC099",
+                    "https://api.weather.gov/zones/county/ALC131"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.89a2e9da84bd24107e8013b12b45864970b710b9.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.89a2e9da84bd24107e8013b12b45864970b710b9.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T11:36:00-05:00"
+                    }
+                ],
+                "sent": "2026-08-24T11:54:00-05:00",
+                "effective": "2026-08-24T11:54:00-05:00",
+                "onset": "2026-08-24T11:54:00-05:00",
+                "expires": "2026-08-24T12:15:00-05:00",
+                "ends": "2026-08-24T12:15:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Mobile AL",
+                "headline": "Severe Thunderstorm Warning issued August 24 at 11:54AM CDT until August 24 at 12:15PM CDT by NWS Mobile AL",
+                "description": "At 1153 AM CDT, a severe thunderstorm was located over Beatrice, or\n16 miles south of Camden, moving southeast at 25 mph.\n\nHAZARD...60 mph wind gusts and penny size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\nLocations impacted include...\nBeatrice and Vredenburgh.",
+                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
+                "response": "Shelter",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SVSMOB"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS54 KMOB 241654"
+                    ],
+                    "NWSheadline": [
+                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 1215 PM CDT FOR NORTHEASTERN MONROE...SOUTH CENTRAL WILCOX AND NORTH CENTRAL CONECUH COUNTIES"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-08-24T16:53:00-00:00...storm...294DEG...21KT...31.76,-87.23"
+                    ],
+                    "windThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxWindGust": [
+                        "60 MPH"
+                    ],
+                    "hailThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxHailSize": [
+                        "0.75"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KMOB.SV.W.0156.000000T0000Z-260824T1715Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-24T12:15:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVS"
                     ],
                     "NationalWeatherService": [
                         "SVW"
@@ -331,137 +650,6 @@
                     ],
                     "NationalWeatherService": [
                         "SPS"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.89a2e9da84bd24107e8013b12b45864970b710b9.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -86.91,
-                            31.82
-                        ],
-                        [
-                            -86.91,
-                            31.81
-                        ],
-                        [
-                            -87.07,
-                            31.55
-                        ],
-                        [
-                            -87.52,
-                            31.75
-                        ],
-                        [
-                            -87.52,
-                            31.77
-                        ],
-                        [
-                            -87.36,
-                            31.96
-                        ],
-                        [
-                            -86.91,
-                            31.82
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.89a2e9da84bd24107e8013b12b45864970b710b9.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.89a2e9da84bd24107e8013b12b45864970b710b9.001.1",
-                "areaDesc": "Conecuh, AL; Monroe, AL; Wilcox, AL",
-                "geocode": {
-                    "SAME": [
-                        "001035",
-                        "001099",
-                        "001131"
-                    ],
-                    "UGC": [
-                        "ALC035",
-                        "ALC099",
-                        "ALC131"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/ALC035",
-                    "https://api.weather.gov/zones/county/ALC099",
-                    "https://api.weather.gov/zones/county/ALC131"
-                ],
-                "references": [],
-                "sent": "2026-08-24T11:36:00-05:00",
-                "effective": "2026-08-24T11:36:00-05:00",
-                "onset": "2026-08-24T11:36:00-05:00",
-                "expires": "2026-08-24T12:15:00-05:00",
-                "ends": "2026-08-24T12:15:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Severe Thunderstorm Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Mobile AL",
-                "headline": "Severe Thunderstorm Warning issued August 24 at 11:36AM CDT until August 24 at 12:15PM CDT by NWS Mobile AL",
-                "description": "SVRMOB\n\nThe National Weather Service in Mobile has issued a\n\n* Severe Thunderstorm Warning for...\nNortheastern Monroe County in south central Alabama...\nSouth central Wilcox County in south central Alabama...\nNorth central Conecuh County in south central Alabama...\n\n* Until 1215 PM CDT.\n\n* At 1135 AM CDT, a severe thunderstorm was located over Vredenburgh,\nor 13 miles south of Camden, moving southeast at 25 mph.\n\nHAZARD...60 mph wind gusts and quarter size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage\nto roofs, siding, and trees.\n\n* Locations impacted include...\nBeatrice and Vredenburgh.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
-                "response": "Shelter",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SVRMOB"
-                    ],
-                    "WMOidentifier": [
-                        "WUUS54 KMOB 241636"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-08-24T16:35:00-00:00...storm...293DEG...22KT...31.81,-87.33"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxHailSize": [
-                        "1.00"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KMOB.SV.W.0156.260824T1636Z-260824T1715Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-24T12:15:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SVR"
-                    ],
-                    "NationalWeatherService": [
-                        "SVW"
                     ]
                 }
             }
@@ -6987,82 +7175,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.036.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.036.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.036.1",
-                "areaDesc": "North and West of Nunivak Island",
-                "geocode": {
-                    "SAME": [
-                        "058765"
-                    ],
-                    "UGC": [
-                        "PKZ765"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ765"
-                ],
-                "references": [],
-                "sent": "2026-08-24T03:32:00-08:00",
-                "effective": "2026-08-24T03:32:00-08:00",
-                "onset": "2026-08-24T05:00:00-08:00",
-                "expires": "2026-08-24T16:30:00-08:00",
-                "ends": "2026-08-24T17:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued August 24 at 3:32AM AKDT until August 24 at 5:00PM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...SW wind 20 kt. Seas 9 ft.\n.TONIGHT...W wind 15 kt. Seas 7 ft.\n.TUE...W wind 20 kt. Seas 7 ft.\n.TUE NIGHT...W wind 20 kt. Seas 6 ft.\n.WED...S wind 25 kt. Seas 7 ft.\n.THU...S wind 30 kt. Seas 11 ft.\n.FRI...W wind 30 kt. Seas 11 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFALU"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAFC 241132"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY TODAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.1995.260824T1300Z-260825T0100Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-24T17:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.011.1",
             "type": "Feature",
             "geometry": null,
@@ -7122,6 +7234,82 @@
                     ],
                     "eventEndingTime": [
                         "2026-08-25T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.036.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.036.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.036.1",
+                "areaDesc": "North and West of Nunivak Island",
+                "geocode": {
+                    "SAME": [
+                        "058765"
+                    ],
+                    "UGC": [
+                        "PKZ765"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ765"
+                ],
+                "references": [],
+                "sent": "2026-08-24T03:32:00-08:00",
+                "effective": "2026-08-24T03:32:00-08:00",
+                "onset": "2026-08-24T05:00:00-08:00",
+                "expires": "2026-08-24T16:30:00-08:00",
+                "ends": "2026-08-24T17:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued August 24 at 3:32AM AKDT until August 24 at 5:00PM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...SW wind 20 kt. Seas 9 ft.\n.TONIGHT...W wind 15 kt. Seas 7 ft.\n.TUE...W wind 20 kt. Seas 7 ft.\n.TUE NIGHT...W wind 20 kt. Seas 6 ft.\n.WED...S wind 25 kt. Seas 7 ft.\n.THU...S wind 30 kt. Seas 11 ft.\n.FRI...W wind 30 kt. Seas 11 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFALU"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAFC 241132"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY TODAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.1995.260824T1300Z-260825T0100Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-24T17:00:00-08:00"
                     ]
                 },
                 "scope": "Public",
@@ -7595,82 +7783,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.007.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.007.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.007.1",
-                "areaDesc": "Cape Tolstoi to Unalga Pass from 15 to 100 NM",
-                "geocode": {
-                    "SAME": [
-                        "058755"
-                    ],
-                    "UGC": [
-                        "PKZ755"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ755"
-                ],
-                "references": [],
-                "sent": "2026-08-24T03:32:00-08:00",
-                "effective": "2026-08-24T03:32:00-08:00",
-                "onset": "2026-08-24T17:00:00-08:00",
-                "expires": "2026-08-24T16:30:00-08:00",
-                "ends": "2026-08-25T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued August 24 at 3:32AM AKDT until August 25 at 5:00AM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...SW wind 20 kt. Seas 5 ft.\n.TONIGHT...SW wind 25 kt. Seas 7 ft.\n.TUE...SW wind 20 kt. Seas 7 ft.\n.TUE NIGHT...NW wind 15 kt. Seas 6 ft.\n.WED...W wind 15 kt. Seas 4 ft.\n.THU THROUGH FRI...W wind 30 kt. Seas 10 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFALU"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAFC 241132"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY TONIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.1971.260825T0100Z-260825T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-25T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.030.1",
             "type": "Feature",
             "geometry": null,
@@ -7727,6 +7839,82 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAFC.SC.Y.1990.260824T1100Z-260825T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-25T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.007.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.007.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.007.1",
+                "areaDesc": "Cape Tolstoi to Unalga Pass from 15 to 100 NM",
+                "geocode": {
+                    "SAME": [
+                        "058755"
+                    ],
+                    "UGC": [
+                        "PKZ755"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ755"
+                ],
+                "references": [],
+                "sent": "2026-08-24T03:32:00-08:00",
+                "effective": "2026-08-24T03:32:00-08:00",
+                "onset": "2026-08-24T17:00:00-08:00",
+                "expires": "2026-08-24T16:30:00-08:00",
+                "ends": "2026-08-25T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued August 24 at 3:32AM AKDT until August 25 at 5:00AM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...SW wind 20 kt. Seas 5 ft.\n.TONIGHT...SW wind 25 kt. Seas 7 ft.\n.TUE...SW wind 20 kt. Seas 7 ft.\n.TUE NIGHT...NW wind 15 kt. Seas 6 ft.\n.WED...W wind 15 kt. Seas 4 ft.\n.THU THROUGH FRI...W wind 30 kt. Seas 10 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFALU"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAFC 241132"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY TONIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.1971.260825T0100Z-260825T1300Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-25T05:00:00-08:00"
@@ -8127,82 +8315,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.035.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.035.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.035.1",
-                "areaDesc": "Kuskokwim Delta from 15 to 80 NM",
-                "geocode": {
-                    "SAME": [
-                        "058764"
-                    ],
-                    "UGC": [
-                        "PKZ764"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ764"
-                ],
-                "references": [],
-                "sent": "2026-08-24T03:32:00-08:00",
-                "effective": "2026-08-24T03:32:00-08:00",
-                "onset": "2026-08-24T03:00:00-08:00",
-                "expires": "2026-08-24T16:30:00-08:00",
-                "ends": "2026-08-25T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued August 24 at 3:32AM AKDT until August 25 at 5:00AM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...SW wind 25 kt. Seas 8 ft. Rain.\n.TONIGHT...SW wind 25 kt. Seas 8 ft. Rain.\n.TUE...W wind 20 kt. Seas 7 ft.\n.TUE NIGHT...W wind 15 kt. Seas 6 ft.\n.WED...SW wind 25 kt. Seas 5 ft.\n.THU...S wind 30 kt. Seas 12 ft.\n.FRI...W wind 35 kt. Seas 12 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFALU"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAFC 241132"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY THROUGH TONIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.1994.260824T1100Z-260825T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-25T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.018.1",
             "type": "Feature",
             "geometry": null,
@@ -8335,6 +8447,82 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAFC.SC.Y.1979.260825T0100Z-260825T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-25T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.035.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.035.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.700af6fbe9ba6ffda0007619388d1b706321206a.035.1",
+                "areaDesc": "Kuskokwim Delta from 15 to 80 NM",
+                "geocode": {
+                    "SAME": [
+                        "058764"
+                    ],
+                    "UGC": [
+                        "PKZ764"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ764"
+                ],
+                "references": [],
+                "sent": "2026-08-24T03:32:00-08:00",
+                "effective": "2026-08-24T03:32:00-08:00",
+                "onset": "2026-08-24T03:00:00-08:00",
+                "expires": "2026-08-24T16:30:00-08:00",
+                "ends": "2026-08-25T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued August 24 at 3:32AM AKDT until August 25 at 5:00AM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...SW wind 25 kt. Seas 8 ft. Rain.\n.TONIGHT...SW wind 25 kt. Seas 8 ft. Rain.\n.TUE...W wind 20 kt. Seas 7 ft.\n.TUE NIGHT...W wind 15 kt. Seas 6 ft.\n.WED...SW wind 25 kt. Seas 5 ft.\n.THU...S wind 30 kt. Seas 12 ft.\n.FRI...W wind 35 kt. Seas 12 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFALU"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAFC 241132"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY THROUGH TONIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.1994.260824T1100Z-260825T1300Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-25T05:00:00-08:00"
@@ -10685,6 +10873,98 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.730732c25aa8664cf6aa540e64d7d99a99def182.005.2",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.730732c25aa8664cf6aa540e64d7d99a99def182.005.2",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.730732c25aa8664cf6aa540e64d7d99a99def182.005.2",
+                "areaDesc": "San Diego County Mountains",
+                "geocode": {
+                    "SAME": [
+                        "006073"
+                    ],
+                    "UGC": [
+                        "CAZ058"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/CAZ058"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6aa6840480fd7318d5d7713663652f76a95bae18.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.6aa6840480fd7318d5d7713663652f76a95bae18.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-23T21:40:00-07:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3030180599dd05e3160d8a71a266f18d164c0353.004.2",
+                        "identifier": "urn:oid:2.49.0.1.840.0.3030180599dd05e3160d8a71a266f18d164c0353.004.2",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T01:54:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-24T01:58:00-07:00",
+                "effective": "2026-08-24T01:58:00-07:00",
+                "onset": "2026-08-24T01:58:00-07:00",
+                "expires": "2026-08-24T15:30:00-07:00",
+                "ends": "2026-08-25T10:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Heat Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS San Diego CA",
+                "headline": "Heat Advisory issued August 24 at 1:58AM PDT until August 25 at 10:00AM PDT by NWS San Diego CA",
+                "description": "* WHAT...For the Heat Advisory, high temperatures in the 90s\nexpected. For the Extreme Heat Warning, dangerously hot conditions\nwith high temperatures in the mid 90s to 104 expected.\n\n* WHERE...San Diego County Mountains.\n\n* WHEN...For the Heat Advisory, until 10 AM PDT Tuesday. For the\nExtreme Heat Warning, from 10 AM Tuesday to 8 PM PDT Friday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat events. Hot temperatures may cause heat illnesses.",
+                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWSGX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS76 KSGX 240858"
+                    ],
+                    "NWSheadline": [
+                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 10 AM PDT TUESDAY... ...EXTREME HEAT WARNING REMAINS IN EFFECT FROM 10 AM TUESDAY TO 8 PM PDT FRIDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KSGX.HT.Y.0010.000000T0000Z-260825T1700Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-25T10:00:00-07:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.506c7c48b0e4f23f840fe426e87d06e37f971233.001.1,2026-08-24T01:10:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5bb6295837906363a0a1fba0fcab60a9fdb5a657.002.1,2026-08-23T13:54:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8d72b8a0575f39d26c54378f418c6a32de22ce24.002.1,2026-08-23T05:17:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cdba2d2437b1a37af449313a2377a5076cea7614.002.1,2026-08-22T21:43:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.660565c273a758d1bbd90747473c122f39e3dbc6.002.2,2026-08-22T13:10:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2c45e65d6ebd518e3787b29593b869f89e93e17a.002.1,2026-08-22T02:56:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa785ba9f0ca42de4fcfdb1f1437ee75b5a71093.002.1,2026-08-21T21:35:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.115d72a2778b029f0a81c0d5b2d685ba1e0d49ea.002.1,2026-08-21T12:23:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.318684c9564532a3e75df6b99a15f88019c71993.003.1,2026-08-21T12:58:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "HTY"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.730732c25aa8664cf6aa540e64d7d99a99def182.002.2",
             "type": "Feature",
             "geometry": null,
@@ -10735,98 +11015,6 @@
                 "senderName": "NWS San Diego CA",
                 "headline": "Heat Advisory issued August 24 at 1:58AM PDT until August 25 at 10:00AM PDT by NWS San Diego CA",
                 "description": "* WHAT...For the Heat Advisory, temperatures up to 106. For the\nExtreme Heat Warning, dangerously hot conditions with temperatures\nup to 110 expected.\n\n* WHERE...San Bernardino and Riverside County Valleys-The Inland\nEmpire.\n\n* WHEN...For the Heat Advisory, until 10 AM PDT Tuesday. For the\nExtreme Heat Warning, from 10 AM Tuesday to 8 PM PDT Friday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat events. Hot temperatures may cause heat illnesses.",
-                "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWSGX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS76 KSGX 240858"
-                    ],
-                    "NWSheadline": [
-                        "HEAT ADVISORY REMAINS IN EFFECT UNTIL 10 AM PDT TUESDAY... ...EXTREME HEAT WARNING REMAINS IN EFFECT FROM 10 AM TUESDAY TO 8 PM PDT FRIDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KSGX.HT.Y.0010.000000T0000Z-260825T1700Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-25T10:00:00-07:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.506c7c48b0e4f23f840fe426e87d06e37f971233.001.1,2026-08-24T01:10:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5bb6295837906363a0a1fba0fcab60a9fdb5a657.002.1,2026-08-23T13:54:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8d72b8a0575f39d26c54378f418c6a32de22ce24.002.1,2026-08-23T05:17:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cdba2d2437b1a37af449313a2377a5076cea7614.002.1,2026-08-22T21:43:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.660565c273a758d1bbd90747473c122f39e3dbc6.002.2,2026-08-22T13:10:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2c45e65d6ebd518e3787b29593b869f89e93e17a.002.1,2026-08-22T02:56:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa785ba9f0ca42de4fcfdb1f1437ee75b5a71093.002.1,2026-08-21T21:35:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.115d72a2778b029f0a81c0d5b2d685ba1e0d49ea.002.1,2026-08-21T12:23:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.318684c9564532a3e75df6b99a15f88019c71993.003.1,2026-08-21T12:58:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "HTY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.730732c25aa8664cf6aa540e64d7d99a99def182.005.2",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.730732c25aa8664cf6aa540e64d7d99a99def182.005.2",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.730732c25aa8664cf6aa540e64d7d99a99def182.005.2",
-                "areaDesc": "San Diego County Mountains",
-                "geocode": {
-                    "SAME": [
-                        "006073"
-                    ],
-                    "UGC": [
-                        "CAZ058"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/CAZ058"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6aa6840480fd7318d5d7713663652f76a95bae18.002.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.6aa6840480fd7318d5d7713663652f76a95bae18.002.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-23T21:40:00-07:00"
-                    },
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3030180599dd05e3160d8a71a266f18d164c0353.004.2",
-                        "identifier": "urn:oid:2.49.0.1.840.0.3030180599dd05e3160d8a71a266f18d164c0353.004.2",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-24T01:54:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-24T01:58:00-07:00",
-                "effective": "2026-08-24T01:58:00-07:00",
-                "onset": "2026-08-24T01:58:00-07:00",
-                "expires": "2026-08-24T15:30:00-07:00",
-                "ends": "2026-08-25T10:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Heat Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS San Diego CA",
-                "headline": "Heat Advisory issued August 24 at 1:58AM PDT until August 25 at 10:00AM PDT by NWS San Diego CA",
-                "description": "* WHAT...For the Heat Advisory, high temperatures in the 90s\nexpected. For the Extreme Heat Warning, dangerously hot conditions\nwith high temperatures in the mid 90s to 104 expected.\n\n* WHERE...San Diego County Mountains.\n\n* WHEN...For the Heat Advisory, until 10 AM PDT Tuesday. For the\nExtreme Heat Warning, from 10 AM Tuesday to 8 PM PDT Friday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat events. Hot temperatures may cause heat illnesses.",
                 "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.",
                 "response": "Execute",
                 "note": null,
@@ -16358,82 +16546,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.031.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.031.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.031.1",
-                "areaDesc": "Bristol Bay greater than 15 NM",
-                "geocode": {
-                    "SAME": [
-                        "058760"
-                    ],
-                    "UGC": [
-                        "PKZ760"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ760"
-                ],
-                "references": [],
-                "sent": "2026-08-23T15:49:00-08:00",
-                "effective": "2026-08-23T15:49:00-08:00",
-                "onset": "2026-08-24T17:00:00-08:00",
-                "expires": "2026-08-24T05:15:00-08:00",
-                "ends": "2026-08-25T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued August 23 at 3:49PM AKDT until August 25 at 5:00AM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SW wind 20 kt. Seas 3 ft.\n.MON...SW wind 20 kt. Seas 6 ft. Rain.\n.MON NIGHT...SW wind 25 kt. Seas 7 ft. Rain.\n.TUE...W wind 25 kt. Seas 7 ft.\n.TUE NIGHT...NW wind 20 kt. Seas 7 ft.\n.WED...W wind 15 kt. Seas 4 ft.\n.THU...SW wind 30 kt. Seas 6 ft.\n.FRI...W wind 30 kt. Seas 9 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFALU"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAFC 232349"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY MONDAY NIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.3924.260825T0100Z-260825T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-25T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.022.1",
             "type": "Feature",
             "geometry": null,
@@ -16493,6 +16605,82 @@
                     ],
                     "eventEndingTime": [
                         "2026-08-24T17:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.031.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.031.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.031.1",
+                "areaDesc": "Bristol Bay greater than 15 NM",
+                "geocode": {
+                    "SAME": [
+                        "058760"
+                    ],
+                    "UGC": [
+                        "PKZ760"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ760"
+                ],
+                "references": [],
+                "sent": "2026-08-23T15:49:00-08:00",
+                "effective": "2026-08-23T15:49:00-08:00",
+                "onset": "2026-08-24T17:00:00-08:00",
+                "expires": "2026-08-24T05:15:00-08:00",
+                "ends": "2026-08-25T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued August 23 at 3:49PM AKDT until August 25 at 5:00AM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SW wind 20 kt. Seas 3 ft.\n.MON...SW wind 20 kt. Seas 6 ft. Rain.\n.MON NIGHT...SW wind 25 kt. Seas 7 ft. Rain.\n.TUE...W wind 25 kt. Seas 7 ft.\n.TUE NIGHT...NW wind 20 kt. Seas 7 ft.\n.WED...W wind 15 kt. Seas 4 ft.\n.THU...SW wind 30 kt. Seas 6 ft.\n.FRI...W wind 30 kt. Seas 9 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFALU"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAFC 232349"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY MONDAY NIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.3924.260825T0100Z-260825T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-25T05:00:00-08:00"
                     ]
                 },
                 "scope": "Public",
@@ -16814,82 +17002,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.037.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.037.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.037.1",
-                "areaDesc": "Saint Matthew Island Waters",
-                "geocode": {
-                    "SAME": [
-                        "058767"
-                    ],
-                    "UGC": [
-                        "PKZ767"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ767"
-                ],
-                "references": [],
-                "sent": "2026-08-23T15:49:00-08:00",
-                "effective": "2026-08-23T15:49:00-08:00",
-                "onset": "2026-08-23T15:00:00-08:00",
-                "expires": "2026-08-24T05:15:00-08:00",
-                "ends": "2026-08-24T17:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued August 23 at 3:49PM AKDT until August 24 at 5:00PM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SW wind 30 kt. Seas 13 ft.\n.MON...SW wind 20 kt. Seas 9 ft.\n.MON NIGHT...SW wind 20 kt. Seas 7 ft.\n.TUE AND TUE NIGHT...SW wind 20 kt. Seas 6 ft.\n.WED...S wind 25 kt. Seas 8 ft.\n.THU THROUGH FRI...W wind 30 kt. Seas 16 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFALU"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAFC 232349"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY THROUGH MONDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.3928.260823T2300Z-260825T0100Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-24T17:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.021.1",
             "type": "Feature",
             "geometry": null,
@@ -16949,6 +17061,82 @@
                     ],
                     "eventEndingTime": [
                         "2026-08-25T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.037.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.037.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.0d9c57dd50755cae5ef344ce7d8dcd58438b47d8.037.1",
+                "areaDesc": "Saint Matthew Island Waters",
+                "geocode": {
+                    "SAME": [
+                        "058767"
+                    ],
+                    "UGC": [
+                        "PKZ767"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ767"
+                ],
+                "references": [],
+                "sent": "2026-08-23T15:49:00-08:00",
+                "effective": "2026-08-23T15:49:00-08:00",
+                "onset": "2026-08-23T15:00:00-08:00",
+                "expires": "2026-08-24T05:15:00-08:00",
+                "ends": "2026-08-24T17:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued August 23 at 3:49PM AKDT until August 24 at 5:00PM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SW wind 30 kt. Seas 13 ft.\n.MON...SW wind 20 kt. Seas 9 ft.\n.MON NIGHT...SW wind 20 kt. Seas 7 ft.\n.TUE AND TUE NIGHT...SW wind 20 kt. Seas 6 ft.\n.WED...S wind 25 kt. Seas 8 ft.\n.THU THROUGH FRI...W wind 30 kt. Seas 16 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFALU"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAFC 232349"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY THROUGH MONDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.3928.260823T2300Z-260825T0100Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-24T17:00:00-08:00"
                     ]
                 },
                 "scope": "Public",
@@ -20642,5 +20830,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-08-24T16:47:21+00:00"
+    "updated": "2026-08-24T17:02:52+00:00"
 }
