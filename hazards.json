@@ -10,7 +10,7 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d1057e413e769113cdceed22fc94939f8162547f.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3efa73999a05cb6fe8d53bb32c42134eaa0e1e87.001.1",
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
@@ -72,9 +72,9 @@
                 ]
             },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d1057e413e769113cdceed22fc94939f8162547f.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.3efa73999a05cb6fe8d53bb32c42134eaa0e1e87.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.d1057e413e769113cdceed22fc94939f8162547f.001.1",
+                "id": "urn:oid:2.49.0.1.840.0.3efa73999a05cb6fe8d53bb32c42134eaa0e1e87.001.1",
                 "areaDesc": "Hawk Channel from Ocean Reef to Craig Key out to the reef; Straits of Florida from Ocean Reef to Craig Key out 20 NM",
                 "geocode": {
                     "SAME": [
@@ -90,14 +90,21 @@
                     "https://api.weather.gov/zones/forecast/GMZ042",
                     "https://api.weather.gov/zones/forecast/GMZ052"
                 ],
-                "references": [],
-                "sent": "2026-08-24T10:38:00-04:00",
-                "effective": "2026-08-24T10:38:00-04:00",
-                "onset": "2026-08-24T10:38:00-04:00",
-                "expires": "2026-08-24T11:00:00-04:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d1057e413e769113cdceed22fc94939f8162547f.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.d1057e413e769113cdceed22fc94939f8162547f.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T10:38:00-04:00"
+                    }
+                ],
+                "sent": "2026-08-24T10:52:00-04:00",
+                "effective": "2026-08-24T10:52:00-04:00",
+                "onset": "2026-08-24T10:52:00-04:00",
+                "expires": "2026-08-24T11:02:00-04:00",
                 "ends": "2026-08-24T11:00:00-04:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Likely",
@@ -105,31 +112,31 @@
                 "event": "Special Marine Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Key West FL",
-                "headline": "Special Marine Warning issued August 24 at 10:38AM EDT until August 24 at 11:00AM EDT by NWS Key West FL",
-                "description": "SMWKEY\n\nThe National Weather Service in Key West has issued a\n\n* Special Marine Warning for...\nHawk Channel and Straits of Florida from Ocean Reef to Craig Key\nout 20 nm...\n\n* Until 1100 AM EDT.\n\n* At 1038 AM EDT, a strong thunderstorm was located OVER Angelfish\nKey, moving northwest at 20 knots.\n\nHAZARD...Wind gusts 34 knots or greater.\n\nSOURCE...National Weather Service Meteorologist.\n\nIMPACT...Expect wind gusts in excess of 34 knots, suddenly higher\nwaves, frequent lightning, and heavy downpours.\n\n* Locations in the warning include...\nAngelfish Key and Carysfort Reef Light.",
+                "headline": "Special Marine Warning issued August 24 at 10:52AM EDT until August 24 at 11:00AM EDT by NWS Key West FL",
+                "description": "The affected areas were...\nHawk Channel and Straits of Florida from Ocean Reef to Craig Key out\n20 nm...\n\nThe thunderstorm has weakened and no longer poses a significant\nthreat to boaters.",
                 "instruction": null,
                 "response": "Avoid",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SMWKEY"
+                        "MWSKEY"
                     ],
                     "WMOidentifier": [
-                        "WHUS52 KKEY 241438"
+                        "FZUS72 KKEY 241452"
+                    ],
+                    "NWSheadline": [
+                        "THE SPECIAL MARINE WARNING WILL EXPIRE AT 1100 AM EDT"
                     ],
                     "eventMotionDescription": [
-                        "2026-08-24T14:38:00-00:00...storm...139DEG...18KT...25.29,-80.27"
+                        "2026-08-24T14:52:00-00:00...storm...139DEG...18KT...25.34,-80.32"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
                         "NWEM",
                         "CMAS"
                     ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
                     "VTEC": [
-                        "/O.NEW.KKEY.MA.W.0207.260824T1438Z-260824T1500Z/"
+                        "/O.EXP.KKEY.MA.W.0207.000000T0000Z-260824T1500Z/"
                     ],
                     "eventEndingTime": [
                         "2026-08-24T11:00:00-04:00"
@@ -141,7 +148,7 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SMW"
+                        "NWS"
                     ],
                     "NationalWeatherService": [
                         "MAW"
@@ -150,13 +157,283 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-48922",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.002.1",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-48922",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.002.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-48922",
+                "id": "urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.002.1",
+                "areaDesc": "Coastal waters from Cape Shoalwater WA to Cape Falcon OR out 10 nm; Waters from Cape Shoalwater WA to Cape Falcon OR from 10 to 60 nm",
+                "geocode": {
+                    "SAME": [
+                        "057251",
+                        "057271"
+                    ],
+                    "UGC": [
+                        "PZZ251",
+                        "PZZ271"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PZZ251",
+                    "https://api.weather.gov/zones/forecast/PZZ271"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T01:43:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-24T07:50:00-07:00",
+                "effective": "2026-08-24T07:50:00-07:00",
+                "onset": "2026-08-24T07:50:00-07:00",
+                "expires": "2026-08-24T17:00:00-07:00",
+                "ends": "2026-08-24T20:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Portland OR",
+                "headline": "Small Craft Advisory issued August 24 at 7:50AM PDT until August 24 at 8:00PM PDT by NWS Portland OR",
+                "description": "* WHAT...Seas 3 to 6 ft at 7 seconds and north winds 15 to 20 kt\nwith gusts up to 25 kt.\n\n* WHERE...Coastal waters from Cape Shoalwater WA to Cape Falcon\nOR out 10 NM and Waters from Cape Shoalwater WA to Cape Falcon\nOR from 10 to 60 NM.\n\n* WHEN...Until 8 PM PDT this evening.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
+                "instruction": "Inexperienced mariners, especially those operating smaller\nvessels, should avoid navigating in hazardous conditions.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWWPQR"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS76 KPQR 241450"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT UNTIL 8 PM PDT THIS EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KPQR.SC.Y.0091.000000T0000Z-260825T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-24T20:00:00-07:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.002.1,2026-08-23T12:18:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f696158de3934d8c19c9ba0d0d4e32b6d994c997.002.1,2026-08-23T01:47:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.001.1",
+                "areaDesc": "Coastal waters from Cape Falcon to Cape Foulweather OR out 10 nm; Coastal waters from Cape Foulweather to Florence OR out 10 nm; Waters from Cape Falcon to Cape Foulweather OR from 10 to 60 nm; Waters from Cape Foulweather to Florence OR from 10 to 60 nm",
+                "geocode": {
+                    "SAME": [
+                        "057252",
+                        "057253",
+                        "057272",
+                        "057273"
+                    ],
+                    "UGC": [
+                        "PZZ252",
+                        "PZZ253",
+                        "PZZ272",
+                        "PZZ273"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PZZ252",
+                    "https://api.weather.gov/zones/forecast/PZZ253",
+                    "https://api.weather.gov/zones/forecast/PZZ272",
+                    "https://api.weather.gov/zones/forecast/PZZ273"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T01:43:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-24T07:50:00-07:00",
+                "effective": "2026-08-24T07:50:00-07:00",
+                "onset": "2026-08-24T07:50:00-07:00",
+                "expires": "2026-08-24T17:00:00-07:00",
+                "ends": "2026-08-24T17:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Portland OR",
+                "headline": "Small Craft Advisory issued August 24 at 7:50AM PDT until August 24 at 5:00PM PDT by NWS Portland OR",
+                "description": "* WHAT...Seas 3 to 5 ft at 7 seconds and north winds 10 to 20 kt\nwith gusts up to 25 kt.\n\n* WHERE...Coastal waters from Cape Falcon to Cape Foulweather OR\nout 10 NM, Coastal waters from Cape Foulweather to Florence OR\nout 10 NM, Waters from Cape Falcon to Cape Foulweather OR from\n10 to 60 NM and Waters from Cape Foulweather to Florence OR\nfrom 10 to 60 NM.\n\n* WHEN...Until 5 PM PDT this afternoon.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
+                "instruction": "Inexperienced mariners, especially those operating smaller\nvessels, should avoid navigating in hazardous conditions.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWWPQR"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS76 KPQR 241450"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT UNTIL 5 PM PDT THIS AFTERNOON"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KPQR.SC.Y.0091.000000T0000Z-260825T0000Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-24T17:00:00-07:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.001.1,2026-08-23T12:18:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f696158de3934d8c19c9ba0d0d4e32b6d994c997.001.1,2026-08-23T01:47:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.003.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.003.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.428df36deedba30e086c292488e7bf1decdb4725.003.1",
+                "areaDesc": "Columbia River Bar",
+                "geocode": {
+                    "SAME": [
+                        "057210"
+                    ],
+                    "UGC": [
+                        "PZZ210"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PZZ210"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.003.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.003.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T01:43:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-24T07:50:00-07:00",
+                "effective": "2026-08-24T07:50:00-07:00",
+                "onset": "2026-08-24T08:00:00-07:00",
+                "expires": "2026-08-24T17:00:00-07:00",
+                "ends": "2026-08-24T20:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Portland OR",
+                "headline": "Small Craft Advisory issued August 24 at 7:50AM PDT until August 24 at 8:00PM PDT by NWS Portland OR",
+                "description": "* WHAT...Rough bar conditions expected. Seas 3 to 5 ft at 6\nseconds and north winds 10 to 15 kt with gusts up to 25 kt.\n\n* WHERE...In the Main Channel of the Columbia River Bar.\n\n* WHEN...From 8 AM this morning to 8 PM PDT this evening.\n\n* IMPACTS...Conditions will be hazardous to small craft,\nespecially when operating near to, or attempting to cross, the\nColumbia River Bar.\n\n* ADDITIONAL DETAILS...Ebb current of 2.35 kt at 318 PM Monday.\nSeas 4 ft. Ebb current of 4.80 kt at 330 AM Tuesday. Seas 3 ft.\nEbb current of 2.89 kt at 442 PM Tuesday. Seas 4 to 5 ft.",
+                "instruction": "A Small Craft Advisory means that wave conditions are expected to\nbe hazardous to small craft in the vicinity of the Columbia River\nBar. Mariners are advised to obtain the latest bar conditions\nfrom the United States Coast Guard before attempting to cross the\nbar.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWWPQR"
+                    ],
+                    "WMOidentifier": [
+                        "WHUS76 KPQR 241450"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT UNTIL 8 PM PDT THIS EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KPQR.SC.Y.0091.260824T1500Z-260825T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-24T20:00:00-07:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.003.1,2026-08-23T12:18:00-07:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f696158de3934d8c19c9ba0d0d4e32b6d994c997.003.1,2026-08-23T01:47:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-19962",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-19962",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-19962",
                 "areaDesc": "Montgomery",
                 "geocode": {
                     "SAME": [
@@ -170,10 +447,10 @@
                     "https://api.weather.gov/zones/county/MDC031"
                 ],
                 "references": [],
-                "sent": "2026-08-24T14:37:16+00:00",
-                "effective": "2026-08-24T14:37:16+00:00",
+                "sent": "2026-08-24T14:47:16+00:00",
+                "effective": "2026-08-24T14:47:16+00:00",
                 "onset": null,
-                "expires": "2026-08-24T14:47:16+00:00",
+                "expires": "2026-08-24T14:57:16+00:00",
                 "ends": null,
                 "status": "Test",
                 "messageType": "Alert",
@@ -194,7 +471,7 @@
                         "KEPWBC"
                     ],
                     "WMOidentifier": [
-                        "NZUS91 KWBC 241437"
+                        "NZUS91 KWBC 241447"
                     ],
                     "BLOCKCHANNEL": [
                         "CMAS",
@@ -212,6 +489,250 @@
                     ],
                     "NationalWeatherService": [
                         "TST"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.c5fe13892ca9f7245240b932d9f9c6a91335fb7b.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -90.23,
+                            40.18
+                        ],
+                        [
+                            -90.17,
+                            40.12
+                        ],
+                        [
+                            -90.37,
+                            40.08
+                        ],
+                        [
+                            -90.46,
+                            39.99
+                        ],
+                        [
+                            -90.58,
+                            39.99
+                        ],
+                        [
+                            -90.43,
+                            40.15
+                        ],
+                        [
+                            -90.23,
+                            40.18
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.c5fe13892ca9f7245240b932d9f9c6a91335fb7b.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.c5fe13892ca9f7245240b932d9f9c6a91335fb7b.001.1",
+                "areaDesc": "Brown, IL; Cass, IL; Morgan, IL; Schuyler, IL",
+                "geocode": {
+                    "SAME": [
+                        "017009",
+                        "017017",
+                        "017137",
+                        "017169"
+                    ],
+                    "UGC": [
+                        "ILC009",
+                        "ILC017",
+                        "ILC137",
+                        "ILC169"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/ILC009",
+                    "https://api.weather.gov/zones/county/ILC017",
+                    "https://api.weather.gov/zones/county/ILC137",
+                    "https://api.weather.gov/zones/county/ILC169"
+                ],
+                "references": [],
+                "sent": "2026-08-24T09:46:00-05:00",
+                "effective": "2026-08-24T09:46:00-05:00",
+                "onset": "2026-08-24T09:46:00-05:00",
+                "expires": "2026-08-25T00:30:00-05:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Lincoln IL",
+                "headline": "Flood Warning issued August 24 at 9:46AM CDT by NWS Lincoln IL",
+                "description": "...The Flood Warning is extended for the following rivers in\nIllinois...\n\nIllinois River at Beardstown affecting Brown, Cass, Morgan and\nSchuyler Counties.\n\n.The following forecasts are based on observed precipitation, soil\nmoisture conditions, and forecast precipitation.\n\n* WHAT...Minor flooding is occurring and minor flooding is forecast.\n\n* WHERE...Illinois River at Beardstown.\n\n* WHEN...Until further notice.\n\n* IMPACTS...At 18.0 feet, Seepage problems begin in the Lost Creek\nDrainage and Levee District.\n\n* ADDITIONAL DETAILS...\n- At 8:45 AM CDT Monday the stage was 16.3 feet.\n- Recent Activity...The maximum river stage in the 24 hours ending\nat 8:45 AM CDT Monday was 16.3 feet.\n- Forecast...The river is expected to fall to 14.0 feet Monday,\nAugust 31.\n- Flood stage is 14.0 feet.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Persons with interests along this river need to remain aware of the\nlatest forecasts and associated flood risk for their area. Stay tuned\nfor further updates on this flooding situation.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued late tonight at 1230 AM CDT.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSILX"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS83 KILX 241446"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD WARNING NOW IN EFFECT UNTIL FURTHER NOTICE"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KILX.FL.W.0038.000000T0000Z-000000T0000Z/"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.001.1,2026-08-23T20:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1e0c2b67d94646fcc2a9cb83f75eae7ddc77622f.001.1,2026-08-23T10:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.40c7e0f6f40a4e852c59087376da5b71ebdaebf6.002.1,2026-08-22T20:49:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.181263fbbde049ab96915f62f6a7222d25b9595a.002.1,2026-08-22T10:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.869b5b5a93ce5c93a4cdfe5948e9561a69c7647d.001.1,2026-08-21T21:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8081ab00f5e54425880aa52a046cdf582fb9eb0d.001.1,2026-08-21T14:54:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.32ddd5e4b1d48205638a3376ce953f4616a7cb15.001.1,2026-08-21T11:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.bf124ae59fc360bbe2197c8c819c1640b68a3c7e.001.1,2026-08-21T09:44:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f08b7d87d8af80c14c1f005edde295b162cb33eb.001.1,2026-08-20T20:53:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.91103b336cd58aad29bea67e4c9d08ae5490b349.001.1,2026-08-20T15:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9ba3eb16ed7b6582a5666c528602ed08450e649c.001.1,2026-08-20T09:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.000fa12341f067e4b23c4786ef78506ecc52380d.001.1,2026-08-19T21:12:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fed6685e3f493a0691192f35dbe2257eb53ffed7.001.1,2026-08-19T09:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cfad145c16956753d2f503036caf0f4f1e3aef26.001.1,2026-08-18T20:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5d729af19ee6f1b5598e57a28f9af3dc50ef3dda.001.1,2026-08-18T10:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d465e16998cdfc73b87ed8a839118ea3c21c797c.001.1,2026-08-17T20:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a46cf760ceb7f988d87d28f8b5f1c3a721f76c13.002.1,2026-08-17T10:13:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3b1b868559c65b3d88b7d11b153fc7a8d48767ff.001.1,2026-08-16T20:55:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8fa3db29ebf24fea535dea6fcf54373b04023cba.002.1,2026-08-16T10:07:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2a975466fdeeacf04b01707067c6921e467c779c.002.1,2026-08-15T21:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8718400d7531e1d140c46a367f07ae59ad91f188.001.1,2026-08-15T10:12:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FLS"
+                    ],
+                    "NationalWeatherService": [
+                        "FLW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.138bb6a9ebe98a3648975bc6daa875a60c264201.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -89.88,
+                            40.53
+                        ],
+                        [
+                            -89.8,
+                            40.47
+                        ],
+                        [
+                            -90.02,
+                            40.34
+                        ],
+                        [
+                            -90.17,
+                            40.12
+                        ],
+                        [
+                            -90.23,
+                            40.18
+                        ],
+                        [
+                            -90.1,
+                            40.39
+                        ],
+                        [
+                            -89.88,
+                            40.53
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.138bb6a9ebe98a3648975bc6daa875a60c264201.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.138bb6a9ebe98a3648975bc6daa875a60c264201.001.1",
+                "areaDesc": "Cass, IL; Fulton, IL; Mason, IL",
+                "geocode": {
+                    "SAME": [
+                        "017017",
+                        "017057",
+                        "017125"
+                    ],
+                    "UGC": [
+                        "ILC017",
+                        "ILC057",
+                        "ILC125"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/ILC017",
+                    "https://api.weather.gov/zones/county/ILC057",
+                    "https://api.weather.gov/zones/county/ILC125"
+                ],
+                "references": [],
+                "sent": "2026-08-24T09:45:00-05:00",
+                "effective": "2026-08-24T09:45:00-05:00",
+                "onset": "2026-08-24T09:45:00-05:00",
+                "expires": "2026-08-25T00:30:00-05:00",
+                "ends": "2026-08-28T01:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Lincoln IL",
+                "headline": "Flood Warning issued August 24 at 9:45AM CDT until August 28 at 1:00AM CDT by NWS Lincoln IL",
+                "description": "...The Flood Warning continues for the following rivers in\nIllinois...\n\nIllinois River near Havana affecting Cass, Fulton and Mason\nCounties.\n\n.The following forecasts are based on observed precipitation, soil\nmoisture conditions, and forecast precipitation.\n\n* WHAT...Minor flooding is occurring and minor flooding is forecast.\n\n* WHERE...Illinois River near Havana.\n\n* WHEN...Until late Thursday night.\n\n* IMPACTS...At 14.0 feet, Minor flooding begins to agricultural areas\nnot protected by levees.\n\n* ADDITIONAL DETAILS...\n- At 8:45 AM CDT Monday the stage was 16.0 feet.\n- Recent Activity...The maximum river stage in the 24 hours ending\nat 8:45 AM CDT Monday was 16.3 feet.\n- Forecast...The river is expected to fall below flood stage\nThursday evening and continue falling to 11.6 feet Monday, August\n31.\n- Flood stage is 14.0 feet.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Persons with interests along this river need to remain aware of the\nlatest forecasts and associated flood risk for their area. Stay tuned\nfor further updates on this flooding situation.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued late tonight at 1230 AM CDT.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSILX"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS83 KILX 241445"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD WARNING NOW IN EFFECT UNTIL LATE THURSDAY NIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KILX.FL.W.0037.000000T0000Z-260828T0600Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-08-28T01:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.002.1,2026-08-23T20:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1e0c2b67d94646fcc2a9cb83f75eae7ddc77622f.002.1,2026-08-23T10:41:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.40c7e0f6f40a4e852c59087376da5b71ebdaebf6.001.1,2026-08-22T20:49:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.181263fbbde049ab96915f62f6a7222d25b9595a.001.1,2026-08-22T10:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.869b5b5a93ce5c93a4cdfe5948e9561a69c7647d.002.1,2026-08-21T21:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5af2a76d558c1c02735419c7dbe407b2e3ea7390.001.1,2026-08-21T15:05:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8081ab00f5e54425880aa52a046cdf582fb9eb0d.002.1,2026-08-21T14:54:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.32ddd5e4b1d48205638a3376ce953f4616a7cb15.002.1,2026-08-21T11:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.bf124ae59fc360bbe2197c8c819c1640b68a3c7e.002.1,2026-08-21T09:44:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.40b199ba7aa4fce2e45754ff496e9f3220729997.001.1,2026-08-20T20:52:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.91103b336cd58aad29bea67e4c9d08ae5490b349.002.1,2026-08-20T15:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9ba3eb16ed7b6582a5666c528602ed08450e649c.002.1,2026-08-20T09:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.822579bea21754886ea4a1bb769a39aae31a33a0.001.1,2026-08-19T21:11:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fed6685e3f493a0691192f35dbe2257eb53ffed7.002.1,2026-08-19T09:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cfad145c16956753d2f503036caf0f4f1e3aef26.002.1,2026-08-18T20:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5d729af19ee6f1b5598e57a28f9af3dc50ef3dda.002.1,2026-08-18T10:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d465e16998cdfc73b87ed8a839118ea3c21c797c.002.1,2026-08-17T20:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a46cf760ceb7f988d87d28f8b5f1c3a721f76c13.001.1,2026-08-17T10:13:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3b1b868559c65b3d88b7d11b153fc7a8d48767ff.002.1,2026-08-16T20:55:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8fa3db29ebf24fea535dea6fcf54373b04023cba.001.1,2026-08-16T10:07:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2a975466fdeeacf04b01707067c6921e467c779c.001.1,2026-08-15T21:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f45dc9a29eb6acf5e9a9f568fdcdedbdf08813a6.001.1,2026-08-15T10:11:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FLS"
+                    ],
+                    "NationalWeatherService": [
+                        "FLW"
                     ]
                 }
             }
@@ -613,117 +1134,6 @@
                     ],
                     "NationalWeatherService": [
                         "MAW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.684e1d220e396b076616dbfa1630a51be2799ab1.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -92.27,
-                            34.77
-                        ],
-                        [
-                            -92.1,
-                            34.91
-                        ],
-                        [
-                            -91.72,
-                            34.76
-                        ],
-                        [
-                            -92.02,
-                            34.5
-                        ],
-                        [
-                            -92.27,
-                            34.77
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.684e1d220e396b076616dbfa1630a51be2799ab1.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.684e1d220e396b076616dbfa1630a51be2799ab1.001.1",
-                "areaDesc": "Pulaski; Lonoke",
-                "geocode": {
-                    "SAME": [
-                        "005119",
-                        "005085"
-                    ],
-                    "UGC": [
-                        "ARZ044",
-                        "ARZ045"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/ARZ044",
-                    "https://api.weather.gov/zones/forecast/ARZ045"
-                ],
-                "references": [],
-                "sent": "2026-08-24T09:11:00-05:00",
-                "effective": "2026-08-24T09:11:00-05:00",
-                "onset": "2026-08-24T09:11:00-05:00",
-                "expires": "2026-08-24T09:45:00-05:00",
-                "ends": null,
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Observed",
-                "urgency": "Expected",
-                "event": "Special Weather Statement",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Little Rock AR",
-                "headline": "Special Weather Statement issued August 24 at 9:11AM CDT by NWS Little Rock AR",
-                "description": "At 911 AM CDT, Doppler radar was tracking a strong thunderstorm near\nSouth Bend, or near Jacksonville, moving southeast at 40 mph.\n\nHAZARD...Winds in excess of 40 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nLittle Rock...                    North Little Rock...\nSherwood...                       Jacksonville...\nLonoke...                         Little Rock AFB...\nEngland...                        Argenta...\nKeo...                            Estes...\nMeto...                           McCreanor...\nProtho Junction...                Plum Bayou Mounds SP...\nSisemore...                       McAlmont...\nSouth Bend...                     Scott...\nLakewood...                       Baucum...",
-                "instruction": "If outdoors, consider seeking shelter inside a building.\n\nTorrential rainfall is also occurring with this storm and may lead to\nlocalized flooding. Do not drive your vehicle through flooded\nroadways.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SPSLZK"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS84 KLZK 241411"
-                    ],
-                    "NWSheadline": [
-                        "A strong thunderstorm will impact portions of southern Lonoke and east central Pulaski Counties through 945 AM CDT"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-08-24T14:11:00-00:00...storm...318DEG...33KT...34.8,-92.11"
-                    ],
-                    "maxWindGust": [
-                        "40 MPH"
-                    ],
-                    "maxHailSize": [
-                        "0.00"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SPS"
-                    ],
-                    "NationalWeatherService": [
-                        "SPS"
                     ]
                 }
             }
@@ -1852,144 +2262,6 @@
                     ],
                     "NationalWeatherService": [
                         "SCY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f2c652cbb28730b59fc273589968f3773218bc09.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -90.91,
-                            32.45
-                        ],
-                        [
-                            -90.88,
-                            32.44
-                        ],
-                        [
-                            -90.87,
-                            32.45
-                        ],
-                        [
-                            -90.86,
-                            32.45
-                        ],
-                        [
-                            -90.86,
-                            32.5
-                        ],
-                        [
-                            -90.48,
-                            32.4
-                        ],
-                        [
-                            -90.63,
-                            32.26
-                        ],
-                        [
-                            -90.78,
-                            32.2
-                        ],
-                        [
-                            -90.99,
-                            32.25
-                        ],
-                        [
-                            -91,
-                            32.33
-                        ],
-                        [
-                            -90.91,
-                            32.45
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f2c652cbb28730b59fc273589968f3773218bc09.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.f2c652cbb28730b59fc273589968f3773218bc09.001.1",
-                "areaDesc": "Madison; Warren; Hinds",
-                "geocode": {
-                    "SAME": [
-                        "022065",
-                        "028149",
-                        "028049"
-                    ],
-                    "UGC": [
-                        "LAZ016",
-                        "MSZ047",
-                        "MSZ048"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/LAZ016",
-                    "https://api.weather.gov/zones/forecast/MSZ047",
-                    "https://api.weather.gov/zones/forecast/MSZ048"
-                ],
-                "references": [],
-                "sent": "2026-08-24T08:49:00-05:00",
-                "effective": "2026-08-24T08:49:00-05:00",
-                "onset": "2026-08-24T08:49:00-05:00",
-                "expires": "2026-08-24T09:45:00-05:00",
-                "ends": null,
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Observed",
-                "urgency": "Expected",
-                "event": "Special Weather Statement",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Jackson MS",
-                "headline": "Special Weather Statement issued August 24 at 8:49AM CDT by NWS Jackson MS",
-                "description": "At 849 AM CDT, Doppler radar was tracking a strong thunderstorm near\nRedwood, or near Vicksburg, moving southeast at 15 mph.\n\nHAZARD...Wind gusts up to 40 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nVicksburg, Edwards, Bovina, Redwood, Newman, Flowers, and Delta.",
-                "instruction": "If outdoors, consider seeking shelter inside a building.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SPSJAN"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS84 KJAN 241349"
-                    ],
-                    "NWSheadline": [
-                        "A STRONG THUNDERSTORM WILL IMPACT EAST CENTRAL MADISON PARISH... CENTRAL WARREN AND WEST CENTRAL HINDS COUNTIES THROUGH 945 AM CDT"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-08-24T13:49:00-00:00...storm...309DEG...15KT...32.41,-90.83"
-                    ],
-                    "maxWindGust": [
-                        "40 MPH"
-                    ],
-                    "maxHailSize": [
-                        "0.00"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SPS"
-                    ],
-                    "NationalWeatherService": [
-                        "SPS"
                     ]
                 }
             }
@@ -10652,276 +10924,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.003.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.003.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.003.1",
-                "areaDesc": "Columbia River Bar",
-                "geocode": {
-                    "SAME": [
-                        "057210"
-                    ],
-                    "UGC": [
-                        "PZZ210"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PZZ210"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.003.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.003.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-23T12:18:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-24T01:43:00-07:00",
-                "effective": "2026-08-24T01:43:00-07:00",
-                "onset": "2026-08-24T08:00:00-07:00",
-                "expires": "2026-08-24T08:00:00-07:00",
-                "ends": "2026-08-24T20:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Portland OR",
-                "headline": "Small Craft Advisory issued August 24 at 1:43AM PDT until August 24 at 8:00PM PDT by NWS Portland OR",
-                "description": "* WHAT...Rough bar conditions expected. Seas 3 to 5 ft at 6\nseconds and north winds 10 to 15 kt with gusts up to 25 kt.\n\n* WHERE...In the Main Channel of the Columbia River Bar.\n\n* WHEN...From 8 AM this morning to 8 PM PDT this evening.\n\n* IMPACTS...Conditions will be hazardous to small craft,\nespecially when operating near to, or attempting to cross, the\nColumbia River Bar.\n\n* ADDITIONAL DETAILS...Ebb current of 4.41 kt at 242 AM Monday.\nSeas 3 to 4 ft. Ebb current of 2.35 kt at 318 PM Monday. Seas 4\nft. Ebb current of 4.8 kt at 330 AM Tuesday. Seas 3 ft.",
-                "instruction": "A Small Craft Advisory means that wave conditions are expected to\nbe hazardous to small craft in the vicinity of the Columbia River\nBar. Mariners are advised to obtain the latest bar conditions\nfrom the United States Coast Guard before attempting to cross the\nbar.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "MWWPQR"
-                    ],
-                    "WMOidentifier": [
-                        "WHUS76 KPQR 240843"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT FROM 8 AM THIS MORNING TO 8 PM PDT THIS EVENING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KPQR.SC.Y.0091.260824T1500Z-260825T0300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-24T20:00:00-07:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f696158de3934d8c19c9ba0d0d4e32b6d994c997.003.1,2026-08-23T01:47:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.001.1",
-                "areaDesc": "Coastal waters from Cape Falcon to Cape Foulweather OR out 10 nm; Coastal waters from Cape Foulweather to Florence OR out 10 nm; Waters from Cape Falcon to Cape Foulweather OR from 10 to 60 nm; Waters from Cape Foulweather to Florence OR from 10 to 60 nm",
-                "geocode": {
-                    "SAME": [
-                        "057252",
-                        "057253",
-                        "057272",
-                        "057273"
-                    ],
-                    "UGC": [
-                        "PZZ252",
-                        "PZZ253",
-                        "PZZ272",
-                        "PZZ273"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PZZ252",
-                    "https://api.weather.gov/zones/forecast/PZZ253",
-                    "https://api.weather.gov/zones/forecast/PZZ272",
-                    "https://api.weather.gov/zones/forecast/PZZ273"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-23T12:18:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-24T01:43:00-07:00",
-                "effective": "2026-08-24T01:43:00-07:00",
-                "onset": "2026-08-24T01:43:00-07:00",
-                "expires": "2026-08-24T08:00:00-07:00",
-                "ends": "2026-08-24T17:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Portland OR",
-                "headline": "Small Craft Advisory issued August 24 at 1:43AM PDT until August 24 at 5:00PM PDT by NWS Portland OR",
-                "description": "* WHAT...Seas 2 to 4 ft at 7 seconds and north winds 10 to 20 kt\nwith gusts up to 25 kt.\n\n* WHERE...Coastal waters from Cape Falcon to Cape Foulweather OR\nout 10 NM, Coastal waters from Cape Foulweather to Florence OR\nout 10 NM, Waters from Cape Falcon to Cape Foulweather OR from\n10 to 60 NM and Waters from Cape Foulweather to Florence OR\nfrom 10 to 60 NM.\n\n* WHEN...Until 5 PM PDT this afternoon.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
-                "instruction": "Inexperienced mariners, especially those operating smaller\nvessels, should avoid navigating in hazardous conditions.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "MWWPQR"
-                    ],
-                    "WMOidentifier": [
-                        "WHUS76 KPQR 240843"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT UNTIL 5 PM PDT THIS AFTERNOON"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KPQR.SC.Y.0091.000000T0000Z-260825T0000Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-24T17:00:00-07:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f696158de3934d8c19c9ba0d0d4e32b6d994c997.001.1,2026-08-23T01:47:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.5590b478776ceb5a50cb9cb496479c18da1f6457.002.1",
-                "areaDesc": "Coastal waters from Cape Shoalwater WA to Cape Falcon OR out 10 nm; Waters from Cape Shoalwater WA to Cape Falcon OR from 10 to 60 nm",
-                "geocode": {
-                    "SAME": [
-                        "057251",
-                        "057271"
-                    ],
-                    "UGC": [
-                        "PZZ251",
-                        "PZZ271"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PZZ251",
-                    "https://api.weather.gov/zones/forecast/PZZ271"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.002.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.9414a07122631357a5288762e04ae499023375f7.002.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-23T12:18:00-07:00"
-                    }
-                ],
-                "sent": "2026-08-24T01:43:00-07:00",
-                "effective": "2026-08-24T01:43:00-07:00",
-                "onset": "2026-08-24T01:43:00-07:00",
-                "expires": "2026-08-24T08:00:00-07:00",
-                "ends": "2026-08-24T20:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Portland OR",
-                "headline": "Small Craft Advisory issued August 24 at 1:43AM PDT until August 24 at 8:00PM PDT by NWS Portland OR",
-                "description": "* WHAT...Seas 2 to 4 ft at 7 seconds and north winds 15 to 20 kt\nwith gusts up to 25 kt.\n\n* WHERE...Coastal waters from Cape Shoalwater WA to Cape Falcon\nOR out 10 NM and Waters from Cape Shoalwater WA to Cape Falcon\nOR from 10 to 60 NM.\n\n* WHEN...Until 8 PM PDT this evening.\n\n* IMPACTS...Conditions will be hazardous to small craft.",
-                "instruction": "Inexperienced mariners, especially those operating smaller\nvessels, should avoid navigating in hazardous conditions.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "MWWPQR"
-                    ],
-                    "WMOidentifier": [
-                        "WHUS76 KPQR 240843"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY REMAINS IN EFFECT UNTIL 8 PM PDT THIS EVENING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KPQR.SC.Y.0091.000000T0000Z-260825T0300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-24T20:00:00-07:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f696158de3934d8c19c9ba0d0d4e32b6d994c997.002.1,2026-08-23T01:47:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.9ce93c388ab6258fb15f8b9f8d4e237aa9932500.001.1",
             "type": "Feature",
             "geometry": null,
@@ -15414,267 +15416,6 @@
                     ],
                     "NationalWeatherService": [
                         "HTY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.002.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -89.88,
-                            40.53
-                        ],
-                        [
-                            -89.8,
-                            40.47
-                        ],
-                        [
-                            -90.02,
-                            40.34
-                        ],
-                        [
-                            -90.17,
-                            40.12
-                        ],
-                        [
-                            -90.23,
-                            40.18
-                        ],
-                        [
-                            -90.1,
-                            40.39
-                        ],
-                        [
-                            -89.88,
-                            40.53
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.002.1",
-                "areaDesc": "Cass, IL; Fulton, IL; Mason, IL",
-                "geocode": {
-                    "SAME": [
-                        "017017",
-                        "017057",
-                        "017125"
-                    ],
-                    "UGC": [
-                        "ILC017",
-                        "ILC057",
-                        "ILC125"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/ILC017",
-                    "https://api.weather.gov/zones/county/ILC057",
-                    "https://api.weather.gov/zones/county/ILC125"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1e0c2b67d94646fcc2a9cb83f75eae7ddc77622f.002.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.1e0c2b67d94646fcc2a9cb83f75eae7ddc77622f.002.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-23T10:41:00-05:00"
-                    }
-                ],
-                "sent": "2026-08-23T20:25:00-05:00",
-                "effective": "2026-08-23T20:25:00-05:00",
-                "onset": "2026-08-23T20:25:00-05:00",
-                "expires": "2026-08-24T08:30:00-05:00",
-                "ends": "2026-08-28T07:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Flood Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Lincoln IL",
-                "headline": "Flood Warning issued August 23 at 8:25PM CDT until August 28 at 7:00AM CDT by NWS Lincoln IL",
-                "description": "...The Flood Warning is extended for the following rivers in\nIllinois...\n\nIllinois River at Beardstown affecting Schuyler, Cass, Brown and\nMorgan Counties.\n\n...The Flood Warning continues for the following rivers in\nIllinois...\n\nIllinois River near Havana affecting Mason, Cass and Fulton\nCounties.\n\n.The following forecasts are based on observed precipitation, soil\nmoisture conditions, and forecast precipitation.\n\n* WHAT...Minor flooding is occurring and minor flooding is forecast.\n\n* WHERE...Illinois River near Havana.\n\n* WHEN...Until Friday morning.\n\n* ADDITIONAL DETAILS...\n- At 7:45 PM CDT Sunday the stage was 16.2 feet.\n- Recent Activity...The maximum river stage in the 24 hours ending\nat 7:45 PM CDT Sunday was 16.4 feet.\n- Forecast...The river is expected to fall below flood stage early\nFriday morning and continue falling to 11.9 feet Sunday, August\n30.\n- Flood stage is 14.0 feet.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Persons with interests along this river need to remain aware of the\nlatest forecasts and associated flood risk for their area. Stay tuned\nfor further updates on this flooding situation.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued Monday morning at 830 AM CDT.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSILX"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS83 KILX 240125"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD WARNING NOW IN EFFECT UNTIL FRIDAY MORNING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.EXT.KILX.FL.W.0037.000000T0000Z-260828T1200Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-28T07:00:00-05:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.40c7e0f6f40a4e852c59087376da5b71ebdaebf6.001.1,2026-08-22T20:49:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.181263fbbde049ab96915f62f6a7222d25b9595a.001.1,2026-08-22T10:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.869b5b5a93ce5c93a4cdfe5948e9561a69c7647d.002.1,2026-08-21T21:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5af2a76d558c1c02735419c7dbe407b2e3ea7390.001.1,2026-08-21T15:05:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8081ab00f5e54425880aa52a046cdf582fb9eb0d.002.1,2026-08-21T14:54:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.32ddd5e4b1d48205638a3376ce953f4616a7cb15.002.1,2026-08-21T11:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.bf124ae59fc360bbe2197c8c819c1640b68a3c7e.002.1,2026-08-21T09:44:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.40b199ba7aa4fce2e45754ff496e9f3220729997.001.1,2026-08-20T20:52:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.91103b336cd58aad29bea67e4c9d08ae5490b349.002.1,2026-08-20T15:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9ba3eb16ed7b6582a5666c528602ed08450e649c.002.1,2026-08-20T09:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.822579bea21754886ea4a1bb769a39aae31a33a0.001.1,2026-08-19T21:11:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fed6685e3f493a0691192f35dbe2257eb53ffed7.002.1,2026-08-19T09:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cfad145c16956753d2f503036caf0f4f1e3aef26.002.1,2026-08-18T20:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5d729af19ee6f1b5598e57a28f9af3dc50ef3dda.002.1,2026-08-18T10:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d465e16998cdfc73b87ed8a839118ea3c21c797c.002.1,2026-08-17T20:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a46cf760ceb7f988d87d28f8b5f1c3a721f76c13.001.1,2026-08-17T10:13:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3b1b868559c65b3d88b7d11b153fc7a8d48767ff.002.1,2026-08-16T20:55:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8fa3db29ebf24fea535dea6fcf54373b04023cba.001.1,2026-08-16T10:07:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2a975466fdeeacf04b01707067c6921e467c779c.001.1,2026-08-15T21:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f45dc9a29eb6acf5e9a9f568fdcdedbdf08813a6.001.1,2026-08-15T10:11:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "FLS"
-                    ],
-                    "NationalWeatherService": [
-                        "FLW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -90.23,
-                            40.18
-                        ],
-                        [
-                            -90.17,
-                            40.12
-                        ],
-                        [
-                            -90.37,
-                            40.08
-                        ],
-                        [
-                            -90.46,
-                            39.99
-                        ],
-                        [
-                            -90.58,
-                            39.99
-                        ],
-                        [
-                            -90.43,
-                            40.15
-                        ],
-                        [
-                            -90.23,
-                            40.18
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.72a20f7d358ad85df5343815c70f2ed5762a4f5f.001.1",
-                "areaDesc": "Brown, IL; Cass, IL; Morgan, IL; Schuyler, IL",
-                "geocode": {
-                    "SAME": [
-                        "017009",
-                        "017017",
-                        "017137",
-                        "017169"
-                    ],
-                    "UGC": [
-                        "ILC009",
-                        "ILC017",
-                        "ILC137",
-                        "ILC169"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/ILC009",
-                    "https://api.weather.gov/zones/county/ILC017",
-                    "https://api.weather.gov/zones/county/ILC137",
-                    "https://api.weather.gov/zones/county/ILC169"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.1e0c2b67d94646fcc2a9cb83f75eae7ddc77622f.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.1e0c2b67d94646fcc2a9cb83f75eae7ddc77622f.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-08-23T10:41:00-05:00"
-                    }
-                ],
-                "sent": "2026-08-23T20:25:00-05:00",
-                "effective": "2026-08-23T20:25:00-05:00",
-                "onset": "2026-08-23T20:25:00-05:00",
-                "expires": "2026-08-24T08:30:00-05:00",
-                "ends": "2026-08-30T13:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Flood Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Lincoln IL",
-                "headline": "Flood Warning issued August 23 at 8:25PM CDT until August 30 at 1:00PM CDT by NWS Lincoln IL",
-                "description": "...The Flood Warning is extended for the following rivers in\nIllinois...\n\nIllinois River at Beardstown affecting Schuyler, Cass, Brown and\nMorgan Counties.\n\n...The Flood Warning continues for the following rivers in\nIllinois...\n\nIllinois River near Havana affecting Mason, Cass and Fulton\nCounties.\n\n.The following forecasts are based on observed precipitation, soil\nmoisture conditions, and forecast precipitation.\n\n* WHAT...Minor flooding is occurring and minor flooding is forecast.\n\n* WHERE...Illinois River at Beardstown.\n\n* WHEN...Until Sunday afternoon.\n\n* IMPACTS...At 18.0 feet, Seepage problems begin in the Lost Creek\nDrainage and Levee District.\n\n* ADDITIONAL DETAILS...\n- At 7:45 PM CDT Sunday the stage was 16.3 feet.\n- Recent Activity...The maximum river stage in the 24 hours ending\nat 7:45 PM CDT Sunday was 16.4 feet.\n- Forecast...The river is expected to fall below flood stage\nSunday, August 30 and continue falling to 13.6 feet Sunday,\nAugust 30.\n- Flood stage is 14.0 feet.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Persons with interests along this river need to remain aware of the\nlatest forecasts and associated flood risk for their area. Stay tuned\nfor further updates on this flooding situation.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued Monday morning at 830 AM CDT.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSILX"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS83 KILX 240125"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD WARNING NOW IN EFFECT UNTIL SUNDAY AFTERNOON"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.EXT.KILX.FL.W.0038.000000T0000Z-260830T1800Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-08-30T13:00:00-05:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.40c7e0f6f40a4e852c59087376da5b71ebdaebf6.002.1,2026-08-22T20:49:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.181263fbbde049ab96915f62f6a7222d25b9595a.002.1,2026-08-22T10:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.869b5b5a93ce5c93a4cdfe5948e9561a69c7647d.001.1,2026-08-21T21:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8081ab00f5e54425880aa52a046cdf582fb9eb0d.001.1,2026-08-21T14:54:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.32ddd5e4b1d48205638a3376ce953f4616a7cb15.001.1,2026-08-21T11:32:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.bf124ae59fc360bbe2197c8c819c1640b68a3c7e.001.1,2026-08-21T09:44:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f08b7d87d8af80c14c1f005edde295b162cb33eb.001.1,2026-08-20T20:53:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.91103b336cd58aad29bea67e4c9d08ae5490b349.001.1,2026-08-20T15:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9ba3eb16ed7b6582a5666c528602ed08450e649c.001.1,2026-08-20T09:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.000fa12341f067e4b23c4786ef78506ecc52380d.001.1,2026-08-19T21:12:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fed6685e3f493a0691192f35dbe2257eb53ffed7.001.1,2026-08-19T09:36:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.cfad145c16956753d2f503036caf0f4f1e3aef26.001.1,2026-08-18T20:25:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5d729af19ee6f1b5598e57a28f9af3dc50ef3dda.001.1,2026-08-18T10:09:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d465e16998cdfc73b87ed8a839118ea3c21c797c.001.1,2026-08-17T20:48:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.a46cf760ceb7f988d87d28f8b5f1c3a721f76c13.002.1,2026-08-17T10:13:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.3b1b868559c65b3d88b7d11b153fc7a8d48767ff.001.1,2026-08-16T20:55:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8fa3db29ebf24fea535dea6fcf54373b04023cba.002.1,2026-08-16T10:07:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.2a975466fdeeacf04b01707067c6921e467c779c.002.1,2026-08-15T21:35:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.8718400d7531e1d140c46a367f07ae59ad91f188.001.1,2026-08-15T10:12:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "FLS"
-                    ],
-                    "NationalWeatherService": [
-                        "FLW"
                     ]
                 }
             }
@@ -21431,5 +21172,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-08-24T14:39:16+00:00"
+    "updated": "2026-08-24T14:53:01+00:00"
 }
