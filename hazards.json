@@ -10,13 +10,80 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6a623bc21b495ca4e8d785535b893d019429a027.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-20500",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6a623bc21b495ca4e8d785535b893d019429a027.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-20500",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.6a623bc21b495ca4e8d785535b893d019429a027.001.1",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-20500",
+                "areaDesc": "Montgomery",
+                "geocode": {
+                    "SAME": [
+                        "024031"
+                    ],
+                    "UGC": [
+                        "MDC031"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MDC031"
+                ],
+                "references": [],
+                "sent": "2026-08-24T14:27:16+00:00",
+                "effective": "2026-08-24T14:27:16+00:00",
+                "onset": null,
+                "expires": "2026-08-24T14:37:16+00:00",
+                "ends": null,
+                "status": "Test",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Test Message",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS",
+                "headline": null,
+                "description": "Monitoring message only. Please disregard.",
+                "instruction": "Monitoring message only. Please disregard.",
+                "response": "None",
+                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "KEPWBC"
+                    ],
+                    "WMOidentifier": [
+                        "NZUS91 KWBC 241427"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "CMAS",
+                        "EAS",
+                        "NWEM"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "TST"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e004aafdb22c2bea70e7cbf880f8dc63101b79e9.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e004aafdb22c2bea70e7cbf880f8dc63101b79e9.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.e004aafdb22c2bea70e7cbf880f8dc63101b79e9.001.1",
                 "areaDesc": "Lake Havasu and Fort Mohave; Lake Mead - AZ side; Lake Mohave - AZ side; Hualapai Mountains; Northwest Deserts; Death Valley National Park; Western Mojave Desert; Eastern Mojave Desert, Including the Mojave National Preserve; Morongo Basin; Cadiz Basin; San Bernardino County-Upper Colorado River Valley; Northeast Clark County; Western Clark and Southern Nye County; Las Vegas Valley; Southern Clark County; Lake Mead - NV side; Lake Mohave - NV side",
                 "geocode": {
                     "SAME": [
@@ -65,14 +132,21 @@
                     "https://api.weather.gov/zones/forecast/NVZ025",
                     "https://api.weather.gov/zones/forecast/NVZ026"
                 ],
-                "references": [],
-                "sent": "2026-08-24T07:22:00-07:00",
-                "effective": "2026-08-24T07:22:00-07:00",
-                "onset": "2026-08-24T07:22:00-07:00",
-                "expires": "2026-08-24T20:00:00-07:00",
-                "ends": "2026-08-24T20:00:00-07:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6a623bc21b495ca4e8d785535b893d019429a027.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.6a623bc21b495ca4e8d785535b893d019429a027.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-08-24T07:22:00-07:00"
+                    }
+                ],
+                "sent": "2026-08-24T07:24:00-07:00",
+                "effective": "2026-08-24T07:24:00-07:00",
+                "onset": "2026-08-24T07:24:00-07:00",
+                "expires": "2026-08-25T04:00:00-07:00",
+                "ends": "2026-08-28T20:00:00-07:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Likely",
@@ -80,8 +154,8 @@
                 "event": "Extreme Heat Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Las Vegas NV",
-                "headline": "Extreme Heat Warning issued August 24 at 7:22AM PDT until August 24 at 8:00PM PDT by NWS Las Vegas NV",
-                "description": "* WHAT...Dangerously hot conditions expected through the work week,\nwith temperatures up to 115 to 118 across Death Valley and the\nColorado River Valley; up to 108 to 112 across Moapa Valley, the\nLas Vegas Valley, the Pahrump Valley, and the Morongo Valley; up to\n90 to 95 in the Hualapai Mountains. Overnight lows will be in the\nupper-80s to low-90s for desert valleys.\n\n* WHERE...Portions of northwest Arizona, southeast California, and\nsouthern Nevada.\n\n* WHEN...Until 8 PM PDT / MST this evening.\n\n* IMPACTS...Heat-related illnesses increase significantly during\nextreme heat and high humidity events.",
+                "headline": "Extreme Heat Warning issued August 24 at 7:24AM PDT until August 28 at 8:00PM PDT by NWS Las Vegas NV",
+                "description": "* WHAT...Dangerously hot conditions expected through the work week,\nwith temperatures up to 115 to 118 across Death Valley and the\nColorado River Valley; up to 108 to 112 across Moapa Valley, the\nLas Vegas Valley, the Pahrump Valley, and the Morongo Valley; up to\n90 to 95 in the Hualapai Mountains. Overnight lows will be in the\nupper-80s to low-90s for desert valleys.\n\n* WHERE...Portions of northwest Arizona, southeast California, and\nsouthern Nevada.\n\n* WHEN...Now through 8 PM PDT / MST Friday.\n\n* IMPACTS...Heat-related illnesses increase significantly during\nextreme heat and high humidity events.",
                 "instruction": "Drink plenty of fluids, stay in an air-conditioned room, stay out of\nthe sun, and check up on relatives and neighbors.\n\nDo not leave young children and pets in unattended vehicles. Car\ninteriors will reach lethal temperatures in a matter of minutes.\n\nTake extra precautions when outside. Wear lightweight and\nloose-fitting clothing. Try to limit strenuous activities to early\nmorning or evening. Take action when you see symptoms of heat\nexhaustion and heat stroke.\n\nTo reduce risk during outdoor work, the Occupational Safety and\nHealth Administration recommends scheduling frequent rest breaks in\nshaded or air conditioned environments. Anyone overcome by heat\nshould be moved to a cool and shaded location. Heat stroke is an\nemergency! Call 9 1 1.\n\nMonitor the latest forecasts and warnings for updates.",
                 "response": "Execute",
                 "note": null,
@@ -90,10 +164,10 @@
                         "NPWVEF"
                     ],
                     "WMOidentifier": [
-                        "WWUS75 KVEF 241422"
+                        "WWUS75 KVEF 241424"
                     ],
                     "NWSheadline": [
-                        "EXTREME HEAT WARNING IN EFFECT UNTIL 8 PM PDT / MST THIS EVENING"
+                        "EXTREME HEAT WARNING NOW IN EFFECT UNTIL 8 PM PDT / MST FRIDAY"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
@@ -101,10 +175,10 @@
                         "CMAS"
                     ],
                     "VTEC": [
-                        "/O.NEW.KVEF.XH.W.0005.260824T1422Z-260825T0300Z/"
+                        "/O.EXT.KVEF.XH.W.0005.000000T0000Z-260829T0300Z/"
                     ],
                     "eventEndingTime": [
-                        "2026-08-24T20:00:00-07:00"
+                        "2026-08-28T20:00:00-07:00"
                     ]
                 },
                 "scope": "Public",
@@ -117,73 +191,6 @@
                     ],
                     "NationalWeatherService": [
                         "XHW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-25814",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-25814",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-25814",
-                "areaDesc": "Montgomery",
-                "geocode": {
-                    "SAME": [
-                        "024031"
-                    ],
-                    "UGC": [
-                        "MDC031"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/MDC031"
-                ],
-                "references": [],
-                "sent": "2026-08-24T14:17:16+00:00",
-                "effective": "2026-08-24T14:17:16+00:00",
-                "onset": null,
-                "expires": "2026-08-24T14:27:16+00:00",
-                "ends": null,
-                "status": "Test",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Test Message",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS",
-                "headline": null,
-                "description": "Monitoring message only. Please disregard.",
-                "instruction": "Monitoring message only. Please disregard.",
-                "response": "None",
-                "note": "This is only a test for monitoring of vital dissemination systems.",
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "KEPWBC"
-                    ],
-                    "WMOidentifier": [
-                        "NZUS91 KWBC 241417"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "CMAS",
-                        "EAS",
-                        "NWEM"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "TST"
                     ]
                 }
             }
@@ -12947,82 +12954,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.bdf67758047a1b12fb826eb4c14ce6ad6344b210.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.bdf67758047a1b12fb826eb4c14ce6ad6344b210.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.bdf67758047a1b12fb826eb4c14ce6ad6344b210.001.1",
-                "areaDesc": "Ketchikan Gateway Borough; Annette Island",
-                "geocode": {
-                    "SAME": [
-                        "002130",
-                        "002198"
-                    ],
-                    "UGC": [
-                        "AKZ330",
-                        "AKZ332"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/AKZ330",
-                    "https://api.weather.gov/zones/forecast/AKZ332"
-                ],
-                "references": [],
-                "sent": "2026-08-23T22:30:00-08:00",
-                "effective": "2026-08-23T22:30:00-08:00",
-                "onset": "2026-08-23T22:30:00-08:00",
-                "expires": "2026-08-24T06:30:00-08:00",
-                "ends": null,
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Moderate",
-                "certainty": "Observed",
-                "urgency": "Expected",
-                "event": "Special Weather Statement",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Juneau AK",
-                "headline": "Special Weather Statement issued August 23 at 10:30PM AKDT by NWS Juneau AK",
-                "description": "A wet system is currently moving over the southern panhandle through\nMonday, bringing an extended period of moderate to heavy rain for\nthe southern panhandle. Highest rain rates are expected through\nearly Monday morning, possibly reaching around 0.4 inches per hour\nat times, primarily for Ketchikan, Metlakatla, and Misty Fjords. So\nfar around 0.5 to 1.5 inches of rain has been observed in the last 6\nhours, with amounts up to 2.25 inches in the surrounding higher\nelevations. Rainfall totals could be as high as 2 to 3.5 inches by\nMonday afternoon for low elevation sites with up to 4.5 inches in\nthe higher elevations. Moderate to high confidence for heavy rain\nover Annette Island and Ketchikan areas with highest rain totals\nnear Misty Fjords. Small streams and rivers are starting to some\nsome rises, but no river flooding is expected at this time. Ponding\nof water on some roadways is likely.",
-                "instruction": null,
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SPSAJK"
-                    ],
-                    "WMOidentifier": [
-                        "WWAK87 PAJK 240630"
-                    ],
-                    "NWSheadline": [
-                        "HEAVY RAIN FOR KETCHIKAN AND METLAKATLA IS OCCURING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SPS"
-                    ],
-                    "NationalWeatherService": [
-                        "SPS"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.27a4d20ff9b9309d26b54c8f1748ca9b466e1bea.001.1",
             "type": "Feature",
             "geometry": null,
@@ -21360,5 +21291,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-08-24T14:22:29+00:00"
+    "updated": "2026-08-24T14:30:00+00:00"
 }
