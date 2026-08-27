@@ -195,6 +195,8 @@
     font-family: inherit;
   }
   .action-btn:hover { border-color: #3a6ea8; color: #fff; background: #16324f; }
+  .action-btn:disabled { opacity: 0.5; cursor: default; }
+  .action-btn:disabled:hover { border-color: #2a3f5c; background: #15243a; color: #93a3b8; }
 
   #map { height: 100%; width: 100%; background: #55606b; }
   .map-status {
@@ -421,6 +423,9 @@
         <button class="action-btn" id="reset-zoom-btn" type="button">
           <span>&#8635;</span>Reset Zoom
         </button>
+        <button class="action-btn" id="save-image-btn" type="button" title="Download a PNG snapshot of the map with a hazard-color legend">
+          <span>&#128190;</span>Save Map Image
+        </button>
       </div>
       <div class="map-wrap">
         <div id="map"></div>
@@ -465,6 +470,14 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- leaflet-image: renders the current Leaflet map (raster tiles + any
+     SVG/canvas vector layers — hazard zones, warning polygons, county
+     shading) to a single <canvas>, which is what makes a client-side
+     "Save Map Image" button possible without a server-side screenshot
+     service. Requires the tile layer to be CORS-enabled (see
+     `crossOrigin: true` on the tileLayer below) or the resulting canvas
+     will be tainted and toDataURL() will throw. -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet-image@0.4.0/leaflet-image.js"></script>
 <script>
 // ---------------------------------------------------------------------------
 // Zone AND county geometry are fetched live, per selected office, from the
@@ -687,7 +700,8 @@ const PRODUCT_CODES = {
 // Official NWS hazard colors, keyed by "PHEN.SIG" (matches PRODUCT_NAMES).
 // Source: https://www.weather.gov/help-map (verified update: Mar 10, 2025)
 // Single source of truth for: table text color, map zone shading, warning
-// polygon fill/stroke, and popup swatch colors.
+// polygon fill/stroke, popup swatch colors, AND the exported map-image
+// legend below.
 // ---------------------------------------------------------------------------
 const HAZARD_COLORS = {
   'TO.W':'#FF0000','TO.A':'#FFFF00',
@@ -804,7 +818,14 @@ function initMap(filteredGeojson){
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
     {
       attribution: 'Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, Esri, OpenStreetMap contributors',
-      maxZoom: 19
+      maxZoom: 19,
+      // Required so the tile <img> elements are fetched CORS-enabled —
+      // without this, the map still displays fine on screen, but any
+      // attempt to read the map back out as a canvas (the "Save Map
+      // Image" export) throws a cross-origin "tainted canvas" security
+      // error. Esri's ArcGIS Online tile service sends the
+      // Access-Control-Allow-Origin header needed for this to work.
+      crossOrigin: true
     }
   ).addTo(map);
 
@@ -1600,6 +1621,24 @@ function buildProducts(alerts){
   return out;
 }
 
+// Shared by both the on-page legend (renderLegend) and the exported map
+// image (buildCompositeCanvas) — a single "what's currently active,
+// grouped by hazard type, with the right NWS color and a count" computation
+// so the two never drift out of sync with each other.
+function computeLegendItems(prods){
+  const counts = new Map(); // key -> { name, color, sig, count }
+  prods.forEach(function(p){
+    const key = p.phen + '.' + p.sig;
+    if(!counts.has(key)){
+      counts.set(key, { key, name: p.name, color: p.color, sig: p.sig, count: 0 });
+    }
+    counts.get(key).count++;
+  });
+  return [...counts.values()].sort(function(a,b){
+    return rankOf(b.sig) - rankOf(a.sig) || a.name.localeCompare(b.name);
+  });
+}
+
 // Legend now lists every hazard type currently present in `products`
 // (regardless of the zone/polygon master toggles) with a live count, and is
 // clickable: clicking a chip toggles that hazard type on/off on the map.
@@ -1609,17 +1648,7 @@ function renderLegend(prods){
     legend.innerHTML = '<span class="note">No active watches, warnings, or advisories currently active.</span>';
     return;
   }
-  const counts = new Map(); // key -> { name, color, sig, count }
-  prods.forEach(function(p){
-    const key = p.phen + '.' + p.sig;
-    if(!counts.has(key)){
-      counts.set(key, { key, name: p.name, color: p.color, sig: p.sig, count: 0 });
-    }
-    counts.get(key).count++;
-  });
-  const items = [...counts.values()].sort(function(a,b){
-    return rankOf(b.sig) - rankOf(a.sig) || a.name.localeCompare(b.name);
-  });
+  const items = computeLegendItems(prods);
   legend.innerHTML = items.map(function(i){
     const isOff = disabledHazards.has(i.key);
     return '<span class="swatch legend-toggle'+(isOff ? ' off' : '')+'" data-key="'+i.key+'" title="Click to '+(isOff ? 'show' : 'hide')+' on map">'
@@ -1806,6 +1835,179 @@ function tickCountdowns(){
 }
 
 // ══════════════════════════════════════════════════════════════
+//  SAVE MAP IMAGE — export the current map view + a hazard-color
+//  legend as a single downloadable PNG.
+// ══════════════════════════════════════════════════════════════
+
+// Draws a rounded-rectangle path (no native canvas primitive for this in
+// the browsers this dashboard targets) — used for the legend swatches.
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// Composites the raw map screenshot (from leaflet-image) with a title bar,
+// timestamp, and a wrapped, color-swatched legend drawn underneath — so the
+// exported PNG is a self-contained, presentation-ready snapshot rather than
+// a bare map crop with no way to tell what the colors mean.
+function buildCompositeCanvas(mapCanvas){
+  const legendItems = computeLegendItems(filterDisabled(products));
+
+  const pad = 24;
+  const headerH = 76;
+  const rowH = 30;
+  const swatchSize = 16;
+  const swatchGap = 10;
+  const itemGap = 22;
+
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  const itemFont = '600 15px -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+  measureCtx.font = itemFont;
+
+  const maxRowW = mapCanvas.width - pad * 2;
+  let rows = [];
+  let currentRow = [];
+  let currentRowW = 0;
+
+  if(legendItems.length === 0){
+    rows = [[{ empty: true, label: 'No active watches, warnings, or advisories at time of export' }]];
+  } else {
+    legendItems.forEach(function(item){
+      const label = item.name + ' (' + item.count + ')';
+      const w = swatchSize + swatchGap + measureCtx.measureText(label).width + itemGap;
+      if(currentRow.length && currentRowW + w > maxRowW){
+        rows.push(currentRow);
+        currentRow = [];
+        currentRowW = 0;
+      }
+      currentRow.push({ item, label, w });
+      currentRowW += w;
+    });
+    if(currentRow.length) rows.push(currentRow);
+  }
+
+  const legendTopPad = 18;
+  const legendH = legendTopPad + rows.length * rowH + 10;
+  const footerH = 34;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = mapCanvas.width;
+  canvas.height = headerH + mapCanvas.height + legendH + footerH;
+  const ctx = canvas.getContext('2d');
+
+  // Background (matches the dashboard's dark theme)
+  ctx.fillStyle = '#0a1420';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Header: title + generated timestamp
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 22px -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(settings.wfo + ' CWA Active Watches, Warnings & Advisories', pad, 32);
+
+  ctx.fillStyle = '#93a3b8';
+  ctx.font = '500 14px -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+  const stamp = 'Generated ' + new Date().toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York'
+  }) + ' EDT';
+  ctx.fillText(stamp, pad, 56);
+
+  // Map screenshot
+  ctx.drawImage(mapCanvas, 0, headerH);
+
+  // Divider between map and legend
+  ctx.strokeStyle = '#1c2c41';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, headerH + mapCanvas.height);
+  ctx.lineTo(canvas.width, headerH + mapCanvas.height);
+  ctx.stroke();
+
+  // Legend — one row per line, each entry a colored swatch + hazard name +
+  // count, using the same official NWS HAZARD_COLORS as the live map.
+  let ly = headerH + mapCanvas.height + legendTopPad + 12;
+  rows.forEach(function(row){
+    let lx = pad;
+    row.forEach(function(cell){
+      if(cell.empty){
+        ctx.fillStyle = '#93a3b8';
+        ctx.font = '500 15px -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+        ctx.fillText(cell.label, lx, ly);
+        return;
+      }
+      ctx.fillStyle = cell.item.color;
+      roundRect(ctx, lx, ly - swatchSize + 2, swatchSize, swatchSize, 3);
+      ctx.fill();
+      ctx.fillStyle = '#cdd8e6';
+      ctx.font = itemFont;
+      ctx.fillText(cell.label, lx + swatchSize + swatchGap, ly);
+      lx += cell.w;
+    });
+    ly += rowH;
+  });
+
+  // Footer credit line
+  ctx.fillStyle = '#5a6a80';
+  ctx.font = '400 12px -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+  ctx.fillText(
+    'Data: NWS api.weather.gov  |  Hazard colors: weather.gov/help-map  |  Basemap: Esri, HERE, Garmin, USGS, NPS, NRCAN, GeoBase, OpenStreetMap contributors',
+    pad, canvas.height - 13
+  );
+
+  return canvas;
+}
+
+function saveMapImage(){
+  const btn = document.getElementById('save-image-btn');
+  if(typeof leafletImage !== 'function'){
+    alert('The map-image export library failed to load (check your network connection) — try refreshing the page.');
+    return;
+  }
+  if(!map){
+    alert('The map has not finished loading yet — try again in a moment.');
+    return;
+  }
+
+  const originalHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span>&#8987;</span>Rendering…';
+
+  leafletImage(map, function(err, mapCanvas){
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+
+    if(err){
+      console.error('map image export error', err);
+      alert('Could not generate the map image. This usually means the basemap tiles blocked cross-origin access on this network.');
+      return;
+    }
+
+    try{
+      const composite = buildCompositeCanvas(mapCanvas);
+      const stamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
+        .replace(/[\/,]/g, '-').replace(/[: ]+/g, '_');
+      const link = document.createElement('a');
+      link.download = settings.wfo + '_WWA_map_' + stamp + '.png';
+      link.href = composite.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }catch(e){
+      // Most likely a tainted-canvas SecurityError — some networks proxy
+      // or mirror map tiles through a host that doesn't send CORS headers,
+      // which silently defeats `crossOrigin: true` on the tile layer.
+      console.error('composite canvas error', e);
+      alert('Could not generate the map image — the basemap tiles on this network do not allow cross-origin image export.');
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
 //  NEW TORNADO WARNING ALERT — sound + full-screen flash
 // ══════════════════════════════════════════════════════════════
 // Tracks every product ID this browser session has already shown, so a
@@ -1967,6 +2169,8 @@ document.getElementById('toggle-polygon').addEventListener('click', function(){
 document.getElementById('reset-zoom-btn').addEventListener('click', function(){
   resetMapView();
 });
+
+document.getElementById('save-image-btn').addEventListener('click', saveMapImage);
 
 // WFO searchable combobox
 const wfoInput = document.getElementById('wfoSearchInput');
