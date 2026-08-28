@@ -316,9 +316,15 @@
       </div>
 
       <div class="source-item">
-        <h4>Wind &amp; temperature gauges &mdash; lake stations (Colchester Reef, Burton Island, Diamond Island)</h4>
+        <h4>Wind &amp; temperature gauges &mdash; Colchester Reef &amp; Diamond Island</h4>
         <p>NOAA/NWS station observations (<a href="https://www.weather.gov/documentation/services-web-api" target="_blank">api.weather.gov</a>) for gust and temperature, combined with sustained wind from the Iowa Environmental Mesonet's VTWAC network (<a href="https://mesonet.agron.iastate.edu" target="_blank">mesonet.agron.iastate.edu</a>). Water temperature from USGS gauges.</p>
         <span class="src-tag">NWS + IEM + USGS</span>
+      </div>
+
+      <div class="source-item">
+        <h4>Burton Island</h4>
+        <p>Wind, direction, and air temperature from the University of Vermont's Vermont Monitoring Cooperative station on Burton Island, read directly from its live data logger feed. The station reports wind speed in meters/second, which is converted to mph for internal use (the same units every other station uses) and then to knots for display, same as everywhere else on this dashboard. Water temperature still comes from the nearby USGS gauge.</p>
+        <span class="src-tag">UVM VMC + USGS</span>
       </div>
 
       <div class="source-item">
@@ -404,6 +410,34 @@
  *                                  DevTools Console and look for a CORS error on
  *                                  Whiteface's card specifically. If it fails,
  *                                  Whiteface falls back to mock the same way as NDBC.
+ *   vmc.w3.uvm.edu              -> NOT OK. Confirmed directly (curl -I): no
+ *                                  Access-Control-Allow-Origin header at all, so
+ *                                  the browser will block this fetch just like NDBC.
+ *                                  Burton Island falls back to mock data until this
+ *                                  is fixed. Fix the same way as NDBC: point
+ *                                  VMC_PROXY_URL below at a CORS proxy you control
+ *                                  (the same Cloudflare Worker pattern as
+ *                                  ndbc-cors-proxy-worker.js works fine here too —
+ *                                  it's a generic passthrough, not NDBC-specific —
+ *                                  just point a second Worker route, or this same
+ *                                  one, at vmc.w3.uvm.edu instead).
+ *                                  Separately: the underlying .DAT file is a
+ *                                  continuously-growing, multi-megabyte CSV (7.8MB
+ *                                  and counting as of this writing), so this fetch
+ *                                  uses an HTTP Range request for just the last few
+ *                                  KB instead of downloading the whole file every
+ *                                  refresh — confirmed the server supports Range
+ *                                  (Accept-Ranges: bytes). If a proxy is used, make
+ *                                  sure it forwards the Range header through; if it
+ *                                  doesn't, this still works, it just pulls the full
+ *                                  file each time.
+ *                                  Also worth knowing: as of this writing the file's
+ *                                  last logged row is over a month old even though
+ *                                  the file's own last-modified timestamp is current
+ *                                  — that looks like the station itself isn't
+ *                                  currently reporting fresh observations, not a
+ *                                  fetch problem on our end. Worth checking directly
+ *                                  with UVM VMC if that doesn't self-resolve.
  *
  * Optional: if you deploy the NDBC CORS proxy above, put its URL here (the buoy
  * path gets appended to it). Leave blank to skip live buoy data entirely.
@@ -423,13 +457,19 @@
 // access-control-allow-origin: * header present.
 var NDBC_PROXY_URL = 'https://ndbc-proxy.jusmessinwityah1.workers.dev/';
 
+// Same idea as NDBC_PROXY_URL above, for Burton Island's VMC data logger feed
+// (vmc.w3.uvm.edu has no CORS header — see the CORS STATUS note at the top of
+// this file). Point this at a CORS proxy you control; leave blank to skip live
+// Burton Island wind/temp data and fall back to mock for that station only.
+var VMC_PROXY_URL = '';
+
 // ====== CONFIG ==============================================================
 
 var REC_ISSUEDBY = 'BTV';
 
 var STATIONS = [
   { id: 'colchester_reef', name: 'Colchester Reef', region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM02', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294500', ndbcId: null,    lat: 44.548,  lon: -73.34 },
-  { id: 'burton_island',   name: 'Burton Island',    region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM01', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04295000', ndbcId: null,    lat: 44.795,  lon: -73.298 },
+  { id: 'burton_island',   name: 'Burton Island',    region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'vmc',  gaugeMax: 50, usgsSite: '04295000', ndbcId: null,    lat: 44.795,  lon: -73.298 },
   { id: 'diamond_island',  name: 'Diamond Island',   region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: 'UVM03', iemNetwork: 'VTWAC', iemCoopNetwork: null,      source: null,   gaugeMax: 50, usgsSite: '04294413', ndbcId: null,    lat: 44.03,   lon: -73.43 },
   { id: 'valcour_buoy',    name: 'Valcour Buoy',     region: 'Lake Champlain', regionColor: 'blue',   tempLabel: 'Feels Like', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'ndbc', gaugeMax: 50, usgsSite: null,        ndbcId: '45178', staleThresholdMin: 150, lat: 44.603,  lon: -73.394 },
   { id: 'whiteface',       name: 'Whiteface',        region: 'Adirondacks',    regionColor: 'purple', tempLabel: 'Wind Chill', noaaId: null,    iemNetwork: null,    iemCoopNetwork: null,      source: 'wfms', gaugeMax: 80, usgsSite: null,        ndbcId: null,    lat: 44.3658, lon: -73.9028 },
@@ -627,7 +667,14 @@ async function getOneStationData_(s) {
   if (s.noaaId === 'TODO') resolvedId = await discoverNearestStationId_(s.lat, s.lon, s.name);
   else if (s.noaaId) resolvedId = s.noaaId;
 
-  var noaaP = resolvedId ? fetchNoaaObservation_(resolvedId) : Promise.resolve(null);
+  // Burton Island's wind/temp now come from UVM's VMC data logger feed instead of
+  // NOAA/IEM — this slots into the same "noaaP" position in the merge below (see
+  // mergeObservations_) since VMC is this station's sole live wind+temp+direction
+  // source, same role NOAA plays for a station with no closer IEM feed. s.noaaId,
+  // s.iemNetwork, s.iemCoopNetwork, and s.rrsPil are all null for this station, so
+  // the other fetches below correctly no-op.
+  var noaaP = (s.source === 'vmc') ? fetchVmcObservation_()
+    : (resolvedId ? fetchNoaaObservation_(resolvedId) : Promise.resolve(null));
   var iemP = s.iemNetwork ? fetchIemObservation_(resolvedId, s.iemNetwork) : Promise.resolve(null);
   var coopTempP = s.iemCoopNetwork ? fetchIemCoopObservation_(resolvedId, s.iemCoopNetwork) : Promise.resolve(null);
   var rrsWindP = s.rrsPil ? fetchRrsWindObservation_(s.rrsPil, resolvedId) : Promise.resolve(null);
@@ -728,6 +775,99 @@ async function fetchIemObservation_(stationId, network) {
     return { sustainedMph: sustainedMph, tempF: tempF, feelsF: feelsF, directionDeg: directionDeg, timestamp: ob.utc_valid };
   } catch (err) {
     console.warn('fetchIemObservation_ error for ' + stationId + '/' + network + ':', err);
+    return null;
+  }
+}
+
+// ====== BURTON ISLAND (UVM VMC data logger feed) =============================
+// Source: https://vmc.w3.uvm.edu/MetData/BurtonIsland/BURTONISLAND.DAT — a
+// continuously-appended CampbellSci "TOA5" CSV. Row 1 is a preamble, row 2 is
+// the column header, row 3/4 are units/aggregation labels, then one data row
+// per 15-minute observation (and growing — 7.8MB+ as of this writing). We only
+// need the single most recent row, so this fetches just the tail of the file
+// via an HTTP Range request instead of the whole thing (server confirmed to
+// support Range with Accept-Ranges: bytes).
+var VMC_URL = 'https://vmc.w3.uvm.edu/MetData/BurtonIsland/BURTONISLAND.DAT';
+var VMC_TAIL_BYTES = 4000; // comfortably more than one data row needs
+
+function parseVmcCsvLine_(line) {
+  // No embedded commas inside any field in this file (timestamps use a space,
+  // not a comma), so a plain split is safe — just strip the surrounding quotes
+  // CampbellSci wraps every field in.
+  return line.split(',').map(function (f) { return f.replace(/^"|"$/g, '').trim(); });
+}
+
+// "2025-05-14 01:00:00" — logged in the station's local (Eastern) time, same
+// convention as Mt. Mansfield's RRS/WFMS feeds. Reuses the same DST-aware
+// offset helper as parseWfmsDateTime_ rather than duplicating that logic.
+function parseVmcTimestamp_(str) {
+  if (!str) return null;
+  var m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return null;
+
+  var year = Number(m[1]), month = Number(m[2]), day = Number(m[3]),
+      hour = Number(m[4]), minute = Number(m[5]);
+
+  var offsetHours = usEasternOffsetHours_(year, month, day);
+  var utcMs = Date.UTC(year, month - 1, day, hour - offsetHours, minute);
+  return new Date(utcMs).toISOString();
+}
+
+async function fetchVmcObservation_() {
+  try {
+    var base = VMC_PROXY_URL || VMC_URL;
+    // If a proxy is in front of this, it may or may not forward Range — either
+    // way we just parse whatever comes back (a 200 with the whole file works
+    // fine too, it's just slower).
+    var resp = await fetchWithTimeout_(base, { headers: { 'Range': 'bytes=-' + VMC_TAIL_BYTES } });
+    if (!resp.ok && resp.status !== 206) { console.warn('VMC Burton Island fetch failed: HTTP ' + resp.status); return null; }
+    var text = await resp.text();
+
+    var lines = text.split('\n').map(function (l) { return l.replace(/\r$/, ''); }).filter(function (l) { return l.trim().length > 0; });
+    if (!lines.length) return null;
+
+    // The Range slice may have landed mid-row at the top — that's fine, we only
+    // want the LAST complete row, which a tail slice of a few KB always contains
+    // in full (each row here is well under 200 bytes).
+    var lastLine = lines[lines.length - 1];
+    var cols = parseVmcCsvLine_(lastLine);
+    // A genuine data row starts with a quoted timestamp like "2026-...". If the
+    // tail happened to end exactly on the header/units preamble instead (only
+    // possible if the whole file is smaller than VMC_TAIL_BYTES), bail out
+    // rather than parse garbage.
+    if (!cols[0] || !/^\d{4}-\d{2}-\d{2}/.test(cols[0])) {
+      console.warn('VMC Burton Island: last line did not look like a data row:', lastLine);
+      return null;
+    }
+
+    // Fixed column positions per the file's known header (TIMESTAMP, RECORD,
+    // BattV_Avg, PTemp_C_Avg, AIRTEMP, RELHUMID, MAX_WINDSPEED,
+    // TIME_MAX_WINDSPEED, MEAN_HORIZONTAL_WINDSPEED, Windspeed_U_WVT,
+    // Winddir_DU_WVT, Winddir_SDU_WVT, PYRANOM_Ave, PYRANOM_Tot, BAROPRESS).
+    var mm = function (v) { return (v == null || v === '' || v === 'NAN') ? null : Number(v); };
+    var airTempC = mm(cols[4]);
+    var gustMs = mm(cols[6]);
+    var windMs = mm(cols[8]);
+    var dirDeg = mm(cols[10]);
+
+    if (windMs == null && gustMs == null && airTempC == null) return null;
+
+    // m/s -> mph, same precise factor used everywhere else on this dashboard
+    // (see speedToMph_) so Burton Island's wind is on the exact same internal
+    // scale as every other station before it's converted to knots for display
+    // by the shared metarLineHTML function.
+    var tempF = airTempC != null ? cToF_(airTempC) : null;
+
+    return {
+      sustainedMph: windMs != null ? Math.round(windMs * 2.23694) : null,
+      gustMph: gustMs != null ? Math.round(gustMs * 2.23694) : null,
+      tempF: tempF,
+      feelsF: tempF,
+      directionDeg: dirDeg,
+      timestamp: parseVmcTimestamp_(cols[0])
+    };
+  } catch (err) {
+    console.warn('fetchVmcObservation_ error (likely CORS — see notes at top of file):', err);
     return null;
   }
 }
