@@ -10,7 +10,7 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d69684855d94754ff17f90b5e0412b044edd67a6.001.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.142334298c97c8d0085bb3e09b1138f9859f6354.001.1",
             "type": "Feature",
             "geometry": {
                 "type": "Polygon",
@@ -96,9 +96,9 @@
                 ]
             },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d69684855d94754ff17f90b5e0412b044edd67a6.001.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.142334298c97c8d0085bb3e09b1138f9859f6354.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.d69684855d94754ff17f90b5e0412b044edd67a6.001.1",
+                "id": "urn:oid:2.49.0.1.840.0.142334298c97c8d0085bb3e09b1138f9859f6354.001.1",
                 "areaDesc": "Webb, TX",
                 "geocode": {
                     "SAME": [
@@ -111,14 +111,21 @@
                 "affectedZones": [
                     "https://api.weather.gov/zones/county/TXC479"
                 ],
-                "references": [],
-                "sent": "2026-09-04T20:00:00-05:00",
-                "effective": "2026-09-04T20:00:00-05:00",
-                "onset": "2026-09-04T20:00:00-05:00",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d69684855d94754ff17f90b5e0412b044edd67a6.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.d69684855d94754ff17f90b5e0412b044edd67a6.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-04T20:00:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-04T20:11:00-05:00",
+                "effective": "2026-09-04T20:11:00-05:00",
+                "onset": "2026-09-04T20:11:00-05:00",
                 "expires": "2026-09-04T20:30:00-05:00",
                 "ends": "2026-09-04T20:30:00-05:00",
                 "status": "Actual",
-                "messageType": "Alert",
+                "messageType": "Update",
                 "category": "Met",
                 "severity": "Severe",
                 "certainty": "Observed",
@@ -126,20 +133,23 @@
                 "event": "Severe Thunderstorm Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Corpus Christi TX",
-                "headline": "Severe Thunderstorm Warning issued September 4 at 8:00PM CDT until September 4 at 8:30PM CDT by NWS Corpus Christi TX",
-                "description": "SVRCRP\n\nThe National Weather Service in Corpus Christi has issued a\n\n* Severe Thunderstorm Warning for...\nSouthwestern Webb County in south central Texas...\n\n* Until 830 PM CDT.\n\n* At 800 PM CDT, a severe thunderstorm was located over Ranchos\nPenitas West, or 11 miles northwest of Laredo, moving northwest at\n10 mph.\n\nHAZARD...Quarter size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Damage to vehicles is expected.\n\n* Locations impacted include...\nRanchos Penitas West.",
+                "headline": "Severe Thunderstorm Warning issued September 4 at 8:11PM CDT until September 4 at 8:30PM CDT by NWS Corpus Christi TX",
+                "description": "At 811 PM CDT, a severe thunderstorm was located over Ranchos Penitas\nWest, or 13 miles northwest of Laredo, moving northwest at 10 mph.\n\nHAZARD...Half dollar size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Damage to vehicles is expected.\n\nLocations impacted include...\nRanchos Penitas West.",
                 "instruction": "Seek shelter inside a well-built structure and stay away from\nwindows. This storm is capable of producing large hail.\n\nContinuous cloud to ground lightning is occurring with this storm.\nLightning is one of nature's leading killers. Remember, if you can\nhear thunder, you are close enough to be struck by lightning.",
                 "response": "Shelter",
                 "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "SVRCRP"
+                        "SVSCRP"
                     ],
                     "WMOidentifier": [
-                        "WUUS54 KCRP 050100"
+                        "WWUS54 KCRP 050111"
+                    ],
+                    "NWSheadline": [
+                        "SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 830 PM CDT FOR SOUTHWESTERN WEBB COUNTY"
                     ],
                     "eventMotionDescription": [
-                        "2026-09-05T01:00:00-00:00...storm...116DEG...7KT...27.66,-99.6"
+                        "2026-09-05T01:00:00-00:00...storm...116DEG...7KT...27.67,-99.6"
                     ],
                     "windThreat": [
                         "RADAR INDICATED"
@@ -151,7 +161,7 @@
                         "RADAR INDICATED"
                     ],
                     "maxHailSize": [
-                        "1.00"
+                        "1.25"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
@@ -162,7 +172,7 @@
                         "WXR"
                     ],
                     "VTEC": [
-                        "/O.NEW.KCRP.SV.W.0076.260905T0100Z-260905T0130Z/"
+                        "/O.CON.KCRP.SV.W.0076.000000T0000Z-260905T0130Z/"
                     ],
                     "eventEndingTime": [
                         "2026-09-04T20:30:00-05:00"
@@ -174,7 +184,708 @@
                 "web": "http://www.weather.gov",
                 "eventCode": {
                     "SAME": [
-                        "SVR"
+                        "SVS"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.003.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -94.45,
+                            30.12
+                        ],
+                        [
+                            -94.23,
+                            30.24
+                        ],
+                        [
+                            -94.07,
+                            30.21
+                        ],
+                        [
+                            -94.06,
+                            30.13
+                        ],
+                        [
+                            -94.45,
+                            30.04
+                        ],
+                        [
+                            -94.45,
+                            30.12
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.003.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.003.1",
+                "areaDesc": "Hardin, TX; Jefferson, TX",
+                "geocode": {
+                    "SAME": [
+                        "048199",
+                        "048245"
+                    ],
+                    "UGC": [
+                        "TXC199",
+                        "TXC245"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC199",
+                    "https://api.weather.gov/zones/county/TXC245"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.003.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.003.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-04T11:26:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-04T20:09:00-05:00",
+                "effective": "2026-09-04T20:09:00-05:00",
+                "onset": "2026-09-06T05:17:00-05:00",
+                "expires": "2026-09-05T08:15:00-05:00",
+                "ends": "2026-09-08T03:24:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Lake Charles LA",
+                "headline": "Flood Warning issued September 4 at 8:09PM CDT until September 8 at 3:24AM CDT by NWS Lake Charles LA",
+                "description": "...The Flood Warning continues for the following rivers in Texas...\n\nNeches River at Neches River Saltwater Barrier affecting Jefferson,\nHardin, Jasper and Orange Counties.\n\nVillage Creek Near Kountze affecting Hardin County.\n\n...The Flood Warning is extended for the following rivers in Texas...\n\nPine Island Bayou Near Sour Lake affecting Jefferson and Hardin\nCounties.\n\nFor the Neches River...including Town Bluff, Evadale, Neches River\nSaltwater Barrier...Minor flooding is forecast.\nFor the Village Creek...including Kountze...Moderate flooding is\nforecast.\nFor the Pine Island Bayou...including Sour Lake...Minor flooding is\nforecast.\n\n* WHAT...Minor flooding is forecast.\n\n* WHERE...Pine Island Bayou near Sour Lake.\n\n* WHEN...From late Saturday night to late Monday night.\n\n* IMPACTS...At 25.0 feet, Water inundates roads in lowland areas near\nthe river. Low spots on Old Sour Lake Road are under water.\n\n* ADDITIONAL DETAILS...\n- At 7:45 PM CDT Friday the stage was 19.0 feet.\n- Bankfull stage is 22.0 feet.\n- Forecast...The river is expected to rise above flood stage early\nSunday morning to a crest of 25.8 feet Sunday evening. It will\nthen fall below flood stage Monday afternoon.\n- Flood stage is 25.0 feet.\n- Flood History...This crest compares to a previous crest of 25.7\nfeet on 10/02/2021.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Caution is urged when walking near riverbanks.\n\nBe especially cautious at night when it is harder to recognize the\ndangers of flooding.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued Saturday morning at 815 AM CDT.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSLCH"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS84 KLCH 050109"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD WARNING NOW IN EFFECT FROM LATE SATURDAY NIGHT TO LATE MONDAY NIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KLCH.FL.W.0038.260906T1017Z-260908T0824Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-08T03:24:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f491253129c77e8ecdc143123a723c5fc693869c.002.1,2026-09-03T13:59:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1ec16fd98fc8afcc468c17295165ecd999e06bc7.002.1,2026-09-03T20:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6fe70a82701616ddc2c18ab2b81e32a9117f2846.002.1,2026-09-03T07:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.62a4e9086ee83cf0ed552ce3cbe8bf1d40470cb0.002.1,2026-09-03T09:10:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.b34277fd7f8320a853a0cb15595502e31218e04c.002.1,2026-09-02T14:06:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fd2372f1ad6c2297067367b11628d0fc16914c0a.002.1,2026-09-02T20:00:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9cd612dfd4b822c978327e2c4b9355a79fe132c1.003.1,2026-09-02T11:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa16a1b5a4b3fee862a51ec3933b69c79a66610b.003.1,2026-09-02T07:53:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FLS"
+                    ],
+                    "NationalWeatherService": [
+                        "FLW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.002.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -94.04,
+                            30.33
+                        ],
+                        [
+                            -94.02,
+                            30.18
+                        ],
+                        [
+                            -93.78,
+                            30.04
+                        ],
+                        [
+                            -93.87,
+                            29.92
+                        ],
+                        [
+                            -94.06,
+                            29.98
+                        ],
+                        [
+                            -94.13,
+                            30.08
+                        ],
+                        [
+                            -94.21,
+                            30.33
+                        ],
+                        [
+                            -94.04,
+                            30.33
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.002.1",
+                "areaDesc": "Hardin, TX; Jasper, TX; Jefferson, TX; Orange, TX",
+                "geocode": {
+                    "SAME": [
+                        "048199",
+                        "048241",
+                        "048245",
+                        "048361"
+                    ],
+                    "UGC": [
+                        "TXC199",
+                        "TXC241",
+                        "TXC245",
+                        "TXC361"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC199",
+                    "https://api.weather.gov/zones/county/TXC241",
+                    "https://api.weather.gov/zones/county/TXC245",
+                    "https://api.weather.gov/zones/county/TXC361"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-04T11:26:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-04T20:09:00-05:00",
+                "effective": "2026-09-04T20:09:00-05:00",
+                "onset": "2026-09-04T20:09:00-05:00",
+                "expires": "2026-09-05T08:15:00-05:00",
+                "ends": "2026-09-09T22:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Lake Charles LA",
+                "headline": "Flood Warning issued September 4 at 8:09PM CDT until September 9 at 10:00PM CDT by NWS Lake Charles LA",
+                "description": "...The Flood Warning continues for the following rivers in Texas...\n\nNeches River at Neches River Saltwater Barrier affecting Jefferson,\nHardin, Jasper and Orange Counties.\n\nVillage Creek Near Kountze affecting Hardin County.\n\n...The Flood Warning is extended for the following rivers in Texas...\n\nPine Island Bayou Near Sour Lake affecting Jefferson and Hardin\nCounties.\n\nFor the Neches River...including Town Bluff, Evadale, Neches River\nSaltwater Barrier...Minor flooding is forecast.\nFor the Village Creek...including Kountze...Moderate flooding is\nforecast.\nFor the Pine Island Bayou...including Sour Lake...Minor flooding is\nforecast.\n\n* WHAT...Minor flooding is forecast.\n\n* WHERE...Neches River at Neches River Saltwater Barrier.\n\n* WHEN...Until Wednesday evening.\n\n* IMPACTS...At 5.0 feet, Water is about two feet over portions of\nFour Oaks Ranch Road.\n\n* ADDITIONAL DETAILS...\n- At 7:15 PM CDT Friday the stage was 2.8 feet.\n- Forecast...The river is expected to rise above flood stage early\nSunday morning to a crest of 4.8 feet early Monday afternoon. It\nwill then fall below flood stage late Tuesday evening.\n- Flood stage is 4.0 feet.\n- Flood History...This crest compares to a previous crest of 4.6\nfeet on 09/22/2020.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Caution is urged when walking near riverbanks.\n\nBe especially cautious at night when it is harder to recognize the\ndangers of flooding.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued Saturday morning at 815 AM CDT.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSLCH"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS84 KLCH 050109"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD WARNING NOW IN EFFECT UNTIL WEDNESDAY EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KLCH.FL.W.0036.000000T0000Z-260910T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-09T22:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f491253129c77e8ecdc143123a723c5fc693869c.003.1,2026-09-03T13:59:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1ec16fd98fc8afcc468c17295165ecd999e06bc7.003.1,2026-09-03T20:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6fe70a82701616ddc2c18ab2b81e32a9117f2846.003.1,2026-09-03T07:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.62a4e9086ee83cf0ed552ce3cbe8bf1d40470cb0.003.1,2026-09-03T09:10:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.b34277fd7f8320a853a0cb15595502e31218e04c.003.1,2026-09-02T14:06:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fd2372f1ad6c2297067367b11628d0fc16914c0a.003.1,2026-09-02T20:00:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9cd612dfd4b822c978327e2c4b9355a79fe132c1.001.1,2026-09-02T11:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa16a1b5a4b3fee862a51ec3933b69c79a66610b.001.1,2026-09-02T07:53:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FLS"
+                    ],
+                    "NationalWeatherService": [
+                        "FLW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -94.33,
+                            30.48
+                        ],
+                        [
+                            -94.23,
+                            30.5
+                        ],
+                        [
+                            -94.04,
+                            30.26
+                        ],
+                        [
+                            -94.14,
+                            30.16
+                        ],
+                        [
+                            -94.33,
+                            30.33
+                        ],
+                        [
+                            -94.33,
+                            30.48
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.99c6a0fd6fda0d3f4c0d7635c73119e2d3bf5141.001.1",
+                "areaDesc": "Hardin, TX",
+                "geocode": {
+                    "SAME": [
+                        "048199"
+                    ],
+                    "UGC": [
+                        "TXC199"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC199"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-04T11:26:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-04T20:09:00-05:00",
+                "effective": "2026-09-04T20:09:00-05:00",
+                "onset": "2026-09-04T20:09:00-05:00",
+                "expires": "2026-09-05T08:15:00-05:00",
+                "ends": "2026-09-06T10:36:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Lake Charles LA",
+                "headline": "Flood Warning issued September 4 at 8:09PM CDT until September 6 at 10:36AM CDT by NWS Lake Charles LA",
+                "description": "...The Flood Warning continues for the following rivers in Texas...\n\nNeches River at Neches River Saltwater Barrier affecting Jefferson,\nHardin, Jasper and Orange Counties.\n\nVillage Creek Near Kountze affecting Hardin County.\n\n...The Flood Warning is extended for the following rivers in Texas...\n\nPine Island Bayou Near Sour Lake affecting Jefferson and Hardin\nCounties.\n\nFor the Neches River...including Town Bluff, Evadale, Neches River\nSaltwater Barrier...Minor flooding is forecast.\nFor the Village Creek...including Kountze...Moderate flooding is\nforecast.\nFor the Pine Island Bayou...including Sour Lake...Minor flooding is\nforecast.\n\n* WHAT...Moderate flooding is occurring and moderate flooding is\nforecast.\n\n* WHERE...Village Creek near Kountze.\n\n* WHEN...Until Sunday morning.\n\n* IMPACTS...At 21.9 feet, At this level, water will be flowing over\nthe Highway 418 bridge.\n\n* ADDITIONAL DETAILS...\n- At 7:30 PM CDT Friday the stage was 21.9 feet.\n- Bankfull stage is 12.0 feet.\n- Recent Activity...The maximum river stage in the 24 hours ending\nat 7:30 PM CDT Friday was 22.4 feet.\n- Forecast...The river is expected to fall below flood stage late\ntomorrow evening and continue falling to 5.9 feet Wednesday\nevening.\n- Flood stage is 17.0 feet.\n- Flood History...This crest compares to a previous crest of 21.8\nfeet on 02/12/1966.\n- http://www.weather.gov/safety/flood",
+                "instruction": "Caution is urged when walking near riverbanks.\n\nBe especially cautious at night when it is harder to recognize the\ndangers of flooding.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued Saturday morning at 815 AM CDT.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FLSLCH"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS84 KLCH 050109"
+                    ],
+                    "NWSheadline": [
+                        "FLOOD WARNING NOW IN EFFECT UNTIL SUNDAY MORNING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXT.KLCH.FL.W.0037.000000T0000Z-260906T1536Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-06T10:36:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f491253129c77e8ecdc143123a723c5fc693869c.001.1,2026-09-03T13:59:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1ec16fd98fc8afcc468c17295165ecd999e06bc7.001.1,2026-09-03T20:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6fe70a82701616ddc2c18ab2b81e32a9117f2846.001.1,2026-09-03T07:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.62a4e9086ee83cf0ed552ce3cbe8bf1d40470cb0.001.1,2026-09-03T09:10:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.b34277fd7f8320a853a0cb15595502e31218e04c.001.1,2026-09-02T14:06:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fd2372f1ad6c2297067367b11628d0fc16914c0a.001.1,2026-09-02T20:00:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9cd612dfd4b822c978327e2c4b9355a79fe132c1.002.1,2026-09-02T11:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa16a1b5a4b3fee862a51ec3933b69c79a66610b.002.1,2026-09-02T07:53:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FLS"
+                    ],
+                    "NationalWeatherService": [
+                        "FLW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-22125",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-22125",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-22125",
+                "areaDesc": "Montgomery",
+                "geocode": {
+                    "SAME": [
+                        "024031"
+                    ],
+                    "UGC": [
+                        "MDC031"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MDC031"
+                ],
+                "references": [],
+                "sent": "2026-09-05T01:07:16+00:00",
+                "effective": "2026-09-05T01:07:16+00:00",
+                "onset": null,
+                "expires": "2026-09-05T01:17:16+00:00",
+                "ends": null,
+                "status": "Test",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Unknown",
+                "certainty": "Unknown",
+                "urgency": "Unknown",
+                "event": "Test Message",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS",
+                "headline": null,
+                "description": "Monitoring message only. Please disregard.",
+                "instruction": "Monitoring message only. Please disregard.",
+                "response": "None",
+                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "KEPWBC"
+                    ],
+                    "WMOidentifier": [
+                        "NZUS91 KWBC 050107"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "CMAS",
+                        "EAS",
+                        "NWEM"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "TST"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.342a7a0fbcec5445e876146dda53c890128c5f18.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -102.97,
+                            30.02
+                        ],
+                        [
+                            -103.17,
+                            29.73
+                        ],
+                        [
+                            -103.43,
+                            29.28
+                        ],
+                        [
+                            -103.15,
+                            29.18
+                        ],
+                        [
+                            -103.01,
+                            29.35
+                        ],
+                        [
+                            -102.68,
+                            30
+                        ],
+                        [
+                            -102.97,
+                            30.02
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.342a7a0fbcec5445e876146dda53c890128c5f18.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.342a7a0fbcec5445e876146dda53c890128c5f18.001.1",
+                "areaDesc": "Brewster, TX",
+                "geocode": {
+                    "SAME": [
+                        "048043"
+                    ],
+                    "UGC": [
+                        "TXC043"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/TXC043"
+                ],
+                "references": [],
+                "sent": "2026-09-04T20:07:00-05:00",
+                "effective": "2026-09-04T20:07:00-05:00",
+                "onset": "2026-09-04T20:07:00-05:00",
+                "expires": "2026-09-04T23:00:00-05:00",
+                "ends": "2026-09-04T23:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Immediate",
+                "event": "Flash Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Midland/Odessa TX",
+                "headline": "Flash Flood Warning issued September 4 at 8:07PM CDT until September 4 at 11:00PM CDT by NWS Midland/Odessa TX",
+                "description": "FFWMAF\n\nThe National Weather Service in Midland/Odessa has issued a\n\n* Flash Flood Warning for...\nSouth Central Brewster County in southwestern Texas...\n\n* Until 1100 PM CDT.\n\n* At 807 PM CDT, Doppler radar indicated thunderstorms producing\nheavy rain across the warned area. The expected rainfall rate is 1\nto 1.5 inches in 1 hour. Additional rainfall amounts of 1 to 2\ninches are possible in the warned area. Flash flooding is ongoing\nor expected to begin shortly.\n\nHAZARD...Flash flooding caused by thunderstorms.\n\nSOURCE...Radar indicated.\n\nIMPACT...Flash flooding of small creeks and streams, urban areas,\nhighways, streets and underpasses as well as other poor\ndrainage and low-lying areas.\n\n* Some locations that will experience flash flooding include...\nPanther Junction, Persimmon Gap, Big Bend National Park and Chisos\nBasin.",
+                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nBe especially cautious at night when it is harder to recognize the\ndangers of flooding.\n\nFlooding is occurring or is imminent. It is important to know where\nyou are relative to streams, rivers, or creeks which can become\nkillers in heavy rains. Campers and hikers should avoid streams or\ncreeks.",
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FFWMAF"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS54 KMAF 050107"
+                    ],
+                    "flashFloodDetection": [
+                        "RADAR INDICATED"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KMAF.FF.W.0181.260905T0107Z-260905T0400Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-04T23:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FFW"
+                    ],
+                    "NationalWeatherService": [
+                        "FFW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e0505768a9bbff2c90dafc62ef950493ad3d35db.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -101.16,
+                            39.14
+                        ],
+                        [
+                            -101.01,
+                            39.42
+                        ],
+                        [
+                            -100.74,
+                            39.31
+                        ],
+                        [
+                            -100.72,
+                            39.16
+                        ],
+                        [
+                            -100.77,
+                            39.13
+                        ],
+                        [
+                            -100.81,
+                            39.13
+                        ],
+                        [
+                            -100.81,
+                            39.1
+                        ],
+                        [
+                            -100.85,
+                            39.08
+                        ],
+                        [
+                            -100.91,
+                            39.08
+                        ],
+                        [
+                            -101.16,
+                            39.14
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e0505768a9bbff2c90dafc62ef950493ad3d35db.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.e0505768a9bbff2c90dafc62ef950493ad3d35db.001.1",
+                "areaDesc": "Logan, KS; Thomas, KS",
+                "geocode": {
+                    "SAME": [
+                        "020109",
+                        "020193"
+                    ],
+                    "UGC": [
+                        "KSC109",
+                        "KSC193"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/KSC109",
+                    "https://api.weather.gov/zones/county/KSC193"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.aa07028ead88bdb4ba83a58bbd96ebe5d04c4299.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.aa07028ead88bdb4ba83a58bbd96ebe5d04c4299.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-04T19:45:00-05:00"
+                    },
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a7555a8637e8dab549a749686a71446afb31d936.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.a7555a8637e8dab549a749686a71446afb31d936.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-04T19:28:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-04T20:06:00-05:00",
+                "effective": "2026-09-04T20:06:00-05:00",
+                "onset": "2026-09-04T20:06:00-05:00",
+                "expires": "2026-09-04T20:16:00-05:00",
+                "ends": "2026-09-04T20:15:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Goodland KS",
+                "headline": "Severe Thunderstorm Warning issued September 4 at 8:06PM CDT until September 4 at 8:15PM CDT by NWS Goodland KS",
+                "description": "The storm which prompted the warning has weakened below severe\nlimits, and no longer poses an immediate threat to life or property.\nTherefore, the warning will be allowed to expire.  However, gusty\nwinds and heavy rain are still possible with this thunderstorm.",
+                "instruction": null,
+                "response": "Shelter",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SVSGLD"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS53 KGLD 050106"
+                    ],
+                    "NWSheadline": [
+                        "THE SEVERE THUNDERSTORM WARNING FOR SOUTHEASTERN THOMAS AND NORTHEASTERN LOGAN COUNTIES WILL EXPIRE AT 815 PM CDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-05T01:06:00-00:00...storm...209DEG...35KT...39.34,-100.87"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXP.KGLD.SV.W.0315.000000T0000Z-260905T0115Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-04T20:15:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVS"
                     ],
                     "NationalWeatherService": [
                         "SVW"
@@ -449,73 +1160,6 @@
                     ],
                     "NationalWeatherService": [
                         "SPS"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-9876",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-9876",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-9876",
-                "areaDesc": "Montgomery",
-                "geocode": {
-                    "SAME": [
-                        "024031"
-                    ],
-                    "UGC": [
-                        "MDC031"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/MDC031"
-                ],
-                "references": [],
-                "sent": "2026-09-05T00:57:16+00:00",
-                "effective": "2026-09-05T00:57:16+00:00",
-                "onset": null,
-                "expires": "2026-09-05T01:07:16+00:00",
-                "ends": null,
-                "status": "Test",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Test Message",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS",
-                "headline": null,
-                "description": "Monitoring message only. Please disregard.",
-                "instruction": "Monitoring message only. Please disregard.",
-                "response": "None",
-                "note": "This is only a test for monitoring of vital dissemination systems.",
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "KEPWBC"
-                    ],
-                    "WMOidentifier": [
-                        "NZUS91 KWBC 050057"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "CMAS",
-                        "EAS",
-                        "NWEM"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "TST"
                     ]
                 }
             }
@@ -2084,156 +2728,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.aa07028ead88bdb4ba83a58bbd96ebe5d04c4299.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -101.16,
-                            39.14
-                        ],
-                        [
-                            -101.01,
-                            39.42
-                        ],
-                        [
-                            -100.74,
-                            39.31
-                        ],
-                        [
-                            -100.72,
-                            39.16
-                        ],
-                        [
-                            -100.77,
-                            39.13
-                        ],
-                        [
-                            -100.81,
-                            39.13
-                        ],
-                        [
-                            -100.81,
-                            39.1
-                        ],
-                        [
-                            -100.85,
-                            39.08
-                        ],
-                        [
-                            -100.91,
-                            39.08
-                        ],
-                        [
-                            -101.16,
-                            39.14
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.aa07028ead88bdb4ba83a58bbd96ebe5d04c4299.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.aa07028ead88bdb4ba83a58bbd96ebe5d04c4299.001.1",
-                "areaDesc": "Logan, KS; Thomas, KS",
-                "geocode": {
-                    "SAME": [
-                        "020109",
-                        "020193"
-                    ],
-                    "UGC": [
-                        "KSC109",
-                        "KSC193"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/KSC109",
-                    "https://api.weather.gov/zones/county/KSC193"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a7555a8637e8dab549a749686a71446afb31d936.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.a7555a8637e8dab549a749686a71446afb31d936.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-09-04T19:28:00-05:00"
-                    }
-                ],
-                "sent": "2026-09-04T19:45:00-05:00",
-                "effective": "2026-09-04T19:45:00-05:00",
-                "onset": "2026-09-04T19:45:00-05:00",
-                "expires": "2026-09-04T20:15:00-05:00",
-                "ends": "2026-09-04T20:15:00-05:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Severe Thunderstorm Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Goodland KS",
-                "headline": "Severe Thunderstorm Warning issued September 4 at 7:45PM CDT until September 4 at 8:15PM CDT by NWS Goodland KS",
-                "description": "At 745 PM CDT, a severe thunderstorm was located 4 miles north of\nMonument, or 8 miles northwest of Oakley, moving northeast at 25 mph.\n\nHAZARD...60 mph wind gusts and nickel size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Expect damage to roofs, siding, and trees.\n\nLocations impacted include...\nColby, Oakley, and Mingo.\n\nThis includes Interstate 70 in Kansas between mile markers 55 and 75.",
-                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.\n\nThis thunderstorm will produce strong winds resulting in areas of\nnear zero visibility in blowing dirt. Use extreme caution if you must\ntravel and be alert for rapidly changing visibility.",
-                "response": "Shelter",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SVSGLD"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS53 KGLD 050045"
-                    ],
-                    "NWSheadline": [
-                        "A SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 815 PM CDT FOR SOUTHEASTERN THOMAS AND NORTHEASTERN LOGAN COUNTIES"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-09-05T00:45:00-00:00...storm...225DEG...20KT...39.17,-100.99"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxHailSize": [
-                        "0.88"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KGLD.SV.W.0315.000000T0000Z-260905T0115Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-04T20:15:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SVS"
-                    ],
-                    "NationalWeatherService": [
-                        "SVW"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.88185734bae1c4a7748601ffd91fe1d3fc56b29d.001.1",
             "type": "Feature",
             "geometry": {
@@ -3519,82 +4013,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.014.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.014.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.014.1",
-                "areaDesc": "Unalga Pass to Nikolski Bering Side from 15 to 85 NM",
-                "geocode": {
-                    "SAME": [
-                        "058772"
-                    ],
-                    "UGC": [
-                        "PKZ772"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ772"
-                ],
-                "references": [],
-                "sent": "2026-09-04T16:17:00-08:00",
-                "effective": "2026-09-04T16:17:00-08:00",
-                "onset": "2026-09-04T16:00:00-08:00",
-                "expires": "2026-09-05T05:45:00-08:00",
-                "ends": "2026-09-05T17:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued September 4 at 4:17PM AKDT until September 5 at 5:00PM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SW wind 20 kt becoming SE 25 kt late.\nSeas 7 ft. Patchy fog.\n.SAT...SE wind 25 kt. Seas 6 ft. Patchy fog. Rain.\n.SAT NIGHT...E wind 20 kt becoming NW after midnight. Seas 6 ft.\n.SUN...W wind 20 kt. Seas 6 ft.\n.SUN NIGHT...SE wind 20 kt. Seas 4 ft.\n.MON...S wind 30 kt. Seas 9 ft.\n.TUE...W wind 20 kt. Seas 7 ft.\n.WED...SW wind 15 kt. Seas 4 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFALU"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAFC 050017"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY THROUGH SATURDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.1204.260905T0000Z-260906T0100Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-05T17:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.017.1",
             "type": "Feature",
             "geometry": null,
@@ -3727,6 +4145,82 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAFC.SC.Y.1203.260905T0000Z-260906T0100Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-05T17:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.014.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.014.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.014.1",
+                "areaDesc": "Unalga Pass to Nikolski Bering Side from 15 to 85 NM",
+                "geocode": {
+                    "SAME": [
+                        "058772"
+                    ],
+                    "UGC": [
+                        "PKZ772"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ772"
+                ],
+                "references": [],
+                "sent": "2026-09-04T16:17:00-08:00",
+                "effective": "2026-09-04T16:17:00-08:00",
+                "onset": "2026-09-04T16:00:00-08:00",
+                "expires": "2026-09-05T05:45:00-08:00",
+                "ends": "2026-09-05T17:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued September 4 at 4:17PM AKDT until September 5 at 5:00PM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SW wind 20 kt becoming SE 25 kt late.\nSeas 7 ft. Patchy fog.\n.SAT...SE wind 25 kt. Seas 6 ft. Patchy fog. Rain.\n.SAT NIGHT...E wind 20 kt becoming NW after midnight. Seas 6 ft.\n.SUN...W wind 20 kt. Seas 6 ft.\n.SUN NIGHT...SE wind 20 kt. Seas 4 ft.\n.MON...S wind 30 kt. Seas 9 ft.\n.TUE...W wind 20 kt. Seas 7 ft.\n.WED...SW wind 15 kt. Seas 4 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFALU"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAFC 050017"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY THROUGH SATURDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.1204.260905T0000Z-260906T0100Z/"
                     ],
                     "eventEndingTime": [
                         "2026-09-05T17:00:00-08:00"
@@ -3975,82 +4469,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.025.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.025.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.025.1",
-                "areaDesc": "Seguam to Adak Pacific Side from 15 to 75 NM",
-                "geocode": {
-                    "SAME": [
-                        "058783"
-                    ],
-                    "UGC": [
-                        "PKZ783"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ783"
-                ],
-                "references": [],
-                "sent": "2026-09-04T16:17:00-08:00",
-                "effective": "2026-09-04T16:17:00-08:00",
-                "onset": "2026-09-05T05:00:00-08:00",
-                "expires": "2026-09-05T05:45:00-08:00",
-                "ends": "2026-09-06T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued September 4 at 4:17PM AKDT until September 6 at 5:00AM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SE wind 25 kt. Seas 8 ft. Patchy fog.\n.SAT...N wind 30 kt. Seas 10 ft. Patchy fog.\n.SAT NIGHT...W wind 20 kt. Seas 10 ft.\n.SUN...SE wind 25 kt. Seas 7 ft.\n.SUN NIGHT...S wind 30 kt. Seas 10 ft.\n.MON THROUGH TUE...NW wind 25 kt. Seas 10 ft.\n.WED...SE wind 15 kt. Seas 7 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFALU"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK52 PAFC 050017"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY THROUGH SATURDAY NIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.1213.260905T1300Z-260906T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-06T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.011.1",
             "type": "Feature",
             "geometry": null,
@@ -4110,6 +4528,82 @@
                     ],
                     "eventEndingTime": [
                         "2026-09-05T17:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.025.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.025.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.f860d15a2261cd7c653d8027619274e702179fc7.025.1",
+                "areaDesc": "Seguam to Adak Pacific Side from 15 to 75 NM",
+                "geocode": {
+                    "SAME": [
+                        "058783"
+                    ],
+                    "UGC": [
+                        "PKZ783"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ783"
+                ],
+                "references": [],
+                "sent": "2026-09-04T16:17:00-08:00",
+                "effective": "2026-09-04T16:17:00-08:00",
+                "onset": "2026-09-05T05:00:00-08:00",
+                "expires": "2026-09-05T05:45:00-08:00",
+                "ends": "2026-09-06T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued September 4 at 4:17PM AKDT until September 6 at 5:00AM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for Southwest Alaska+Bristol Bay+The\nAlaska Peninsula Waters and the Aleutian Islands up to 100 nm out.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SE wind 25 kt. Seas 8 ft. Patchy fog.\n.SAT...N wind 30 kt. Seas 10 ft. Patchy fog.\n.SAT NIGHT...W wind 20 kt. Seas 10 ft.\n.SUN...SE wind 25 kt. Seas 7 ft.\n.SUN NIGHT...S wind 30 kt. Seas 10 ft.\n.MON THROUGH TUE...NW wind 25 kt. Seas 10 ft.\n.WED...SE wind 15 kt. Seas 7 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFALU"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK52 PAFC 050017"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY THROUGH SATURDAY NIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.1213.260905T1300Z-260906T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-06T05:00:00-08:00"
                     ]
                 },
                 "scope": "Public",
@@ -5707,82 +6201,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.55446e7ff75b58f1fe7d11767f6532c8224810c8.015.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.55446e7ff75b58f1fe7d11767f6532c8224810c8.015.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.55446e7ff75b58f1fe7d11767f6532c8224810c8.015.1",
-                "areaDesc": "West of Barren Islands Including Kamishak Bay",
-                "geocode": {
-                    "SAME": [
-                        "058730"
-                    ],
-                    "UGC": [
-                        "PKZ730"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ730"
-                ],
-                "references": [],
-                "sent": "2026-09-04T15:59:00-08:00",
-                "effective": "2026-09-04T15:59:00-08:00",
-                "onset": "2026-09-04T17:00:00-08:00",
-                "expires": "2026-09-05T05:00:00-08:00",
-                "ends": "2026-09-05T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued September 4 at 3:59PM AKDT until September 5 at 5:00AM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for the Northern Gulf of Alaska Coast\nup to 100 nm out including Kodiak Island and Cook Inlet.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SE wind 25 kt. Seas 6 ft. Patchy fog. Rain.\n.SAT...SW wind 15 kt. Seas 3 ft.\n.SAT NIGHT...Variable wind 10 kt. Seas 3 ft.\n.SUN AND SUN NIGHT...NE wind 20 kt. Seas 4 ft.\n.MON...E wind 20 kt. Seas 5 ft.\n.TUE...SW wind 25 kt. Seas 7 ft.\n.WED...W wind 30 kt. Seas 8 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFAER"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK51 PAFC 042359"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY TONIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.9482.260905T0100Z-260905T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-05T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.55446e7ff75b58f1fe7d11767f6532c8224810c8.016.1",
             "type": "Feature",
             "geometry": null,
@@ -5839,6 +6257,82 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAFC.SC.Y.9483.260905T0100Z-260905T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-05T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.55446e7ff75b58f1fe7d11767f6532c8224810c8.015.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.55446e7ff75b58f1fe7d11767f6532c8224810c8.015.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.55446e7ff75b58f1fe7d11767f6532c8224810c8.015.1",
+                "areaDesc": "West of Barren Islands Including Kamishak Bay",
+                "geocode": {
+                    "SAME": [
+                        "058730"
+                    ],
+                    "UGC": [
+                        "PKZ730"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ730"
+                ],
+                "references": [],
+                "sent": "2026-09-04T15:59:00-08:00",
+                "effective": "2026-09-04T15:59:00-08:00",
+                "onset": "2026-09-04T17:00:00-08:00",
+                "expires": "2026-09-05T05:00:00-08:00",
+                "ends": "2026-09-05T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued September 4 at 3:59PM AKDT until September 5 at 5:00AM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for the Northern Gulf of Alaska Coast\nup to 100 nm out including Kodiak Island and Cook Inlet.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...SE wind 25 kt. Seas 6 ft. Patchy fog. Rain.\n.SAT...SW wind 15 kt. Seas 3 ft.\n.SAT NIGHT...Variable wind 10 kt. Seas 3 ft.\n.SUN AND SUN NIGHT...NE wind 20 kt. Seas 4 ft.\n.MON...E wind 20 kt. Seas 5 ft.\n.TUE...SW wind 25 kt. Seas 7 ft.\n.WED...W wind 30 kt. Seas 8 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFAER"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK51 PAFC 042359"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY TONIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.9482.260905T0100Z-260905T1300Z/"
                     ],
                     "eventEndingTime": [
                         "2026-09-05T05:00:00-08:00"
@@ -6941,82 +7435,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.008.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.008.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.008.1",
-                "areaDesc": "Point Franklin to Cape Halkett from 15 to 75 NM",
-                "geocode": {
-                    "SAME": [
-                        "058859"
-                    ],
-                    "UGC": [
-                        "PKZ859"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ859"
-                ],
-                "references": [],
-                "sent": "2026-09-04T15:48:00-08:00",
-                "effective": "2026-09-04T15:48:00-08:00",
-                "onset": "2026-09-04T15:00:00-08:00",
-                "expires": "2026-09-05T06:00:00-08:00",
-                "ends": "2026-09-05T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Fairbanks AK",
-                "headline": "Small Craft Advisory issued September 4 at 3:48PM AKDT until September 5 at 5:00AM AKDT by NWS Fairbanks AK",
-                "description": "Arctic Alaska Coastal Waters out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent the average of the highest one-\nthird of the combined wind-wave and swell height.\n\n.TONIGHT...E winds 25 kt. Seas building to 5 ft.\n.SAT...E winds 25 kt. Seas 6 ft.\n.SAT NIGHT...E winds 15 kt. Seas 6 ft.\n.SUN...E winds 10 kt. Seas 4 ft.\n.SUN NIGHT...E winds 5 kt. Seas 3 ft.\n.MON...SE winds 10 kt. Seas 3 ft.\n.MON NIGHT...E winds 10 kt. Seas 2 ft.\n.TUE...E winds 10 kt. Seas 2 ft.\n.WED...SW winds 10 kt. Seas 2 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFNSB"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK51 PAFG 042348"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY IN EFFECT FROM LATE TONIGHT THROUGH SATURDAY AFTERNOON"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFG.SC.Y.7846.260904T2300Z-260905T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-05T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.004.1",
             "type": "Feature",
             "geometry": null,
@@ -7093,6 +7511,82 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.008.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.008.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.008.1",
+                "areaDesc": "Point Franklin to Cape Halkett from 15 to 75 NM",
+                "geocode": {
+                    "SAME": [
+                        "058859"
+                    ],
+                    "UGC": [
+                        "PKZ859"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ859"
+                ],
+                "references": [],
+                "sent": "2026-09-04T15:48:00-08:00",
+                "effective": "2026-09-04T15:48:00-08:00",
+                "onset": "2026-09-04T15:00:00-08:00",
+                "expires": "2026-09-05T06:00:00-08:00",
+                "ends": "2026-09-05T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Fairbanks AK",
+                "headline": "Small Craft Advisory issued September 4 at 3:48PM AKDT until September 5 at 5:00AM AKDT by NWS Fairbanks AK",
+                "description": "Arctic Alaska Coastal Waters out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent the average of the highest one-\nthird of the combined wind-wave and swell height.\n\n.TONIGHT...E winds 25 kt. Seas building to 5 ft.\n.SAT...E winds 25 kt. Seas 6 ft.\n.SAT NIGHT...E winds 15 kt. Seas 6 ft.\n.SUN...E winds 10 kt. Seas 4 ft.\n.SUN NIGHT...E winds 5 kt. Seas 3 ft.\n.MON...SE winds 10 kt. Seas 3 ft.\n.MON NIGHT...E winds 10 kt. Seas 2 ft.\n.TUE...E winds 10 kt. Seas 2 ft.\n.WED...SW winds 10 kt. Seas 2 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFNSB"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK51 PAFG 042348"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY IN EFFECT FROM LATE TONIGHT THROUGH SATURDAY AFTERNOON"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFG.SC.Y.7846.260904T2300Z-260905T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-05T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.005.1",
             "type": "Feature",
             "geometry": null,
@@ -7149,82 +7643,6 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAFG.SC.Y.7843.260904T2300Z-260905T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-05T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.010.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.010.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.010.1",
-                "areaDesc": "Flaxman Island to Demarcation Point from 15 to 75 NM",
-                "geocode": {
-                    "SAME": [
-                        "058861"
-                    ],
-                    "UGC": [
-                        "PKZ861"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ861"
-                ],
-                "references": [],
-                "sent": "2026-09-04T15:48:00-08:00",
-                "effective": "2026-09-04T15:48:00-08:00",
-                "onset": "2026-09-04T15:00:00-08:00",
-                "expires": "2026-09-05T06:00:00-08:00",
-                "ends": "2026-09-05T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Fairbanks AK",
-                "headline": "Small Craft Advisory issued September 4 at 3:48PM AKDT until September 5 at 5:00AM AKDT by NWS Fairbanks AK",
-                "description": "Arctic Alaska Coastal Waters out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent the average of the highest one-\nthird of the combined wind-wave and swell height.\n\n.TONIGHT...E winds 25 kt. Seas building to 5 ft.\n.SAT...E winds 25 kt. Seas 6 ft.\n.SAT NIGHT...E winds 20 kt. Seas 7 ft.\n.SUN...W winds 10 kt. Seas 5 ft.\n.SUN NIGHT...W winds 10 kt. Seas 3 ft.\n.MON...NE winds 5 kt. Seas 2 ft.\n.MON NIGHT...E winds 10 kt. Seas 2 ft.\n.TUE...E winds 10 kt. Seas 2 ft.\n.WED...W winds 10 kt. Seas 3 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFNSB"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK51 PAFG 042348"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY IN EFFECT FROM LATE TONIGHT THROUGH SATURDAY AFTERNOON"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFG.SC.Y.7848.260904T2300Z-260905T1300Z/"
                     ],
                     "eventEndingTime": [
                         "2026-09-05T05:00:00-08:00"
@@ -7321,31 +7739,31 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.009.1",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.010.1",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.009.1",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.010.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.009.1",
-                "areaDesc": "Cape Halkett to Flaxman Island from 15 to 80 NM",
+                "id": "urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.010.1",
+                "areaDesc": "Flaxman Island to Demarcation Point from 15 to 75 NM",
                 "geocode": {
                     "SAME": [
-                        "058860"
+                        "058861"
                     ],
                     "UGC": [
-                        "PKZ860"
+                        "PKZ861"
                     ]
                 },
                 "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ860"
+                    "https://api.weather.gov/zones/forecast/PKZ861"
                 ],
                 "references": [],
                 "sent": "2026-09-04T15:48:00-08:00",
                 "effective": "2026-09-04T15:48:00-08:00",
                 "onset": "2026-09-04T15:00:00-08:00",
                 "expires": "2026-09-05T06:00:00-08:00",
-                "ends": "2026-09-05T17:00:00-08:00",
+                "ends": "2026-09-05T05:00:00-08:00",
                 "status": "Actual",
                 "messageType": "Alert",
                 "category": "Met",
@@ -7355,8 +7773,8 @@
                 "event": "Small Craft Advisory",
                 "sender": "w-nws.webmaster@noaa.gov",
                 "senderName": "NWS Fairbanks AK",
-                "headline": "Small Craft Advisory issued September 4 at 3:48PM AKDT until September 5 at 5:00PM AKDT by NWS Fairbanks AK",
-                "description": "Arctic Alaska Coastal Waters out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent the average of the highest one-\nthird of the combined wind-wave and swell height.\n\n.TONIGHT...E winds 25 kt. Seas 5 ft.\n.SAT...E winds 30 kt. Seas 7 ft.\n.SAT NIGHT...E winds 20 kt. Seas 7 ft.\n.SUN...NE winds 10 kt. Seas 5 ft.\n.SUN NIGHT...NE winds 10 kt. Seas 3 ft.\n.MON...E winds 10 kt. Seas 3 ft.\n.MON NIGHT...E winds 15 kt. Seas 3 ft.\n.TUE...E winds 15 kt. Seas 3 ft.\n.WED...W winds 10 kt. Seas 2 ft.",
+                "headline": "Small Craft Advisory issued September 4 at 3:48PM AKDT until September 5 at 5:00AM AKDT by NWS Fairbanks AK",
+                "description": "Arctic Alaska Coastal Waters out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent the average of the highest one-\nthird of the combined wind-wave and swell height.\n\n.TONIGHT...E winds 25 kt. Seas building to 5 ft.\n.SAT...E winds 25 kt. Seas 6 ft.\n.SAT NIGHT...E winds 20 kt. Seas 7 ft.\n.SUN...W winds 10 kt. Seas 5 ft.\n.SUN NIGHT...W winds 10 kt. Seas 3 ft.\n.MON...NE winds 5 kt. Seas 2 ft.\n.MON NIGHT...E winds 10 kt. Seas 2 ft.\n.TUE...E winds 10 kt. Seas 2 ft.\n.WED...W winds 10 kt. Seas 3 ft.",
                 "instruction": null,
                 "response": "Avoid",
                 "note": null,
@@ -7368,7 +7786,7 @@
                         "FZAK51 PAFG 042348"
                     ],
                     "NWSheadline": [
-                        "SMALL CRAFT ADVISORY IN EFFECT THROUGH SATURDAY AFTERNOON"
+                        "SMALL CRAFT ADVISORY IN EFFECT FROM LATE TONIGHT THROUGH SATURDAY AFTERNOON"
                     ],
                     "BLOCKCHANNEL": [
                         "EAS",
@@ -7376,10 +7794,10 @@
                         "CMAS"
                     ],
                     "VTEC": [
-                        "/O.NEW.PAFG.SC.Y.7847.260904T2300Z-260906T0100Z/"
+                        "/O.NEW.PAFG.SC.Y.7848.260904T2300Z-260905T1300Z/"
                     ],
                     "eventEndingTime": [
-                        "2026-09-05T17:00:00-08:00"
+                        "2026-09-05T05:00:00-08:00"
                     ]
                 },
                 "scope": "Public",
@@ -7453,6 +7871,82 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAFG.SC.Y.7844.260904T2300Z-260906T0100Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-05T17:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.009.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.009.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.0c9c28d84de008be8278cc0901507a4fbcec2410.009.1",
+                "areaDesc": "Cape Halkett to Flaxman Island from 15 to 80 NM",
+                "geocode": {
+                    "SAME": [
+                        "058860"
+                    ],
+                    "UGC": [
+                        "PKZ860"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ860"
+                ],
+                "references": [],
+                "sent": "2026-09-04T15:48:00-08:00",
+                "effective": "2026-09-04T15:48:00-08:00",
+                "onset": "2026-09-04T15:00:00-08:00",
+                "expires": "2026-09-05T06:00:00-08:00",
+                "ends": "2026-09-05T17:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Fairbanks AK",
+                "headline": "Small Craft Advisory issued September 4 at 3:48PM AKDT until September 5 at 5:00PM AKDT by NWS Fairbanks AK",
+                "description": "Arctic Alaska Coastal Waters out 100 NM\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent the average of the highest one-\nthird of the combined wind-wave and swell height.\n\n.TONIGHT...E winds 25 kt. Seas 5 ft.\n.SAT...E winds 30 kt. Seas 7 ft.\n.SAT NIGHT...E winds 20 kt. Seas 7 ft.\n.SUN...NE winds 10 kt. Seas 5 ft.\n.SUN NIGHT...NE winds 10 kt. Seas 3 ft.\n.MON...E winds 10 kt. Seas 3 ft.\n.MON NIGHT...E winds 15 kt. Seas 3 ft.\n.TUE...E winds 15 kt. Seas 3 ft.\n.WED...W winds 10 kt. Seas 2 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFNSB"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK51 PAFG 042348"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY IN EFFECT THROUGH SATURDAY AFTERNOON"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFG.SC.Y.7847.260904T2300Z-260906T0100Z/"
                     ],
                     "eventEndingTime": [
                         "2026-09-05T17:00:00-08:00"
@@ -7938,175 +8432,6 @@
                     ],
                     "eventEndingTime": [
                         "2026-09-04T20:15:00-06:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "FAY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a2b024bbb1cc42157ddb19e9ab1f99969f926922.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -77.48,
-                            36.32
-                        ],
-                        [
-                            -77.49,
-                            36.35
-                        ],
-                        [
-                            -77.49,
-                            36.4
-                        ],
-                        [
-                            -77.44,
-                            36.45
-                        ],
-                        [
-                            -77.33,
-                            36.43
-                        ],
-                        [
-                            -77.24,
-                            36.34
-                        ],
-                        [
-                            -77.2,
-                            36.19
-                        ],
-                        [
-                            -77.27,
-                            36.15
-                        ],
-                        [
-                            -77.26,
-                            36.16
-                        ],
-                        [
-                            -77.28,
-                            36.16
-                        ],
-                        [
-                            -77.29,
-                            36.17
-                        ],
-                        [
-                            -77.31,
-                            36.17
-                        ],
-                        [
-                            -77.31,
-                            36.18
-                        ],
-                        [
-                            -77.33,
-                            36.19
-                        ],
-                        [
-                            -77.35,
-                            36.19
-                        ],
-                        [
-                            -77.39,
-                            36.21
-                        ],
-                        [
-                            -77.38,
-                            36.25
-                        ],
-                        [
-                            -77.41,
-                            36.26
-                        ],
-                        [
-                            -77.41,
-                            36.29
-                        ],
-                        [
-                            -77.44,
-                            36.32
-                        ],
-                        [
-                            -77.48,
-                            36.32
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.a2b024bbb1cc42157ddb19e9ab1f99969f926922.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.a2b024bbb1cc42157ddb19e9ab1f99969f926922.001.1",
-                "areaDesc": "Bertie, NC; Northampton, NC",
-                "geocode": {
-                    "SAME": [
-                        "037015",
-                        "037131"
-                    ],
-                    "UGC": [
-                        "NCC015",
-                        "NCC131"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/NCC015",
-                    "https://api.weather.gov/zones/county/NCC131"
-                ],
-                "references": [],
-                "sent": "2026-09-04T19:25:00-04:00",
-                "effective": "2026-09-04T19:25:00-04:00",
-                "onset": "2026-09-04T19:25:00-04:00",
-                "expires": "2026-09-04T22:30:00-04:00",
-                "ends": "2026-09-04T22:30:00-04:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Flood Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Wakefield VA",
-                "headline": "Flood Advisory issued September 4 at 7:25PM EDT until September 4 at 10:30PM EDT by NWS Wakefield VA",
-                "description": "* WHAT...Flooding caused by excessive rainfall is expected.\n\n* WHERE...Bertie County in northeastern North Carolina...\nSoutheastern Northampton County in northeastern North Carolina...\n\n* WHEN...Until 1030 PM EDT.\n\n* IMPACTS...Minor flooding in low-lying and poor drainage areas.\n\n* ADDITIONAL DETAILS...\n- At 725 PM EDT, Doppler radar indicated heavy rain due to\nthunderstorms. Minor flooding is ongoing or expected to begin\nshortly in the advisory area. Between 1 and 1.5 inches of rain\nhave fallen.\n- Additional rainfall amounts of 1 to 2 inches are expected over\nthe area. This additional rain will result in minor flooding.\n- Some locations that will experience flooding include...\nRich Square, Roxobel, Jackson, Kelford, Lasker, Bryantown, Boones\nCrossroads, Creeksville, Eagletown and Pleasant Grove.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSAKQ"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS81 KAKQ 042325"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD ADVISORY IN EFFECT UNTIL 1030 PM EDT THIS EVENING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KAKQ.FA.Y.0081.260904T2325Z-260905T0230Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-04T22:30:00-04:00"
                     ]
                 },
                 "scope": "Public",
@@ -10690,6 +11015,110 @@
             }
         },
         {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.405bff7dbc9dc8484d14d28ce3bd2a786924162d.002.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.405bff7dbc9dc8484d14d28ce3bd2a786924162d.002.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.405bff7dbc9dc8484d14d28ce3bd2a786924162d.002.1",
+                "areaDesc": "Madison; St. Clair; Monroe; St. Charles; St. Louis; St. Louis City; Jefferson",
+                "geocode": {
+                    "SAME": [
+                        "017119",
+                        "017163",
+                        "017133",
+                        "029183",
+                        "029189",
+                        "029510",
+                        "029099"
+                    ],
+                    "UGC": [
+                        "ILZ100",
+                        "ILZ101",
+                        "ILZ102",
+                        "MOZ061",
+                        "MOZ063",
+                        "MOZ064",
+                        "MOZ065"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/ILZ100",
+                    "https://api.weather.gov/zones/forecast/ILZ101",
+                    "https://api.weather.gov/zones/forecast/ILZ102",
+                    "https://api.weather.gov/zones/forecast/MOZ061",
+                    "https://api.weather.gov/zones/forecast/MOZ063",
+                    "https://api.weather.gov/zones/forecast/MOZ064",
+                    "https://api.weather.gov/zones/forecast/MOZ065"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.52e8e5a85e89f3cc9361086832c62ab3609a4f5c.002.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.52e8e5a85e89f3cc9361086832c62ab3609a4f5c.002.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-04T03:26:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-04T14:49:00-05:00",
+                "effective": "2026-09-04T14:49:00-05:00",
+                "onset": "2026-09-04T14:49:00-05:00",
+                "expires": "2026-09-05T06:00:00-05:00",
+                "ends": "2026-09-05T20:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Extreme Heat Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS St Louis MO",
+                "headline": "Extreme Heat Warning issued September 4 at 2:49PM CDT until September 5 at 8:00PM CDT by NWS St Louis MO",
+                "description": "* WHAT...Dangerously hot conditions with heat index values up to 108.\n\n* WHERE...In Illinois, Madison IL, Monroe IL, and Saint Clair IL\nCounties. In Missouri, Jefferson MO, Saint Charles MO, Saint Louis\nCity MO, and Saint Louis MO Counties.\n\n* WHEN...Until 8 PM CDT Saturday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat and high humidity events.",
+                "instruction": "People in the Saint Louis Metropolitan Area can get information about\ncooling centers or energy assistance related to the excessive heat by\ncalling the United Way of Greater Saint Louis at 800-427-4626, or if\ncalling from a land line phone dial 2-1-1. You can also call Cool\nDown Saint Louis at 314-241-7668.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "NPWLSX"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS73 KLSX 041949"
+                    ],
+                    "NWSheadline": [
+                        "EXTREME HEAT WARNING REMAINS IN EFFECT UNTIL 8 PM CDT SATURDAY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KLSX.XH.W.0004.000000T0000Z-260906T0100Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-05T20:00:00-05:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.db2f08c3aa595bbb90a0d2fb73cf000d4882f96a.002.1,2026-09-03T14:45:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d73ea6d5ab8cebf59bf31795aa0dd28ba5ad13b7.002.2,2026-09-03T00:12:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "XHW"
+                    ]
+                }
+            }
+        },
+        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.405bff7dbc9dc8484d14d28ce3bd2a786924162d.001.1",
             "type": "Feature",
             "geometry": null,
@@ -10873,110 +11302,6 @@
                     ],
                     "expiredReferences": [
                         "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.db2f08c3aa595bbb90a0d2fb73cf000d4882f96a.001.1,2026-09-03T14:45:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d73ea6d5ab8cebf59bf31795aa0dd28ba5ad13b7.001.2,2026-09-03T00:12:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "XHW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.405bff7dbc9dc8484d14d28ce3bd2a786924162d.002.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.405bff7dbc9dc8484d14d28ce3bd2a786924162d.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.405bff7dbc9dc8484d14d28ce3bd2a786924162d.002.1",
-                "areaDesc": "Madison; St. Clair; Monroe; St. Charles; St. Louis; St. Louis City; Jefferson",
-                "geocode": {
-                    "SAME": [
-                        "017119",
-                        "017163",
-                        "017133",
-                        "029183",
-                        "029189",
-                        "029510",
-                        "029099"
-                    ],
-                    "UGC": [
-                        "ILZ100",
-                        "ILZ101",
-                        "ILZ102",
-                        "MOZ061",
-                        "MOZ063",
-                        "MOZ064",
-                        "MOZ065"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/ILZ100",
-                    "https://api.weather.gov/zones/forecast/ILZ101",
-                    "https://api.weather.gov/zones/forecast/ILZ102",
-                    "https://api.weather.gov/zones/forecast/MOZ061",
-                    "https://api.weather.gov/zones/forecast/MOZ063",
-                    "https://api.weather.gov/zones/forecast/MOZ064",
-                    "https://api.weather.gov/zones/forecast/MOZ065"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.52e8e5a85e89f3cc9361086832c62ab3609a4f5c.002.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.52e8e5a85e89f3cc9361086832c62ab3609a4f5c.002.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-09-04T03:26:00-05:00"
-                    }
-                ],
-                "sent": "2026-09-04T14:49:00-05:00",
-                "effective": "2026-09-04T14:49:00-05:00",
-                "onset": "2026-09-04T14:49:00-05:00",
-                "expires": "2026-09-05T06:00:00-05:00",
-                "ends": "2026-09-05T20:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Extreme Heat Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS St Louis MO",
-                "headline": "Extreme Heat Warning issued September 4 at 2:49PM CDT until September 5 at 8:00PM CDT by NWS St Louis MO",
-                "description": "* WHAT...Dangerously hot conditions with heat index values up to 108.\n\n* WHERE...In Illinois, Madison IL, Monroe IL, and Saint Clair IL\nCounties. In Missouri, Jefferson MO, Saint Charles MO, Saint Louis\nCity MO, and Saint Louis MO Counties.\n\n* WHEN...Until 8 PM CDT Saturday.\n\n* IMPACTS...Heat related illnesses increase significantly during\nextreme heat and high humidity events.",
-                "instruction": "People in the Saint Louis Metropolitan Area can get information about\ncooling centers or energy assistance related to the excessive heat by\ncalling the United Way of Greater Saint Louis at 800-427-4626, or if\ncalling from a land line phone dial 2-1-1. You can also call Cool\nDown Saint Louis at 314-241-7668.",
-                "response": "Execute",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "NPWLSX"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS73 KLSX 041949"
-                    ],
-                    "NWSheadline": [
-                        "EXTREME HEAT WARNING REMAINS IN EFFECT UNTIL 8 PM CDT SATURDAY"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KLSX.XH.W.0004.000000T0000Z-260906T0100Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-05T20:00:00-05:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.db2f08c3aa595bbb90a0d2fb73cf000d4882f96a.002.1,2026-09-03T14:45:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.d73ea6d5ab8cebf59bf31795aa0dd28ba5ad13b7.002.2,2026-09-03T00:12:00-05:00"
                     ]
                 },
                 "scope": "Public",
@@ -14497,362 +14822,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -94.33,
-                            30.48
-                        ],
-                        [
-                            -94.23,
-                            30.5
-                        ],
-                        [
-                            -94.04,
-                            30.26
-                        ],
-                        [
-                            -94.14,
-                            30.16
-                        ],
-                        [
-                            -94.33,
-                            30.33
-                        ],
-                        [
-                            -94.33,
-                            30.48
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.001.1",
-                "areaDesc": "Hardin, TX",
-                "geocode": {
-                    "SAME": [
-                        "048199"
-                    ],
-                    "UGC": [
-                        "TXC199"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/TXC199"
-                ],
-                "references": [],
-                "sent": "2026-09-04T11:26:00-05:00",
-                "effective": "2026-09-04T11:26:00-05:00",
-                "onset": "2026-09-04T11:26:00-05:00",
-                "expires": "2026-09-04T23:30:00-05:00",
-                "ends": "2026-09-06T11:36:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Flood Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Lake Charles LA",
-                "headline": "Flood Warning issued September 4 at 11:26AM CDT until September 6 at 11:36AM CDT by NWS Lake Charles LA",
-                "description": "...The Flood Warning continues for the following rivers in Texas...\n\nNeches River at Neches River Saltwater Barrier affecting Hardin,\nJefferson, Orange and Jasper Counties.\n\n...The Flood Warning is extended for the following rivers in Texas...\n\nVillage Creek Near Kountze affecting Hardin County.\n\nPine Island Bayou Near Sour Lake affecting Hardin and Jefferson\nCounties.\n\nFor the Neches River...including Town Bluff, Evadale, Neches River\nSaltwater Barrier...Minor flooding is forecast.\nFor the Village Creek...including Kountze...Moderate flooding is\nforecast.\nFor the Pine Island Bayou...including Sour Lake...Minor flooding is\nforecast.\n\n* WHAT...Moderate flooding is occurring and moderate flooding is\nforecast.\n\n* WHERE...Village Creek near Kountze.\n\n* WHEN...Until Sunday morning.\n\n* IMPACTS...At 22.0 feet, Water covers entire floor of Farm to Market\nRoad 418. Water threatens homes near the creek in Kountze.\nSignificant flooding occurs in Village Creek State Park.\n\n* ADDITIONAL DETAILS...\n- At 10:30 AM CDT Friday the stage was 22.3 feet.\n- Bankfull stage is 12.0 feet.\n- Recent Activity...The maximum river stage in the 24 hours ending\nat 10:30 AM CDT Friday was 22.5 feet.\n- Forecast...The river is expected to fall below flood stage late\ntomorrow evening and continue falling to 5.3 feet Wednesday\nmorning.\n- Flood stage is 17.0 feet.\n- Flood History...This crest compares to a previous crest of 22.4\nfeet on 04/06/1999.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued this evening at 1130 PM CDT.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSLCH"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS84 KLCH 041626"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD WARNING NOW IN EFFECT UNTIL SUNDAY MORNING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.EXT.KLCH.FL.W.0037.000000T0000Z-260906T1636Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-06T11:36:00-05:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f491253129c77e8ecdc143123a723c5fc693869c.001.1,2026-09-03T13:59:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1ec16fd98fc8afcc468c17295165ecd999e06bc7.001.1,2026-09-03T20:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6fe70a82701616ddc2c18ab2b81e32a9117f2846.001.1,2026-09-03T07:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.62a4e9086ee83cf0ed552ce3cbe8bf1d40470cb0.001.1,2026-09-03T09:10:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.b34277fd7f8320a853a0cb15595502e31218e04c.001.1,2026-09-02T14:06:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fd2372f1ad6c2297067367b11628d0fc16914c0a.001.1,2026-09-02T20:00:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9cd612dfd4b822c978327e2c4b9355a79fe132c1.002.1,2026-09-02T11:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa16a1b5a4b3fee862a51ec3933b69c79a66610b.002.1,2026-09-02T07:53:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "FLS"
-                    ],
-                    "NationalWeatherService": [
-                        "FLW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.003.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -94.45,
-                            30.12
-                        ],
-                        [
-                            -94.23,
-                            30.24
-                        ],
-                        [
-                            -94.07,
-                            30.21
-                        ],
-                        [
-                            -94.06,
-                            30.13
-                        ],
-                        [
-                            -94.45,
-                            30.04
-                        ],
-                        [
-                            -94.45,
-                            30.12
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.003.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.003.1",
-                "areaDesc": "Hardin, TX; Jefferson, TX",
-                "geocode": {
-                    "SAME": [
-                        "048199",
-                        "048245"
-                    ],
-                    "UGC": [
-                        "TXC199",
-                        "TXC245"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/TXC199",
-                    "https://api.weather.gov/zones/county/TXC245"
-                ],
-                "references": [],
-                "sent": "2026-09-04T11:26:00-05:00",
-                "effective": "2026-09-04T11:26:00-05:00",
-                "onset": "2026-09-05T08:12:00-05:00",
-                "expires": "2026-09-04T23:30:00-05:00",
-                "ends": "2026-09-07T07:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Flood Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Lake Charles LA",
-                "headline": "Flood Warning issued September 4 at 11:26AM CDT until September 7 at 7:00AM CDT by NWS Lake Charles LA",
-                "description": "...The Flood Warning continues for the following rivers in Texas...\n\nNeches River at Neches River Saltwater Barrier affecting Hardin,\nJefferson, Orange and Jasper Counties.\n\n...The Flood Warning is extended for the following rivers in Texas...\n\nVillage Creek Near Kountze affecting Hardin County.\n\nPine Island Bayou Near Sour Lake affecting Hardin and Jefferson\nCounties.\n\nFor the Neches River...including Town Bluff, Evadale, Neches River\nSaltwater Barrier...Minor flooding is forecast.\nFor the Village Creek...including Kountze...Moderate flooding is\nforecast.\nFor the Pine Island Bayou...including Sour Lake...Minor flooding is\nforecast.\n\n* WHAT...Minor flooding is forecast.\n\n* WHERE...Pine Island Bayou near Sour Lake.\n\n* WHEN...From Saturday morning to Monday morning.\n\n* IMPACTS...At 25.0 feet, Water inundates roads in lowland areas near\nthe river. Low spots on Old Sour Lake Road are under water.\n\n* ADDITIONAL DETAILS...\n- At 10:45 AM CDT Friday the stage was 19.0 feet.\n- Bankfull stage is 22.0 feet.\n- Forecast...The river is expected to rise above flood stage\ntomorrow morning to a crest of 25.8 feet early Sunday morning. It\nwill then fall below flood stage Sunday evening.\n- Flood stage is 25.0 feet.\n- Flood History...This crest compares to a previous crest of 25.7\nfeet on 10/02/2021.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued this evening at 1130 PM CDT.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSLCH"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS84 KLCH 041626"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD WARNING NOW IN EFFECT FROM SATURDAY MORNING TO MONDAY MORNING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.EXT.KLCH.FL.W.0038.260905T1312Z-260907T1200Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-07T07:00:00-05:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f491253129c77e8ecdc143123a723c5fc693869c.002.1,2026-09-03T13:59:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1ec16fd98fc8afcc468c17295165ecd999e06bc7.002.1,2026-09-03T20:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6fe70a82701616ddc2c18ab2b81e32a9117f2846.002.1,2026-09-03T07:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.62a4e9086ee83cf0ed552ce3cbe8bf1d40470cb0.002.1,2026-09-03T09:10:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.b34277fd7f8320a853a0cb15595502e31218e04c.002.1,2026-09-02T14:06:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fd2372f1ad6c2297067367b11628d0fc16914c0a.002.1,2026-09-02T20:00:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9cd612dfd4b822c978327e2c4b9355a79fe132c1.003.1,2026-09-02T11:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa16a1b5a4b3fee862a51ec3933b69c79a66610b.003.1,2026-09-02T07:53:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "FLS"
-                    ],
-                    "NationalWeatherService": [
-                        "FLW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.002.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -94.04,
-                            30.33
-                        ],
-                        [
-                            -94.02,
-                            30.18
-                        ],
-                        [
-                            -93.78,
-                            30.04
-                        ],
-                        [
-                            -93.87,
-                            29.92
-                        ],
-                        [
-                            -94.06,
-                            29.98
-                        ],
-                        [
-                            -94.13,
-                            30.08
-                        ],
-                        [
-                            -94.21,
-                            30.33
-                        ],
-                        [
-                            -94.04,
-                            30.33
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.002.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.fe9e1588041e372f6b92a4618a3575498da272e0.002.1",
-                "areaDesc": "Hardin, TX; Jasper, TX; Jefferson, TX; Orange, TX",
-                "geocode": {
-                    "SAME": [
-                        "048199",
-                        "048241",
-                        "048245",
-                        "048361"
-                    ],
-                    "UGC": [
-                        "TXC199",
-                        "TXC241",
-                        "TXC245",
-                        "TXC361"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/TXC199",
-                    "https://api.weather.gov/zones/county/TXC241",
-                    "https://api.weather.gov/zones/county/TXC245",
-                    "https://api.weather.gov/zones/county/TXC361"
-                ],
-                "references": [],
-                "sent": "2026-09-04T11:26:00-05:00",
-                "effective": "2026-09-04T11:26:00-05:00",
-                "onset": "2026-09-04T11:26:00-05:00",
-                "expires": "2026-09-04T23:30:00-05:00",
-                "ends": "2026-09-09T23:00:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Flood Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Lake Charles LA",
-                "headline": "Flood Warning issued September 4 at 11:26AM CDT until September 9 at 11:00PM CDT by NWS Lake Charles LA",
-                "description": "...The Flood Warning continues for the following rivers in Texas...\n\nNeches River at Neches River Saltwater Barrier affecting Hardin,\nJefferson, Orange and Jasper Counties.\n\n...The Flood Warning is extended for the following rivers in Texas...\n\nVillage Creek Near Kountze affecting Hardin County.\n\nPine Island Bayou Near Sour Lake affecting Hardin and Jefferson\nCounties.\n\nFor the Neches River...including Town Bluff, Evadale, Neches River\nSaltwater Barrier...Minor flooding is forecast.\nFor the Village Creek...including Kountze...Moderate flooding is\nforecast.\nFor the Pine Island Bayou...including Sour Lake...Minor flooding is\nforecast.\n\n* WHAT...Minor flooding is forecast.\n\n* WHERE...Neches River at Neches River Saltwater Barrier.\n\n* WHEN...Until Wednesday evening.\n\n* IMPACTS...At 5.0 feet, Water is about two feet over portions of\nFour Oaks Ranch Road.\n\n* ADDITIONAL DETAILS...\n- At 10:15 AM CDT Friday the stage was 2.8 feet.\n- Forecast...The river is expected to rise above flood stage late\ntomorrow morning to a crest of 5.2 feet Monday morning. It will\nthen fall below flood stage late Tuesday evening.\n- Flood stage is 4.0 feet.\n- Flood History...This crest compares to a previous crest of 5.8\nfeet on 02/14/2005.\n- http://www.weather.gov/safety/flood",
-                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.\n\nAdditional information is available at www.weather.gov.\n\nThe next statement will be issued this evening at 1130 PM CDT.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FLSLCH"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS84 KLCH 041626"
-                    ],
-                    "NWSheadline": [
-                        "FLOOD WARNING NOW IN EFFECT UNTIL WEDNESDAY EVENING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.EXT.KLCH.FL.W.0036.000000T0000Z-260910T0400Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-09T23:00:00-05:00"
-                    ],
-                    "expiredReferences": [
-                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.f491253129c77e8ecdc143123a723c5fc693869c.003.1,2026-09-03T13:59:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.1ec16fd98fc8afcc468c17295165ecd999e06bc7.003.1,2026-09-03T20:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.6fe70a82701616ddc2c18ab2b81e32a9117f2846.003.1,2026-09-03T07:58:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.62a4e9086ee83cf0ed552ce3cbe8bf1d40470cb0.003.1,2026-09-03T09:10:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.b34277fd7f8320a853a0cb15595502e31218e04c.003.1,2026-09-02T14:06:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fd2372f1ad6c2297067367b11628d0fc16914c0a.003.1,2026-09-02T20:00:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.9cd612dfd4b822c978327e2c4b9355a79fe132c1.001.1,2026-09-02T11:22:00-05:00 w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.fa16a1b5a4b3fee862a51ec3933b69c79a66610b.001.1,2026-09-02T07:53:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "FLS"
-                    ],
-                    "NationalWeatherService": [
-                        "FLW"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2fb2073116283b5c4a747c8f1914aa061d8c4ed7.001.1",
             "type": "Feature",
             "geometry": null,
@@ -17227,82 +17196,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ea7bf48a0af1110ca5bd62be0576bdbb5de1cd37.023.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ea7bf48a0af1110ca5bd62be0576bdbb5de1cd37.023.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.ea7bf48a0af1110ca5bd62be0576bdbb5de1cd37.023.1",
-                "areaDesc": "Cook Inlet Kalgin Island to Point Bede",
-                "geocode": {
-                    "SAME": [
-                        "058742"
-                    ],
-                    "UGC": [
-                        "PKZ742"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ742"
-                ],
-                "references": [],
-                "sent": "2026-09-04T03:30:00-08:00",
-                "effective": "2026-09-04T03:30:00-08:00",
-                "onset": "2026-09-04T17:00:00-08:00",
-                "expires": "2026-09-04T16:30:00-08:00",
-                "ends": "2026-09-05T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued September 4 at 3:30AM AKDT until September 5 at 5:00AM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for the Northern Gulf of Alaska Coast\nup to 100 nm out including Kodiak Island and Cook Inlet.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...S wind 20 kt. Seas 4 ft. Patchy fog.\n.TONIGHT...S wind 25 kt. Seas 5 ft. Patchy fog. Rain.\n.SAT...SW wind 20 kt. Seas 5 ft.\n.SAT NIGHT...S wind 20 kt. Seas 4 ft.\n.SUN...N wind 10 kt. Seas 3 ft.\n.MON...SE wind 15 kt. Seas 3 ft.\n.TUE...SW wind 20 kt. Seas 5 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFAER"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK51 PAFC 041130"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY TONIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.5778.260905T0100Z-260905T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-05T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ea7bf48a0af1110ca5bd62be0576bdbb5de1cd37.019.1",
             "type": "Feature",
             "geometry": null,
@@ -17362,6 +17255,82 @@
                     ],
                     "eventEndingTime": [
                         "2026-09-05T17:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ea7bf48a0af1110ca5bd62be0576bdbb5de1cd37.023.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.ea7bf48a0af1110ca5bd62be0576bdbb5de1cd37.023.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.ea7bf48a0af1110ca5bd62be0576bdbb5de1cd37.023.1",
+                "areaDesc": "Cook Inlet Kalgin Island to Point Bede",
+                "geocode": {
+                    "SAME": [
+                        "058742"
+                    ],
+                    "UGC": [
+                        "PKZ742"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ742"
+                ],
+                "references": [],
+                "sent": "2026-09-04T03:30:00-08:00",
+                "effective": "2026-09-04T03:30:00-08:00",
+                "onset": "2026-09-04T17:00:00-08:00",
+                "expires": "2026-09-04T16:30:00-08:00",
+                "ends": "2026-09-05T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued September 4 at 3:30AM AKDT until September 5 at 5:00AM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for the Northern Gulf of Alaska Coast\nup to 100 nm out including Kodiak Island and Cook Inlet.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TODAY...S wind 20 kt. Seas 4 ft. Patchy fog.\n.TONIGHT...S wind 25 kt. Seas 5 ft. Patchy fog. Rain.\n.SAT...SW wind 20 kt. Seas 5 ft.\n.SAT NIGHT...S wind 20 kt. Seas 4 ft.\n.SUN...N wind 10 kt. Seas 3 ft.\n.MON...SE wind 15 kt. Seas 3 ft.\n.TUE...SW wind 20 kt. Seas 5 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFAER"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK51 PAFC 041130"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY TONIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.5778.260905T0100Z-260905T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-05T05:00:00-08:00"
                     ]
                 },
                 "scope": "Public",
@@ -20844,82 +20813,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2dedf0bb9e1b28370a92b3ef782c7be1266faac0.023.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2dedf0bb9e1b28370a92b3ef782c7be1266faac0.023.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.2dedf0bb9e1b28370a92b3ef782c7be1266faac0.023.1",
-                "areaDesc": "Cook Inlet Kalgin Island to Point Bede",
-                "geocode": {
-                    "SAME": [
-                        "058742"
-                    ],
-                    "UGC": [
-                        "PKZ742"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/PKZ742"
-                ],
-                "references": [],
-                "sent": "2026-09-03T16:10:00-08:00",
-                "effective": "2026-09-03T16:10:00-08:00",
-                "onset": "2026-09-04T17:00:00-08:00",
-                "expires": "2026-09-04T05:00:00-08:00",
-                "ends": "2026-09-05T05:00:00-08:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Minor",
-                "certainty": "Likely",
-                "urgency": "Expected",
-                "event": "Small Craft Advisory",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Anchorage AK",
-                "headline": "Small Craft Advisory issued September 3 at 4:10PM AKDT until September 5 at 5:00AM AKDT by NWS Anchorage AK",
-                "description": "Coastal Waters Forecast for the Northern Gulf of Alaska Coast\nup to 100 nm out including Kodiak Island and Cook Inlet.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...S wind 20 kt. Seas 5 ft. Patchy fog.\n.FRI...S wind 20 kt becoming E in the afternoon. Seas 5 ft\nsubsiding to 3 ft in the afternoon. Patchy fog.\n.FRI NIGHT...S wind 25 kt. Seas 6 ft. Rain.\n.SAT...SW wind 20 kt. Seas 5 ft.\n.SAT NIGHT...S wind 15 kt. Seas 3 ft.\n.SUN THROUGH MON...NE wind 15 kt. Seas 3 ft.\n.TUE...SW wind 15 kt. Seas 4 ft.",
-                "instruction": null,
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "CWFAER"
-                    ],
-                    "WMOidentifier": [
-                        "FZAK51 PAFC 040010"
-                    ],
-                    "NWSheadline": [
-                        "SMALL CRAFT ADVISORY FRIDAY NIGHT"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.PAFC.SC.Y.1619.260905T0100Z-260905T1300Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-05T05:00:00-08:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "SCY"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2dedf0bb9e1b28370a92b3ef782c7be1266faac0.015.1",
             "type": "Feature",
             "geometry": null,
@@ -20976,6 +20869,82 @@
                     ],
                     "VTEC": [
                         "/O.NEW.PAFC.SC.Y.1613.260904T1300Z-260905T1300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-05T05:00:00-08:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "SCY"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2dedf0bb9e1b28370a92b3ef782c7be1266faac0.023.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.2dedf0bb9e1b28370a92b3ef782c7be1266faac0.023.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.2dedf0bb9e1b28370a92b3ef782c7be1266faac0.023.1",
+                "areaDesc": "Cook Inlet Kalgin Island to Point Bede",
+                "geocode": {
+                    "SAME": [
+                        "058742"
+                    ],
+                    "UGC": [
+                        "PKZ742"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/PKZ742"
+                ],
+                "references": [],
+                "sent": "2026-09-03T16:10:00-08:00",
+                "effective": "2026-09-03T16:10:00-08:00",
+                "onset": "2026-09-04T17:00:00-08:00",
+                "expires": "2026-09-04T05:00:00-08:00",
+                "ends": "2026-09-05T05:00:00-08:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Likely",
+                "urgency": "Expected",
+                "event": "Small Craft Advisory",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Anchorage AK",
+                "headline": "Small Craft Advisory issued September 3 at 4:10PM AKDT until September 5 at 5:00AM AKDT by NWS Anchorage AK",
+                "description": "Coastal Waters Forecast for the Northern Gulf of Alaska Coast\nup to 100 nm out including Kodiak Island and Cook Inlet.\n\nWind forecasts reflect the predominant speed and direction\nexpected. Sea forecasts represent an average of the highest\none-third of the combined wind wave and swell height.\n\n.TONIGHT...S wind 20 kt. Seas 5 ft. Patchy fog.\n.FRI...S wind 20 kt becoming E in the afternoon. Seas 5 ft\nsubsiding to 3 ft in the afternoon. Patchy fog.\n.FRI NIGHT...S wind 25 kt. Seas 6 ft. Rain.\n.SAT...SW wind 20 kt. Seas 5 ft.\n.SAT NIGHT...S wind 15 kt. Seas 3 ft.\n.SUN THROUGH MON...NE wind 15 kt. Seas 3 ft.\n.TUE...SW wind 15 kt. Seas 4 ft.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "CWFAER"
+                    ],
+                    "WMOidentifier": [
+                        "FZAK51 PAFC 040010"
+                    ],
+                    "NWSheadline": [
+                        "SMALL CRAFT ADVISORY FRIDAY NIGHT"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.PAFC.SC.Y.1619.260905T0100Z-260905T1300Z/"
                     ],
                     "eventEndingTime": [
                         "2026-09-05T05:00:00-08:00"
@@ -21340,5 +21309,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-09-05T01:01:55+00:00"
+    "updated": "2026-09-05T01:13:29+00:00"
 }
