@@ -10,56 +10,86 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-20936",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d70ef7650b421a01b7d3e4b62850f30f593dbd26.001.1",
             "type": "Feature",
             "geometry": null,
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-20936",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d70ef7650b421a01b7d3e4b62850f30f593dbd26.001.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-20936",
-                "areaDesc": "Montgomery",
+                "id": "urn:oid:2.49.0.1.840.0.d70ef7650b421a01b7d3e4b62850f30f593dbd26.001.1",
+                "areaDesc": "Esmeralda and Nye County Deserts/CNC Dispatch; Nye County Deserts/Las Vegas Dispatch; Sheep Range; Spring Mountains; Clark and SW Lincoln County Deserts/Las Vegas Dispatch",
                 "geocode": {
                     "SAME": [
-                        "024031"
+                        "032009",
+                        "032023",
+                        "032003",
+                        "032017"
                     ],
                     "UGC": [
-                        "MDC031"
+                        "NVZ460",
+                        "NVZ462",
+                        "NVZ463",
+                        "NVZ464",
+                        "NVZ465"
                     ]
                 },
                 "affectedZones": [
-                    "https://api.weather.gov/zones/county/MDC031"
+                    "https://api.weather.gov/zones/fire/NVZ460",
+                    "https://api.weather.gov/zones/fire/NVZ462",
+                    "https://api.weather.gov/zones/fire/NVZ463",
+                    "https://api.weather.gov/zones/fire/NVZ464",
+                    "https://api.weather.gov/zones/fire/NVZ465"
                 ],
-                "references": [],
-                "sent": "2026-09-11T10:03:09+00:00",
-                "effective": "2026-09-11T10:03:09+00:00",
-                "onset": null,
-                "expires": "2026-09-11T10:13:09+00:00",
-                "ends": null,
-                "status": "Test",
-                "messageType": "Alert",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.06638f16832f05a16a3ae1e5fc01686775eefc0c.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.06638f16832f05a16a3ae1e5fc01686775eefc0c.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-10T19:14:00-07:00"
+                    }
+                ],
+                "sent": "2026-09-11T03:03:00-07:00",
+                "effective": "2026-09-11T03:03:00-07:00",
+                "onset": "2026-09-12T11:00:00-07:00",
+                "expires": "2026-09-11T15:00:00-07:00",
+                "ends": "2026-09-13T00:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Update",
                 "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Test Message",
+                "severity": "Severe",
+                "certainty": "Possible",
+                "urgency": "Future",
+                "event": "Fire Weather Watch",
                 "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS",
-                "headline": null,
-                "description": "Monitoring message only. Please disregard.",
-                "instruction": "Monitoring message only. Please disregard.",
-                "response": "None",
-                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "senderName": "NWS Las Vegas NV",
+                "headline": "Fire Weather Watch issued September 11 at 3:03AM PDT until September 13 at 12:00AM PDT by NWS Las Vegas NV",
+                "description": "...FIRE WEATHER WATCH REMAINS IN EFFECT FROM SATURDAY MORNING THROUGH\nSATURDAY EVENING DUE TO WIND AND LOW RELATIVE HUMIDITY FOR ESMERALDA\nAND NYE COUNTY DESERTS/CNC DISPATCH, NYE COUNTY DESERTS/LAS VEGAS\nDISPATCH, SHEEP RANGE, SPRING MOUNTAINS, AND CLARK AND SW LINCOLN\nCOUNTY DESERTS/LAS VEGAS DISPATCH...\n\n* AFFECTED AREA...In Nevada, Fire Weather Zones 460, 462, 463, 464,\nand 465.\n\n* TIMING...From Saturday morning through Saturday evening.\n\n* WINDS...South winds 15 to 25 mph with gusts up to 35 mph.\n\n* RELATIVE HUMIDITY...Relative Humidity between 5 to 20 percent.\n\n* IMPACTS...Any fires that develop will spread rapidly. Outdoor\nburning is not recommended.",
+                "instruction": "Please advise the appropriate officials or fire crews in the field of\nthis Fire Weather Watch.\n\nFollow all fire restrictions. Avoid activities that could cause\nsparks.",
+                "response": "Prepare",
+                "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "KEPWBC"
+                        "RFWVEF"
                     ],
                     "WMOidentifier": [
-                        "NZUS91 KWBC 111003"
+                        "WWUS85 KVEF 111003"
+                    ],
+                    "NWSheadline": [
+                        "FIRE WEATHER WATCH REMAINS IN EFFECT FROM SATURDAY MORNING THROUGH SATURDAY EVENING"
                     ],
                     "BLOCKCHANNEL": [
-                        "CMAS",
                         "EAS",
-                        "NWEM"
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KVEF.FW.A.0006.260912T1800Z-260913T0700Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-13T00:00:00-07:00"
+                    ],
+                    "expiredReferences": [
+                        "w-nws.webmaster@noaa.gov,urn:oid:2.49.0.1.840.0.5eb36a66d309f930de103e42b713af658cad7d2e.001.1,2026-09-10T10:52:00-07:00"
                     ]
                 },
                 "scope": "Public",
@@ -71,7 +101,7 @@
                         "NWS"
                     ],
                     "NationalWeatherService": [
-                        "TST"
+                        "FWA"
                     ]
                 }
             }
@@ -8771,100 +8801,6 @@
                     ],
                     "NationalWeatherService": [
                         "SPS"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.06638f16832f05a16a3ae1e5fc01686775eefc0c.001.1",
-            "type": "Feature",
-            "geometry": null,
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.06638f16832f05a16a3ae1e5fc01686775eefc0c.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.06638f16832f05a16a3ae1e5fc01686775eefc0c.001.1",
-                "areaDesc": "Esmeralda and Nye County Deserts/CNC Dispatch; Nye County Deserts/Las Vegas Dispatch; Sheep Range; Spring Mountains; Clark and SW Lincoln County Deserts/Las Vegas Dispatch",
-                "geocode": {
-                    "SAME": [
-                        "032009",
-                        "032023",
-                        "032003",
-                        "032017"
-                    ],
-                    "UGC": [
-                        "NVZ460",
-                        "NVZ462",
-                        "NVZ463",
-                        "NVZ464",
-                        "NVZ465"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/fire/NVZ460",
-                    "https://api.weather.gov/zones/fire/NVZ462",
-                    "https://api.weather.gov/zones/fire/NVZ463",
-                    "https://api.weather.gov/zones/fire/NVZ464",
-                    "https://api.weather.gov/zones/fire/NVZ465"
-                ],
-                "references": [
-                    {
-                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.5eb36a66d309f930de103e42b713af658cad7d2e.001.1",
-                        "identifier": "urn:oid:2.49.0.1.840.0.5eb36a66d309f930de103e42b713af658cad7d2e.001.1",
-                        "sender": "w-nws.webmaster@noaa.gov",
-                        "sent": "2026-09-10T10:52:00-07:00"
-                    }
-                ],
-                "sent": "2026-09-10T19:14:00-07:00",
-                "effective": "2026-09-10T19:14:00-07:00",
-                "onset": "2026-09-12T11:00:00-07:00",
-                "expires": "2026-09-11T03:15:00-07:00",
-                "ends": "2026-09-13T00:00:00-07:00",
-                "status": "Actual",
-                "messageType": "Update",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Possible",
-                "urgency": "Future",
-                "event": "Fire Weather Watch",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Las Vegas NV",
-                "headline": "Fire Weather Watch issued September 10 at 7:14PM PDT until September 13 at 12:00AM PDT by NWS Las Vegas NV",
-                "description": "...FIRE WEATHER WATCH REMAINS IN EFFECT FROM SATURDAY MORNING THROUGH\nSATURDAY EVENING DUE TO WIND AND LOW RELATIVE HUMIDITY FOR ESMERALDA\nAND NYE COUNTY DESERTS/CNC DISPATCH, NYE COUNTY DESERTS/LAS VEGAS\nDISPATCH, SHEEP RANGE, SPRING MOUNTAINS, AND CLARK AND SW LINCOLN\nCOUNTY DESERTS/LAS VEGAS DISPATCH...\n\n* AFFECTED AREA...In Nevada, Fire Weather Zones 460, 462, 463, 464,\nand 465.\n\n* TIMING...From Saturday morning through Saturday evening.\n\n* WINDS...South winds 15 to 25 mph with gusts up to 35 mph.\n\n* RELATIVE HUMIDITY...Relative Humidity between 5 to 20 percent.\n\n* IMPACTS...Any fires that develop will spread rapidly. Outdoor\nburning is not recommended.",
-                "instruction": "Please advise the appropriate officials or fire crews in the field of\nthis Fire Weather Watch.\n\nFollow all fire restrictions. Avoid activities that could cause\nsparks.",
-                "response": "Prepare",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "RFWVEF"
-                    ],
-                    "WMOidentifier": [
-                        "WWUS85 KVEF 110214"
-                    ],
-                    "NWSheadline": [
-                        "FIRE WEATHER WATCH REMAINS IN EFFECT FROM SATURDAY MORNING THROUGH SATURDAY EVENING"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "VTEC": [
-                        "/O.CON.KVEF.FW.A.0006.260912T1800Z-260913T0700Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-13T00:00:00-07:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "NWS"
-                    ],
-                    "NationalWeatherService": [
-                        "FWA"
                     ]
                 }
             }
@@ -20309,5 +20245,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-09-11T10:03:20+00:00"
+    "updated": "2026-09-11T10:13:23+00:00"
 }
