@@ -10,56 +10,417 @@
     "type": "FeatureCollection",
     "features": [
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-59242",
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.aaf7884605350d593aaad80f8c6317a9a38486d1.002.1",
             "type": "Feature",
-            "geometry": null,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -96.69,
+                            44.54
+                        ],
+                        [
+                            -96.45,
+                            44.54
+                        ],
+                        [
+                            -96.45,
+                            44.63
+                        ],
+                        [
+                            -96.19,
+                            44.63
+                        ],
+                        [
+                            -96.08,
+                            44.52
+                        ],
+                        [
+                            -96.08,
+                            44.47
+                        ],
+                        [
+                            -96.61,
+                            44.25
+                        ],
+                        [
+                            -96.86,
+                            44.44
+                        ],
+                        [
+                            -96.69,
+                            44.54
+                        ]
+                    ]
+                ]
+            },
             "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0-KEEPALIVE-59242",
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.aaf7884605350d593aaad80f8c6317a9a38486d1.002.1",
                 "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0-KEEPALIVE-59242",
-                "areaDesc": "Montgomery",
+                "id": "urn:oid:2.49.0.1.840.0.aaf7884605350d593aaad80f8c6317a9a38486d1.002.1",
+                "areaDesc": "Lincoln, MN; Brookings, SD",
                 "geocode": {
                     "SAME": [
-                        "024031"
+                        "027081",
+                        "046011"
                     ],
                     "UGC": [
-                        "MDC031"
+                        "MNC081",
+                        "SDC011"
                     ]
                 },
                 "affectedZones": [
-                    "https://api.weather.gov/zones/county/MDC031"
+                    "https://api.weather.gov/zones/county/MNC081",
+                    "https://api.weather.gov/zones/county/SDC011"
                 ],
-                "references": [],
-                "sent": "2026-09-12T00:03:09+00:00",
-                "effective": "2026-09-12T00:03:09+00:00",
-                "onset": null,
-                "expires": "2026-09-12T00:13:09+00:00",
-                "ends": null,
-                "status": "Test",
-                "messageType": "Alert",
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.61292845487a3ba1102d7c9d67f59445500bfbd3.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.61292845487a3ba1102d7c9d67f59445500bfbd3.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-11T18:54:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-11T19:10:00-05:00",
+                "effective": "2026-09-11T19:10:00-05:00",
+                "onset": "2026-09-11T19:10:00-05:00",
+                "expires": "2026-09-11T19:45:00-05:00",
+                "ends": "2026-09-11T19:45:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
                 "category": "Met",
-                "severity": "Unknown",
-                "certainty": "Unknown",
-                "urgency": "Unknown",
-                "event": "Test Message",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
                 "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS",
-                "headline": null,
-                "description": "Monitoring message only. Please disregard.",
-                "instruction": "Monitoring message only. Please disregard.",
-                "response": "None",
-                "note": "This is only a test for monitoring of vital dissemination systems.",
+                "senderName": "NWS Sioux Falls SD",
+                "headline": "Severe Thunderstorm Warning issued September 11 at 7:10PM CDT until September 11 at 7:45PM CDT by NWS Sioux Falls SD",
+                "description": "At 710 PM CDT, a severe thunderstorm was located near White, or 11\nmiles northeast of Brookings, moving northeast at 50 mph.\n\nHAZARD...60 mph wind gusts and half dollar size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage to\nroofs, siding, and trees.\n\nThis severe thunderstorm will be near...\nWhite around 710 PM CDT.\nHendricks around 725 PM CDT.\nIvanhoe around 730 PM CDT.\n\nOther locations impacted by the severe thunderstorm include Bushnell.",
+                "instruction": "Seek shelter inside a well-built structure and stay away from\nwindows. This storm is capable of producing damaging winds and large\nhail.",
+                "response": "Shelter",
+                "note": null,
                 "parameters": {
                     "AWIPSidentifier": [
-                        "KEPWBC"
+                        "SVSFSD"
                     ],
                     "WMOidentifier": [
-                        "NZUS91 KWBC 120003"
+                        "WWUS53 KFSD 120010"
+                    ],
+                    "NWSheadline": [
+                        "SEVERE THUNDERSTORM WARNING REMAINS IN EFFECT UNTIL 745 PM CDT FOR NORTHERN LINCOLN AND EASTERN BROOKINGS COUNTIES"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-11T23:54:00-00:00...storm...240DEG...44KT...44.3,-96.83"
+                    ],
+                    "windThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxWindGust": [
+                        "60 MPH"
+                    ],
+                    "hailThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxHailSize": [
+                        "1.25"
                     ],
                     "BLOCKCHANNEL": [
-                        "CMAS",
                         "EAS",
-                        "NWEM"
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.CON.KFSD.SV.W.0288.000000T0000Z-260912T0045Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-11T19:45:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVS"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f5e8dae764f744a5358e49c48d61c181c1d1d322.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -94.66,
+                            47.13
+                        ],
+                        [
+                            -93.79,
+                            47.29
+                        ],
+                        [
+                            -93.78,
+                            47.29
+                        ],
+                        [
+                            -93.78,
+                            47.26
+                        ],
+                        [
+                            -93.8,
+                            47.26
+                        ],
+                        [
+                            -93.81,
+                            47.24
+                        ],
+                        [
+                            -93.8,
+                            47.22
+                        ],
+                        [
+                            -93.77,
+                            47.21
+                        ],
+                        [
+                            -93.78,
+                            46.91
+                        ],
+                        [
+                            -94.66,
+                            46.9
+                        ],
+                        [
+                            -94.66,
+                            47.13
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.f5e8dae764f744a5358e49c48d61c181c1d1d322.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.f5e8dae764f744a5358e49c48d61c181c1d1d322.001.1",
+                "areaDesc": "Cass, MN",
+                "geocode": {
+                    "SAME": [
+                        "027021"
+                    ],
+                    "UGC": [
+                        "MNC021"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MNC021"
+                ],
+                "references": [],
+                "sent": "2026-09-11T19:10:00-05:00",
+                "effective": "2026-09-11T19:10:00-05:00",
+                "onset": "2026-09-11T19:10:00-05:00",
+                "expires": "2026-09-11T20:15:00-05:00",
+                "ends": "2026-09-11T20:15:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Duluth MN",
+                "headline": "Severe Thunderstorm Warning issued September 11 at 7:10PM CDT until September 11 at 8:15PM CDT by NWS Duluth MN",
+                "description": "SVRDLH\n\nThe National Weather Service in Duluth MN has issued a\n\n* Severe Thunderstorm Warning for...\nNorthern Cass County in north central Minnesota...\n\n* Until 815 PM CDT.\n\n* At 710 PM CDT, a severe thunderstorm was located near Walker,\nmoving east at 25 mph.\n\nHAZARD...60 mph wind gusts and half dollar size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage\nto roofs, siding, and trees.\n\n* This severe thunderstorm will be near...\nLeech Lake around 715 PM CDT.\n\nOther locations in the path of this severe thunderstorm include\nRemer.",
+                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
+                "response": "Shelter",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SVRDLH"
+                    ],
+                    "WMOidentifier": [
+                        "WUUS53 KDLH 120010"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:10:00-00:00...storm...262DEG...22KT...47.03,-94.5"
+                    ],
+                    "windThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxWindGust": [
+                        "60 MPH"
+                    ],
+                    "hailThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxHailSize": [
+                        "1.25"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KDLH.SV.W.0123.260912T0010Z-260912T0115Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-11T20:15:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVR"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.af192da7623d9ced5a631585b0fe6e65a8768ec8.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -88.54,
+                            48.16
+                        ],
+                        [
+                            -88.49,
+                            48.17
+                        ],
+                        [
+                            -88.5,
+                            48.13
+                        ],
+                        [
+                            -88.52,
+                            48.14
+                        ],
+                        [
+                            -88.55,
+                            48.1
+                        ],
+                        [
+                            -88.61,
+                            47.62
+                        ],
+                        [
+                            -89.12,
+                            47.09
+                        ],
+                        [
+                            -90.22,
+                            46.94
+                        ],
+                        [
+                            -89.83,
+                            47.4
+                        ],
+                        [
+                            -89.6,
+                            47.88
+                        ],
+                        [
+                            -89.55,
+                            47.88
+                        ],
+                        [
+                            -89.46,
+                            47.93
+                        ],
+                        [
+                            -89.41,
+                            47.99
+                        ],
+                        [
+                            -89.33,
+                            47.97
+                        ],
+                        [
+                            -88.71,
+                            48.23
+                        ],
+                        [
+                            -88.53,
+                            48.27
+                        ],
+                        [
+                            -88.54,
+                            48.16
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.af192da7623d9ced5a631585b0fe6e65a8768ec8.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.af192da7623d9ced5a631585b0fe6e65a8768ec8.001.1",
+                "areaDesc": "Lake Superior from Saxon Harbor WI to Upper Entrance to Portage Canal MI 5NM off shore to the US/Canadian border including Isle Royale National Park",
+                "geocode": {
+                    "SAME": [
+                        "091263"
+                    ],
+                    "UGC": [
+                        "LSZ263"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/LSZ263"
+                ],
+                "references": [],
+                "sent": "2026-09-11T20:08:00-04:00",
+                "effective": "2026-09-11T20:08:00-04:00",
+                "onset": "2026-09-11T20:08:00-04:00",
+                "expires": "2026-09-11T21:00:00-04:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Minor",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Marine Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Marquette MI",
+                "headline": "Marine Weather Statement issued September 11 at 8:08PM EDT by NWS Marquette MI",
+                "description": "A Marine Weather Statement has been issued for the following areas...\nLake Superior from Saxon Harbor WI to Upper Entrance to Portage\nCanal MI 5NM off shore to the US/Canadian border including Isle\nRoyale National Park...\n\nAt 807 PM EDT, Doppler radar indicated strong thunderstorms, capable\nof producing winds to around 30 knots. These thunderstorms were\nlocated along a line extending from near Pigeon Point to 11 nm\nnortheast of The Western Lake Superior Buoy to 28 nm east of Oak\nIsland, moving east at 40 knots.",
+                "instruction": "Mariners can expect gusty winds to around 30 knots, locally higher\nwaves, and lightning strikes. Boaters should seek safe harbor\nimmediately until these storms pass.",
+                "response": "Monitor",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWSMQT"
+                    ],
+                    "WMOidentifier": [
+                        "FZUS73 KMQT 120008"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
                     ]
                 },
                 "scope": "Public",
@@ -71,7 +432,1074 @@
                         "NWS"
                     ],
                     "NationalWeatherService": [
-                        "TST"
+                        "MWS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7672ebb41cccb9b352d8beb197fadde8df2d6f83.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -78.55,
+                            35.99
+                        ],
+                        [
+                            -78.33,
+                            35.88
+                        ],
+                        [
+                            -78.53,
+                            35.7
+                        ],
+                        [
+                            -78.96,
+                            35.7
+                        ],
+                        [
+                            -78.91,
+                            35.84
+                        ],
+                        [
+                            -78.79,
+                            36
+                        ],
+                        [
+                            -78.55,
+                            35.99
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.7672ebb41cccb9b352d8beb197fadde8df2d6f83.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.7672ebb41cccb9b352d8beb197fadde8df2d6f83.001.1",
+                "areaDesc": "Durham; Wake",
+                "geocode": {
+                    "SAME": [
+                        "037063",
+                        "037183"
+                    ],
+                    "UGC": [
+                        "NCZ025",
+                        "NCZ041"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/NCZ025",
+                    "https://api.weather.gov/zones/forecast/NCZ041"
+                ],
+                "references": [],
+                "sent": "2026-09-11T20:06:00-04:00",
+                "effective": "2026-09-11T20:06:00-04:00",
+                "onset": "2026-09-11T20:06:00-04:00",
+                "expires": "2026-09-11T20:30:00-04:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Raleigh NC",
+                "headline": "Special Weather Statement issued September 11 at 8:06PM EDT by NWS Raleigh NC",
+                "description": "At 805 PM EDT, Doppler radar was tracking a strong thunderstorm near\nRDU International, or near Cary, moving northeast at 10 mph. A\nsecond strong storm was located just north of Knightdale, also\ndrifting northeast near 10 mph.\n\nHAZARD...Wind gusts in excess of 30 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nRaleigh, Cary, Wake Forest, Garner, RDU International, Apex,\nMorrisville, Knightdale, Rolesville, and William B Umstead State\nPark.\n\nThis includes the following highways...\nInterstate 40 between Mile Markers 280 and 305.\nInterstate 440 between Mile Markers 1 and 16.\nInterstate 540 between Mile Markers 0 and 24.\nUS 1 between Mile Markers 94 and 101.\nthe Durham Freeway between Mile Markers 2 and 4.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSRAH"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS82 KRAH 120006"
+                    ],
+                    "NWSheadline": [
+                        "A STRONG THUNDERSTORM WILL IMPACT CENTRAL WAKE AND SOUTHEASTERN DURHAM COUNTIES THROUGH 830 PM EDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:05:00-00:00...storm...215DEG...7KT...35.82,-78.77"
+                    ],
+                    "maxWindGust": [
+                        "30 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.81d6cb413993352ac3ee1563db9cc12181ddbcc1.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -100.45,
+                            31.55
+                        ],
+                        [
+                            -100.32,
+                            31.56
+                        ],
+                        [
+                            -100.26,
+                            31.39
+                        ],
+                        [
+                            -100.45,
+                            31.37
+                        ],
+                        [
+                            -100.45,
+                            31.55
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.81d6cb413993352ac3ee1563db9cc12181ddbcc1.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.81d6cb413993352ac3ee1563db9cc12181ddbcc1.001.1",
+                "areaDesc": "Tom Green",
+                "geocode": {
+                    "SAME": [
+                        "048451"
+                    ],
+                    "UGC": [
+                        "TXZ072"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/TXZ072"
+                ],
+                "references": [],
+                "sent": "2026-09-11T19:06:00-05:00",
+                "effective": "2026-09-11T19:06:00-05:00",
+                "onset": "2026-09-11T19:06:00-05:00",
+                "expires": "2026-09-11T19:45:00-05:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS San Angelo TX",
+                "headline": "Special Weather Statement issued September 11 at 7:06PM CDT by NWS San Angelo TX",
+                "description": "At 706 PM CDT, Doppler radar was tracking a strong thunderstorm over\nnortheastern San Angelo, moving south at 15 mph.\n\nHAZARD...Wind gusts up to 50 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nSan Angelo, Goodfellow Air Force Base, and Harriet.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.\n|* Discussion goes here *|",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSSJT"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS84 KSJT 120006"
+                    ],
+                    "NWSheadline": [
+                        "A STRONG THUNDERSTORM WILL IMPACT EAST CENTRAL TOM GREEN COUNTY THROUGH 745 PM CDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:06:00-00:00...storm...349DEG...13KT...31.49,-100.39"
+                    ],
+                    "maxWindGust": [
+                        "50 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b252674674bae7b44b0af7426040e72045ea7ff6.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -105.93,
+                            41.21
+                        ],
+                        [
+                            -106.02,
+                            41.41
+                        ],
+                        [
+                            -105.37,
+                            41.7
+                        ],
+                        [
+                            -105.26,
+                            41.19
+                        ],
+                        [
+                            -105.93,
+                            41.21
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b252674674bae7b44b0af7426040e72045ea7ff6.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.b252674674bae7b44b0af7426040e72045ea7ff6.001.1",
+                "areaDesc": "Central Laramie Range and Southwest Platte County; North Snowy Range Foothills; Laramie Valley; South Laramie Range",
+                "geocode": {
+                    "SAME": [
+                        "056001",
+                        "056021",
+                        "056031",
+                        "056007"
+                    ],
+                    "UGC": [
+                        "WYZ106",
+                        "WYZ110",
+                        "WYZ115",
+                        "WYZ116"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/WYZ106",
+                    "https://api.weather.gov/zones/forecast/WYZ110",
+                    "https://api.weather.gov/zones/forecast/WYZ115",
+                    "https://api.weather.gov/zones/forecast/WYZ116"
+                ],
+                "references": [],
+                "sent": "2026-09-11T18:06:00-06:00",
+                "effective": "2026-09-11T18:06:00-06:00",
+                "onset": "2026-09-11T18:06:00-06:00",
+                "expires": "2026-09-11T18:45:00-06:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Cheyenne WY",
+                "headline": "Special Weather Statement issued September 11 at 6:06PM MDT by NWS Cheyenne WY",
+                "description": "At 606 PM MDT, Doppler radar was tracking gusty showers 7 miles\nnorthwest of Laramie Regional Airport, or 11 miles west of Laramie,\nmoving east at 35 mph.\n\nHAZARD...Wind gusts up to 50 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nLaramie, West Laramie, Antelope Buttes, Nine Mile, Rogers Canyon, Tie\nCity Campground, University Of Wyoming War Memorial Stadium, Twin\nButtes Lake, North Crow Campground, Baldy Peak, Laramie Regional\nAirport, Lake Hattie Reservoir, Wild Horse Ranch, Yellow Pine\nCampground, Curt Gowdy State Park, Paddocks, Pope Springs, and Albany\nCounty Fairgrounds.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSCYS"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS85 KCYS 120006"
+                    ],
+                    "NWSheadline": [
+                        "GUSTY SHOWERS WILL IMPACT SOUTHEASTERN ALBANY AND WEST CENTRAL LARAMIE COUNTIES THROUGH 645 PM MDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:06:00-00:00...storm...254DEG...30KT...41.36,-105.8"
+                    ],
+                    "maxWindGust": [
+                        "50 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b2da60b26ec42c9690af09b6ae5cd840383477e1.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -89.84,
+                            34.56
+                        ],
+                        [
+                            -89.65,
+                            34.73
+                        ],
+                        [
+                            -89.39,
+                            35.12
+                        ],
+                        [
+                            -89.03,
+                            35.18
+                        ],
+                        [
+                            -89.21,
+                            34.82
+                        ],
+                        [
+                            -89.45,
+                            34.55
+                        ],
+                        [
+                            -89.84,
+                            34.56
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.b2da60b26ec42c9690af09b6ae5cd840383477e1.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.b2da60b26ec42c9690af09b6ae5cd840383477e1.001.1",
+                "areaDesc": "Marshall; Benton; Tate; Fayette; Hardeman",
+                "geocode": {
+                    "SAME": [
+                        "028093",
+                        "028009",
+                        "028137",
+                        "047047",
+                        "047069"
+                    ],
+                    "UGC": [
+                        "MSZ002",
+                        "MSZ003",
+                        "MSZ008",
+                        "TNZ089",
+                        "TNZ090"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/MSZ002",
+                    "https://api.weather.gov/zones/forecast/MSZ003",
+                    "https://api.weather.gov/zones/forecast/MSZ008",
+                    "https://api.weather.gov/zones/forecast/TNZ089",
+                    "https://api.weather.gov/zones/forecast/TNZ090"
+                ],
+                "references": [],
+                "sent": "2026-09-11T19:06:00-05:00",
+                "effective": "2026-09-11T19:06:00-05:00",
+                "onset": "2026-09-11T19:06:00-05:00",
+                "expires": "2026-09-11T19:30:00-05:00",
+                "ends": null,
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Moderate",
+                "certainty": "Observed",
+                "urgency": "Expected",
+                "event": "Special Weather Statement",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Memphis TN",
+                "headline": "Special Weather Statement issued September 11 at 7:06PM CDT by NWS Memphis TN",
+                "description": "At 706 PM CDT, Doppler radar was tracking strong thunderstorms along\na line extending from near Lagrange to near Wall Doxey State Park to\nnear Harmontown. Movement was northeast at 20 mph.\n\nHAZARD...Wind gusts up to 40 mph.\n\nSOURCE...Radar indicated.\n\nIMPACT...Gusty winds could knock down tree limbs and blow around\nunsecured objects.\n\nLocations impacted include...\nHolly Springs, Wall Doxey State Park, Lamar, Snow Lake Shores,\nLagrange, Michigan City, Laws Hill, Slayden, Marianna, Moscow, Grand\nJunction, La Grange, Hickory Valley, Malone, Waterford, Aiken,\nHigdon, Tyro, Gilton, and Chulahoma.\n\nThis includes Interstate 22 in Mississipppi between mile markers 22\nand 39.",
+                "instruction": "If outdoors, consider seeking shelter inside a building.\n\nTorrential rainfall is also occurring with these storms and may lead\nto localized flooding. Do not drive your vehicle through flooded\nroadways.\n\nFrequent cloud to ground lightning is occurring with these storms.\nLightning can strike 10 miles away from a thunderstorm. Seek a safe\nshelter inside a building or vehicle.",
+                "response": "Execute",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SPSMEG"
+                    ],
+                    "WMOidentifier": [
+                        "WWUS84 KMEG 120006"
+                    ],
+                    "NWSheadline": [
+                        "STRONG THUNDERSTORMS WILL IMPACT MARSHALL...SOUTHEASTERN TATE... NORTHWESTERN BENTON...SOUTHEASTERN FAYETTE AND SOUTHWESTERN HARDEMAN COUNTIES THROUGH 730 PM CDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:06:00-00:00...storm...246DEG...16KT...35.04,-89.26 34.7,-89.52 34.56,-89.7"
+                    ],
+                    "maxWindGust": [
+                        "40 MPH"
+                    ],
+                    "maxHailSize": [
+                        "0.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SPS"
+                    ],
+                    "NationalWeatherService": [
+                        "SPS"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.47096b1215cf41d1edff786c737526abba7b9d68.001.1",
+            "type": "Feature",
+            "geometry": null,
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.47096b1215cf41d1edff786c737526abba7b9d68.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.47096b1215cf41d1edff786c737526abba7b9d68.001.1",
+                "areaDesc": "Northern Blue Mountains of Oregon; Northwest Blue Mountains",
+                "geocode": {
+                    "SAME": [
+                        "041059",
+                        "041061",
+                        "041063",
+                        "053013",
+                        "053071"
+                    ],
+                    "UGC": [
+                        "ORZ502",
+                        "WAZ030"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/ORZ502",
+                    "https://api.weather.gov/zones/forecast/WAZ030"
+                ],
+                "references": [],
+                "sent": "2026-09-11T17:05:00-07:00",
+                "effective": "2026-09-11T17:05:00-07:00",
+                "onset": "2026-09-12T17:00:00-07:00",
+                "expires": "2026-09-13T20:00:00-07:00",
+                "ends": "2026-09-13T20:00:00-07:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Possible",
+                "urgency": "Future",
+                "event": "Flash Flood Watch",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Pendleton OR",
+                "headline": "Flash Flood Watch issued September 11 at 5:05PM PDT until September 13 at 8:00PM PDT by NWS Pendleton OR",
+                "description": "* WHAT...Flash flooding and debris flows caused by excessive rainfall\nare possible over the Paradise and Hagen burn scar.\n\n* WHERE...Portions of northeast Oregon, including the following area,\nNorthern Blue Mountains of Oregon and southeast Washington,\nincluding the following area, Northwest Blue Mountains.\n\n* WHEN...From Saturday afternoon through Sunday evening.\n\n* IMPACTS...Heavy rainfall over the Paradise and Hagen burn scar 1 to\n1.5 inches is expected during the period of the watch. Residents\nnear the Paradise and Hagan burn scar should prepare for potential\ndebris flow. Be sure to stay up to date with information from local\nauthorities. Heavy rainfall could trigger flash flooding of\nlow-lying areas and debris flows in and near recent wildfire burn\nscars.\n\n* ADDITIONAL DETAILS...\n- National Weather Service Meteorologists are forecasting heavy\nrainfall over the burn scar, which may lead to flash flooding and\ndebris flows.\n- Some locations that may experience flash flooding include...\nMeacham, Spout Springs, Tollgate, Bingham Springs, Minam, Ski\nBluewood, Gibbon, Hilgard, Troy, Kamela, Umatilla Reservation and\nKooskooskie.\n- http://www.weather.gov/safety/flood",
+                "instruction": "You should monitor later forecasts and be prepared to take action\nshould Flash Flood Warnings be issued.",
+                "response": "Monitor",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FFAPDT"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS66 KPDT 120005"
+                    ],
+                    "NWSheadline": [
+                        "FLASH FLOOD WATCH FOR THE PARADISE AND HAGEN BURN SCAR IN EFFECT FROM SATURDAY AFTERNOON THROUGH SUNDAY EVENING"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KPDT.FF.A.0001.260913T0000Z-260914T0300Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-13T20:00:00-07:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FFA"
+                    ],
+                    "NationalWeatherService": [
+                        "FFA"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d69c5bee7fa659e4897505435657756a22590e37.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -80.85,
+                            31.23
+                        ],
+                        [
+                            -80.69,
+                            31.19
+                        ],
+                        [
+                            -80.61,
+                            31.11
+                        ],
+                        [
+                            -80.91,
+                            30.16
+                        ],
+                        [
+                            -81.39,
+                            29.99
+                        ],
+                        [
+                            -81.3,
+                            30.78
+                        ],
+                        [
+                            -81.39,
+                            31.16
+                        ],
+                        [
+                            -81.21,
+                            31.28
+                        ],
+                        [
+                            -80.85,
+                            31.23
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.d69c5bee7fa659e4897505435657756a22590e37.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.d69c5bee7fa659e4897505435657756a22590e37.001.1",
+                "areaDesc": "Coastal waters from Altamaha Sound to Fernandina Beach FL out 20 NM; Coastal waters from Fernandina Beach to St. Augustine FL out 20 NM; Waters from Altamaha Sound GA to Fernandina Beach FL from 20 to 60 NM; Waters from Fernandina Beach to St. Augustine FL from 20 to 60 NM",
+                "geocode": {
+                    "SAME": [
+                        "075450",
+                        "075452",
+                        "075470",
+                        "075472"
+                    ],
+                    "UGC": [
+                        "AMZ450",
+                        "AMZ452",
+                        "AMZ470",
+                        "AMZ472"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/forecast/AMZ450",
+                    "https://api.weather.gov/zones/forecast/AMZ452",
+                    "https://api.weather.gov/zones/forecast/AMZ470",
+                    "https://api.weather.gov/zones/forecast/AMZ472"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6b4697dfb7be94f10c6223411f7e7b50e172a2fa.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.6b4697dfb7be94f10c6223411f7e7b50e172a2fa.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-11T19:11:00-04:00"
+                    }
+                ],
+                "sent": "2026-09-11T20:05:00-04:00",
+                "effective": "2026-09-11T20:05:00-04:00",
+                "onset": "2026-09-11T20:05:00-04:00",
+                "expires": "2026-09-11T20:15:00-04:00",
+                "ends": "2026-09-11T20:15:00-04:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Immediate",
+                "event": "Special Marine Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Jacksonville FL",
+                "headline": "Special Marine Warning issued September 11 at 8:05PM EDT until September 11 at 8:15PM EDT by NWS Jacksonville FL",
+                "description": "The affected areas were...\nCoastal waters from Altamaha Sound to Fernandina Beach FL out 20\nNM...\nCoastal waters from Fernandina Beach to St. Augustine FL out 20 NM...\nWaters from Altamaha Sound GA to Fernandina Beach FL from 20 to 60\nNM...\nWaters from Fernandina Beach to St. Augustine FL from 20 to 60 NM...\n\nThe thunderstorms have weakened and no longer pose a significant\nthreat to boaters.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "MWSJAX"
+                    ],
+                    "WMOidentifier": [
+                        "FZUS72 KJAX 120005"
+                    ],
+                    "NWSheadline": [
+                        "THE SPECIAL MARINE WARNING WILL EXPIRE AT 815 PM EDT"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:05:00-00:00...storm...238DEG...30KT...31.35,-80.89 31.06,-80.75 30.32,-80.91"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "VTEC": [
+                        "/O.EXP.KJAX.MA.W.0228.000000T0000Z-260912T0015Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-11T20:15:00-04:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "NWS"
+                    ],
+                    "NationalWeatherService": [
+                        "MAW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e31c497f3c1e9ef4474ce249cc3905660cd7f20d.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -96.46,
+                            45.59
+                        ],
+                        [
+                            -96.46,
+                            45.6
+                        ],
+                        [
+                            -96.25,
+                            45.66
+                        ],
+                        [
+                            -96.25,
+                            45.59
+                        ],
+                        [
+                            -96.24,
+                            45.59
+                        ],
+                        [
+                            -96.24,
+                            45.46
+                        ],
+                        [
+                            -96.43,
+                            45.42
+                        ],
+                        [
+                            -96.46,
+                            45.59
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.e31c497f3c1e9ef4474ce249cc3905660cd7f20d.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.e31c497f3c1e9ef4474ce249cc3905660cd7f20d.001.1",
+                "areaDesc": "Big Stone, MN; Traverse, MN",
+                "geocode": {
+                    "SAME": [
+                        "027011",
+                        "027155"
+                    ],
+                    "UGC": [
+                        "MNC011",
+                        "MNC155"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MNC011",
+                    "https://api.weather.gov/zones/county/MNC155"
+                ],
+                "references": [],
+                "sent": "2026-09-11T19:05:00-05:00",
+                "effective": "2026-09-11T19:05:00-05:00",
+                "onset": "2026-09-11T19:05:00-05:00",
+                "expires": "2026-09-11T19:45:00-05:00",
+                "ends": "2026-09-11T19:45:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Aberdeen SD",
+                "headline": "Severe Thunderstorm Warning issued September 11 at 7:05PM CDT until September 11 at 7:45PM CDT by NWS Aberdeen SD",
+                "description": "SVRABR\n\nThe National Weather Service in Aberdeen has issued a\n\n* Severe Thunderstorm Warning for...\nNortheastern Big Stone County in west central Minnesota...\nSoutheastern Traverse County in west central Minnesota...\n\n* Until 745 PM CDT.\n\n* At 705 PM CDT, a severe thunderstorm was located near Johnson, or 5\nmiles southeast of Graceville, moving east at 25 mph.\n\nHAZARD...60 mph wind gusts and quarter size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage to\nroofs, siding, and trees.\n\n* This severe thunderstorm will be near...\nGraceville around 710 PM CDT.\nJohnson and Trinity Lutheran Country Church around 715 PM CDT.",
+                "instruction": "Seek shelter inside a well-built structure and stay away from\nwindows. This storm is capable of producing damaging winds and large\nhail.",
+                "response": "Shelter",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SVRABR"
+                    ],
+                    "WMOidentifier": [
+                        "WUUS53 KABR 120005"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:05:00-00:00...storm...248DEG...21KT...45.53,-96.35"
+                    ],
+                    "windThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxWindGust": [
+                        "60 MPH"
+                    ],
+                    "hailThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxHailSize": [
+                        "1.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KABR.SV.W.0277.260912T0005Z-260912T0045Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-11T19:45:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVR"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.158d204b43983d76e92158c5f6d24b86915ffe26.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -87.53,
+                            34.33
+                        ],
+                        [
+                            -87.53,
+                            34.48
+                        ],
+                        [
+                            -87.11,
+                            34.48
+                        ],
+                        [
+                            -87.11,
+                            34.3
+                        ],
+                        [
+                            -87.53,
+                            34.31
+                        ],
+                        [
+                            -87.53,
+                            34.33
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.158d204b43983d76e92158c5f6d24b86915ffe26.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.158d204b43983d76e92158c5f6d24b86915ffe26.001.1",
+                "areaDesc": "Lawrence, AL",
+                "geocode": {
+                    "SAME": [
+                        "001079"
+                    ],
+                    "UGC": [
+                        "ALC079"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/ALC079"
+                ],
+                "references": [
+                    {
+                        "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.09f36699283da2f7f1dc7a6d875345dce7408778.001.1",
+                        "identifier": "urn:oid:2.49.0.1.840.0.09f36699283da2f7f1dc7a6d875345dce7408778.001.1",
+                        "sender": "w-nws.webmaster@noaa.gov",
+                        "sent": "2026-09-11T16:20:00-05:00"
+                    }
+                ],
+                "sent": "2026-09-11T19:05:00-05:00",
+                "effective": "2026-09-11T19:05:00-05:00",
+                "onset": "2026-09-11T19:05:00-05:00",
+                "expires": "2026-09-11T19:15:00-05:00",
+                "ends": "2026-09-11T19:15:00-05:00",
+                "status": "Actual",
+                "messageType": "Update",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Likely",
+                "urgency": "Immediate",
+                "event": "Flash Flood Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Huntsville AL",
+                "headline": "Flash Flood Warning issued September 11 at 7:05PM CDT until September 11 at 7:15PM CDT by NWS Huntsville AL",
+                "description": "The heavy rain has ended. Flooding is no longer expected to pose a\nthreat. Please continue to heed remaining road closures.",
+                "instruction": null,
+                "response": "Avoid",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "FFSHUN"
+                    ],
+                    "WMOidentifier": [
+                        "WGUS74 KHUN 120005"
+                    ],
+                    "NWSheadline": [
+                        "FLASH FLOOD WARNING WILL EXPIRE AT 715 PM CDT THIS EVENING FOR SOUTHERN LAWRENCE COUNTY"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.EXP.KHUN.FF.W.0034.000000T0000Z-260912T0015Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-11T19:15:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "FFS"
+                    ],
+                    "NationalWeatherService": [
+                        "FFW"
+                    ]
+                }
+            }
+        },
+        {
+            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.031727b9145bbe986e11d3f640e2597e46ef919a.001.1",
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            -95.67,
+                            46.24
+                        ],
+                        [
+                            -95.16,
+                            46.37
+                        ],
+                        [
+                            -95.16,
+                            46.34
+                        ],
+                        [
+                            -95.15,
+                            46.33
+                        ],
+                        [
+                            -95.15,
+                            46.11
+                        ],
+                        [
+                            -95.62,
+                            46.11
+                        ],
+                        [
+                            -95.67,
+                            46.24
+                        ]
+                    ]
+                ]
+            },
+            "properties": {
+                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.031727b9145bbe986e11d3f640e2597e46ef919a.001.1",
+                "@type": "wx:Alert",
+                "id": "urn:oid:2.49.0.1.840.0.031727b9145bbe986e11d3f640e2597e46ef919a.001.1",
+                "areaDesc": "Otter Tail, MN",
+                "geocode": {
+                    "SAME": [
+                        "027111"
+                    ],
+                    "UGC": [
+                        "MNC111"
+                    ]
+                },
+                "affectedZones": [
+                    "https://api.weather.gov/zones/county/MNC111"
+                ],
+                "references": [],
+                "sent": "2026-09-11T19:05:00-05:00",
+                "effective": "2026-09-11T19:05:00-05:00",
+                "onset": "2026-09-11T19:05:00-05:00",
+                "expires": "2026-09-11T20:00:00-05:00",
+                "ends": "2026-09-11T20:00:00-05:00",
+                "status": "Actual",
+                "messageType": "Alert",
+                "category": "Met",
+                "severity": "Severe",
+                "certainty": "Observed",
+                "urgency": "Immediate",
+                "event": "Severe Thunderstorm Warning",
+                "sender": "w-nws.webmaster@noaa.gov",
+                "senderName": "NWS Grand Forks ND",
+                "headline": "Severe Thunderstorm Warning issued September 11 at 7:05PM CDT until September 11 at 8:00PM CDT by NWS Grand Forks ND",
+                "description": "SVRFGF\n\nThe National Weather Service in Grand Forks has issued a\n\n* Severe Thunderstorm Warning for...\nSoutheastern Otter Tail County in west central Minnesota...\n\n* Until 800 PM CDT.\n\n* At 705 PM CDT, a severe thunderstorm was located near Vining, or 22\nmiles northwest of Alexandria, moving east at 35 mph.\n\nHAZARD...60 mph wind gusts and quarter size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage\nto roofs, siding, and trees.\n\n* Locations impacted include...\nParkers Prairie, Vining, Urbank, Almora, and Wrightstown.",
+                "instruction": "For your protection move to an interior room on the lowest floor of a\nbuilding.",
+                "response": "Shelter",
+                "note": null,
+                "parameters": {
+                    "AWIPSidentifier": [
+                        "SVRFGF"
+                    ],
+                    "WMOidentifier": [
+                        "WUUS53 KFGF 120005"
+                    ],
+                    "eventMotionDescription": [
+                        "2026-09-12T00:05:00-00:00...storm...251DEG...30KT...46.2,-95.56"
+                    ],
+                    "windThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxWindGust": [
+                        "60 MPH"
+                    ],
+                    "hailThreat": [
+                        "RADAR INDICATED"
+                    ],
+                    "maxHailSize": [
+                        "1.00"
+                    ],
+                    "BLOCKCHANNEL": [
+                        "EAS",
+                        "NWEM",
+                        "CMAS"
+                    ],
+                    "EAS-ORG": [
+                        "WXR"
+                    ],
+                    "VTEC": [
+                        "/O.NEW.KFGF.SV.W.0200.260912T0005Z-260912T0100Z/"
+                    ],
+                    "eventEndingTime": [
+                        "2026-09-11T20:00:00-05:00"
+                    ]
+                },
+                "scope": "Public",
+                "code": "IPAWSv1.0",
+                "language": "en-US",
+                "web": "http://www.weather.gov",
+                "eventCode": {
+                    "SAME": [
+                        "SVR"
+                    ],
+                    "NationalWeatherService": [
+                        "SVW"
                     ]
                 }
             }
@@ -907,156 +2335,6 @@
                     ],
                     "NationalWeatherService": [
                         "FAY"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.61292845487a3ba1102d7c9d67f59445500bfbd3.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -97.08,
-                            44.2
-                        ],
-                        [
-                            -97.13,
-                            44.25
-                        ],
-                        [
-                            -97.13,
-                            44.27
-                        ],
-                        [
-                            -96.69,
-                            44.54
-                        ],
-                        [
-                            -96.45,
-                            44.54
-                        ],
-                        [
-                            -96.45,
-                            44.63
-                        ],
-                        [
-                            -96.19,
-                            44.63
-                        ],
-                        [
-                            -96.08,
-                            44.52
-                        ],
-                        [
-                            -96.08,
-                            44.34
-                        ],
-                        [
-                            -96.99,
-                            44.11
-                        ],
-                        [
-                            -97.08,
-                            44.2
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.61292845487a3ba1102d7c9d67f59445500bfbd3.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.61292845487a3ba1102d7c9d67f59445500bfbd3.001.1",
-                "areaDesc": "Lincoln, MN; Brookings, SD; Lake, SD; Moody, SD",
-                "geocode": {
-                    "SAME": [
-                        "027081",
-                        "046011",
-                        "046079",
-                        "046101"
-                    ],
-                    "UGC": [
-                        "MNC081",
-                        "SDC011",
-                        "SDC079",
-                        "SDC101"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/MNC081",
-                    "https://api.weather.gov/zones/county/SDC011",
-                    "https://api.weather.gov/zones/county/SDC079",
-                    "https://api.weather.gov/zones/county/SDC101"
-                ],
-                "references": [],
-                "sent": "2026-09-11T18:54:00-05:00",
-                "effective": "2026-09-11T18:54:00-05:00",
-                "onset": "2026-09-11T18:54:00-05:00",
-                "expires": "2026-09-11T19:45:00-05:00",
-                "ends": "2026-09-11T19:45:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Observed",
-                "urgency": "Immediate",
-                "event": "Severe Thunderstorm Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Sioux Falls SD",
-                "headline": "Severe Thunderstorm Warning issued September 11 at 6:54PM CDT until September 11 at 7:45PM CDT by NWS Sioux Falls SD",
-                "description": "SVRFSD\n\nThe National Weather Service in Sioux Falls has issued a\n\n* Severe Thunderstorm Warning for...\nLincoln County in southwestern Minnesota...\nBrookings County in east central South Dakota...\nNortheastern Lake County in east central South Dakota...\nNorthwestern Moody County in east central South Dakota...\n\n* Until 745 PM CDT.\n\n* At 654 PM CDT, a severe thunderstorm was located over Brookings,\nmoving northeast at 50 mph.\n\nHAZARD...60 mph wind gusts and half dollar size hail.\n\nSOURCE...Radar indicated.\n\nIMPACT...Hail damage to vehicles is expected. Expect wind damage to\nroofs, siding, and trees.\n\n* This severe thunderstorm will be near...\nBrookings and Volga around 655 PM CDT.\nAurora around 700 PM CDT.\nWhite around 710 PM CDT.\n\nOther locations impacted by the severe thunderstorm include Bushnell.",
-                "instruction": "Seek shelter inside a well-built structure and stay away from\nwindows. This storm is capable of producing damaging winds and large\nhail.",
-                "response": "Shelter",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SVRFSD"
-                    ],
-                    "WMOidentifier": [
-                        "WUUS53 KFSD 112354"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-09-11T23:54:00-00:00...storm...247DEG...42KT...44.3,-96.83"
-                    ],
-                    "windThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxWindGust": [
-                        "60 MPH"
-                    ],
-                    "hailThreat": [
-                        "RADAR INDICATED"
-                    ],
-                    "maxHailSize": [
-                        "1.25"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KFSD.SV.W.0288.260911T2354Z-260912T0045Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-11T19:45:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SVR"
-                    ],
-                    "NationalWeatherService": [
-                        "SVW"
                     ]
                 }
             }
@@ -6643,136 +7921,6 @@
             }
         },
         {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6b4697dfb7be94f10c6223411f7e7b50e172a2fa.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -80.85,
-                            31.23
-                        ],
-                        [
-                            -80.69,
-                            31.19
-                        ],
-                        [
-                            -80.61,
-                            31.11
-                        ],
-                        [
-                            -80.91,
-                            30.16
-                        ],
-                        [
-                            -81.39,
-                            29.99
-                        ],
-                        [
-                            -81.3,
-                            30.78
-                        ],
-                        [
-                            -81.39,
-                            31.16
-                        ],
-                        [
-                            -81.21,
-                            31.28
-                        ],
-                        [
-                            -80.85,
-                            31.23
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.6b4697dfb7be94f10c6223411f7e7b50e172a2fa.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.6b4697dfb7be94f10c6223411f7e7b50e172a2fa.001.1",
-                "areaDesc": "Coastal waters from Altamaha Sound to Fernandina Beach FL out 20 NM; Coastal waters from Fernandina Beach to St. Augustine FL out 20 NM; Waters from Altamaha Sound GA to Fernandina Beach FL from 20 to 60 NM; Waters from Fernandina Beach to St. Augustine FL from 20 to 60 NM",
-                "geocode": {
-                    "SAME": [
-                        "075450",
-                        "075452",
-                        "075470",
-                        "075472"
-                    ],
-                    "UGC": [
-                        "AMZ450",
-                        "AMZ452",
-                        "AMZ470",
-                        "AMZ472"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/forecast/AMZ450",
-                    "https://api.weather.gov/zones/forecast/AMZ452",
-                    "https://api.weather.gov/zones/forecast/AMZ470",
-                    "https://api.weather.gov/zones/forecast/AMZ472"
-                ],
-                "references": [],
-                "sent": "2026-09-11T19:11:00-04:00",
-                "effective": "2026-09-11T19:11:00-04:00",
-                "onset": "2026-09-11T19:11:00-04:00",
-                "expires": "2026-09-11T20:15:00-04:00",
-                "ends": "2026-09-11T20:15:00-04:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Likely",
-                "urgency": "Immediate",
-                "event": "Special Marine Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Jacksonville FL",
-                "headline": "Special Marine Warning issued September 11 at 7:11PM EDT until September 11 at 8:15PM EDT by NWS Jacksonville FL",
-                "description": "SMWJAX\n\nThe National Weather Service in Jacksonville has issued a\n\n* Special Marine Warning for...\nCoastal waters from Altamaha Sound to Fernandina Beach FL out 20\nNM...\nCoastal waters from Fernandina Beach to St. Augustine FL out 20\nNM...\nWaters from Altamaha Sound GA to Fernandina Beach FL from 20 to 60\nNM...\nWaters from Fernandina Beach to St. Augustine FL from 20 to 60\nNM...\n\n* Until 815 PM EDT.\n\n* At 711 PM EDT, strong thunderstorms were located along a line\nextending from near St Simons Island Village to 18 nm southeast of\nJekyll Island to near Guana River State Park, moving northeast at\n30 knots.\n\nHAZARD...Wind gusts 34 knots or greater.\n\nSOURCE...Radar.\n\nIMPACT...Small craft could be damaged in briefly higher winds and\nsuddenly higher waves.\n\n* Locations impacted include...\nBuoy Hlha, Buoy F, Anna Reef, Buoy Cdh, South Ponte Vedra Beach, St\nSimons Island Village, Buoy Kby, Saint Johns Lighted Buoy, St\nSimons Sound Buoy 9, Guana River State Park, Whittakers Snapper\nHole Reef, St. Simons Island, and Palm Valley.",
-                "instruction": "Move to safe harbor until hazardous weather passes. If your vessel is\ncaught offshore, immediately secure for heavy weather. Ensure all\ncrew members are wearing USCG approved Type I life jackets and\nnonessential crew are below decks. Deploy jack lines and harnesses if\navailable. Check life saving equipment, including batteries on\nhandheld radios, for readiness.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "SMWJAX"
-                    ],
-                    "WMOidentifier": [
-                        "WHUS52 KJAX 112311"
-                    ],
-                    "eventMotionDescription": [
-                        "2026-09-11T23:11:00-00:00...storm...238DEG...30KT...31.13,-81.31 30.84,-81.17 30.1,-81.32"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KJAX.MA.W.0228.260911T2311Z-260912T0015Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-11T20:15:00-04:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "SMW"
-                    ],
-                    "NationalWeatherService": [
-                        "MAW"
-                    ]
-                }
-            }
-        },
-        {
             "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.70833b32f9fb108bcd60ab9770fcfb09f1bc12c6.001.1",
             "type": "Feature",
             "geometry": {
@@ -10460,115 +11608,6 @@
                 "eventCode": {
                     "SAME": [
                         "FFS"
-                    ],
-                    "NationalWeatherService": [
-                        "FFW"
-                    ]
-                }
-            }
-        },
-        {
-            "id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.09f36699283da2f7f1dc7a6d875345dce7408778.001.1",
-            "type": "Feature",
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -87.53,
-                            34.33
-                        ],
-                        [
-                            -87.53,
-                            34.48
-                        ],
-                        [
-                            -87.11,
-                            34.48
-                        ],
-                        [
-                            -87.11,
-                            34.3
-                        ],
-                        [
-                            -87.53,
-                            34.31
-                        ],
-                        [
-                            -87.53,
-                            34.33
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "@id": "https://api.weather.gov/alerts/urn:oid:2.49.0.1.840.0.09f36699283da2f7f1dc7a6d875345dce7408778.001.1",
-                "@type": "wx:Alert",
-                "id": "urn:oid:2.49.0.1.840.0.09f36699283da2f7f1dc7a6d875345dce7408778.001.1",
-                "areaDesc": "Lawrence, AL",
-                "geocode": {
-                    "SAME": [
-                        "001079"
-                    ],
-                    "UGC": [
-                        "ALC079"
-                    ]
-                },
-                "affectedZones": [
-                    "https://api.weather.gov/zones/county/ALC079"
-                ],
-                "references": [],
-                "sent": "2026-09-11T16:20:00-05:00",
-                "effective": "2026-09-11T16:20:00-05:00",
-                "onset": "2026-09-11T16:20:00-05:00",
-                "expires": "2026-09-11T19:15:00-05:00",
-                "ends": "2026-09-11T19:15:00-05:00",
-                "status": "Actual",
-                "messageType": "Alert",
-                "category": "Met",
-                "severity": "Severe",
-                "certainty": "Likely",
-                "urgency": "Immediate",
-                "event": "Flash Flood Warning",
-                "sender": "w-nws.webmaster@noaa.gov",
-                "senderName": "NWS Huntsville AL",
-                "headline": "Flash Flood Warning issued September 11 at 4:20PM CDT until September 11 at 7:15PM CDT by NWS Huntsville AL",
-                "description": "FFWHUN\n\nThe National Weather Service in Huntsville has issued a\n\n* Flash Flood Warning for...\nSouthern Lawrence County in northwestern Alabama...\n\n* Until 715 PM CDT.\n\n* At 420 PM CDT, Doppler radar indicated thunderstorms producing\nheavy rain across southern Lawrence County. Between 2 and 3 inches\nof rain have fallen. The expected rainfall rate is 1 to 2 inches in\n1 hour. Additional rainfall amounts of 1 to 2 inches are possible\nin the warned area. Flash flooding is ongoing or expected to begin\nshortly.\n\nHAZARD...Flash flooding caused by thunderstorms.\n\nSOURCE...Radar indicated.\n\nIMPACT...Flash flooding of small creeks and streams, urban areas,\nhighways, streets and underpasses as well as other poor\ndrainage and low-lying areas.\n\n* Some locations that will experience flash flooding include...\nMoulton, Bankhead National Forest, Wren, Landersville, Speake and\nMt Hope.",
-                "instruction": "Turn around, don't drown when encountering flooded roads. Most flood\ndeaths occur in vehicles.",
-                "response": "Avoid",
-                "note": null,
-                "parameters": {
-                    "AWIPSidentifier": [
-                        "FFWHUN"
-                    ],
-                    "WMOidentifier": [
-                        "WGUS54 KHUN 112120"
-                    ],
-                    "flashFloodDetection": [
-                        "RADAR INDICATED"
-                    ],
-                    "BLOCKCHANNEL": [
-                        "EAS",
-                        "NWEM",
-                        "CMAS"
-                    ],
-                    "EAS-ORG": [
-                        "WXR"
-                    ],
-                    "VTEC": [
-                        "/O.NEW.KHUN.FF.W.0034.260911T2120Z-260912T0015Z/"
-                    ],
-                    "eventEndingTime": [
-                        "2026-09-11T19:15:00-05:00"
-                    ]
-                },
-                "scope": "Public",
-                "code": "IPAWSv1.0",
-                "language": "en-US",
-                "web": "http://www.weather.gov",
-                "eventCode": {
-                    "SAME": [
-                        "FFW"
                     ],
                     "NationalWeatherService": [
                         "FFW"
@@ -25737,5 +26776,5 @@
         }
     ],
     "title": "Current watches, warnings, and advisories",
-    "updated": "2026-09-12T00:03:22+00:00"
+    "updated": "2026-09-12T00:13:18+00:00"
 }
